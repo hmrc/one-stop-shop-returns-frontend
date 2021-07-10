@@ -17,5 +17,9 @@
 package models.requests
 
 import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.auth.core.retrieve.Credentials
 
-case class IdentifierRequest[A] (request: Request[A], userId: String) extends WrappedRequest[A](request)
+case class IdentifierRequest[A] (request: Request[A], credentials: Credentials) extends WrappedRequest[A](request) {
+
+  val userId: String = credentials.providerId
+}
