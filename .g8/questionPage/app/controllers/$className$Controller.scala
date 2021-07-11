@@ -4,31 +4,24 @@ import controllers.actions._
 import forms.$className$FormProvider
 import javax.inject.Inject
 import models.Mode
-import navigation.Navigator
 import pages.$className$Page
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.$className$View
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class $className$Controller @Inject()(
-                                      override val messagesApi: MessagesApi,
-                                      sessionRepository: SessionRepository,
-                                      navigator: Navigator,
-                                      identify: IdentifierAction,
-                                      getData: DataRetrievalAction,
-                                      requireData: DataRequiredAction,
+                                      cc: AuthenticatedControllerComponents,
                                       formProvider: $className$FormProvider,
-                                      val controllerComponents: MessagesControllerComponents,
                                       view: $className$View
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  val form = formProvider()
-
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify andThen getData andThen requireData) {
+  private val form = formProvider()
+  protected val controllerComponents: MessagesControllerComponents = cc
+  
+  def onPageLoad(mode: Mode): Action[AnyContent] = cc.authAndGetData {
     implicit request =>
 
       val preparedForm = request.userAnswers.get($className$Page) match {
@@ -39,7 +32,7 @@ class $className$Controller @Inject()(
       Ok(view(preparedForm, mode))
   }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onSubmit(mode: Mode): Action[AnyContent] = cc.authAndGetData.async {
     implicit request =>
 
       form.bindFromRequest().fold(
@@ -49,8 +42,8 @@ class $className$Controller @Inject()(
         value =>
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set($className$Page, value))
-            _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage($className$Page, mode, updatedAnswers))
+            _              <- cc.sessionRepository.set(updatedAnswers)
+          } yield Redirect($className$Page.navigate(mode, updatedAnswers))
       )
   }
 }

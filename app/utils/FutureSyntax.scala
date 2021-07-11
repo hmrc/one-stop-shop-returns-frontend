@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package navigation
+package utils
 
-import play.api.mvc.Call
-import pages._
-import models.{Mode, UserAnswers}
+import scala.concurrent.Future
 
-class FakeNavigator(desiredRoute: Call) extends Navigator {
+object FutureSyntax {
 
-  override def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call =
-    desiredRoute
+  implicit class FutureOps[A](val a: A) extends AnyVal {
+    def toFuture: Future[A] = Future.successful(a)
+  }
 }
