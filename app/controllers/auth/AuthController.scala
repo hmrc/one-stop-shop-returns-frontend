@@ -31,23 +31,14 @@ class AuthController @Inject()(
                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
-  def signOut(): Action[AnyContent] = cc.auth.async {
-    implicit request =>
-      cc.sessionRepository
-        .clear(request.credentials.providerId)
-        .map {
-          _ =>
-            Redirect(config.signOutUrl, Map("continue" -> Seq(config.exitSurveyUrl)))
-      }
+
+  def signOut(): Action[AnyContent] = Action {
+    _ =>
+      Redirect(config.signOutUrl, Map("continue" -> Seq(config.exitSurveyUrl)))
   }
 
-  def signOutNoSurvey(): Action[AnyContent] = cc.auth.async {
+  def signOutNoSurvey(): Action[AnyContent] = Action {
     implicit request =>
-    cc.sessionRepository
-      .clear(request.credentials.providerId)
-      .map {
-        _ =>
         Redirect(config.signOutUrl, Map("continue" -> Seq(routes.SignedOutController.onPageLoad().url)))
-      }
   }
 }
