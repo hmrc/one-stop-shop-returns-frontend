@@ -21,4 +21,12 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 
 trait ModelGenerators {
+
+  implicit val arbitraryPeriod: Arbitrary[Period] =
+    Arbitrary {
+      for {
+        year <- Gen.choose(2022, 2100)
+        quarter <- Gen.oneOf(Quarter.values)
+      } yield Period(year, quarter)
+  }
 }
