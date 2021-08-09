@@ -17,12 +17,25 @@
 package generators
 
 import models._
-import models.registration.{EuTaxIdentifier, EuTaxIdentifierType, FixedEstablishment, InternationalAddress}
+import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.domain.Vrn
 
+import java.time.{Instant, LocalDate, ZoneOffset}
+
 trait ModelGenerators {
+
+  private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
+
+    def toMillis(date: LocalDate): Long =
+      date.atStartOfDay.atZone(ZoneOffset.UTC).toInstant.toEpochMilli
+
+    Gen.choose(toMillis(min), toMillis(max)).map {
+      millis =>
+        Instant.ofEpochMilli(millis).atOffset(ZoneOffset.UTC).toLocalDate
+    }
+  }
 
   implicit val arbitraryPeriod: Arbitrary[Period] =
     Arbitrary {
@@ -58,6 +71,40 @@ trait ModelGenerators {
       } yield InternationalAddress(line1, line2, townOrCity, stateOrRegion, postCode, country)
     }
 
+  implicit lazy val arbitraryUkAddress: Arbitrary[UkAddress] =
+    Arbitrary {
+      for {
+        line1      <- arbitrary[String]
+        line2      <- Gen.option(arbitrary[String])
+        townOrCity <- arbitrary[String]
+        county     <- Gen.option(arbitrary[String])
+        postCode   <- arbitrary[String]
+      } yield UkAddress(line1, line2, townOrCity, county, postCode)
+    }
+
+  implicit val arbitraryAddress: Arbitrary[Address] =
+    Arbitrary {
+      Gen.oneOf(
+        arbitrary[UkAddress],
+        arbitrary[InternationalAddress],
+        arbitrary[DesAddress]
+      )
+    }
+
+
+  implicit lazy val arbitraryDesAddress: Arbitrary[DesAddress] =
+    Arbitrary {
+      for {
+        line1       <- arbitrary[String]
+        line2       <- Gen.option(arbitrary[String])
+        line3       <- Gen.option(arbitrary[String])
+        line4       <- Gen.option(arbitrary[String])
+        line5       <- Gen.option(arbitrary[String])
+        postCode    <- Gen.option(arbitrary[String])
+        countryCode <- Gen.listOfN(2, Gen.alphaChar).map(_.mkString)
+      } yield DesAddress(line1, line2, line3, line4, line5, postCode, countryCode)
+    }
+
   implicit lazy val arbitraryFixedEstablishment: Arbitrary[FixedEstablishment] =
     Arbitrary {
       for {
@@ -71,11 +118,42 @@ trait ModelGenerators {
       Gen.oneOf(EuTaxIdentifierType.values)
     }
 
+  implicit lazy val arbitraryContactDetails: Arbitrary[ContactDetails] =
+    Arbitrary {
+      for {
+        fullName        <- arbitrary[String]
+        telephoneNumber <- arbitrary[String]
+        emailAddress    <- arbitrary[String]
+      } yield ContactDetails(fullName, telephoneNumber, emailAddress)
+    }
+
   implicit val arbitraryEuTaxIdentifier: Arbitrary[EuTaxIdentifier] =
     Arbitrary {
       for {
         identifierType <- arbitrary[EuTaxIdentifierType]
         value          <- arbitrary[Int].map(_.toString)
       } yield EuTaxIdentifier(identifierType, value)
+    }
+
+  implicit val arbitraryVatDetails: Arbitrary[VatDetails] =
+    Arbitrary {
+      for {
+        address  <- arbitrary[Address]
+        source   <- Gen.oneOf(VatDetailSource.values)
+        vatGroup <- arbitrary[Boolean]
+        date     <- datesBetween(LocalDate.of(1900, 1, 1), LocalDate.of(2021, 1, 1))
+      } yield VatDetails(date, address, vatGroup, source)
+    }
+
+
+  implicit val arbitraryRegistration: Arbitrary[Registration] =
+    Arbitrary {
+      for {
+        vrn               <- arbitrary[Vrn]
+        name              <- arbitrary[String]
+        vatDetails        <- arbitrary[VatDetails]
+        contactDetails    <- arbitrary[ContactDetails]
+        commencementDate <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
+      } yield Registration(vrn, name, vatDetails, Nil, contactDetails, commencementDate)
     }
 }
