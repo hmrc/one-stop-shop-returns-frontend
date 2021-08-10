@@ -57,6 +57,6 @@ class IndexController @Inject()(
         val answers = UserAnswers(request.userId, registration, Json.obj())
         cc.sessionRepository.set(answers).map(_ => Ok(view()))
       case None =>
-        Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+        Redirect(routes.NotRegisteredController.onPageLoad()).toFuture
     }
 }
