@@ -17,28 +17,110 @@
 package controllers
 
 import base.SpecBase
+import connectors.RegistrationConnector
+import generators.Generators
+import models.registration.Registration
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{never, times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import views.html.IndexView
 
-class IndexControllerSpec extends SpecBase {
+import scala.concurrent.Future
+
+class IndexControllerSpec extends SpecBase with MockitoSugar with Generators {
 
   "Index Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "GET" - {
 
-      val application = applicationBuilder(userAnswers = None).build()
+      "when we already have UserAnswers set up for this user" - {
 
-      running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+        "must return OK and the correct view" in {
 
-        val result = route(application, request).value
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
-        val view = application.injector.instanceOf[IndexView]
+          running(application) {
+            val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
 
-        status(result) mustEqual OK
+            val result = route(application, request).value
 
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+            val view = application.injector.instanceOf[IndexView]
+
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view()(request, messages(application)).toString
+          }
+        }
+      }
+
+      "when we do not already have User Answers for this user" - {
+
+        "and the user is registered" - {
+
+          "must create a UserAnswers, return OK and show the correct view" in {
+
+            val registration = arbitrary[Registration].sample.value
+
+            val mockConnector  = mock[RegistrationConnector]
+            val mockRepository = mock[SessionRepository]
+            when(mockConnector.get()(any())) thenReturn Future.successful(Some(registration))
+            when(mockRepository.set(any())) thenReturn Future.successful(true)
+
+            val application =
+              applicationBuilder(userAnswers = None)
+                .overrides(
+                  bind[RegistrationConnector].toInstance(mockConnector),
+                  bind[SessionRepository].toInstance(mockRepository)
+                )
+                .build()
+
+            running(application) {
+              val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+
+              val result = route(application, request).value
+
+              val view = application.injector.instanceOf[IndexView]
+
+              status(result) mustEqual OK
+
+              contentAsString(result) mustEqual view()(request, messages(application)).toString
+              verify(mockRepository, times(1)).set(any())
+            }
+          }
+        }
+
+        "and the user is not registered" - {
+
+          "must redirect the user to Journey Recovery" in {
+
+            val mockConnector  = mock[RegistrationConnector]
+            val mockRepository = mock[SessionRepository]
+            when(mockConnector.get()(any())) thenReturn Future.successful(None)
+
+            val application =
+              applicationBuilder(userAnswers = None)
+                .overrides(
+                  bind[RegistrationConnector].toInstance(mockConnector),
+                  bind[SessionRepository].toInstance(mockRepository)
+                )
+                .build()
+
+            running(application) {
+              val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+
+              val result = route(application, request).value
+
+              status(result) mustEqual SEE_OTHER
+              redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+              verify(mockRepository, never).set(any())
+            }
+          }
+        }
       }
     }
   }
