@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.VatRatesFromNiFormProvider
-import models.{VatRatesFromNi, NormalMode, UserAnswers}
+import models.{NormalMode, VatRatesFromNi}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -33,7 +33,7 @@ import scala.concurrent.Future
 
 class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
-  private lazy val vatRatesFromNiRoute = routes.VatRatesFromNiController.onPageLoad(NormalMode).url
+  private lazy val vatRatesFromNiRoute = routes.VatRatesFromNiController.onPageLoad(NormalMode, period).url
 
   private val formProvider = new VatRatesFromNiFormProvider()
   private val form = formProvider()
@@ -53,7 +53,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
       }
     }
 
@@ -71,7 +71,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(VatRatesFromNi.values.toSet), NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(VatRatesFromNi.values.toSet), NormalMode, period)(request, messages(application)).toString
       }
     }
 
@@ -116,7 +116,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
       }
     }
 

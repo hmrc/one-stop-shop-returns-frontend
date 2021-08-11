@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.StartReturnFormProvider
-import models.{NormalMode, UserAnswers}
+import models.NormalMode
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -36,7 +36,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new StartReturnFormProvider()
   private val form = formProvider()
 
-  private lazy val startReturnRoute = routes.StartReturnController.onPageLoad(NormalMode).url
+  private lazy val startReturnRoute = routes.StartReturnController.onPageLoad(NormalMode, period).url
 
   "StartReturn Controller" - {
 
@@ -52,7 +52,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[StartReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
       }
     }
 
@@ -70,7 +70,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
       }
     }
 
@@ -115,7 +115,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
       }
     }
 
