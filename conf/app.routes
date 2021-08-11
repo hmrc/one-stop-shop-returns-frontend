@@ -22,3 +22,8 @@ GET         /account/signed-out                          controllers.auth.Signed
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
 GET        /notRegistered                       controllers.NotRegisteredController.onPageLoad()
+
+GET        /startReturn                        controllers.StartReturnController.onPageLoad(mode: Mode = NormalMode)
+POST       /startReturn                        controllers.StartReturnController.onSubmit(mode: Mode = NormalMode)
+GET        /changeStartReturn                  controllers.StartReturnController.onPageLoad(mode: Mode = CheckMode)
+POST       /changeStartReturn                  controllers.StartReturnController.onSubmit(mode: Mode = CheckMode)

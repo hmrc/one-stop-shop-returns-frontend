@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package generators
+package pages
 
-import org.scalacheck.Arbitrary
-import pages._
+import controllers.routes
+import models.UserAnswers
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-trait PageGenerators {
+case object StartReturnPage extends QuestionPage[Boolean] {
 
-  implicit lazy val arbitraryStartReturnPage: Arbitrary[StartReturnPage.type] =
-    Arbitrary(StartReturnPage)
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "startReturn"
+
+  override def navigateInNormalMode(answers: UserAnswers): Call =
+    routes.IndexController.onPageLoad()
 }

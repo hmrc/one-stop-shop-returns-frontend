@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-package generators
+package pages
 
-import org.scalacheck.Arbitrary
-import pages._
+import pages.behaviours.PageBehaviours
 
-trait PageGenerators {
+class StartReturnPageSpec extends PageBehaviours {
 
-  implicit lazy val arbitraryStartReturnPage: Arbitrary[StartReturnPage.type] =
-    Arbitrary(StartReturnPage)
+  "StartReturnPage" - {
+
+    beRetrievable[Boolean](StartReturnPage)
+
+    beSettable[Boolean](StartReturnPage)
+
+    beRemovable[Boolean](StartReturnPage)
+  }
 }

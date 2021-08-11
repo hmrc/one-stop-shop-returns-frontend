@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package generators
+package forms
 
-import org.scalacheck.Arbitrary
-import pages._
+import javax.inject.Inject
 
-trait PageGenerators {
+import forms.mappings.Mappings
+import play.api.data.Form
 
-  implicit lazy val arbitraryStartReturnPage: Arbitrary[StartReturnPage.type] =
-    Arbitrary(StartReturnPage)
+class StartReturnFormProvider @Inject() extends Mappings {
+
+  def apply(): Form[Boolean] =
+    Form(
+      "value" -> boolean("startReturn.error.required")
+    )
 }

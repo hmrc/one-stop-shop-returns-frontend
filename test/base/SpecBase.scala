@@ -17,6 +17,7 @@
 package base
 
 import controllers.actions._
+import generators.Generators
 import models.UserAnswers
 import models.registration.{ContactDetails, Registration, UkAddress, VatDetailSource, VatDetails}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -31,7 +32,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.LocalDate
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 
 trait SpecBase
   extends AnyFreeSpec
@@ -39,11 +40,16 @@ trait SpecBase
     with TryValues
     with OptionValues
     with ScalaFutures
-    with IntegrationPatience {
+    with IntegrationPatience
+    with Generators {
 
   val userAnswersId: String        = "12345-credId"
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn                     = Vrn("123456789")
+
+  val arbitraryDate: LocalDate        = datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2022, 12, 31)).sample.value
+  val arbitraryInstant: Instant       = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
+  val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
 
   val address: UkAddress = UkAddress("line 1", None, "town", None, "AA11 1AA")
   val registration: Registration = Registration(
@@ -55,15 +61,20 @@ trait SpecBase
     commencementDate      = LocalDate.now
   )
 
-  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, registration)
+  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, registration, lastUpdated = arbitraryInstant)
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
-  protected def applicationBuilder(userAnswers: Option[UserAnswers] = None): GuiceApplicationBuilder =
+  protected def applicationBuilder(userAnswers: Option[UserAnswers] = None, clock: Option[Clock] = None): GuiceApplicationBuilder = {
+
+    val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
+
     new GuiceApplicationBuilder()
       .overrides(
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[AuthenticatedIdentifierAction].to[FakeIdentifierAction],
-        bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers))
+        bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers)),
+        bind[Clock].toInstance(clockToBind)
       )
+  }
 }
