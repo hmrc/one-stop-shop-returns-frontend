@@ -26,6 +26,11 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 
 trait ModelGenerators {
 
+  implicit lazy val arbitraryVatRatesFromNi: Arbitrary[VatRatesFromNi] =
+    Arbitrary {
+      Gen.oneOf(VatRatesFromNi.values)
+    }
+
   private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
 
     def toMillis(date: LocalDate): Long =

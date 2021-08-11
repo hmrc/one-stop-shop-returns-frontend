@@ -24,6 +24,54 @@ import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
 
+  implicit lazy val arbitraryVatRatesFromNiUserAnswersEntry: Arbitrary[(VatRatesFromNiPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[VatRatesFromNiPage.type]
+        value <- arbitrary[VatRatesFromNi].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryVatOnSalesFromNiUserAnswersEntry: Arbitrary[(VatOnSalesFromNiPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[VatOnSalesFromNiPage.type]
+        value <- arbitrary[Int].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitrarySoldGoodsFromNiUserAnswersEntry: Arbitrary[(SoldGoodsFromNiPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[SoldGoodsFromNiPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryNetValueOfSalesFromNiUserAnswersEntry: Arbitrary[(NetValueOfSalesFromNiPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[NetValueOfSalesFromNiPage.type]
+        value <- arbitrary[Int].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryDeleteSalesFromNiUserAnswersEntry: Arbitrary[(DeleteSalesFromNiPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[DeleteSalesFromNiPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryCountryOfConsumptionFromNiUserAnswersEntry: Arbitrary[(CountryOfConsumptionFromNiPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[CountryOfConsumptionFromNiPage.type]
+        value <- arbitrary[String].suchThat(_.nonEmpty).map(Json.toJson(_))
+      } yield (page, value)
+    }
+
   implicit lazy val arbitraryStartReturnUserAnswersEntry: Arbitrary[(StartReturnPage.type, JsValue)] =
     Arbitrary {
       for {

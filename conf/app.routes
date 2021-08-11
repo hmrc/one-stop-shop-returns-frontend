@@ -27,3 +27,33 @@ GET        /startReturn                        controllers.StartReturnController
 POST       /startReturn                        controllers.StartReturnController.onSubmit(mode: Mode = NormalMode)
 GET        /changeStartReturn                  controllers.StartReturnController.onPageLoad(mode: Mode = CheckMode)
 POST       /changeStartReturn                  controllers.StartReturnController.onSubmit(mode: Mode = CheckMode)
+
+GET        /countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = NormalMode)
+POST       /countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = NormalMode)
+GET        /changeCountryOfConsumptionFromNi                  controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = CheckMode)
+POST       /changeCountryOfConsumptionFromNi                  controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = CheckMode)
+
+GET        /deleteSalesFromNi                        controllers.DeleteSalesFromNiController.onPageLoad(mode: Mode = NormalMode)
+POST       /deleteSalesFromNi                        controllers.DeleteSalesFromNiController.onSubmit(mode: Mode = NormalMode)
+GET        /changeDeleteSalesFromNi                  controllers.DeleteSalesFromNiController.onPageLoad(mode: Mode = CheckMode)
+POST       /changeDeleteSalesFromNi                  controllers.DeleteSalesFromNiController.onSubmit(mode: Mode = CheckMode)
+
+GET        /netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = NormalMode)
+POST       /netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = NormalMode)
+GET        /changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = CheckMode)
+POST       /changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = CheckMode)
+
+GET        /soldGoodsFromNi                        controllers.SoldGoodsFromNiController.onPageLoad(mode: Mode = NormalMode)
+POST       /soldGoodsFromNi                        controllers.SoldGoodsFromNiController.onSubmit(mode: Mode = NormalMode)
+GET        /changeSoldGoodsFromNi                  controllers.SoldGoodsFromNiController.onPageLoad(mode: Mode = CheckMode)
+POST       /changeSoldGoodsFromNi                  controllers.SoldGoodsFromNiController.onSubmit(mode: Mode = CheckMode)
+
+GET        /vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = NormalMode)
+POST       /vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = NormalMode)
+GET        /changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = CheckMode)
+POST       /changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = CheckMode)
+
+GET        /vatRatesFromNi                        controllers.VatRatesFromNiController.onPageLoad(mode: Mode = NormalMode)
+POST       /vatRatesFromNi                        controllers.VatRatesFromNiController.onSubmit(mode: Mode = NormalMode)
+GET        /changeVatRatesFromNi                  controllers.VatRatesFromNiController.onPageLoad(mode: Mode = CheckMode)
+POST       /changeVatRatesFromNi                  controllers.VatRatesFromNiController.onSubmit(mode: Mode = CheckMode)
