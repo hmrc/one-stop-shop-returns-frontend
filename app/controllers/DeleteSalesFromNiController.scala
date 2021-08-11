@@ -18,8 +18,9 @@ package controllers
 
 import controllers.actions._
 import forms.DeleteSalesFromNiFormProvider
+
 import javax.inject.Inject
-import models.Mode
+import models.{Mode, Period}
 import pages.DeleteSalesFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -37,7 +38,7 @@ class DeleteSalesFromNiController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = cc.authAndGetData {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData {
     implicit request =>
 
       val preparedForm = request.userAnswers.get(DeleteSalesFromNiPage) match {
@@ -45,15 +46,15 @@ class DeleteSalesFromNiController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode))
+      Ok(view(preparedForm, mode, period))
   }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = cc.authAndGetData.async {
+  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData.async {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode))),
+          Future.successful(BadRequest(view(formWithErrors, mode, period))),
 
         value =>
           for {
