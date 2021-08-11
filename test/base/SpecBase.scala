@@ -63,7 +63,7 @@ trait SpecBase
     commencementDate      = LocalDate.now
   )
 
-  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, registration, lastUpdated = arbitraryInstant)
+  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, lastUpdated = arbitraryInstant)
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

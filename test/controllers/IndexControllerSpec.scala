@@ -36,91 +36,20 @@ class IndexControllerSpec extends SpecBase with MockitoSugar with Generators {
 
   "Index Controller" - {
 
-    "GET" - {
+    "must return OK and the correct view" in {
 
-      "when we already have UserAnswers set up for this user" - {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
-        "must return OK and the correct view" in {
+      running(application) {
+        val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+        val result = route(application, request).value
 
-          running(application) {
-            val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+        val view = application.injector.instanceOf[IndexView]
 
-            val result = route(application, request).value
+        status(result) mustEqual OK
 
-            val view = application.injector.instanceOf[IndexView]
-
-            status(result) mustEqual OK
-
-            contentAsString(result) mustEqual view()(request, messages(application)).toString
-          }
-        }
-      }
-
-      "when we do not already have User Answers for this user" - {
-
-        "and the user is registered" - {
-
-          "must create a UserAnswers, return OK and show the correct view" in {
-
-            val registration = arbitrary[Registration].sample.value
-
-            val mockConnector  = mock[RegistrationConnector]
-            val mockRepository = mock[SessionRepository]
-            when(mockConnector.get()(any())) thenReturn Future.successful(Some(registration))
-            when(mockRepository.set(any())) thenReturn Future.successful(true)
-
-            val application =
-              applicationBuilder(userAnswers = None)
-                .overrides(
-                  bind[RegistrationConnector].toInstance(mockConnector),
-                  bind[SessionRepository].toInstance(mockRepository)
-                )
-                .build()
-
-            running(application) {
-              val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
-
-              val result = route(application, request).value
-
-              val view = application.injector.instanceOf[IndexView]
-
-              status(result) mustEqual OK
-
-              contentAsString(result) mustEqual view()(request, messages(application)).toString
-              verify(mockRepository, times(1)).set(any())
-            }
-          }
-        }
-
-        "and the user is not registered" - {
-
-          "must redirect the user to Journey Recovery" in {
-
-            val mockConnector  = mock[RegistrationConnector]
-            val mockRepository = mock[SessionRepository]
-            when(mockConnector.get()(any())) thenReturn Future.successful(None)
-
-            val application =
-              applicationBuilder(userAnswers = None)
-                .overrides(
-                  bind[RegistrationConnector].toInstance(mockConnector),
-                  bind[SessionRepository].toInstance(mockRepository)
-                )
-                .build()
-
-            running(application) {
-              val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
-
-              val result = route(application, request).value
-
-              status(result) mustEqual SEE_OTHER
-              redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
-              verify(mockRepository, never).set(any())
-            }
-          }
-        }
+        contentAsString(result) mustEqual view()(request, messages(application)).toString
       }
     }
   }
