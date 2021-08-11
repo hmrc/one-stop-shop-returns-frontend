@@ -58,3 +58,54 @@ unauthorised.heading = You can’t access this service with this account
 
 notRegistered.title = notRegistered
 notRegistered.heading = notRegistered
+
+startReturn.title = startReturn
+startReturn.heading = startReturn
+startReturn.checkYourAnswersLabel = startReturn
+startReturn.error.required = Select yes if startReturn
+startReturn.change.hidden = StartReturn
+
+countryOfConsumptionFromNi.title = countryOfConsumptionFromNi
+countryOfConsumptionFromNi.heading = countryOfConsumptionFromNi
+countryOfConsumptionFromNi.checkYourAnswersLabel = countryOfConsumptionFromNi
+countryOfConsumptionFromNi.error.required = Enter countryOfConsumptionFromNi
+countryOfConsumptionFromNi.error.length = CountryOfConsumptionFromNi must be 100 characters or less
+countryOfConsumptionFromNi.change.hidden = CountryOfConsumptionFromNi
+
+deleteSalesFromNi.title = deleteSalesFromNi
+deleteSalesFromNi.heading = deleteSalesFromNi
+deleteSalesFromNi.checkYourAnswersLabel = deleteSalesFromNi
+deleteSalesFromNi.error.required = Select yes if deleteSalesFromNi
+deleteSalesFromNi.change.hidden = DeleteSalesFromNi
+
+netValueOfSalesFromNi.title = NetValueOfSalesFromNi
+netValueOfSalesFromNi.heading = NetValueOfSalesFromNi
+netValueOfSalesFromNi.checkYourAnswersLabel = NetValueOfSalesFromNi
+netValueOfSalesFromNi.error.nonNumeric = Enter your netValueOfSalesFromNi using numbers
+netValueOfSalesFromNi.error.required = Enter your netValueOfSalesFromNi
+netValueOfSalesFromNi.error.wholeNumber = Enter your netValueOfSalesFromNi using whole numbers
+netValueOfSalesFromNi.error.outOfRange = NetValueOfSalesFromNi must be between {0} and {1}
+netValueOfSalesFromNi.change.hidden = NetValueOfSalesFromNi
+
+soldGoodsFromNi.title = soldGoodsFromNi
+soldGoodsFromNi.heading = soldGoodsFromNi
+soldGoodsFromNi.checkYourAnswersLabel = soldGoodsFromNi
+soldGoodsFromNi.error.required = Select yes if soldGoodsFromNi
+soldGoodsFromNi.change.hidden = SoldGoodsFromNi
+
+vatOnSalesFromNi.title = VatOnSalesFromNi
+vatOnSalesFromNi.heading = VatOnSalesFromNi
+vatOnSalesFromNi.checkYourAnswersLabel = VatOnSalesFromNi
+vatOnSalesFromNi.error.nonNumeric = Enter your vatOnSalesFromNi using numbers
+vatOnSalesFromNi.error.required = Enter your vatOnSalesFromNi
+vatOnSalesFromNi.error.wholeNumber = Enter your vatOnSalesFromNi using whole numbers
+vatOnSalesFromNi.error.outOfRange = VatOnSalesFromNi must be between {0} and {1}
+vatOnSalesFromNi.change.hidden = VatOnSalesFromNi
+
+vatRatesFromNi.title = vatRatesFromNi
+vatRatesFromNi.heading = vatRatesFromNi
+vatRatesFromNi.option1 = Option 1
+vatRatesFromNi.option2 = Option 2
+vatRatesFromNi.checkYourAnswersLabel = vatRatesFromNi
+vatRatesFromNi.error.required = Select vatRatesFromNi
+vatRatesFromNi.change.hidden = VatRatesFromNi
