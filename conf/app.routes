@@ -28,10 +28,10 @@ POST       /startReturn                        controllers.StartReturnController
 GET        /changeStartReturn                  controllers.StartReturnController.onPageLoad(mode: Mode = CheckMode)
 POST       /changeStartReturn                  controllers.StartReturnController.onSubmit(mode: Mode = CheckMode)
 
-GET        /countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = NormalMode)
-POST       /countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = NormalMode)
-GET        /changeCountryOfConsumptionFromNi                  controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = CheckMode)
-POST       /changeCountryOfConsumptionFromNi                  controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = CheckMode)
+GET        /:period/countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeCountryOfConsumptionFromNi                  controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeCountryOfConsumptionFromNi                  controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = CheckMode, period: Period)
 
 GET        /deleteSalesFromNi                        controllers.DeleteSalesFromNiController.onPageLoad(mode: Mode = NormalMode)
 POST       /deleteSalesFromNi                        controllers.DeleteSalesFromNiController.onSubmit(mode: Mode = NormalMode)

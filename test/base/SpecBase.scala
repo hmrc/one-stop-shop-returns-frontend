@@ -18,8 +18,9 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.UserAnswers
-import models.registration.{ContactDetails, Registration, UkAddress, VatDetailSource, VatDetails}
+import models.{Period, Quarter, UserAnswers}
+import models.registration._
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -43,6 +44,7 @@ trait SpecBase
     with IntegrationPatience
     with Generators {
 
+  def period: Period               = Period(2021, Quarter.Q3)
   val userAnswersId: String        = "12345-credId"
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn                     = Vrn("123456789")

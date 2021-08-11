@@ -36,7 +36,7 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
   private val formProvider = new CountryOfConsumptionFromNiFormProvider()
   private val form = formProvider()
 
-  private lazy val countryOfConsumptionFromNiRoute = routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode).url
+  private lazy val countryOfConsumptionFromNiRoute = routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, period).url
 
   "CountryOfConsumptionFromNi Controller" - {
 
@@ -52,7 +52,7 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
         val view = application.injector.instanceOf[CountryOfConsumptionFromNiView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
       }
     }
 
@@ -70,7 +70,7 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode, period)(request, messages(application)).toString
       }
     }
 
@@ -115,7 +115,7 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
       }
     }
 
