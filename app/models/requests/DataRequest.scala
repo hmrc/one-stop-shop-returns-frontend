@@ -19,10 +19,12 @@ package models.requests
 import models.UserAnswers
 import play.api.mvc.{Request, WrappedRequest}
 import uk.gov.hmrc.auth.core.retrieve.Credentials
+import uk.gov.hmrc.domain.Vrn
 
 case class OptionalDataRequest[A] (
                                     request: Request[A],
                                     credentials: Credentials,
+                                    vrn: Vrn,
                                     userAnswers: Option[UserAnswers]
                                   ) extends WrappedRequest[A](request) {
 
@@ -32,6 +34,7 @@ case class OptionalDataRequest[A] (
 case class DataRequest[A] (
                             request: Request[A],
                             credentials: Credentials,
+                            vrn: Vrn,
                             userAnswers: UserAnswers
                           ) extends WrappedRequest[A](request) {
 

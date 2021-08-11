@@ -43,7 +43,7 @@ trait SpecBase
 
   val userAnswersId: String        = "12345-credId"
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
-
+  val vrn: Vrn                     = Vrn("123456789")
 
   val address: UkAddress = UkAddress("line 1", None, "town", None, "AA11 1AA")
   val registration: Registration = Registration(
