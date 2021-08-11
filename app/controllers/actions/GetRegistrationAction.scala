@@ -29,11 +29,11 @@ import utils.FutureSyntax._
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetRegistrationActionImpl @Inject()(
+class GetRegistrationAction @Inject()(
                                        val registrationRepository: RegistrationRepository,
                                        val registrationConnector: RegistrationConnector
                                      )(implicit val executionContext: ExecutionContext)
-  extends GetRegistrationAction {
+  extends ActionRefiner[IdentifierRequest, RegistrationRequest] {
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
     registrationRepository.get(request.userId) flatMap {
@@ -52,5 +52,3 @@ class GetRegistrationActionImpl @Inject()(
         }
     }
 }
-
-trait GetRegistrationAction extends ActionRefiner[IdentifierRequest, RegistrationRequest]

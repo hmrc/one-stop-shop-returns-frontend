@@ -37,7 +37,7 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
   class Harness(
                  repository: RegistrationRepository,
                  connector: RegistrationConnector
-               ) extends GetRegistrationActionImpl(repository, connector) {
+               ) extends GetRegistrationAction(repository, connector) {
     def callRefine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
       refine(request)
   }
