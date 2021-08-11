@@ -30,17 +30,18 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def actionBuilder: DefaultActionBuilder
   def sessionRepository: SessionRepository
   def identify: AuthenticatedIdentifierAction
+  def getRegistration: GetRegistrationAction
   def getData: DataRetrievalAction
   def requireData: DataRequiredAction
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
+  def authAndGetOptionalData: ActionBuilder[OptionalDataRequest, AnyContent] =
+    auth andThen getRegistration andThen getData
+
   def authAndGetData: ActionBuilder[DataRequest, AnyContent] =
     authAndGetOptionalData andThen requireData
-
-  def authAndGetOptionalData: ActionBuilder[OptionalDataRequest, AnyContent] =
-    auth andThen getData
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
@@ -53,6 +54,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                executionContext: ExecutionContext,
                                                                sessionRepository: SessionRepository,
                                                                identify: AuthenticatedIdentifierAction,
+                                                               getRegistration: GetRegistrationAction,
                                                                getData: DataRetrievalAction,
                                                                requireData: DataRequiredAction
                                                              ) extends AuthenticatedControllerComponents

@@ -76,6 +76,7 @@ trait SpecBase
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[AuthenticatedIdentifierAction].to[FakeIdentifierAction],
         bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers)),
+        bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration)),
         bind[Clock].toInstance(clockToBind)
       )
   }
