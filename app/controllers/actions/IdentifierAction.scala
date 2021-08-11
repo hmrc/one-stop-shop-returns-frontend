@@ -23,7 +23,9 @@ import models.requests.IdentifierRequest
 import play.api.mvc.Results._
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import utils.FutureSyntax._
@@ -44,10 +46,13 @@ class AuthenticatedIdentifierAction @Inject()(
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    authorised().retrieve(Retrievals.credentials) {
+    authorised().retrieve(Retrievals.credentials and Retrievals.allEnrolments) {
 
-      case Some(credentials) =>
-        Right(IdentifierRequest(request, credentials)).toFuture
+      case Some(credentials) ~ enrolments =>
+        findVrnFromEnrolments(enrolments) match {
+          case Some(vrn) => Right(IdentifierRequest(request, credentials, vrn)).toFuture
+          case None      => throw InsufficientEnrolments()
+        }
     } recoverWith {
       case _: NoActiveSession =>
         Left(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))).toFuture
@@ -55,4 +60,15 @@ class AuthenticatedIdentifierAction @Inject()(
         Left(Redirect(routes.UnauthorisedController.onPageLoad())).toFuture
     }
   }
+
+  private def findVrnFromEnrolments(enrolments: Enrolments): Option[Vrn] =
+    enrolments.enrolments.find(_.key == "HMRC-MTD-VAT")
+      .flatMap {
+        enrolment =>
+          enrolment.identifiers.find(_.key == "VRN").map(e => Vrn(e.value))
+      } orElse enrolments.enrolments.find(_.key == "HMCE-VATDEC-ORG")
+      .flatMap {
+        enrolment =>
+          enrolment.identifiers.find(_.key == "VATRegNo").map(e => Vrn(e.value))
+      }
 }

@@ -22,6 +22,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.auth.core.retrieve.Credentials
+import uk.gov.hmrc.domain.Vrn
 import utils.FutureSyntax._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,5 +33,9 @@ class FakeIdentifierAction extends AuthenticatedIdentifierAction(
 )(ExecutionContext.Implicits.global) {
 
   override def refine[A](request: Request[A]): Future[Either[Result, IdentifierRequest[A]]] =
-    Right(IdentifierRequest(request, Credentials("12345-credId", "GGW"))).toFuture
+    Right(IdentifierRequest(
+      request,
+      Credentials("12345-credId", "GGW"),
+      Vrn("123456789")
+    )).toFuture
 }
