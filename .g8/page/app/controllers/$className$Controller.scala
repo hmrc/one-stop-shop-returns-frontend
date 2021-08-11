@@ -12,6 +12,8 @@ class $className$Controller @Inject()(
                                        view: $className$View
                                      ) extends FrontendBaseController with I18nSupport {
 
+  protected val controllerComponents: MessagesControllerComponents = cc
+
   def onPageLoad: Action[AnyContent] = cc.authAndGetData {
     implicit request =>
       Ok(view())

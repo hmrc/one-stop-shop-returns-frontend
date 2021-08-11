@@ -16,22 +16,47 @@
 
 package controllers
 
+import connectors.RegistrationConnector
 import controllers.actions.AuthenticatedControllerComponents
+import models.UserAnswers
+import models.requests.OptionalDataRequest
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax._
 import views.html.IndexView
 
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 class IndexController @Inject()(
                                  cc: AuthenticatedControllerComponents,
+                                 registrationConnector: RegistrationConnector,
                                  view: IndexView
-                               ) extends FrontendBaseController with I18nSupport {
+                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.auth { implicit request =>
-    Ok(view())
+  def onPageLoad: Action[AnyContent] = cc.authAndGetOptionalData.async {
+    implicit request =>
+      if (request.userAnswers.isDefined) {
+        Ok(view()).toFuture
+      } else {
+        getAndCacheRegistrationDetails
+      }
   }
+
+  private def getAndCacheRegistrationDetails(
+                                              implicit request: OptionalDataRequest[_],
+                                              hc: HeaderCarrier
+                                            ): Future[Result] =
+    registrationConnector.get.flatMap {
+      case Some(registration) =>
+        val answers = UserAnswers(request.userId, registration, Json.obj())
+        cc.sessionRepository.set(answers).map(_ => Ok(view()))
+      case None =>
+        Redirect(routes.NotRegisteredController.onPageLoad()).toFuture
+    }
 }

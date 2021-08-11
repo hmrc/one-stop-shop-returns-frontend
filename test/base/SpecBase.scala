@@ -18,6 +18,7 @@ package base
 
 import controllers.actions._
 import models.UserAnswers
+import models.registration.{ContactDetails, Registration, UkAddress, VatDetailSource, VatDetails}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -28,6 +29,9 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.retrieve.Credentials
+import uk.gov.hmrc.domain.Vrn
+
+import java.time.LocalDate
 
 trait SpecBase
   extends AnyFreeSpec
@@ -40,7 +44,18 @@ trait SpecBase
   val userAnswersId: String        = "12345-credId"
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
 
-  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId)
+
+  val address: UkAddress = UkAddress("line 1", None, "town", None, "AA11 1AA")
+  val registration: Registration = Registration(
+    vrn                   = Vrn("123456789"),
+    registeredCompanyName = "name",
+    vatDetails            = VatDetails(LocalDate.of(2000, 1, 1), address, false, VatDetailSource.Mixed),
+    euRegistrations       = Nil,
+    contactDetails        = ContactDetails("name", "0123 456789", "email@example.com"),
+    commencementDate      = LocalDate.now
+  )
+
+  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, registration)
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
