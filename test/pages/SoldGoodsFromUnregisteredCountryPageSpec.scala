@@ -30,16 +30,16 @@ class SoldGoodsFromUnregisteredCountryPageSpec extends PageBehaviours {
       "must go to Sold Goods From NI when the answer is yes" in {
         forAll(arbitrary[Period]) {
           period =>
-            SoldGoodsFromUnregisteredCountryPage.navigate(period, startReturn = true)
+            SoldGoodsFromUnregisteredCountryPage.navigate(period, soldGoods = true)
               .mustEqual(routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period))
         }
       }
 
-      "must go to Index when the answer is no" in {
+      "must go to Contact HMRC when the answer is no" in {
         forAll(arbitrary[Period]) {
           period =>
-            SoldGoodsFromUnregisteredCountryPage.navigate(period, startReturn = false)
-              .mustEqual(routes.IndexController.onPageLoad())
+            SoldGoodsFromUnregisteredCountryPage.navigate(period, soldGoods = false)
+              .mustEqual(routes.ContactHmrcController.onPageLoad(period))
         }
       }
     }

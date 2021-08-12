@@ -27,11 +27,11 @@ class StartReturnPageSpec extends PageBehaviours {
 
     ".navigate" - {
 
-      "must go to Sold Goods From NI when the answer is yes" in {
+      "must go to Sold Goods From Unregistered Country when the answer is yes" in {
         forAll(arbitrary[Period]) {
           period =>
             StartReturnPage.navigate(period, startReturn = true)
-              .mustEqual(routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period))
+              .mustEqual(routes.SoldGoodsFromUnregisteredCountryController.onPageLoad(period))
         }
       }
 

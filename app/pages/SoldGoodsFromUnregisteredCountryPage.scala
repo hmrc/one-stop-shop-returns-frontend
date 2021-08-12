@@ -27,10 +27,10 @@ case object SoldGoodsFromUnregisteredCountryPage extends QuestionPage[Boolean] {
 
   override def toString: String = "soldGoodsFromUnregisteredCountry"
 
-  def navigate(period: Period, startReturn: Boolean): Call =
-    if (startReturn) {
+  def navigate(period: Period, soldGoods: Boolean): Call =
+    if (soldGoods) {
       routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period)
     } else {
-      routes.IndexController.onPageLoad()
+      routes.ContactHmrcController.onPageLoad(period)
     }
 }

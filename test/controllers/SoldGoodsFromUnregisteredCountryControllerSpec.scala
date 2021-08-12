@@ -63,7 +63,7 @@ class SoldGoodsFromUnregisteredCountryControllerSpec extends SpecBase with Mocki
         val expectedAnswers = emptyUserAnswers.set(SoldGoodsFromUnregisteredCountryPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual SoldGoodsFromUnregisteredCountryPage.navigate(period, startReturn = true).url
+        redirectLocation(result).value mustEqual SoldGoodsFromUnregisteredCountryPage.navigate(period, soldGoods = true).url
       }
     }
 
