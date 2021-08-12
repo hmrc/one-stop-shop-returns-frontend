@@ -16,7 +16,6 @@
 
 package models
 
-import models.registration.Registration
 import play.api.libs.json._
 import queries.{Gettable, Settable}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
@@ -26,6 +25,7 @@ import scala.util.{Failure, Success, Try}
 
 final case class UserAnswers(
                               id: String,
+                              period: Period,
                               data: JsObject = Json.obj(),
                               lastUpdated: Instant = Instant.now
                             ) {
@@ -74,6 +74,7 @@ object UserAnswers {
 
     (
       (__ \ "_id").read[String] and
+      (__ \ "period").read[Period] and
       (__ \ "data").read[JsObject] and
       (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
     ) (UserAnswers.apply _)
@@ -85,6 +86,7 @@ object UserAnswers {
 
     (
       (__ \ "_id").write[String] and
+      (__ \ "period").write[Period] and
       (__ \ "data").write[JsObject] and
       (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
     ) (unlift(UserAnswers.unapply))
