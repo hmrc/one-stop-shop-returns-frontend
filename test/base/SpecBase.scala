@@ -18,7 +18,7 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.{Period, Quarter, UserAnswers}
+import models.{Index, Period, Quarter, UserAnswers}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -44,6 +44,7 @@ trait SpecBase
     with IntegrationPatience
     with Generators {
 
+  val index: Index                 = Index(0)
   def period: Period               = Period(2021, Quarter.Q3)
   val userAnswersId: String        = "12345-credId"
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")

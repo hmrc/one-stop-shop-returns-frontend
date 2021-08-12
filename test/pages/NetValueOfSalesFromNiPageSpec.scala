@@ -16,16 +16,19 @@
 
 package pages
 
+import models.Index
 import pages.behaviours.PageBehaviours
 
 class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
 
+  private val index = Index(0)
+
   "NetValueOfSalesFromNiPage" - {
 
-    beRetrievable[Int](NetValueOfSalesFromNiPage)
+    beRetrievable[Int](NetValueOfSalesFromNiPage(index, index))
 
-    beSettable[Int](NetValueOfSalesFromNiPage)
+    beSettable[Int](NetValueOfSalesFromNiPage(index, index))
 
-    beRemovable[Int](NetValueOfSalesFromNiPage)
+    beRemovable[Int](NetValueOfSalesFromNiPage(index, index))
   }
 }

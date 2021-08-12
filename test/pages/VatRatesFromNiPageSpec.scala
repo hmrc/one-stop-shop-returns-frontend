@@ -16,17 +16,19 @@
 
 package pages
 
-import models.VatRatesFromNi
+import models.{Index, VatRatesFromNi}
 import pages.behaviours.PageBehaviours
 
 class VatRatesFromNiPageSpec extends PageBehaviours {
 
+  private val index = Index(0)
+
   "VatRatesFromNiPage" - {
 
-    beRetrievable[Set[VatRatesFromNi]](VatRatesFromNiPage)
+    beRetrievable[Set[VatRatesFromNi]](VatRatesFromNiPage(index))
 
-    beSettable[Set[VatRatesFromNi]](VatRatesFromNiPage)
+    beSettable[Set[VatRatesFromNi]](VatRatesFromNiPage(index))
 
-    beRemovable[Set[VatRatesFromNi]](VatRatesFromNiPage)
+    beRemovable[Set[VatRatesFromNi]](VatRatesFromNiPage(index))
   }
 }

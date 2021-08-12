@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
-package pages
+package models
 
-import controllers.routes
-import models.{Index, UserAnswers}
-import pages.PageConstants._
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import play.api.mvc.PathBindable
 
-case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Int] {
+case class Index(position: Int) {
+  val display: Int = position + 1
+}
 
-  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ salesAtVatRate \ vatRateIndex.position \ toString
+object Index {
 
-  override def toString: String = "vatOnSales"
+  implicit def indexPathBindable(implicit intBinder: PathBindable[Int]): PathBindable[Index] = new PathBindable[Index] {
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    override def bind(key: String, value: String): Either[String, Index] =
+      intBinder.bind(key, value) match {
+        case Right(x) if x > 0 => Right(Index(x - 1))
+        case _                 => Left("Index binding failed")
+      }
+
+    override def unbind(key: String, value: Index): String =
+      intBinder.unbind(key, value.position + 1)
+  }
 }
