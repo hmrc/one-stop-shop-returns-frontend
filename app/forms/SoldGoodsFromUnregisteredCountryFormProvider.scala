@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-package pages
+package forms
 
-import controllers.routes
-import models.{NormalMode, Period}
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import javax.inject.Inject
 
-case object StartReturnPage extends QuestionPage[Boolean] {
+import forms.mappings.Mappings
+import play.api.data.Form
 
-  override def path: JsPath = JsPath \ toString
+class SoldGoodsFromUnregisteredCountryFormProvider @Inject() extends Mappings {
 
-  override def toString: String = "startReturn"
-
-  def navigate(period: Period, startReturn: Boolean): Call =
-    if (startReturn) {
-      routes.SoldGoodsFromUnregisteredCountryController.onPageLoad(period)
-    } else {
-      routes.IndexController.onPageLoad()
-    }
+  def apply(): Form[Boolean] =
+    Form(
+      "value" -> boolean("soldGoodsFromUnregisteredCountry.error.required")
+    )
 }

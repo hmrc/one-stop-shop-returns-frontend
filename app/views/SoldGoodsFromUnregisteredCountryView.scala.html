@@ -1,0 +1,30 @@
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukRadios: GovukRadios,
+        govukButton: GovukButton
+)
+
+@(form: Form[_], period: Period)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = title(form, messages("soldGoodsFromUnregisteredCountry.title"))) {
+
+    @formHelper(action = routes.SoldGoodsFromUnregisteredCountryController.onSubmit(period), 'autoComplete -> "off") {
+
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
+        }
+
+        @govukRadios(
+            RadiosViewModel.yesNo(
+                field = form("value"),
+                legend = LegendViewModel(messages("soldGoodsFromUnregisteredCountry.heading")).asPageHeading()
+            )
+        )
+
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
+        )
+    }
+}

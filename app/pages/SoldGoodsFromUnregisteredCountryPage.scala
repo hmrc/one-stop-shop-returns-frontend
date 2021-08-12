@@ -21,16 +21,16 @@ import models.{NormalMode, Period}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object StartReturnPage extends QuestionPage[Boolean] {
+case object SoldGoodsFromUnregisteredCountryPage extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "startReturn"
+  override def toString: String = "soldGoodsFromUnregisteredCountry"
 
-  def navigate(period: Period, startReturn: Boolean): Call =
-    if (startReturn) {
-      routes.SoldGoodsFromUnregisteredCountryController.onPageLoad(period)
+  def navigate(period: Period, soldGoods: Boolean): Call =
+    if (soldGoods) {
+      routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period)
     } else {
-      routes.IndexController.onPageLoad()
+      routes.ContactHmrcController.onPageLoad(period)
     }
 }
