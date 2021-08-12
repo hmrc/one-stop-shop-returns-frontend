@@ -49,7 +49,7 @@ trait UserAnswersGenerator extends TryValues {
           case _   => Gen.mapOf(oneOf(generators))
         }
       } yield UserAnswers (
-        id           = id,
+        userId           = id,
         period       = Period(2021, Q3),
         data         = data.foldLeft(Json.obj()) {
           case (obj, (path, value)) =>

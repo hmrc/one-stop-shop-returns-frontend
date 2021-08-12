@@ -47,34 +47,40 @@ class SessionRepository @Inject()(
         IndexOptions()
           .name("lastUpdatedIdx")
           .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
+      ),
+      IndexModel(
+        Indexes.ascending("userId", "period"),
+        IndexOptions()
+          .name("userIdAndPeriodIdx")
+          .unique(true)
       )
     )
   ) {
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  private def byId(id: String): Bson = Filters.equal("_id", id)
+  private def byUserId(userId: String): Bson = Filters.equal("userId", userId)
 
-  private def byIdAndPeriod(id: String, period: Period): Bson =
+  private def byUserIdAndPeriod(userId: String, period: Period): Bson =
     Filters.and(
-      Filters.equal("_id", id),
+      Filters.equal("userId", userId),
       Filters.equal("period", period.toBson(legacyNumbers = false))
     )
 
-  def keepAlive(id: String): Future[Boolean] =
+  def keepAlive(userId: String): Future[Boolean] =
     collection
       .updateMany(
-        filter = byId(id),
+        filter = byUserId(userId),
         update = Updates.set("lastUpdated", Instant.now(clock)),
       )
       .toFuture
       .map(_ => true)
 
-  def get(id: String, period: Period): Future[Option[UserAnswers]] =
-    keepAlive(id).flatMap {
+  def get(userId: String, period: Period): Future[Option[UserAnswers]] =
+    keepAlive(userId).flatMap {
       _ =>
         collection
-          .find(byIdAndPeriod(id, period))
+          .find(byUserIdAndPeriod(userId, period))
           .headOption
     }
 
@@ -84,7 +90,7 @@ class SessionRepository @Inject()(
 
     collection
       .replaceOne(
-        filter      = byIdAndPeriod(updatedAnswers.id, answers.period),
+        filter      = byUserIdAndPeriod(updatedAnswers.userId, answers.period),
         replacement = updatedAnswers,
         options     = ReplaceOptions().upsert(true)
       )

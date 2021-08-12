@@ -4,7 +4,6 @@ import config.FrontendAppConfig
 import generators.Generators
 import models.Quarter.{Q3, Q4}
 import models.{Period, UserAnswers}
-import models.registration.Registration
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
 import org.scalacheck.Arbitrary.arbitrary
@@ -13,7 +12,6 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.libs.json.Json
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.{Clock, Instant, ZoneId}
@@ -49,7 +47,7 @@ class SessionRepositorySpec
       val expectedResult = answers copy (lastUpdated = instant)
 
       val setResult     = repository.set(answers).futureValue
-      val updatedRecord = find(Filters.equal("_id", answers.id)).futureValue.headOption.value
+      val updatedRecord = find(Filters.equal("userId", answers.userId)).futureValue.headOption.value
 
       setResult mustEqual true
       updatedRecord mustEqual expectedResult
@@ -67,7 +65,7 @@ class SessionRepositorySpec
         insert(answers).futureValue
         insert(otherAnswers).futureValue
 
-        val result         = repository.get(answers.id, Period(2021, Q3)).futureValue
+        val result         = repository.get(answers.userId, Period(2021, Q3)).futureValue
         val expectedResult = answers copy (lastUpdated = instant)
 
         result.value mustEqual expectedResult
@@ -106,7 +104,7 @@ class SessionRepositorySpec
         )
 
         result mustEqual true
-        val updatedAnswers = find(Filters.equal("_id", "id")).futureValue
+        val updatedAnswers = find(Filters.equal("userId", "id")).futureValue
         updatedAnswers must contain theSameElementsAs expectedUpdatedAnswers
       }
     }
