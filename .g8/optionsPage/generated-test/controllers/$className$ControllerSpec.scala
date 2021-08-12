@@ -17,7 +17,7 @@ import scala.concurrent.Future
 
 class $className$ControllerSpec extends SpecBase with MockitoSugar {
 
-  private lazy val $className;format="decap"$Route = routes.$className$Controller.onPageLoad(NormalMode).url
+  private lazy val $className;format="decap"$Route = routes.$className$Controller.onPageLoad(NormalMode, period).url
 
   private val formProvider = new $className$FormProvider()
   private val form = formProvider()
@@ -36,7 +36,7 @@ class $className$ControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[$className$View]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
       }
     }
 
@@ -54,7 +54,7 @@ class $className$ControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill($className$.values.head), NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill($className$.values.head), NormalMode, period)(request, messages(application)).toString
       }
     }
 
@@ -99,7 +99,7 @@ class $className$ControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
       }
     }
 

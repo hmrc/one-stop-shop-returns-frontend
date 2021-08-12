@@ -3,7 +3,7 @@
         govukButton: GovukButton
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(period: Period)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("$className;format="decap"$.title"))) {
 
