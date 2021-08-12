@@ -19,24 +19,18 @@ package controllers
 import base.SpecBase
 import forms.StartReturnFormProvider
 import models.NormalMode
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.StartReturnPage
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
 import views.html.StartReturnView
-
-import scala.concurrent.Future
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new StartReturnFormProvider()
   private val form = formProvider()
 
-  private lazy val startReturnRoute = routes.StartReturnController.onPageLoad(NormalMode, period).url
+  private lazy val startReturnRoute = routes.StartReturnController.onPageLoad(period).url
 
   "StartReturn Controller" - {
 
@@ -52,38 +46,13 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[StartReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, period)(request, messages(application)).toString
       }
     }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
+    "must redirect to the next page when valid data is submitted" in {
 
-      val userAnswers = emptyUserAnswers.set(StartReturnPage, true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, startReturnRoute)
-
-        val view = application.injector.instanceOf[StartReturnView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
-      }
-    }
-
-    "must save the answer and redirect to the next page when valid data is submitted" in {
-
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-          .build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request =
@@ -94,8 +63,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val expectedAnswers = emptyUserAnswers.set(StartReturnPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual StartReturnPage.navigate(NormalMode, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+        redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = true).url
       }
     }
 
@@ -115,37 +83,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
-      }
-    }
-
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, startReturnRoute)
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, startReturnRoute)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        contentAsString(result) mustEqual view(boundForm, period)(request, messages(application)).toString
       }
     }
   }

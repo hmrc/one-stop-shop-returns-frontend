@@ -23,10 +23,8 @@ GET         /notRegistered                       controllers.NotRegisteredContro
 
 GET         /:period/check-your-answers                          controllers.CheckYourAnswersController.onPageLoad(period: Period)
 
-GET         /:period/startReturn                        controllers.StartReturnController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST        /:period/startReturn                        controllers.StartReturnController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET         /:period/changeStartReturn                  controllers.StartReturnController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST        /:period/changeStartReturn                  controllers.StartReturnController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET         /:period/startReturn                        controllers.StartReturnController.onPageLoad(period: Period)
+POST        /:period/startReturn                        controllers.StartReturnController.onSubmit(period: Period)
 
 GET         /:period/countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST        /:period/countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)
