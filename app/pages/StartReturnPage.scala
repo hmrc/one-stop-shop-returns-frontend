@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.UserAnswers
+import models.{NormalMode, Period}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -27,6 +27,10 @@ case object StartReturnPage extends QuestionPage[Boolean] {
 
   override def toString: String = "startReturn"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+  def navigate(period: Period, startReturn: Boolean): Call =
+    if (startReturn) {
+      routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period)
+    } else {
+      routes.IndexController.onPageLoad()
+    }
 }

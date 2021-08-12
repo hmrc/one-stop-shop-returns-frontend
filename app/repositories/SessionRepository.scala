@@ -17,11 +17,12 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.UserAnswers
+import models.{Period, UserAnswers}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.Codecs.JsonOps
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
@@ -46,28 +47,40 @@ class SessionRepository @Inject()(
         IndexOptions()
           .name("lastUpdatedIdx")
           .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
+      ),
+      IndexModel(
+        Indexes.ascending("userId", "period"),
+        IndexOptions()
+          .name("userIdAndPeriodIdx")
+          .unique(true)
       )
     )
   ) {
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  private def byId(id: String): Bson = Filters.equal("_id", id)
+  private def byUserId(userId: String): Bson = Filters.equal("userId", userId)
 
-  def keepAlive(id: String): Future[Boolean] =
+  private def byUserIdAndPeriod(userId: String, period: Period): Bson =
+    Filters.and(
+      Filters.equal("userId", userId),
+      Filters.equal("period", period.toBson(legacyNumbers = false))
+    )
+
+  def keepAlive(userId: String): Future[Boolean] =
     collection
-      .updateOne(
-        filter = byId(id),
+      .updateMany(
+        filter = byUserId(userId),
         update = Updates.set("lastUpdated", Instant.now(clock)),
       )
       .toFuture
       .map(_ => true)
 
-  def get(id: String): Future[Option[UserAnswers]] =
-    keepAlive(id).flatMap {
+  def get(userId: String, period: Period): Future[Option[UserAnswers]] =
+    keepAlive(userId).flatMap {
       _ =>
         collection
-          .find(byId(id))
+          .find(byUserIdAndPeriod(userId, period))
           .headOption
     }
 
@@ -77,17 +90,11 @@ class SessionRepository @Inject()(
 
     collection
       .replaceOne(
-        filter      = byId(updatedAnswers.id),
+        filter      = byUserIdAndPeriod(updatedAnswers.userId, answers.period),
         replacement = updatedAnswers,
         options     = ReplaceOptions().upsert(true)
       )
       .toFuture
       .map(_ => true)
   }
-
-  def clear(id: String): Future[Boolean] =
-    collection
-      .deleteOne(byId(id))
-      .toFuture
-      .map(_ => true)
 }

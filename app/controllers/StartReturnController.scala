@@ -18,16 +18,15 @@ package controllers
 
 import controllers.actions._
 import forms.StartReturnFormProvider
-
-import javax.inject.Inject
-import models.{Mode, Period}
+import models.Period
 import pages.StartReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.StartReturnView
 
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class StartReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -38,29 +37,20 @@ class StartReturnController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.auth {
     implicit request =>
-
-      val preparedForm = request.userAnswers.get(StartReturnPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
-
-      Ok(view(preparedForm, mode, period))
+      Ok(view(form, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData.async {
+  def onSubmit(period: Period): Action[AnyContent] = cc.auth {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          BadRequest(view(formWithErrors, period)),
 
         value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(StartReturnPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(StartReturnPage.navigate(mode, updatedAnswers))
+          Redirect(StartReturnPage.navigate(period, value))
       )
   }
 }

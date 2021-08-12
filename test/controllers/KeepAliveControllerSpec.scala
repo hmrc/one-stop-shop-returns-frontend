@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{never, times, verify, when}
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -31,51 +31,24 @@ class KeepAliveControllerSpec extends SpecBase with MockitoSugar {
 
   "keepAlive" - {
 
-    "when the user has answered some questions" - {
+    "must keep the answers alive and return OK" in {
 
-      "must keep the answers alive and return OK" in {
+      val mockSessionRepository = mock[SessionRepository]
+      when(mockSessionRepository.keepAlive(any())) thenReturn Future.successful(true)
 
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.keepAlive(any())) thenReturn Future.successful(true)
+      val application =
+        applicationBuilder(Some(emptyUserAnswers))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .build()
 
-        val application =
-          applicationBuilder(Some(emptyUserAnswers))
-            .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-            .build()
+      running(application) {
 
-        running(application) {
+        val request = FakeRequest(GET, routes.KeepAliveController.keepAlive().url)
 
-          val request = FakeRequest(GET, routes.KeepAliveController.keepAlive().url)
+        val result = route(application, request).value
 
-          val result = route(application, request).value
-
-          status(result) mustEqual OK
-          verify(mockSessionRepository, times(1)).keepAlive(emptyUserAnswers.id)
-        }
-      }
-    }
-
-    "when the user has not answered any questions" - {
-
-      "must return OK" in {
-
-        val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.keepAlive(any())) thenReturn Future.successful(true)
-
-        val application =
-          applicationBuilder(None)
-            .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-            .build()
-
-        running(application) {
-
-          val request = FakeRequest(GET, routes.KeepAliveController.keepAlive().url)
-
-          val result = route(application, request).value
-
-          status(result) mustEqual OK
-          verify(mockSessionRepository, never()).keepAlive(any())
-        }
+        status(result) mustEqual OK
+        verify(mockSessionRepository, times(1)).keepAlive(emptyUserAnswers.userId)
       }
     }
   }

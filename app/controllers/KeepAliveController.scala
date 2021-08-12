@@ -21,7 +21,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class KeepAliveController @Inject()(
                                      cc: AuthenticatedControllerComponents
@@ -29,13 +29,10 @@ class KeepAliveController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def keepAlive: Action[AnyContent] = cc.authAndGetOptionalData.async {
+  def keepAlive: Action[AnyContent] = cc.auth.async {
     implicit request =>
-      request.userAnswers
-        .map {
-          answers =>
-            cc.sessionRepository.keepAlive(answers.id).map(_ => Ok)
-        }
-        .getOrElse(Future.successful(Ok))
+      cc.sessionRepository
+        .keepAlive(request.userId)
+        .map(_ => Ok)
   }
 }

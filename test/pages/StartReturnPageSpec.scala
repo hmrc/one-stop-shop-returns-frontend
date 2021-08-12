@@ -16,16 +16,32 @@
 
 package pages
 
+import controllers.routes
+import models.{NormalMode, Period}
+import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
 class StartReturnPageSpec extends PageBehaviours {
 
   "StartReturnPage" - {
 
-    beRetrievable[Boolean](StartReturnPage)
+    ".navigate" - {
 
-    beSettable[Boolean](StartReturnPage)
+      "must go to Sold Goods From NI when the answer is yes" in {
+        forAll(arbitrary[Period]) {
+          period =>
+            StartReturnPage.navigate(period, startReturn = true)
+              .mustEqual(routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period))
+        }
+      }
 
-    beRemovable[Boolean](StartReturnPage)
+      "must go to Index when the answer is no" in {
+        forAll(arbitrary[Period]) {
+          period =>
+            StartReturnPage.navigate(period, startReturn = false)
+              .mustEqual(routes.IndexController.onPageLoad())
+        }
+      }
+    }
   }
 }

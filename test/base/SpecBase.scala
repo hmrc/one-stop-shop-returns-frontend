@@ -63,7 +63,7 @@ trait SpecBase
     commencementDate      = LocalDate.now
   )
 
-  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, lastUpdated = arbitraryInstant)
+  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
@@ -75,7 +75,7 @@ trait SpecBase
       .overrides(
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[AuthenticatedIdentifierAction].to[FakeIdentifierAction],
-        bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers)),
+        bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
         bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration)),
         bind[Clock].toInstance(clockToBind)
       )

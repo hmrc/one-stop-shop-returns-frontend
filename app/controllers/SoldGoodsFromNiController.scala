@@ -20,7 +20,7 @@ import controllers.actions._
 import forms.SoldGoodsFromNiFormProvider
 
 import javax.inject.Inject
-import models.{Mode, Period}
+import models.{Mode, Period, UserAnswers}
 import pages.SoldGoodsFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -38,10 +38,10 @@ class SoldGoodsFromNiController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(SoldGoodsFromNiPage) match {
+      val preparedForm = request.userAnswers.getOrElse(UserAnswers(request.userId, period)).get(SoldGoodsFromNiPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -49,7 +49,7 @@ class SoldGoodsFromNiController @Inject()(
       Ok(view(preparedForm, mode, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData.async {
+  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(
@@ -58,7 +58,7 @@ class SoldGoodsFromNiController @Inject()(
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldGoodsFromNiPage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.getOrElse(UserAnswers(request.userId, period)).set(SoldGoodsFromNiPage, value))
             _              <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(SoldGoodsFromNiPage.navigate(mode, updatedAnswers))
       )

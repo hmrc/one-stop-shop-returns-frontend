@@ -16,16 +16,26 @@
 
 package controllers.actions
 
-import models.UserAnswers
-import models.requests.{IdentifierRequest, OptionalDataRequest, RegistrationRequest}
+import models.{Period, UserAnswers}
+import models.requests.{OptionalDataRequest, RegistrationRequest}
+import org.scalatestplus.mockito.MockitoSugar.mock
+import repositories.SessionRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers]) extends DataRetrievalAction {
+class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers])
+  extends DataRetrievalAction(
+    mock[Period],
+    mock[SessionRepository]
+  )(ExecutionContext.Implicits.global) {
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] =
     Future(OptionalDataRequest(request.request, request.credentials, request.vrn, request.registration, dataToReturn))
+}
 
-  override protected implicit val executionContext: ExecutionContext =
-    scala.concurrent.ExecutionContext.Implicits.global
+class FakeDataRetrievalActionProvider(dataToReturn: Option[UserAnswers])
+  extends DataRetrievalActionProvider(mock[SessionRepository])(ExecutionContext.Implicits.global) {
+
+  override def apply(period: Period): DataRetrievalAction =
+    new FakeDataRetrievalAction(dataToReturn)
 }

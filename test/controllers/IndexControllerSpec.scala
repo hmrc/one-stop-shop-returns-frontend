@@ -17,20 +17,11 @@
 package controllers
 
 import base.SpecBase
-import connectors.RegistrationConnector
 import generators.Generators
-import models.registration.Registration
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{never, times, verify, when}
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
 import views.html.IndexView
-
-import scala.concurrent.Future
 
 class IndexControllerSpec extends SpecBase with MockitoSugar with Generators {
 

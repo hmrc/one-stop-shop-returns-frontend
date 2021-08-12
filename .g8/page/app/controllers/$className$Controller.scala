@@ -2,6 +2,7 @@ package controllers
 
 import controllers.actions._
 import javax.inject.Inject
+import models.Period
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -14,8 +15,8 @@ class $className$Controller @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetData {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      Ok(view())
+      Ok(view(period))
   }
 }

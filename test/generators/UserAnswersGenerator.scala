@@ -16,6 +16,7 @@
 
 package generators
 
+import models.Quarter.Q3
 import models.UserAnswers
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
@@ -48,7 +49,8 @@ trait UserAnswersGenerator extends TryValues {
           case _   => Gen.mapOf(oneOf(generators))
         }
       } yield UserAnswers (
-        id           = id,
+        userId           = id,
+        period       = Period(2021, Q3),
         data         = data.foldLeft(Json.obj()) {
           case (obj, (path, value)) =>
             obj.setObject(path.path, value).get
