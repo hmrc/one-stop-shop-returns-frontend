@@ -16,16 +16,19 @@
 
 package pages
 
+import models.Index
 import pages.behaviours.PageBehaviours
 
 class DeleteSalesFromNiPageSpec extends PageBehaviours {
 
+  private val index = Index(0)
+
   "DeleteSalesFromNiPage" - {
 
-    beRetrievable[Boolean](DeleteSalesFromNiPage)
+    beRetrievable[Boolean](DeleteSalesFromNiPage(index))
 
-    beSettable[Boolean](DeleteSalesFromNiPage)
+    beSettable[Boolean](DeleteSalesFromNiPage(index))
 
-    beRemovable[Boolean](DeleteSalesFromNiPage)
+    beRemovable[Boolean](DeleteSalesFromNiPage(index))
   }
 }

@@ -16,28 +16,29 @@
 
 package generators
 
+import models.Index
 import org.scalacheck.Arbitrary
 import pages._
 
 trait PageGenerators {
 
-  implicit lazy val arbitraryVatRatesFromNiPage: Arbitrary[VatRatesFromNiPage.type] =
-    Arbitrary(VatRatesFromNiPage)
+  implicit lazy val arbitraryVatRatesFromNiPage: Arbitrary[VatRatesFromNiPage] =
+    Arbitrary(VatRatesFromNiPage(Index(0)))
 
-  implicit lazy val arbitraryVatOnSalesFromNiPage: Arbitrary[VatOnSalesFromNiPage.type] =
-    Arbitrary(VatOnSalesFromNiPage)
+  implicit lazy val arbitraryVatOnSalesFromNiPage: Arbitrary[VatOnSalesFromNiPage] =
+    Arbitrary(VatOnSalesFromNiPage(Index(0), Index(0)))
 
   implicit lazy val arbitrarySoldGoodsFromNiPage: Arbitrary[SoldGoodsFromNiPage.type] =
     Arbitrary(SoldGoodsFromNiPage)
 
-  implicit lazy val arbitraryNetValueOfSalesFromNiPage: Arbitrary[NetValueOfSalesFromNiPage.type] =
-    Arbitrary(NetValueOfSalesFromNiPage)
+  implicit lazy val arbitraryNetValueOfSalesFromNiPage: Arbitrary[NetValueOfSalesFromNiPage] =
+    Arbitrary(NetValueOfSalesFromNiPage(Index(0), Index(0)))
 
-  implicit lazy val arbitraryDeleteSalesFromNiPage: Arbitrary[DeleteSalesFromNiPage.type] =
-    Arbitrary(DeleteSalesFromNiPage)
+  implicit lazy val arbitraryDeleteSalesFromNiPage: Arbitrary[DeleteSalesFromNiPage] =
+    Arbitrary(DeleteSalesFromNiPage(Index(0)))
 
-  implicit lazy val arbitraryCountryOfConsumptionFromNiPage: Arbitrary[CountryOfConsumptionFromNiPage.type] =
-    Arbitrary(CountryOfConsumptionFromNiPage)
+  implicit lazy val arbitraryCountryOfConsumptionFromNiPage: Arbitrary[CountryOfConsumptionFromNiPage] =
+    Arbitrary(CountryOfConsumptionFromNiPage(Index(0)))
 
   implicit lazy val arbitraryStartReturnPage: Arbitrary[StartReturnPage.type] =
     Arbitrary(StartReturnPage)

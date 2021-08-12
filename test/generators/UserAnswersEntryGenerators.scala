@@ -24,18 +24,18 @@ import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
 
-  implicit lazy val arbitraryVatRatesFromNiUserAnswersEntry: Arbitrary[(VatRatesFromNiPage.type, JsValue)] =
+  implicit lazy val arbitraryVatRatesFromNiUserAnswersEntry: Arbitrary[(VatRatesFromNiPage, JsValue)] =
     Arbitrary {
       for {
-        page  <- arbitrary[VatRatesFromNiPage.type]
+        page  <- arbitrary[VatRatesFromNiPage]
         value <- arbitrary[VatRatesFromNi].map(Json.toJson(_))
       } yield (page, value)
     }
 
-  implicit lazy val arbitraryVatOnSalesFromNiUserAnswersEntry: Arbitrary[(VatOnSalesFromNiPage.type, JsValue)] =
+  implicit lazy val arbitraryVatOnSalesFromNiUserAnswersEntry: Arbitrary[(VatOnSalesFromNiPage, JsValue)] =
     Arbitrary {
       for {
-        page  <- arbitrary[VatOnSalesFromNiPage.type]
+        page  <- arbitrary[VatOnSalesFromNiPage]
         value <- arbitrary[Int].map(Json.toJson(_))
       } yield (page, value)
     }
@@ -48,26 +48,26 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
       } yield (page, value)
     }
 
-  implicit lazy val arbitraryNetValueOfSalesFromNiUserAnswersEntry: Arbitrary[(NetValueOfSalesFromNiPage.type, JsValue)] =
+  implicit lazy val arbitraryNetValueOfSalesFromNiUserAnswersEntry: Arbitrary[(NetValueOfSalesFromNiPage, JsValue)] =
     Arbitrary {
       for {
-        page  <- arbitrary[NetValueOfSalesFromNiPage.type]
+        page  <- arbitrary[NetValueOfSalesFromNiPage]
         value <- arbitrary[Int].map(Json.toJson(_))
       } yield (page, value)
     }
 
-  implicit lazy val arbitraryDeleteSalesFromNiUserAnswersEntry: Arbitrary[(DeleteSalesFromNiPage.type, JsValue)] =
+  implicit lazy val arbitraryDeleteSalesFromNiUserAnswersEntry: Arbitrary[(DeleteSalesFromNiPage, JsValue)] =
     Arbitrary {
       for {
-        page  <- arbitrary[DeleteSalesFromNiPage.type]
+        page  <- arbitrary[DeleteSalesFromNiPage]
         value <- arbitrary[Boolean].map(Json.toJson(_))
       } yield (page, value)
     }
 
-  implicit lazy val arbitraryCountryOfConsumptionFromNiUserAnswersEntry: Arbitrary[(CountryOfConsumptionFromNiPage.type, JsValue)] =
+  implicit lazy val arbitraryCountryOfConsumptionFromNiUserAnswersEntry: Arbitrary[(CountryOfConsumptionFromNiPage, JsValue)] =
     Arbitrary {
       for {
-        page  <- arbitrary[CountryOfConsumptionFromNiPage.type]
+        page  <- arbitrary[CountryOfConsumptionFromNiPage]
         value <- arbitrary[String].suchThat(_.nonEmpty).map(Json.toJson(_))
       } yield (page, value)
     }

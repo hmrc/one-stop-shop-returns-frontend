@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, Period, UserAnswers}
+import models.{CheckMode, Index, Period, UserAnswers}
 import pages.VatRatesFromNiPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -28,8 +28,8 @@ import viewmodels.implicits._
 
 object VatRatesFromNiSummary  {
 
-  def row(answers: UserAnswers, period: Period)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatRatesFromNiPage).map {
+  def row(answers: UserAnswers, period: Period, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(VatRatesFromNiPage(index)).map {
       answers =>
 
         val value = ValueViewModel(
@@ -45,7 +45,7 @@ object VatRatesFromNiSummary  {
           key     = "vatRatesFromNi.checkYourAnswersLabel",
           value   = value,
           actions = Seq(
-            ActionItemViewModel("site.change", routes.VatRatesFromNiController.onPageLoad(CheckMode, period).url)
+            ActionItemViewModel("site.change", routes.VatRatesFromNiController.onPageLoad(CheckMode, period, index).url)
               .withVisuallyHiddenText(messages("vatRatesFromNi.change.hidden"))
           )
         )

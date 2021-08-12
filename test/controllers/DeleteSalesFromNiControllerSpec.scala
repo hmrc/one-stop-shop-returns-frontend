@@ -36,7 +36,7 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new DeleteSalesFromNiFormProvider()
   private val form = formProvider()
 
-  private lazy val deleteSalesFromNiRoute = routes.DeleteSalesFromNiController.onPageLoad(NormalMode, period).url
+  private lazy val deleteSalesFromNiRoute = routes.DeleteSalesFromNiController.onPageLoad(NormalMode, period, index).url
 
   "DeleteSalesFromNi Controller" - {
 
@@ -52,13 +52,13 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[DeleteSalesFromNiView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(DeleteSalesFromNiPage, true).success.value
+      val userAnswers = emptyUserAnswers.set(DeleteSalesFromNiPage(index), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -70,7 +70,7 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, index)(request, messages(application)).toString
       }
     }
 
@@ -91,10 +91,10 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(DeleteSalesFromNiPage, true).success.value
+        val expectedAnswers = emptyUserAnswers.set(DeleteSalesFromNiPage(index), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual DeleteSalesFromNiPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual DeleteSalesFromNiPage(index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -115,7 +115,7 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index)(request, messages(application)).toString
       }
     }
 

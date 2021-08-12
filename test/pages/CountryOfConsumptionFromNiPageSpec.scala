@@ -16,17 +16,20 @@
 
 package pages
 
+import models.Index
 import pages.behaviours.PageBehaviours
 
 
 class CountryOfConsumptionFromNiPageSpec extends PageBehaviours {
 
+  private val index = Index(0)
+
   "CountryOfConsumptionFromNiPage" - {
 
-    beRetrievable[String](CountryOfConsumptionFromNiPage)
+    beRetrievable[String](CountryOfConsumptionFromNiPage(index))
 
-    beSettable[String](CountryOfConsumptionFromNiPage)
+    beSettable[String](CountryOfConsumptionFromNiPage(index))
 
-    beRemovable[String](CountryOfConsumptionFromNiPage)
+    beRemovable[String](CountryOfConsumptionFromNiPage(index))
   }
 }

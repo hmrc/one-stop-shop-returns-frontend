@@ -38,7 +38,7 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
   private val validAnswer = 0
 
-  private lazy val netValueOfSalesFromNiRoute = routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, period).url
+  private lazy val netValueOfSalesFromNiRoute = routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, period, index, index).url
 
   "NetValueOfSalesFromNi Controller" - {
 
@@ -54,13 +54,13 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[NetValueOfSalesFromNiView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(NetValueOfSalesFromNiPage, validAnswer).success.value
+      val userAnswers = emptyUserAnswers.set(NetValueOfSalesFromNiPage(index, index), validAnswer).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -72,7 +72,7 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(validAnswer), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(validAnswer), NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
@@ -93,10 +93,10 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", validAnswer.toString))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(NetValueOfSalesFromNiPage, validAnswer).success.value
+        val expectedAnswers = emptyUserAnswers.set(NetValueOfSalesFromNiPage(index, index), validAnswer).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual NetValueOfSalesFromNiPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual NetValueOfSalesFromNiPage(index, index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -117,7 +117,7 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
