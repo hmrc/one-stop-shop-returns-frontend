@@ -58,3 +58,5 @@ GET         /:period/vatRatesFromNi                        controllers.VatRatesF
 POST        /:period/vatRatesFromNi                        controllers.VatRatesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET         /:period/changeVatRatesFromNi                  controllers.VatRatesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST        /:period/changeVatRatesFromNi                  controllers.VatRatesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/contactHmrc                       controllers.ContactHmrcController.onPageLoad(period: Period)

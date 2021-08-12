@@ -111,3 +111,6 @@ vatRatesFromNi.option2 = Option 2
 vatRatesFromNi.checkYourAnswersLabel = vatRatesFromNi
 vatRatesFromNi.error.required = Select vatRatesFromNi
 vatRatesFromNi.change.hidden = VatRatesFromNi
+
+contactHmrc.title = contactHmrc
+contactHmrc.heading = contactHmrc
