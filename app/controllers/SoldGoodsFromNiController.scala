@@ -38,7 +38,7 @@ class SoldGoodsFromNiController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
       val preparedForm = request.userAnswers.get(SoldGoodsFromNiPage) match {
@@ -49,7 +49,7 @@ class SoldGoodsFromNiController @Inject()(
       Ok(view(preparedForm, mode, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData.async {
+  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(

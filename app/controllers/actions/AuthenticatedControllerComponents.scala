@@ -16,10 +16,11 @@
 
 package controllers.actions
 
+import models.Period
 import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest}
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
-import play.api.mvc.{ActionBuilder, AnyContent, DefaultActionBuilder, MessagesActionBuilder, MessagesControllerComponents, PlayBodyParsers}
+import play.api.mvc._
 import repositories.SessionRepository
 
 import javax.inject.Inject
@@ -31,17 +32,17 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def sessionRepository: SessionRepository
   def identify: AuthenticatedIdentifierAction
   def getRegistration: GetRegistrationAction
-  def getData: DataRetrievalAction
+  def getData: DataRetrievalActionProvider
   def requireData: DataRequiredAction
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
-  def authAndGetOptionalData: ActionBuilder[OptionalDataRequest, AnyContent] =
-    auth andThen getRegistration andThen getData
+  def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
+    auth andThen getRegistration andThen getData(period)
 
-  def authAndGetData: ActionBuilder[DataRequest, AnyContent] =
-    authAndGetOptionalData andThen requireData
+  def authAndGetData(period: Period): ActionBuilder[DataRequest, AnyContent] =
+    authAndGetOptionalData(period) andThen requireData
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
@@ -55,6 +56,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                sessionRepository: SessionRepository,
                                                                identify: AuthenticatedIdentifierAction,
                                                                getRegistration: GetRegistrationAction,
-                                                               getData: DataRetrievalAction,
+                                                               getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction
                                                              ) extends AuthenticatedControllerComponents

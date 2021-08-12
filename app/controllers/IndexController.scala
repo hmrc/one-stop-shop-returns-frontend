@@ -23,16 +23,15 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class IndexController @Inject()(
                                  cc: AuthenticatedControllerComponents,
                                  view: IndexView
-                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                               ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetOptionalData {
+  def onPageLoad: Action[AnyContent] = cc.auth {
     implicit request =>
         Ok(view())
   }

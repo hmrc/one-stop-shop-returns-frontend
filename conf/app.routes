@@ -13,8 +13,6 @@ GET         /refresh-session                            controllers.KeepAliveCon
 
 GET         /there-is-a-problem                          controllers.JourneyRecoveryController.onPageLoad(continueUrl: Option[RedirectUrl] ?= None)
 
-GET         /check-your-answers                          controllers.CheckYourAnswersController.onPageLoad
-
 GET         /account/sign-out-survey                     controllers.auth.AuthController.signOut
 GET         /account/sign-out                            controllers.auth.AuthController.signOutNoSurvey
 GET         /account/signed-out                          controllers.auth.SignedOutController.onPageLoad
@@ -22,6 +20,8 @@ GET         /account/signed-out                          controllers.auth.Signed
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
 GET         /notRegistered                       controllers.NotRegisteredController.onPageLoad()
+
+GET         /:period/check-your-answers                          controllers.CheckYourAnswersController.onPageLoad(period: Period)
 
 GET         /:period/startReturn                        controllers.StartReturnController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST        /:period/startReturn                        controllers.StartReturnController.onSubmit(mode: Mode = NormalMode, period: Period)
