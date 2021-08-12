@@ -6,7 +6,6 @@ import models.Quarter.{Q3, Q4}
 import models.{Period, UserAnswers}
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -43,7 +42,7 @@ class SessionRepositorySpec
 
     "must set the last updated time on the supplied user answers to `now`, and save them" in {
 
-      val answers = arbitrary[UserAnswers].sample.value
+      val answers = UserAnswers("id", Period(2021, Q3))
       val expectedResult = answers copy (lastUpdated = instant)
 
       val setResult     = repository.set(answers).futureValue
