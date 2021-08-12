@@ -61,9 +61,11 @@ notRegistered.heading = notRegistered
 
 startReturn.title = startReturn
 startReturn.heading = startReturn
-startReturn.checkYourAnswersLabel = startReturn
 startReturn.error.required = Select yes if startReturn
-startReturn.change.hidden = StartReturn
+
+soldGoodsFromUnregisteredCountry.title = Did you make taxable sales of goods to consumers from an EU country you didn’t include in your registration?
+soldGoodsFromUnregisteredCountry.heading = Did you make taxable sales of goods to consumers from an EU country you didn’t include in your registration?
+soldGoodsFromUnregisteredCountry.error.required = Select yes if you made taxable sales from an EU country you didn’t include in your registration
 
 countryOfConsumptionFromNi.title = countryOfConsumptionFromNi
 countryOfConsumptionFromNi.heading = countryOfConsumptionFromNi

@@ -26,6 +26,9 @@ GET         /:period/check-your-answers                          controllers.Che
 GET         /:period/startReturn                        controllers.StartReturnController.onPageLoad(period: Period)
 POST        /:period/startReturn                        controllers.StartReturnController.onSubmit(period: Period)
 
+GET         /:period/soldGoodsFromUnregisteredCountry                        controllers.SoldGoodsFromUnregisteredCountryController.onPageLoad(period: Period)
+POST        /:period/soldGoodsFromUnregisteredCountry                        controllers.SoldGoodsFromUnregisteredCountryController.onSubmit(period: Period)
+
 GET         /:period/countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST        /:period/countryOfConsumptionFromNi                        controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET         /:period/changeCountryOfConsumptionFromNi                  controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period)
