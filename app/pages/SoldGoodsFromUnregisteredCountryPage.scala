@@ -29,8 +29,8 @@ case object SoldGoodsFromUnregisteredCountryPage extends QuestionPage[Boolean] {
 
   def navigate(period: Period, soldGoods: Boolean): Call =
     if (soldGoods) {
-      routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period)
-    } else {
       routes.ContactHmrcController.onPageLoad(period)
+    } else {
+      routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period)
     }
 }

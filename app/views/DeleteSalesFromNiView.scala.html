@@ -8,7 +8,11 @@
 
 @(form: Form[_], mode: Mode, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("deleteSalesFromNi.title"))) {
+@layout(pageTitle = title(
+    form,
+    messages("deleteSalesFromNi.title")),
+    Some(period.displayText)
+) {
 
     @formHelper(action = routes.DeleteSalesFromNiController.onSubmit(mode, period, index), 'autoComplete -> "off") {
 
@@ -19,7 +23,12 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("deleteSalesFromNi.heading")).asPageHeading()
+                legend = LegendViewModel(
+                    headingWithCaption(
+                        messages("deleteSalesFromNi.heading"),
+                        period.displayText
+                    )
+                ).asPageHeading()
             )
         )
 

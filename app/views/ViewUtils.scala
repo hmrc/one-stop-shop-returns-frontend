@@ -16,8 +16,10 @@
 
 package views
 
+import models.Period
 import play.api.data.Form
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 
 object ViewUtils {
 
@@ -33,4 +35,7 @@ object ViewUtils {
   def errorPrefix(form: Form[_])(implicit messages: Messages): String = {
     if (form.hasErrors || form.hasGlobalErrors) messages("error.browser.title.prefix") else ""
   }
+
+  def headingWithCaption(heading: String, caption: String): HtmlContent =
+    HtmlContent(s"""<span class="govuk-caption-xl">$caption</span> $heading""")
 }

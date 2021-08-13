@@ -8,7 +8,11 @@
 
 @(form: Form[_], mode: Mode, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("vatRatesFromNi.title"))) {
+@layout(pageTitle = title(
+    form,
+    messages("vatRatesFromNi.title"),
+    Some(messages("caption.fromNi.periodAndCountry", period.displayText))
+)) {
 
     @formHelper(action = routes.VatRatesFromNiController.onSubmit(mode, period, index), 'autoComplete -> "off") {
 
@@ -20,7 +24,12 @@
             CheckboxesViewModel(
                 form   = form,
                 name   = "value",
-                legend = LegendViewModel(messages("vatRatesFromNi.heading")).asPageHeading(),
+                legend = LegendViewModel(
+                    headingWithCaption(
+                        messages("vatRatesFromNi.heading"),
+                        messages("caption.fromNi.periodAndCountry", period.displayText)
+                    )
+                ).asPageHeading(),
                 items  = VatRatesFromNi.checkboxItems
             )
         )
