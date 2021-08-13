@@ -41,6 +41,7 @@ class SoldGoodsFromNiController @Inject()(
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period) {
     implicit request =>
 
+      println("*"*100)
       val preparedForm = request.userAnswers.getOrElse(UserAnswers(request.userId, period)).get(SoldGoodsFromNiPage) match {
         case None => form
         case Some(value) => form.fill(value)

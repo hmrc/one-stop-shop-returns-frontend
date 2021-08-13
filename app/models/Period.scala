@@ -16,10 +16,13 @@
 
 package models
 
+import com.ibm.icu.impl.duration.DateFormatter
+import play.api.i18n.Messages
 import play.api.libs.json._
 import play.api.mvc.PathBindable
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import scala.util.Try
 import scala.util.matching.Regex
 
@@ -27,6 +30,12 @@ case class Period(year: Int, quarter: Quarter) {
 
   val firstDay: LocalDate = LocalDate.of(year, quarter.startMonth, 1)
   val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
+
+  private val firstDayFormatter = DateTimeFormatter.ofPattern("d MMMM")
+  private val lastDayFormatter  = DateTimeFormatter.ofPattern("d MMMM yyyy")
+
+  def displayText(implicit messages: Messages): String =
+    s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
 
   override def toString: String = s"$year-${quarter.toString}"
 }

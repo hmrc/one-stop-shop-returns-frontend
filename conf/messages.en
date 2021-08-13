@@ -10,6 +10,7 @@ site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.to = to
 
 date.day = Day
 date.month = Month
@@ -53,26 +54,28 @@ signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out
 signedOut.guidance = We did not save your answers.
 
+caption.fromNi.periodAndCountry = {0}: Northern Ireland to {1}
+
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
 notRegistered.title = notRegistered
 notRegistered.heading = notRegistered
 
-startReturn.title = startReturn
-startReturn.heading = startReturn
-startReturn.error.required = Select yes if startReturn
+startReturn.title = Do you want to start your return for {0}?
+startReturn.heading = Do you want to start your return for {0}?
+startReturn.error.required = Select yes if you want to start your return for {0}
 
 soldGoodsFromUnregisteredCountry.title = Did you make taxable sales of goods to consumers from an EU country you didn’t include in your registration?
 soldGoodsFromUnregisteredCountry.heading = Did you make taxable sales of goods to consumers from an EU country you didn’t include in your registration?
 soldGoodsFromUnregisteredCountry.error.required = Select yes if you made taxable sales from an EU country you didn’t include in your registration
 
-countryOfConsumptionFromNi.title = countryOfConsumptionFromNi
-countryOfConsumptionFromNi.heading = countryOfConsumptionFromNi
-countryOfConsumptionFromNi.checkYourAnswersLabel = countryOfConsumptionFromNi
-countryOfConsumptionFromNi.error.required = Enter countryOfConsumptionFromNi
-countryOfConsumptionFromNi.error.length = CountryOfConsumptionFromNi must be 100 characters or less
-countryOfConsumptionFromNi.change.hidden = CountryOfConsumptionFromNi
+countryOfConsumptionFromNi.title = Which EU country did you sell to from Northern Ireland?
+countryOfConsumptionFromNi.heading = Which EU country did you sell to from Northern Ireland?
+countryOfConsumptionFromNi.checkYourAnswersLabel = Which EU country did you sell to from Northern Ireland?
+countryOfConsumptionFromNi.error.required = Select the country you sold to from Northern Ireland
+countryOfConsumptionFromNi.error.length = Country must be 100 characters or less
+countryOfConsumptionFromNi.change.hidden = the country you sold to from Northern Ireland
 
 deleteSalesFromNi.title = deleteSalesFromNi
 deleteSalesFromNi.heading = deleteSalesFromNi
@@ -80,37 +83,37 @@ deleteSalesFromNi.checkYourAnswersLabel = deleteSalesFromNi
 deleteSalesFromNi.error.required = Select yes if deleteSalesFromNi
 deleteSalesFromNi.change.hidden = DeleteSalesFromNi
 
-netValueOfSalesFromNi.title = NetValueOfSalesFromNi
-netValueOfSalesFromNi.heading = NetValueOfSalesFromNi
-netValueOfSalesFromNi.checkYourAnswersLabel = NetValueOfSalesFromNi
-netValueOfSalesFromNi.error.nonNumeric = Enter your netValueOfSalesFromNi using numbers
-netValueOfSalesFromNi.error.required = Enter your netValueOfSalesFromNi
-netValueOfSalesFromNi.error.wholeNumber = Enter your netValueOfSalesFromNi using whole numbers
-netValueOfSalesFromNi.error.outOfRange = NetValueOfSalesFromNi must be between {0} and {1}
-netValueOfSalesFromNi.change.hidden = NetValueOfSalesFromNi
+netValueOfSalesFromNi.title = What was your total sales at {0} rate excluding VAT?
+netValueOfSalesFromNi.heading = What was your total sales at {0} rate excluding VAT?
+netValueOfSalesFromNi.checkYourAnswersLabel = Total sales at {0} rate excluding VAT
+netValueOfSalesFromNi.error.nonNumeric = Enter your total sales at {0} using numbers
+netValueOfSalesFromNi.error.required = Enter your total sales at {0}
+netValueOfSalesFromNi.error.wholeNumber = Enter your total sales at {0} using whole numbers
+netValueOfSalesFromNi.error.outOfRange = Total sales must be between {0} and {1}
+netValueOfSalesFromNi.change.hidden = your total sales at {0}
 
-soldGoodsFromNi.title = soldGoodsFromNi
-soldGoodsFromNi.heading = soldGoodsFromNi
-soldGoodsFromNi.checkYourAnswersLabel = soldGoodsFromNi
-soldGoodsFromNi.error.required = Select yes if soldGoodsFromNi
-soldGoodsFromNi.change.hidden = SoldGoodsFromNi
+soldGoodsFromNi.title = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
+soldGoodsFromNi.heading = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
+soldGoodsFromNi.checkYourAnswersLabel = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
+soldGoodsFromNi.error.required = Select yes if you made taxable sales from Northern Ireland during this period
+soldGoodsFromNi.change.hidden = if you made taxable sales from Northern Ireland during this period
 
-vatOnSalesFromNi.title = VatOnSalesFromNi
-vatOnSalesFromNi.heading = VatOnSalesFromNi
-vatOnSalesFromNi.checkYourAnswersLabel = VatOnSalesFromNi
-vatOnSalesFromNi.error.nonNumeric = Enter your vatOnSalesFromNi using numbers
-vatOnSalesFromNi.error.required = Enter your vatOnSalesFromNi
-vatOnSalesFromNi.error.wholeNumber = Enter your vatOnSalesFromNi using whole numbers
-vatOnSalesFromNi.error.outOfRange = VatOnSalesFromNi must be between {0} and {1}
-vatOnSalesFromNi.change.hidden = VatOnSalesFromNi
+vatOnSalesFromNi.title = What was the total VAT charged at {0} rate?
+vatOnSalesFromNi.heading = What was the total VAT charged at {0} rate?
+vatOnSalesFromNi.checkYourAnswersLabel = Total VAT charged at {0} rate
+vatOnSalesFromNi.error.nonNumeric = Enter the total VAT charged at {0} rate using numbers
+vatOnSalesFromNi.error.required = Enter the total VAT charged at {0} rate
+vatOnSalesFromNi.error.wholeNumber = Enter the total VAT charged at {0} rate using whole numbers
+vatOnSalesFromNi.error.outOfRange = Total VAT must be between {0} and {1}
+vatOnSalesFromNi.change.hidden = the total VAT charged at {0} rate
 
-vatRatesFromNi.title = vatRatesFromNi
-vatRatesFromNi.heading = vatRatesFromNi
-vatRatesFromNi.option1 = Option 1
-vatRatesFromNi.option2 = Option 2
-vatRatesFromNi.checkYourAnswersLabel = vatRatesFromNi
-vatRatesFromNi.error.required = Select vatRatesFromNi
-vatRatesFromNi.change.hidden = VatRatesFromNi
+vatRatesFromNi.title = Which VAT rates did you charge on sales?
+vatRatesFromNi.heading = Which VAT rates did you charge on sales?
+vatRatesFromNi.option1 = 20%
+vatRatesFromNi.option2 = 5%
+vatRatesFromNi.checkYourAnswersLabel = VAT rates on sales
+vatRatesFromNi.error.required = Select which VAT rates you charged on sales
+vatRatesFromNi.change.hidden = the VAT rates you charged on sales
 
 contactHmrc.title = contactHmrc
 contactHmrc.heading = contactHmrc
