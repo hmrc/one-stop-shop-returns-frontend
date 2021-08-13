@@ -23,8 +23,8 @@ import play.api.data.Form
 
 class DeleteSalesFromNiFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(country: String): Form[Boolean] =
     Form(
-      "value" -> boolean("deleteSalesFromNi.error.required")
+      "value" -> boolean("deleteSalesFromNi.error.required", args = Seq(country))
     )
 }

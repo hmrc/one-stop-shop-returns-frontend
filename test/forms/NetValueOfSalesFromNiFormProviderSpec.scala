@@ -17,11 +17,13 @@
 package forms
 
 import forms.behaviours.IntFieldBehaviours
+import models.VatRatesFromNi
 import play.api.data.FormError
 
 class NetValueOfSalesFromNiFormProviderSpec extends IntFieldBehaviours {
 
-  val form = new NetValueOfSalesFromNiFormProvider()()
+  private val vatRate = VatRatesFromNi.Option1
+  private val form = new NetValueOfSalesFromNiFormProvider()(vatRate)
 
   ".value" - {
 
@@ -41,8 +43,8 @@ class NetValueOfSalesFromNiFormProviderSpec extends IntFieldBehaviours {
     behave like intField(
       form,
       fieldName,
-      nonNumericError  = FormError(fieldName, "netValueOfSalesFromNi.error.nonNumeric"),
-      wholeNumberError = FormError(fieldName, "netValueOfSalesFromNi.error.wholeNumber")
+      nonNumericError  = FormError(fieldName, "netValueOfSalesFromNi.error.nonNumeric", Seq(vatRate.toString)),
+      wholeNumberError = FormError(fieldName, "netValueOfSalesFromNi.error.wholeNumber", Seq(vatRate.toString))
     )
 
     behave like intFieldWithRange(
@@ -56,7 +58,7 @@ class NetValueOfSalesFromNiFormProviderSpec extends IntFieldBehaviours {
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, "netValueOfSalesFromNi.error.required")
+      requiredError = FormError(fieldName, "netValueOfSalesFromNi.error.required", Seq(vatRate.toString))
     )
   }
 }

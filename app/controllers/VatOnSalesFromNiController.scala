@@ -36,7 +36,6 @@ class VatOnSalesFromNiController @Inject()(
                                       )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
@@ -44,12 +43,13 @@ class VatOnSalesFromNiController @Inject()(
       getCountryAndVatRate(countryIndex, vatRateIndex) {
         case (country, vatRate) =>
 
-        val preparedForm = request.userAnswers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex)) match {
-          case None => form
-          case Some(value) => form.fill(value)
-        }
+          val form         = formProvider(vatRate)
+          val preparedForm = request.userAnswers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
 
-        Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex, country, vatRate))
+          Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex, country, vatRate))
       }
   }
 
@@ -58,16 +58,18 @@ class VatOnSalesFromNiController @Inject()(
       getCountryAndVatRateAsync(countryIndex, vatRateIndex) {
         case (country, vatRate) =>
 
-        form.bindFromRequest().fold(
-          formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, mode, period, countryIndex, vatRateIndex, country, vatRate))),
+          val form = formProvider(vatRate)
 
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesFromNiPage(countryIndex, vatRateIndex), value))
-              _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(VatOnSalesFromNiPage(countryIndex, vatRateIndex).navigate(mode, updatedAnswers))
-        )
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, mode, period, countryIndex, vatRateIndex, country, vatRate))),
+
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesFromNiPage(countryIndex, vatRateIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(VatOnSalesFromNiPage(countryIndex, vatRateIndex).navigate(mode, updatedAnswers))
+          )
       }
   }
 }

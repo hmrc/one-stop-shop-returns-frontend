@@ -36,7 +36,6 @@ class DeleteSalesFromNiController @Inject()(
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
@@ -44,6 +43,7 @@ class DeleteSalesFromNiController @Inject()(
       getCountry(index) {
         country =>
 
+          val form         = formProvider(country)
           val preparedForm = request.userAnswers.get(DeleteSalesFromNiPage(index)) match {
             case None => form
             case Some(value) => form.fill(value)
@@ -57,6 +57,8 @@ class DeleteSalesFromNiController @Inject()(
     implicit request =>
       getCountryAsync(index) {
         country =>
+
+          val form = formProvider(country)
 
           form.bindFromRequest().fold(
             formWithErrors =>

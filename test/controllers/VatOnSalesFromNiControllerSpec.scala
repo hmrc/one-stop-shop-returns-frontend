@@ -34,9 +34,6 @@ import scala.concurrent.Future
 
 class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
-  private val formProvider = new VatOnSalesFromNiFormProvider()
-  private val form = formProvider()
-
   private val validAnswer = 0
 
   private lazy val vatOnSalesFromNiRoute = routes.VatOnSalesFromNiController.onPageLoad(NormalMode, period, index, index).url
@@ -47,6 +44,9 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
     emptyUserAnswers
       .set(CountryOfConsumptionFromNiPage(index), country.name).success.value
       .set(VatRatesFromNiPage(index), List(VatRatesFromNi.Option1)).success.value
+
+  private val formProvider = new VatOnSalesFromNiFormProvider()
+  private val form = formProvider(vatRate)
 
   "VatOnSalesFromNi Controller" - {
 

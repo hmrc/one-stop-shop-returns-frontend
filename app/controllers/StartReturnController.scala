@@ -26,24 +26,25 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.StartReturnView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class StartReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
                                        view: StartReturnView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     ) extends FrontendBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.auth {
     implicit request =>
+      val form = formProvider(period)
       Ok(view(form, period))
   }
 
   def onSubmit(period: Period): Action[AnyContent] = cc.auth {
     implicit request =>
+
+      val form = formProvider(period)
 
       form.bindFromRequest().fold(
         formWithErrors =>

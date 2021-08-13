@@ -17,14 +17,20 @@
 package forms
 
 import forms.behaviours.BooleanFieldBehaviours
+import models.Period
+import models.Quarter.Q3
 import play.api.data.FormError
+import play.api.i18n.Messages
+import play.api.test.StubMessagesFactory
 
-class StartReturnFormProviderSpec extends BooleanFieldBehaviours {
+class StartReturnFormProviderSpec extends BooleanFieldBehaviours with StubMessagesFactory {
 
   val requiredKey = "startReturn.error.required"
   val invalidKey = "error.boolean"
+  val period = Period(2021, Q3)
+  implicit val m: Messages = stubMessages()
 
-  val form = new StartReturnFormProvider()()
+  val form = new StartReturnFormProvider()(period)
 
   ".value" - {
 
@@ -33,13 +39,13 @@ class StartReturnFormProviderSpec extends BooleanFieldBehaviours {
     behave like booleanField(
       form,
       fieldName,
-      invalidError = FormError(fieldName, invalidKey)
+      invalidError = FormError(fieldName, invalidKey, Seq(period.displayText))
     )
 
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, requiredKey)
+      requiredError = FormError(fieldName, requiredKey, Seq(period.displayText))
     )
   }
 }
