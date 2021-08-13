@@ -13,7 +13,7 @@ class $className$FormProviderSpec extends CheckboxFieldBehaviours {
     val fieldName = "value"
     val requiredKey = "$className;format="decap"$.error.required"
 
-    behave like checkboxField[$className$](
+    behave like checkboxFieldSet[$className$](
       form,
       fieldName,
       validValues  = $className$.values,

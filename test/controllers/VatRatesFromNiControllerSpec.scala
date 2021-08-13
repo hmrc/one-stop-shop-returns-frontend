@@ -59,7 +59,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(VatRatesFromNiPage(index), VatRatesFromNi.values.toSet).success.value
+      val userAnswers = emptyUserAnswers.set(VatRatesFromNiPage(index), VatRatesFromNi.values.toList).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -71,7 +71,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(VatRatesFromNi.values.toSet), NormalMode, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(VatRatesFromNi.values.toList), NormalMode, period, index)(request, messages(application)).toString
       }
     }
 
@@ -92,7 +92,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value[0]", VatRatesFromNi.values.head.toString))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(VatRatesFromNiPage(index), Set(VatRatesFromNi.values.head)).success.value
+        val expectedAnswers = emptyUserAnswers.set(VatRatesFromNiPage(index), List(VatRatesFromNi.values.head)).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual VatRatesFromNiPage(index).navigate(NormalMode, expectedAnswers).url

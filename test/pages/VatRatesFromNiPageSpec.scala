@@ -25,10 +25,10 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
 
   "VatRatesFromNiPage" - {
 
-    beRetrievable[Set[VatRatesFromNi]](VatRatesFromNiPage(index))
+    beRetrievable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
 
-    beSettable[Set[VatRatesFromNi]](VatRatesFromNiPage(index))
+    beSettable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
 
-    beRemovable[Set[VatRatesFromNi]](VatRatesFromNiPage(index))
+    beRemovable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
   }
 }

@@ -29,7 +29,7 @@ class VatRatesFromNiFormProviderSpec extends CheckboxFieldBehaviours {
     val fieldName = "value"
     val requiredKey = "vatRatesFromNi.error.required"
 
-    behave like checkboxField[VatRatesFromNi](
+    behave like checkboxFieldList[VatRatesFromNi](
       form,
       fieldName,
       validValues  = VatRatesFromNi.values,
