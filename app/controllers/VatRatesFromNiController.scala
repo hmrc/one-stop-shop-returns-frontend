@@ -18,8 +18,6 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromNiFormProvider
-
-import javax.inject.Inject
 import models.{Index, Mode, Period}
 import pages.VatRatesFromNiPage
 import play.api.i18n.I18nSupport
@@ -27,40 +25,48 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.VatRatesFromNiView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class VatRatesFromNiController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: VatRatesFromNiFormProvider,
                                         view: VatRatesFromNiView
-                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                      )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+      getCountry(index) {
+        country =>
 
-      val preparedForm = request.userAnswers.get(VatRatesFromNiPage(index)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+          val preparedForm = request.userAnswers.get(VatRatesFromNiPage(index)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          Ok(view(preparedForm, mode, period, index, country))
       }
-
-      Ok(view(preparedForm, mode, period, index))
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
+      getCountryAsync(index) {
+        country =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, index))),
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, mode, period, index, country))),
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromNiPage(index), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(VatRatesFromNiPage(index).navigate(mode, updatedAnswers))
-      )
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromNiPage(index), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(VatRatesFromNiPage(index).navigate(mode, updatedAnswers))
+          )
+      }
   }
 }
