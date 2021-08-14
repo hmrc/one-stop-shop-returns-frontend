@@ -16,13 +16,12 @@
 
 package pages
 
-import models.Index
+import controllers.routes
+import models.NormalMode
 import pages.behaviours.PageBehaviours
 
 
 class CountryOfConsumptionFromNiPageSpec extends PageBehaviours {
-
-  private val index = Index(0)
 
   "CountryOfConsumptionFromNiPage" - {
 
@@ -31,5 +30,14 @@ class CountryOfConsumptionFromNiPageSpec extends PageBehaviours {
     beSettable[String](CountryOfConsumptionFromNiPage(index))
 
     beRemovable[String](CountryOfConsumptionFromNiPage(index))
+
+    "must navigate in Normal mode" - {
+
+      "to VAT Rates from NI" in {
+
+        CountryOfConsumptionFromNiPage(index).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.VatRatesFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, index))
+      }
+    }
   }
 }

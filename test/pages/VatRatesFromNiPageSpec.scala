@@ -16,12 +16,11 @@
 
 package pages
 
-import models.{Index, VatRatesFromNi}
+import controllers.routes
+import models.{Index, NormalMode, VatRatesFromNi}
 import pages.behaviours.PageBehaviours
 
 class VatRatesFromNiPageSpec extends PageBehaviours {
-
-  private val index = Index(0)
 
   "VatRatesFromNiPage" - {
 
@@ -30,5 +29,14 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
     beSettable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
 
     beRemovable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
+
+    "must navigate in Normal mode" - {
+
+      "to Nat Value of Sales" in {
+
+        VatRatesFromNiPage(index).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, index, Index(0)))
+      }
+    }
   }
 }

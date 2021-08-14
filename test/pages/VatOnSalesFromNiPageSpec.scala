@@ -16,12 +16,11 @@
 
 package pages
 
-import models.Index
+import controllers.routes
+import models.NormalMode
 import pages.behaviours.PageBehaviours
 
 class VatOnSalesFromNiPageSpec extends PageBehaviours {
-
-  private val index = Index(0)
 
   "VatOnSalesFromNiPage" - {
 
