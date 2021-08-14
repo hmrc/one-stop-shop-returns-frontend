@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package pages
+package queries
 
 import models.{Index, VatRatesFromNi}
-import pages.behaviours.PageBehaviours
+import play.api.libs.json.JsPath
+import pages.PageConstants.salesFromNi
 
-class VatRatesFromNiPageSpec extends PageBehaviours {
+case class VatRateQuery(countryIndex: Index, vatRateIndex: Index) extends Gettable[VatRatesFromNi] {
 
-  private val index = Index(0)
-
-  "VatRatesFromNiPage" - {
-
-    beRetrievable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
-
-    beSettable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
-
-    beRemovable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
-  }
+  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ "vatRates" \ vatRateIndex.position
 }

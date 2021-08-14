@@ -33,34 +33,43 @@ class DeleteSalesFromNiController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: DeleteSalesFromNiFormProvider,
                                        view: DeleteSalesFromNiView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+      getCountry(index) {
+        country =>
 
-      val preparedForm = request.userAnswers.get(DeleteSalesFromNiPage(index)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+          val form         = formProvider(country)
+          val preparedForm = request.userAnswers.get(DeleteSalesFromNiPage(index)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          Ok(view(preparedForm, mode, period, index, country))
       }
-
-      Ok(view(preparedForm, mode, period, index))
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
+      getCountryAsync(index) {
+        country =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, index))),
+          val form = formProvider(country)
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesFromNiPage(index), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(DeleteSalesFromNiPage(index).navigate(mode, updatedAnswers))
-      )
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, mode, period, index, country))),
+
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesFromNiPage(index), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(DeleteSalesFromNiPage(index).navigate(mode, updatedAnswers))
+          )
+      }
   }
 }

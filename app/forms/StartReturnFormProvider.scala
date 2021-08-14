@@ -16,15 +16,17 @@
 
 package forms
 
-import javax.inject.Inject
-
 import forms.mappings.Mappings
+import models.Period
 import play.api.data.Form
+import play.api.i18n.Messages
+
+import javax.inject.Inject
 
 class StartReturnFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(period: Period)(implicit messages: Messages): Form[Boolean] =
     Form(
-      "value" -> boolean("startReturn.error.required")
+      "value" -> boolean("startReturn.error.required", args = Seq(period.displayText))
     )
 }

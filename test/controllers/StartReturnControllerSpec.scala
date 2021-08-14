@@ -18,7 +18,6 @@ package controllers
 
 import base.SpecBase
 import forms.StartReturnFormProvider
-import models.NormalMode
 import org.scalatestplus.mockito.MockitoSugar
 import pages.StartReturnPage
 import play.api.test.FakeRequest
@@ -27,10 +26,9 @@ import views.html.StartReturnView
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
-  private val formProvider = new StartReturnFormProvider()
-  private val form = formProvider()
-
   private lazy val startReturnRoute = routes.StartReturnController.onPageLoad(period).url
+
+  private val formProvider = new StartReturnFormProvider()
 
   "StartReturn Controller" - {
 
@@ -39,6 +37,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
+        val form = formProvider(period)(messages(application))
         val request = FakeRequest(GET, startReturnRoute)
 
         val result = route(application, request).value
@@ -55,12 +54,12 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
+
         val request =
           FakeRequest(POST, startReturnRoute)
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(StartReturnPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = true).url
@@ -72,6 +71,8 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
+        val form = formProvider(period)(messages(application))
+
         val request =
           FakeRequest(POST, startReturnRoute)
             .withFormUrlEncodedBody(("value", ""))

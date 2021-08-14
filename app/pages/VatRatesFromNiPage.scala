@@ -21,7 +21,7 @@ import models.{Index, UserAnswers, VatRatesFromNi}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class VatRatesFromNiPage(index: Index) extends QuestionPage[Set[VatRatesFromNi]] {
+case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRatesFromNi]] {
 
   override def path: JsPath = JsPath \ PageConstants.salesFromNi \ index.position \ toString
 

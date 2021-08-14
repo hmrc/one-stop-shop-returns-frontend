@@ -77,11 +77,9 @@ countryOfConsumptionFromNi.error.required = Select the country you sold to from 
 countryOfConsumptionFromNi.error.length = Country must be 100 characters or less
 countryOfConsumptionFromNi.change.hidden = the country you sold to from Northern Ireland
 
-deleteSalesFromNi.title = deleteSalesFromNi
-deleteSalesFromNi.heading = deleteSalesFromNi
-deleteSalesFromNi.checkYourAnswersLabel = deleteSalesFromNi
-deleteSalesFromNi.error.required = Select yes if deleteSalesFromNi
-deleteSalesFromNi.change.hidden = DeleteSalesFromNi
+deleteSalesFromNi.title = Are you sure you need to remove the sales from Northern Ireland to {0}?
+deleteSalesFromNi.heading = Are you sure you need to remove the sales from Northern Ireland to {0}?
+deleteSalesFromNi.error.required = Select yes if you need to remove the sales from Northern Ireland to {0}
 
 netValueOfSalesFromNi.title = What was your total sales at {0} rate excluding VAT?
 netValueOfSalesFromNi.heading = What was your total sales at {0} rate excluding VAT?

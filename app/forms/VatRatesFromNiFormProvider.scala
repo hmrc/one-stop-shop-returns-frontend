@@ -16,17 +16,17 @@
 
 package forms
 
-import javax.inject.Inject
-
 import forms.mappings.Mappings
-import play.api.data.Form
-import play.api.data.Forms.set
 import models.VatRatesFromNi
+import play.api.data.Form
+import play.api.data.Forms.list
+
+import javax.inject.Inject
 
 class VatRatesFromNiFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Set[VatRatesFromNi]] =
+  def apply(): Form[List[VatRatesFromNi]] =
     Form(
-      "value" -> set(enumerable[VatRatesFromNi]("vatRatesFromNi.error.required")).verifying(nonEmptySet("vatRatesFromNi.error.required"))
+      "value" -> list(enumerable[VatRatesFromNi]("vatRatesFromNi.error.required")).verifying(nonEmptySeq("vatRatesFromNi.error.required"))
     )
 }

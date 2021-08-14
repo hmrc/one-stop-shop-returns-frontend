@@ -17,17 +17,20 @@
 package forms
 
 import forms.mappings.Mappings
+import models.VatRatesFromNi
+
 import javax.inject.Inject
 import play.api.data.Form
 
 class NetValueOfSalesFromNiFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Int] =
+  def apply(vatRate: VatRatesFromNi): Form[Int] =
     Form(
       "value" -> int(
         "netValueOfSalesFromNi.error.required",
         "netValueOfSalesFromNi.error.wholeNumber",
-        "netValueOfSalesFromNi.error.nonNumeric")
+        "netValueOfSalesFromNi.error.nonNumeric",
+        Seq(vatRate.toString))
           .verifying(inRange(0, Int.MaxValue, "netValueOfSalesFromNi.error.outOfRange"))
     )
 }

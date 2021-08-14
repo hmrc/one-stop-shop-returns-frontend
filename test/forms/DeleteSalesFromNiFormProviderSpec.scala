@@ -23,8 +23,9 @@ class DeleteSalesFromNiFormProviderSpec extends BooleanFieldBehaviours {
 
   val requiredKey = "deleteSalesFromNi.error.required"
   val invalidKey = "error.boolean"
+  val country = "foo"
 
-  val form = new DeleteSalesFromNiFormProvider()()
+  val form = new DeleteSalesFromNiFormProvider()(country)
 
   ".value" - {
 
@@ -33,13 +34,13 @@ class DeleteSalesFromNiFormProviderSpec extends BooleanFieldBehaviours {
     behave like booleanField(
       form,
       fieldName,
-      invalidError = FormError(fieldName, invalidKey)
+      invalidError = FormError(fieldName, invalidKey, Seq(country))
     )
 
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, requiredKey)
+      requiredError = FormError(fieldName, requiredKey, Seq(country))
     )
   }
 }
