@@ -14,12 +14,12 @@ object $className$Summary  {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get($className$Page).map {
-      answers =>
+      answer =>
 
         val value = ValueViewModel(
           HtmlContent(
-            answers.map {
-              answer => HtmlFormat.escape(messages(s"$className;format="decap"$.\$answer")).toString
+            answer.map {
+              x => HtmlFormat.escape(messages(s"$className;format="decap"$.\$x")).toString
             }
             .mkString(",<br>")
           )
