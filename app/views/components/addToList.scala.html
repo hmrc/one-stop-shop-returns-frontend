@@ -1,0 +1,30 @@
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ItemSize, ListItem}
+
+@this()
+
+@(itemList: Seq[ListItem], itemSize: ItemSize = addtoalist.Short, changePrefix :String, removePrefix :String)(implicit messages: Messages)
+
+<div class="govuk-form-group">
+    <dl class="hmrc-add-to-a-list hmrc-add-to-a-list--@itemSize.suffix">
+    @for(item <- itemList) {
+        <div class="hmrc-add-to-a-list__contents">
+            <dt class="hmrc-add-to-a-list__identifier hmrc-add-to-a-list__identifier--light">
+            @item.name
+            </dt>
+            <dd class="hmrc-add-to-a-list__change">
+                <a class="govuk-link" href="@item.changeUrl">
+                    <span aria-hidden="true">@messages("site.change")</span>
+                    <span class="govuk-visually-hidden">@messages(changePrefix, item.name)</span>
+                </a>
+            </dd>
+            <dd class="hmrc-add-to-a-list__remove">
+                <a class="govuk-link" href="@item.removeUrl">
+                    <span aria-hidden="true">@messages("site.remove")</span>
+                    <span class="govuk-visually-hidden">@messages(removePrefix, item.name)</span>
+                </a>
+            </dd>
+        </div>
+    }
+    </dl>
+</div>
