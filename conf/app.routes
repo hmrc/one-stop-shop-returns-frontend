@@ -23,6 +23,9 @@ GET         /notRegistered                       controllers.NotRegisteredContro
 
 GET         /:period/check-your-answers                          controllers.CheckYourAnswersController.onPageLoad(period: Period)
 
+GET         /:period/check-sales-from-ni/:index                controllers.CheckSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
+GET         /:period/change-check-sales-from-ni/:index         controllers.CheckSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
+
 GET         /:period/startReturn                        controllers.StartReturnController.onPageLoad(period: Period)
 POST        /:period/startReturn                        controllers.StartReturnController.onSubmit(period: Period)
 
