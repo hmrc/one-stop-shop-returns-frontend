@@ -16,15 +16,15 @@
 
 package controllers
 
-import models.{Index, VatRatesFromNi}
 import models.requests.DataRequest
-import pages.{CountryOfConsumptionFromNiPage, VatRatesFromNiPage}
+import models.{Index, VatRatesFromNi}
+import pages.CountryOfConsumptionFromNiPage
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
-import queries.VatRateQuery
+import queries.{DeriveNumberOfSalesFromNi, VatRateQuery}
+import utils.FutureSyntax._
 
 import scala.concurrent.Future
-import scala.util.Try
 
 trait SalesFromNiBaseController {
 
@@ -43,7 +43,7 @@ trait SalesFromNiBaseController {
     request.userAnswers
       .get(CountryOfConsumptionFromNiPage(index))
       .map(block(_))
-      .getOrElse(Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad())))
+      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
 
   protected def getCountryAndVatRate(countryIndex: Index, vatRateIndex: Index)
                                     (block: (String, VatRatesFromNi) => Result)
@@ -61,5 +61,12 @@ trait SalesFromNiBaseController {
       country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))
       vatRate  <- request.userAnswers.get(VatRateQuery(countryIndex, vatRateIndex))
     } yield block(country, vatRate))
-      .getOrElse(Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad())))
+      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
+
+  protected def getNumberOfSalesFromNi(block: Int => Result)
+                                      (implicit request: DataRequest[AnyContent]): Result =
+    request.userAnswers
+      .get(DeriveNumberOfSalesFromNi)
+      .map(block(_))
+      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
 }

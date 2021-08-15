@@ -119,3 +119,13 @@ contactHmrc.heading = contactHmrc
 checkSalesFromNi.title = Check your answers
 checkSalesFromNi.heading = Check your answers
 checkSalesFromNi.vatRateTitle = {0} VAT rate
+
+salesFromNiList.title.singular = You added sales from Northern Ireland to one EU country
+salesFromNiList.heading.singular = You added sales from Northern Ireland to one EU country
+salesFromNiList.title = You added sales from Northern Ireland to {0} EU countries
+salesFromNiList.heading = You added sales from Northern Ireland to {0} EU countries
+salesFromNiList.maximumReached = You have added sales from Northern Ireland to every EU country
+salesFromNiList.error.required = Select yes if you need to add sales from Northern Ireland to another EU country
+salesFromNiList.change.hidden = sales from Northern Ireland to {0}
+salesFromNiList.remove.hidden = sales from Northern Ireland to {0}
+salesFromNiList.addAnother = Add sales from Northern Ireland to another EU country?

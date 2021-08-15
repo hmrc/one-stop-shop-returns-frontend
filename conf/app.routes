@@ -26,6 +26,11 @@ GET         /:period/check-your-answers                          controllers.Che
 GET         /:period/check-sales-from-ni/:index                controllers.CheckSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
 GET         /:period/change-check-sales-from-ni/:index         controllers.CheckSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
 
+GET         /:period/add-sales-from-ni                  controllers.SalesFromNiListController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST        /:period/add-sales-from-ni                  controllers.SalesFromNiListController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET         /:period/check-add-sales-from-ni             controllers.SalesFromNiListController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST        /:period/check-add-sales-from-ni             controllers.SalesFromNiListController.onSubmit(mode: Mode = CheckMode, period: Period)
+
 GET         /:period/startReturn                        controllers.StartReturnController.onPageLoad(period: Period)
 POST        /:period/startReturn                        controllers.StartReturnController.onSubmit(period: Period)
 
