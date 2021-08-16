@@ -37,7 +37,7 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
   private lazy val deleteSalesFromNiRoute = routes.DeleteSalesFromNiController.onPageLoad(NormalMode, period, index).url
 
   private val country = arbitrary[Country].sample.value
-  private val answersWithCountry = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), country.name).success.value
+  private val answersWithCountry = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), country).success.value
 
   private val formProvider = new DeleteSalesFromNiFormProvider()
   private val form = formProvider(country.name)
@@ -56,7 +56,7 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[DeleteSalesFromNiView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, index, country.name)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, country)(request, messages(application)).toString
       }
     }
 
@@ -74,7 +74,7 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, index, country.name)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, index, country)(request, messages(application)).toString
       }
     }
 
@@ -119,7 +119,7 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, country.name)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, country)(request, messages(application)).toString
       }
     }
 

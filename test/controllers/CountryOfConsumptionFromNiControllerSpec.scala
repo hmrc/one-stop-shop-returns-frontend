@@ -18,9 +18,10 @@ package controllers
 
 import base.SpecBase
 import forms.CountryOfConsumptionFromNiFormProvider
-import models.{NormalMode, UserAnswers}
+import models.{Country, NormalMode, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.CountryOfConsumptionFromNiPage
 import play.api.inject.bind
@@ -37,6 +38,8 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
   private val form = formProvider()
 
   private lazy val countryOfConsumptionFromNiRoute = routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, period, index).url
+
+  val country: Country = arbitrary[Country].sample.value
 
   "CountryOfConsumptionFromNi Controller" - {
 
@@ -58,7 +61,7 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), "answer").success.value
+      val userAnswers = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), country).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -70,7 +73,7 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(country), NormalMode, period, index)(request, messages(application)).toString
       }
     }
 
@@ -88,10 +91,10 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
       running(application) {
         val request =
           FakeRequest(POST, countryOfConsumptionFromNiRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
+            .withFormUrlEncodedBody(("value", country.code))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), "answer").success.value
+        val expectedAnswers = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), country).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual CountryOfConsumptionFromNiPage(index).navigate(NormalMode, expectedAnswers).url

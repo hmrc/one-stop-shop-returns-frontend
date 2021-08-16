@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.NormalMode
+import models.{Country, NormalMode}
 import pages.behaviours.PageBehaviours
 
 
@@ -25,11 +25,11 @@ class CountryOfConsumptionFromNiPageSpec extends PageBehaviours {
 
   "CountryOfConsumptionFromNiPage" - {
 
-    beRetrievable[String](CountryOfConsumptionFromNiPage(index))
+    beRetrievable[Country](CountryOfConsumptionFromNiPage(index))
 
-    beSettable[String](CountryOfConsumptionFromNiPage(index))
+    beSettable[Country](CountryOfConsumptionFromNiPage(index))
 
-    beRemovable[String](CountryOfConsumptionFromNiPage(index))
+    beRemovable[Country](CountryOfConsumptionFromNiPage(index))
 
     "must navigate in Normal mode" - {
 

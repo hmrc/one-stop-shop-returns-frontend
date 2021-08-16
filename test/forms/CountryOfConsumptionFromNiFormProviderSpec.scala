@@ -17,6 +17,8 @@
 package forms
 
 import forms.behaviours.StringFieldBehaviours
+import models.Country
+import org.scalacheck.Arbitrary.arbitrary
 import play.api.data.FormError
 
 class CountryOfConsumptionFromNiFormProviderSpec extends StringFieldBehaviours {
@@ -34,7 +36,7 @@ class CountryOfConsumptionFromNiFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      stringsWithMaxLength(maxLength)
+      arbitrary[Country].map(_.code)
     )
 
     behave like fieldWithMaxLength(

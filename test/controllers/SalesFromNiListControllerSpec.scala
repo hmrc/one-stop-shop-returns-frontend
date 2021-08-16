@@ -18,7 +18,8 @@ package controllers
 
 import base.SpecBase
 import forms.SalesFromNiListFormProvider
-import models.NormalMode
+import models.{Country, NormalMode}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{CountryOfConsumptionFromNiPage, SalesFromNiListPage}
 import play.api.i18n.Messages
@@ -34,9 +35,11 @@ class SalesFromNiListControllerSpec extends SpecBase with MockitoSugar {
 
   private lazy val salesFromNiListRoute = routes.SalesFromNiListController.onPageLoad(NormalMode, period).url
 
+  private val country = arbitrary[Country].sample.value
+
   private val baseAnswers =
     emptyUserAnswers
-      .set(CountryOfConsumptionFromNiPage(index), "foo").success.value
+      .set(CountryOfConsumptionFromNiPage(index), country).success.value
 
   "SalesFromNiList Controller" - {
 

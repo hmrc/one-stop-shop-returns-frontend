@@ -23,11 +23,11 @@
         govukButton: GovukButton
 )
 
-@(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: String)(implicit request: Request[_], messages: Messages)
+@(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: Country)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(
     messages("checkSalesFromNi.title")),
-    Some(messages("caption.fromNi.periodAndCountry", period.displayText, country))
+    Some(messages("caption.fromNi.periodAndCountry", period.displayText, country.name))
 ) {
 
     @formHelper(action = routes.CheckSalesFromNiController.onSubmit(mode, period, index)) {
@@ -35,7 +35,7 @@
         <h1 class="govuk-heading-xl">
             @headingWithCaption(
                 messages("checkSalesFromNi.heading"),
-                messages("caption.fromNi.periodAndCountry", period.displayText, country)
+                messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
             ).asHtml
         </h1>
 

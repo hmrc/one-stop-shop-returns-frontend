@@ -42,7 +42,7 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
   private val vatRate = VatRatesFromNi.Option1
   private val baseAnswers =
     emptyUserAnswers
-      .set(CountryOfConsumptionFromNiPage(index), country.name).success.value
+      .set(CountryOfConsumptionFromNiPage(index), country).success.value
       .set(VatRatesFromNiPage(index), List(VatRatesFromNi.Option1)).success.value
 
   private val formProvider = new VatOnSalesFromNiFormProvider()
@@ -62,7 +62,7 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatOnSalesFromNiView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, index, index, country.name, vatRate)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index, country, vatRate)(request, messages(application)).toString
       }
     }
 
@@ -86,7 +86,7 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
           period,
           index,
           index,
-          country.name,
+          country,
           vatRate
         )(request, messages(application)).toString
       }
@@ -133,7 +133,7 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index, country.name, vatRate)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index, country, vatRate)(request, messages(application)).toString
       }
     }
 
