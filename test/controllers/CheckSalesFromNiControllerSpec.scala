@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.NormalMode
-import pages.CountryOfConsumptionFromNiPage
+import pages.{CheckSalesFromNiPage, CountryOfConsumptionFromNiPage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import viewmodels.govuk.SummaryListFluency
@@ -44,8 +44,23 @@ class CheckSalesFromNiControllerSpec extends SpecBase with SummaryListFluency {
         val mainList = SummaryListViewModel(Seq.empty)
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(NormalMode, mainList, Seq.empty, period, country)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(NormalMode, mainList, Seq.empty, period, index, country)(request, messages(application)).toString
       }
+    }
+
+    "must redirect to the next page for a POST" in {
+
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, routes.CheckSalesFromNiController.onPageLoad(NormalMode, period, index).url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual CheckSalesFromNiPage.navigate(NormalMode, baseAnswers).url
+      }
+
     }
 
     "must redirect to Journey Recovery for a GET if no existing data is found" in {

@@ -17,20 +17,11 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, UserAnswers}
-import play.api.libs.json.JsPath
+import models.{NormalMode, UserAnswers}
 import play.api.mvc.Call
 
-case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
+case object CheckSalesFromNiPage extends Page {
 
-  override def path: JsPath = JsPath \ toString
-
-  override def toString: String = "soldGoodsFromNi"
-
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    answers.get(SoldGoodsFromNiPage) match {
-      case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, answers.period, Index(0))
-      case _          => routes.IndexController.onPageLoad()
-    }
-
+  override protected def navigateInNormalMode(answers: UserAnswers): Call =
+    routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period)
 }

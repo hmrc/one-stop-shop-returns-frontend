@@ -29,7 +29,7 @@
               @headingWithCaption(
                   messages("salesFromNiList.heading" + messageSuffix, list.size),
                   period.displayText
-              )
+              ).asHtml
           </h1>
 
           @addToList(list, Long, "salesFromNiList.change.hidden", "salesFromNiList.remove.hidden")
@@ -39,7 +39,7 @@
                   RadiosViewModel.yesNo(
                       field = form("value"),
                       legend = LegendViewModel(
-                          HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("addEuDetails.addAnother") + "</h2>"))
+                          HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("salesFromNiList.addAnother") + "</h2>"))
                       ).withSize(LegendSize.Medium)
                   )
               )

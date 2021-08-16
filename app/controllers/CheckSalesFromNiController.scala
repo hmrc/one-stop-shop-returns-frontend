@@ -18,8 +18,8 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Index, Mode, Period}
-import pages.VatRatesFromNiPage
+import models.{Index, Mode, NormalMode, Period}
+import pages.{CheckSalesFromNiPage, VatRatesFromNiPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -62,7 +62,12 @@ class CheckSalesFromNiController @Inject()(
                 )
             }).getOrElse(Seq.empty)
 
-          Ok(view(mode, mainList, vatRateLists, period, country))
+          Ok(view(mode, mainList, vatRateLists, period, index, country))
       }
+  }
+
+  def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
+    implicit request =>
+      Redirect(CheckSalesFromNiPage.navigate(mode, request.userAnswers))
   }
 }

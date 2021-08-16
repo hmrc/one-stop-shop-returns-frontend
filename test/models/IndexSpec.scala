@@ -40,7 +40,7 @@ class IndexSpec extends SpecBase with EitherValues with ScalaCheckPropertyChecks
 
       forAll(Gen.choose(Int.MinValue, 0)) {
         number =>
-          pathBindable.bind("key", number.toString) mustBe a[Left[String, Index]]
+          pathBindable.bind("key", number.toString) mustBe a[Left[_, Index]]
       }
     }
 
@@ -49,6 +49,17 @@ class IndexSpec extends SpecBase with EitherValues with ScalaCheckPropertyChecks
       forAll(Gen.choose(0, Int.MaxValue - 1)) {
         number =>
           pathBindable.unbind("key", Index(number)) mustEqual (number + 1).toString
+      }
+    }
+
+    "+" - {
+
+      "must return an index with a position equal to this index's position plus the new amount" in {
+
+        forAll(Gen.choose(0, 100), Gen.choose(0, 100)) {
+          case (original, additional) =>
+            Index(original) + additional mustEqual Index(original + additional)
+        }
       }
     }
   }

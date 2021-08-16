@@ -17,7 +17,8 @@
 package pages
 
 import controllers.routes
-import models.NormalMode
+import models.{Index, NormalMode}
+import models.VatRatesFromNi.{Option1, Option2}
 import pages.behaviours.PageBehaviours
 
 class VatOnSalesFromNiPageSpec extends PageBehaviours {
@@ -29,5 +30,38 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
     beSettable[Int](VatOnSalesFromNiPage(index, index))
 
     beRemovable[Int](VatOnSalesFromNiPage(index, index))
+
+    "must navigate in Normal Mode" - {
+
+      "when there is another VAT rate to collect answers for" - {
+
+        "to Net Value of Sales for the next index" in {
+
+          val countryIndex = Index(0)
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromNiPage(countryIndex), List(Option1, Option2)).success.value
+
+          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, Index(1)))
+        }
+      }
+
+      "when there are no more VAT rates to collect answers for" - {
+
+        "to Check Sales From NI" in {
+
+          val countryIndex = Index(0)
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromNiPage(countryIndex), List(Option1)).success.value
+
+          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex))
+        }
+      }
+    }
   }
 }

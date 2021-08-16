@@ -20,6 +20,9 @@ import play.api.mvc.PathBindable
 
 case class Index(position: Int) {
   val display: Int = position + 1
+
+  def +(that: Int): Index =
+    Index(this.position + that)
 }
 
 object Index {
