@@ -1,0 +1,545 @@
+{
+  "AT": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 20.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 19.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 13.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 10.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "BE": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 21.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 12.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 6.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "BG": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 20.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 9.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "CY": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 19.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 9.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "CZ": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 21.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 15.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 10.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "DE": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 19.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 7.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "DK": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 25.0,
+        "rateType": "STANDARD"
+      }
+    ]
+  },
+  "EE": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 20.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 9.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "EL": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 24.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 17.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 13.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 6.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "ES": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 21.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 7.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 10.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 4.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "FI": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 24.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 14.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 10.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "FR": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 20.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 13.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 10.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 8.5,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.5,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 2.1,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 1.05,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 0.9,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "HR": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 25.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 13.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "HU": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 27.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 18.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "IE": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 23.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 13.5,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 9.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 4.8,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "IT": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 22.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 10.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 4.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "LT": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 21.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 9.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "LU": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 17.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 14.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 8.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 3.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "LV": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 21.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 12.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "MT": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 18.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 7.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "NL": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 21.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 9.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "PL": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 23.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 8.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "PT": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 23.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 22.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 16.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 13.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 6.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "RO": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 19.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 9.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "SE": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 25.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 12.0,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 6.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "SI": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 22.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 9.5,
+        "rateType": "REDUCED"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 5.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  },
+  "SK": {
+    "rates": [
+      {
+        "validFrom": "2021-07-01",
+        "rate": 20.0,
+        "rateType": "STANDARD"
+      },
+      {
+        "validFrom": "2021-07-01",
+        "rate": 10.0,
+        "rateType": "REDUCED"
+      }
+    ]
+  }
+}
