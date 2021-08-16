@@ -17,16 +17,11 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, UserAnswers, VatRatesFromNi}
-import play.api.libs.json.JsPath
+import models.{NormalMode, UserAnswers}
 import play.api.mvc.Call
 
-case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRatesFromNi]] {
+case object CheckSalesFromNiPage extends Page {
 
-  override def path: JsPath = JsPath \ PageConstants.salesFromNi \ index.position \ toString
-
-  override def toString: String = "vatRates"
-
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, answers.period, index, Index(0))
+  override protected def navigateInNormalMode(answers: UserAnswers): Call =
+    routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period)
 }

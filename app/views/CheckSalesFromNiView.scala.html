@@ -18,28 +18,39 @@
 
 @this(
         layout: templates.Layout,
-        govukSummaryList: GovukSummaryList
+        formHelper: FormWithCSRF,
+        govukSummaryList: GovukSummaryList,
+        govukButton: GovukButton
 )
 
-@(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, country: String)(implicit request: Request[_], messages: Messages)
+@(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(
     messages("checkSalesFromNi.title")),
     Some(messages("caption.fromNi.periodAndCountry", period.displayText, country))
 ) {
 
-    <h1 class="govuk-heading-xl">
-        @headingWithCaption(
-            messages("checkSalesFromNi.heading"),
-            messages("caption.fromNi.periodAndCountry", period.displayText, country)
-        ).asHtml
-    </h1>
+    @formHelper(action = routes.CheckSalesFromNiController.onSubmit(mode, period, index)) {
 
-    @govukSummaryList(mainList)
+        <h1 class="govuk-heading-xl">
+            @headingWithCaption(
+                messages("checkSalesFromNi.heading"),
+                messages("caption.fromNi.periodAndCountry", period.displayText, country)
+            ).asHtml
+        </h1>
 
-    @for(list <- vatRateLists) {
-        <h2 class="govuk-heading-m">@{list.title}</h2>
+        @govukSummaryList(mainList)
 
-        @govukSummaryList(list.list)
+        @for(list <- vatRateLists) {
+            <h2 class="govuk-heading-m">@{
+                list.title
+            }</h2>
+
+            @govukSummaryList(list.list)
+        }
+
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
+        )
     }
 }

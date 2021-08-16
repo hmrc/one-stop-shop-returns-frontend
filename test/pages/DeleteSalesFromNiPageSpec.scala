@@ -16,12 +16,9 @@
 
 package pages
 
-import models.Index
 import pages.behaviours.PageBehaviours
 
 class DeleteSalesFromNiPageSpec extends PageBehaviours {
-
-  private val index = Index(0)
 
   "DeleteSalesFromNiPage" - {
 

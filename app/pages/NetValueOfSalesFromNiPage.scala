@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, UserAnswers}
+import models.{Index, NormalMode, UserAnswers}
 import PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -29,5 +29,5 @@ case class NetValueOfSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) e
   override def toString: String = "netValueOfSales"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    routes.VatOnSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, vatRateIndex)
 }

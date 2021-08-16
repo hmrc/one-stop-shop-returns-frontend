@@ -17,16 +17,20 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, UserAnswers, VatRatesFromNi}
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import models.NormalMode
+import pages.behaviours.PageBehaviours
 
-case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRatesFromNi]] {
+class CheckSalesFromNiPageSpec extends PageBehaviours {
 
-  override def path: JsPath = JsPath \ PageConstants.salesFromNi \ index.position \ toString
+  "CheckSalesFromNi page" - {
 
-  override def toString: String = "vatRates"
+    "must navigate in Normal mode" - {
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, answers.period, index, Index(0))
+      "to Sales From NI List" in {
+
+        CheckSalesFromNiPage.navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.SalesFromNiListController.onPageLoad(NormalMode, emptyUserAnswers.period))
+      }
+    }
+  }
 }

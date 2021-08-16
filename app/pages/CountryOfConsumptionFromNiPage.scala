@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, UserAnswers}
+import models.{Index, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -28,5 +28,5 @@ case class CountryOfConsumptionFromNiPage(index: Index) extends QuestionPage[Str
   override def toString: String = "countryOfConsumption"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    routes.VatRatesFromNiController.onPageLoad(NormalMode, answers.period, index)
 }
