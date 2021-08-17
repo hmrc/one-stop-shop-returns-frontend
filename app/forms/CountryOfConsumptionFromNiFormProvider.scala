@@ -17,15 +17,16 @@
 package forms
 
 import javax.inject.Inject
-
 import forms.mappings.Mappings
+import models.Country
 import play.api.data.Form
 
 class CountryOfConsumptionFromNiFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[String] =
+  def apply(): Form[Country] =
     Form(
       "value" -> text("countryOfConsumptionFromNi.error.required")
         .verifying(maxLength(100, "countryOfConsumptionFromNi.error.length"))
+        .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
     )
 }

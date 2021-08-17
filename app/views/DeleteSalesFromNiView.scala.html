@@ -6,11 +6,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, index: Index, country: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, index: Index, country: Country)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
-    messages("deleteSalesFromNi.title", country)),
+    messages("deleteSalesFromNi.title", country.name)),
     Some(period.displayText)
 ) {
 
@@ -25,7 +25,7 @@
                 field = form("value"),
                 legend = LegendViewModel(
                     headingWithCaption(
-                        messages("deleteSalesFromNi.heading", country),
+                        messages("deleteSalesFromNi.heading", country.name),
                         period.displayText
                     )
                 ).asPageHeading()

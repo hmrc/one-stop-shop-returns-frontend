@@ -8,12 +8,12 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index, country: String, vatRate: VatRatesFromNi)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index, country: Country, vatRate: VatRatesFromNi)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
     messages("vatOnSalesFromNi.title", vatRate.toString)),
-    Some(messages("caption.fromNi.periodAndCountry", period.displayText, country))
+    Some(messages("caption.fromNi.periodAndCountry", period.displayText, country.name))
 ) {
 
     @formHelper(action = routes.VatOnSalesFromNiController.onSubmit(mode, period, countryIndex, vatRateIndex), 'autoComplete -> "off") {
@@ -28,7 +28,7 @@
                 label = LabelViewModel(
                     headingWithCaption(
                         messages("vatOnSalesFromNi.heading", vatRate.toString),
-                        messages("caption.fromNi.periodAndCountry", period.displayText, country)
+                        messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
                     )
                 ).asPageHeading()
             )

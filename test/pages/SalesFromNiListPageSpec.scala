@@ -18,9 +18,12 @@ package pages
 
 import base.SpecBase
 import controllers.routes
-import models.{Index, NormalMode}
+import models.{Country, Index, NormalMode}
+import org.scalacheck.Arbitrary.arbitrary
 
 class SalesFromNiListPageSpec extends SpecBase {
+
+  private val country = arbitrary[Country].sample.value
 
   "SalesFromNiListPage" - {
 
@@ -32,7 +35,7 @@ class SalesFromNiListPageSpec extends SpecBase {
 
           val answers
           = emptyUserAnswers
-            .set(CountryOfConsumptionFromNiPage(Index(0)), "foo").success.value
+            .set(CountryOfConsumptionFromNiPage(Index(0)), country).success.value
 
           SalesFromNiListPage.navigate(answers, NormalMode, addAnother = true)
             .mustEqual(routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, Index(1)))

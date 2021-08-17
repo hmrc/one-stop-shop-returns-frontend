@@ -52,9 +52,12 @@
             )))
         } else None
     )
+
+    <link href="@routes.Assets.versioned("stylesheets/accessible-autocomplete.min.css").url" media="screen" rel="stylesheet" type="text/css" />
 }
 
 @additionalScripts = {
+    <script src='@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.js")'></script>
     <script src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
 }
 

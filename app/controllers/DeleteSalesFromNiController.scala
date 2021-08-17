@@ -43,7 +43,7 @@ class DeleteSalesFromNiController @Inject()(
       getCountry(index) {
         country =>
 
-          val form         = formProvider(country)
+          val form         = formProvider(country.name)
           val preparedForm = request.userAnswers.get(DeleteSalesFromNiPage(index)) match {
             case None => form
             case Some(value) => form.fill(value)
@@ -58,7 +58,7 @@ class DeleteSalesFromNiController @Inject()(
       getCountryAsync(index) {
         country =>
 
-          val form = formProvider(country)
+          val form = formProvider(country.name)
 
           form.bindFromRequest().fold(
             formWithErrors =>

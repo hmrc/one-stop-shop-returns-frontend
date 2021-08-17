@@ -17,7 +17,7 @@
 package controllers
 
 import models.requests.DataRequest
-import models.{Index, VatRatesFromNi}
+import models.{Country, Index, VatRatesFromNi}
 import pages.CountryOfConsumptionFromNiPage
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
@@ -29,7 +29,7 @@ import scala.concurrent.Future
 trait SalesFromNiBaseController {
 
   protected def getCountry(index: Index)
-                          (block: String => Result)
+                          (block: Country => Result)
                           (implicit request: DataRequest[AnyContent]): Result =
     request.userAnswers
       .get(CountryOfConsumptionFromNiPage(index))
@@ -38,7 +38,7 @@ trait SalesFromNiBaseController {
 
 
   protected def getCountryAsync(index: Index)
-                               (block: String => Future[Result])
+                               (block: Country => Future[Result])
                                (implicit request: DataRequest[AnyContent]): Future[Result] =
     request.userAnswers
       .get(CountryOfConsumptionFromNiPage(index))
@@ -46,7 +46,7 @@ trait SalesFromNiBaseController {
       .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
 
   protected def getCountryAndVatRate(countryIndex: Index, vatRateIndex: Index)
-                                    (block: (String, VatRatesFromNi) => Result)
+                                    (block: (Country, VatRatesFromNi) => Result)
                                     (implicit request: DataRequest[AnyContent]): Result =
     (for {
       country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))
@@ -55,7 +55,7 @@ trait SalesFromNiBaseController {
       .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
 
   protected def getCountryAndVatRateAsync(countryIndex: Index, vatRateIndex: Index)
-                                         (block: (String, VatRatesFromNi) => Future[Result])
+                                         (block: (Country, VatRatesFromNi) => Future[Result])
                                          (implicit request: DataRequest[AnyContent]): Future[Result] =
     (for {
       country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))
