@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class VatRatesFromNiController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: VatRatesFromNiFormProvider,
-                                        view: VatRatesFromNiView
+                                        view: VatRatesFromNiView,
                                       )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
