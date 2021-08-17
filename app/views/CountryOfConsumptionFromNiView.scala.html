@@ -14,7 +14,7 @@
 
 @layout(pageTitle = title(form, messages("countryOfConsumptionFromNi.title"), Some(period.displayText))) {
 
-    @formHelper(action = routes.CountryOfConsumptionFromNiController.onSubmit(mode, period, index)) {
+    @formHelper(action = routes.CountryOfConsumptionFromNiController.onSubmit(mode, period, index), 'autocomplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
