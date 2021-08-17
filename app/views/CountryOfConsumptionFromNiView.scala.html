@@ -1,11 +1,13 @@
 @import viewmodels.InputWidth._
+@import viewmodels.InputWidth
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukInput: GovukInput,
-    govukButton: GovukButton
+    govukButton: GovukButton,
+    govukSelect: GovukSelect
 )
 
 @(form: Form[_], mode: Mode, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
@@ -18,15 +20,18 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukInput(
-            InputViewModel(
+        @govukSelect(
+            SelectViewModel(
                 field = form("value"),
+                items = Country.euCountrySelectItems,
                 label = LabelViewModel(
                     headingWithCaption(messages("countryOfConsumptionFromNi.heading"), period.displayText)
                 ).asPageHeading()
             )
-            .withWidth(Full)
+            .withCssClass(InputWidth.Fixed20.toString)
+            .withCssClass("autocomplete")
         )
+
 
         @govukButton(
             ButtonViewModel(messages("site.continue"))
