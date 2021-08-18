@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Country, Index, NormalMode, UserAnswers}
+import models.{CheckMode, Country, Index, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -29,4 +29,7 @@ case class CountryOfConsumptionFromNiPage(index: Index) extends QuestionPage[Cou
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     routes.VatRatesFromNiController.onPageLoad(NormalMode, answers.period, index)
+
+  override def navigateInCheckMode(answers: UserAnswers): Call =
+    routes.VatRatesFromNiController.onPageLoad(CheckMode, answers.period, index)
 }

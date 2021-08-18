@@ -28,7 +28,7 @@ object SalesFromNiSummary {
     answers.get(AllSalesFromNiQuery).getOrElse(List.empty).zipWithIndex.map {
       case (details, index) =>
         ListItem(
-          name      = HtmlFormat.escape(details.countryOfConsumption).toString,
+          name      = HtmlFormat.escape(details.countryOfConsumption.name).toString,
           changeUrl = routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, Index(index)).url,
           removeUrl = routes.DeleteSalesFromNiController.onPageLoad(currentMode, answers.period, Index(index)).url
         )

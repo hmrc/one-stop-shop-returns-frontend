@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -30,4 +30,7 @@ case class NetValueOfSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) e
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     routes.VatOnSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, vatRateIndex)
+
+  override def navigateInCheckMode(answers: UserAnswers): Call =
+    routes.VatOnSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex)
 }
