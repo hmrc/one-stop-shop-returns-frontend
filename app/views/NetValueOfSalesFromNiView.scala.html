@@ -34,6 +34,8 @@
             )
             .asNumeric()
             .withWidth(Fixed10)
+            .withCssClass("govuk-currency-input__inner__input")
+            .withPrefix(PrefixOrSuffix(content = Text("£")))
         )
 
         @govukButton(

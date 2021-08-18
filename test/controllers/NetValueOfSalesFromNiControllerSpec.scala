@@ -34,7 +34,7 @@ import scala.concurrent.Future
 
 class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
-  private val validAnswer = 0
+  private val validAnswer: BigDecimal = 0
 
   private lazy val netValueOfSalesFromNiRoute = routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, period, index, index).url
 

@@ -17,12 +17,14 @@
 package generators
 
 import java.time.{Instant, LocalDate, ZoneOffset}
-
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
+import play.api.Logging
 
-trait Generators extends UserAnswersGenerator with PageGenerators with ModelGenerators with UserAnswersEntryGenerators {
+import scala.math.BigDecimal.RoundingMode
+
+trait Generators extends UserAnswersGenerator with PageGenerators with ModelGenerators with UserAnswersEntryGenerators with Logging {
 
   implicit val dontShrink: Shrink[String] = Shrink.shrinkAny
 
@@ -51,11 +53,22 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
     genIntersperseString(numberGen, ",")
   }
 
+  def decimalInRangeWithCommas(min: BigDecimal, max: BigDecimal): Gen[String] = {
+    val numberGen = choose[BigDecimal](min, max).map(_.setScale(2, RoundingMode.HALF_UP)).map(_.toString)
+    genIntersperseString(numberGen, ",")
+  }
+
   def intsLargerThanMaxValue: Gen[BigInt] =
     arbitrary[BigInt] suchThat(x => x > Int.MaxValue)
 
   def intsSmallerThanMinValue: Gen[BigInt] =
     arbitrary[BigInt] suchThat(x => x < Int.MinValue)
+
+  def currencyLargerThanMinValue: Gen[BigDecimal] =
+    arbitrary[BigDecimal] suchThat(x => x > 0)
+
+  def currencySmallerThanMaxValue: Gen[BigDecimal] =
+    arbitrary[BigDecimal] suchThat(x => x < 1000000)
 
   def nonNumerics: Gen[String] =
     alphaStr suchThat(_.size > 0)
@@ -74,6 +87,9 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
 
   def intsOutsideRange(min: Int, max: Int): Gen[Int] =
     arbitrary[Int] suchThat(x => x < min || x > max)
+
+  def currencyOutsideRange(min: BigDecimal, max: BigDecimal): Gen[BigDecimal] =
+    arbitrary[BigDecimal] suchThat(x => x < min || x > max)
 
   def nonBooleans: Gen[String] =
     arbitrary[String]

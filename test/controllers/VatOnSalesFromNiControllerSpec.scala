@@ -34,7 +34,7 @@ import scala.concurrent.Future
 
 class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
-  private val validAnswer = 0
+  private val validAnswer: BigDecimal = 0
 
   private lazy val vatOnSalesFromNiRoute = routes.VatOnSalesFromNiController.onPageLoad(NormalMode, period, index, index).url
 
