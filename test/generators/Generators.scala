@@ -20,11 +20,10 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
-import play.api.Logging
 
 import scala.math.BigDecimal.RoundingMode
 
-trait Generators extends UserAnswersGenerator with PageGenerators with ModelGenerators with UserAnswersEntryGenerators with Logging {
+trait Generators extends UserAnswersGenerator with PageGenerators with ModelGenerators with UserAnswersEntryGenerators {
 
   implicit val dontShrink: Shrink[String] = Shrink.shrinkAny
 
@@ -64,12 +63,6 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
   def intsSmallerThanMinValue: Gen[BigInt] =
     arbitrary[BigInt] suchThat(x => x < Int.MinValue)
 
-  def currencyLargerThanMinValue: Gen[BigDecimal] =
-    arbitrary[BigDecimal] suchThat(x => x > 0)
-
-  def currencySmallerThanMaxValue: Gen[BigDecimal] =
-    arbitrary[BigDecimal] suchThat(x => x < 1000000)
-
   def nonNumerics: Gen[String] =
     alphaStr suchThat(_.size > 0)
 
@@ -87,10 +80,7 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
 
   def intsOutsideRange(min: Int, max: Int): Gen[Int] =
     arbitrary[Int] suchThat(x => x < min || x > max)
-
-  def currencyOutsideRange(min: BigDecimal, max: BigDecimal): Gen[BigDecimal] =
-    arbitrary[BigDecimal] suchThat(x => x < min || x > max)
-
+    
   def nonBooleans: Gen[String] =
     arbitrary[String]
       .suchThat (_.nonEmpty)
