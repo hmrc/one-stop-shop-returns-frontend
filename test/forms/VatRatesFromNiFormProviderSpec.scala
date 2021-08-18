@@ -17,29 +17,60 @@
 package forms
 
 import forms.behaviours.CheckboxFieldBehaviours
-import models.VatRatesFromNi
+import generators.Generators
+import models.VatRate
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.data.FormError
 
-class VatRatesFromNiFormProviderSpec extends CheckboxFieldBehaviours {
+class VatRatesFromNiFormProviderSpec extends CheckboxFieldBehaviours with ScalaCheckPropertyChecks with Generators {
 
-  val form = new VatRatesFromNiFormProvider()()
+  private val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+  private val formProvider = new VatRatesFromNiFormProvider()
+  private val form = formProvider(vatRates)
 
   ".value" - {
 
     val fieldName = "value"
     val requiredKey = "vatRatesFromNi.error.required"
 
-    behave like checkboxFieldList[VatRatesFromNi](
-      form,
-      fieldName,
-      validValues  = VatRatesFromNi.values,
-      invalidError = FormError(s"$fieldName[0]", "error.invalid")
-    )
+    "must bind all valid values" in {
 
-    behave like mandatoryCheckboxField(
-      form,
-      fieldName,
-      requiredKey
-    )
+      val data =
+        Map(
+          s"$fieldName[0]" -> vatRates.head.rate.toString,
+          s"$fieldName[1]" -> vatRates.tail.head.rate.toString
+        )
+
+      val result = form.bind(data)
+      result.get mustEqual vatRates
+      result.errors mustBe empty
+    }
+
+    "must fail to bind invalid values" in {
+
+      forAll(arbitrary[VatRate]) {
+        vatRate =>
+
+          whenever(!vatRates.contains(vatRate)) {
+            val data = Map(s"$fieldName[0]" -> vatRate.rate.toString)
+
+            form.bind(data).errors must contain(FormError(fieldName, "vatRatesFromNi.error.invalid"))
+          }
+      }
+    }
+
+    "must fail to bind when the key is not present" in {
+
+      val data = Map.empty[String, String]
+      form.bind(data).errors must contain theSameElementsAs Seq(FormError(fieldName, requiredKey))
+    }
+
+    "must fail to bind when no answer is selected" in {
+
+      val data = Map(s"$fieldName[0]" -> "")
+      form.bind(data).errors must contain theSameElementsAs Seq(FormError(s"$fieldName[0]", requiredKey))
+    }
   }
 }

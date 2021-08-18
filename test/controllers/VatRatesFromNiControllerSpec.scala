@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.VatRatesFromNiFormProvider
-import models.{Country, NormalMode, VatRatesFromNi}
+import models.{Country, NormalMode, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
@@ -28,6 +28,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.VatRateService
 import views.html.VatRatesFromNiView
 
 import scala.concurrent.Future
@@ -37,7 +38,9 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
   private lazy val vatRatesFromNiRoute = routes.VatRatesFromNiController.onPageLoad(NormalMode, period, index).url
 
   private val formProvider = new VatRatesFromNiFormProvider()
-  private val form = formProvider()
+  private val vatRate = arbitrary[VatRate].sample.value
+  private val vatRates = List(vatRate)
+  private val form = formProvider(vatRates)
   private val country = arbitrary[Country].sample.value
   private val answersWithCountry = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), country).success.value
 
@@ -52,56 +55,48 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[VatRatesFromNiView]
-
         status(result) mustEqual OK
-
-        contentAsString(result) mustEqual view(form, NormalMode, period, index, country)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = answersWithCountry.set(VatRatesFromNiPage(index), VatRatesFromNi.values.toList).success.value
+      val userAnswers = answersWithCountry.set(VatRatesFromNiPage(index), vatRates).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, vatRatesFromNiRoute)
 
-        val view = application.injector.instanceOf[VatRatesFromNiView]
-
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form.fill(VatRatesFromNi.values.toList),
-          NormalMode,
-          period,
-          index,
-          country
-        )(request, messages(application)).toString
       }
     }
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
+      val mockVatRateService    = mock[VatRateService]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockVatRateService.vatRates(any(), any())) thenReturn vatRates
 
       val application =
         applicationBuilder(userAnswers = Some(answersWithCountry))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(
+            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[VatRateService].toInstance(mockVatRateService)
+          )
           .build()
 
       running(application) {
         val request =
           FakeRequest(POST, vatRatesFromNiRoute)
-            .withFormUrlEncodedBody(("value[0]", VatRatesFromNi.values.head.toString))
+            .withFormUrlEncodedBody(("value[0]", vatRate.rate.toString))
 
         val result = route(application, request).value
-        val expectedAnswers = answersWithCountry.set(VatRatesFromNiPage(index), List(VatRatesFromNi.values.head)).success.value
+        val expectedAnswers = answersWithCountry.set(VatRatesFromNiPage(index), vatRates).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual VatRatesFromNiPage(index).navigate(NormalMode, expectedAnswers).url
@@ -125,7 +120,6 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, country)(request, messages(application)).toString
       }
     }
 
@@ -150,7 +144,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, vatRatesFromNiRoute)
-            .withFormUrlEncodedBody(("value[0]", VatRatesFromNi.values.head.toString))
+            .withFormUrlEncodedBody(("value[0]", vatRate.rate.toString))
 
         val result = route(application, request).value
 

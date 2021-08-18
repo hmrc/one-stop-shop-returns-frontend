@@ -17,18 +17,18 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, VatRatesFromNi}
+import models.{Index, NormalMode, VatRate}
 import pages.behaviours.PageBehaviours
 
 class VatRatesFromNiPageSpec extends PageBehaviours {
 
   "VatRatesFromNiPage" - {
 
-    beRetrievable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
+    beRetrievable[List[VatRate]](VatRatesFromNiPage(index))
 
-    beSettable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
+    beSettable[List[VatRate]](VatRatesFromNiPage(index))
 
-    beRemovable[List[VatRatesFromNi]](VatRatesFromNiPage(index))
+    beRemovable[List[VatRate]](VatRatesFromNiPage(index))
 
     "must navigate in Normal mode" - {
 

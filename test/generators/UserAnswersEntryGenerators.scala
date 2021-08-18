@@ -17,7 +17,7 @@
 package generators
 
 import models._
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
 import pages._
 import play.api.libs.json.{JsValue, Json}
@@ -28,7 +28,7 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
     Arbitrary {
       for {
         page  <- arbitrary[VatRatesFromNiPage]
-        value <- arbitrary[VatRatesFromNi].map(Json.toJson(_))
+        value <- Gen.nonEmptyListOf(arbitrary[VatRate]).map(Json.toJson(_))
       } yield (page, value)
     }
 

@@ -17,8 +17,9 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode}
-import models.VatRatesFromNi.{Option1, Option2}
+import models.{Index, NormalMode, VatRate}
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
 
 class VatOnSalesFromNiPageSpec extends PageBehaviours {
@@ -39,9 +40,11 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
 
           val countryIndex = Index(0)
 
+          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+
           val answers =
             emptyUserAnswers
-              .set(VatRatesFromNiPage(countryIndex), List(Option1, Option2)).success.value
+              .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
 
           VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
             .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, Index(1)))
@@ -54,9 +57,10 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
 
           val countryIndex = Index(0)
 
+          val vatRate = arbitrary[VatRate].sample.value
           val answers =
             emptyUserAnswers
-              .set(VatRatesFromNiPage(countryIndex), List(Option1)).success.value
+              .set(VatRatesFromNiPage(countryIndex), List(vatRate)).success.value
 
           VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
             .mustEqual(routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex))

@@ -17,7 +17,7 @@
 package controllers
 
 import models.requests.DataRequest
-import models.{Country, Index, VatRatesFromNi}
+import models.{Country, Index, VatRate}
 import pages.CountryOfConsumptionFromNiPage
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
@@ -46,7 +46,7 @@ trait SalesFromNiBaseController {
       .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
 
   protected def getCountryAndVatRate(countryIndex: Index, vatRateIndex: Index)
-                                    (block: (Country, VatRatesFromNi) => Result)
+                                    (block: (Country, VatRate) => Result)
                                     (implicit request: DataRequest[AnyContent]): Result =
     (for {
       country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))
@@ -55,7 +55,7 @@ trait SalesFromNiBaseController {
       .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
 
   protected def getCountryAndVatRateAsync(countryIndex: Index, vatRateIndex: Index)
-                                         (block: (Country, VatRatesFromNi) => Future[Result])
+                                         (block: (Country, VatRate) => Future[Result])
                                          (implicit request: DataRequest[AnyContent]): Future[Result] =
     (for {
       country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))

@@ -16,11 +16,11 @@
 
 package queries
 
-import models.{Index, VatRatesFromNi}
-import play.api.libs.json.JsPath
+import models.{Index, VatRate}
 import pages.PageConstants.salesFromNi
+import play.api.libs.json.JsPath
 
-case class VatRateQuery(countryIndex: Index, vatRateIndex: Index) extends Gettable[VatRatesFromNi] {
+case class VatRateQuery(countryIndex: Index, vatRateIndex: Index) extends Gettable[VatRate] {
 
   override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ "vatRates" \ vatRateIndex.position
 }
