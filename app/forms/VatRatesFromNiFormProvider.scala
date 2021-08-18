@@ -17,16 +17,36 @@
 package forms
 
 import forms.mappings.Mappings
-import models.VatRatesFromNi
+import models.VatRate
 import play.api.data.Form
 import play.api.data.Forms.list
+import play.api.data.validation.{Constraint, Invalid, Valid}
 
 import javax.inject.Inject
 
 class VatRatesFromNiFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[List[VatRatesFromNi]] =
+  def apply(vatRates: Seq[VatRate]): Form[List[VatRate]] =
     Form(
-      "value" -> list(enumerable[VatRatesFromNi]("vatRatesFromNi.error.required")).verifying(nonEmptySeq("vatRatesFromNi.error.required"))
+      "value" ->
+        list(text("vatRatesFromNi.error.required"))
+          .verifying(
+            firstError(
+              nonEmptySeq("vatRatesFromNi.error.required"),
+              validVatRates(vatRates)
+            )
+          )
+          .transform[List[VatRate]](
+            _.map(rate => vatRates.find(_.rate.toString == rate).get),
+            _.map(_.rate.toString)
+          )
     )
+
+  private def validVatRates(vatRates: Seq[VatRate]): Constraint[List[String]] =
+    Constraint {
+      case seq if seq.forall(vatRates.map(_.rate.toString).contains) =>
+        Valid
+      case _ =>
+        Invalid("vatRatesFromNi.error.invalid")
+    }
 }

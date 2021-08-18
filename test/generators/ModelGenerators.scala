@@ -26,11 +26,6 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 
 trait ModelGenerators {
 
-  implicit lazy val arbitraryVatRatesFromNi: Arbitrary[VatRatesFromNi] =
-    Arbitrary {
-      Gen.oneOf(VatRatesFromNi.values)
-    }
-
   private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
 
     def toMillis(date: LocalDate): Long =
@@ -41,6 +36,15 @@ trait ModelGenerators {
         Instant.ofEpochMilli(millis).atOffset(ZoneOffset.UTC).toLocalDate
     }
   }
+
+  implicit def arbitraryVatRate: Arbitrary[VatRate] =
+    Arbitrary {
+      for {
+        rate <- Gen.choose[BigDecimal](BigDecimal(0.1), BigDecimal(100))
+        rateType <- Gen.oneOf(VatRateType.values)
+        validFrom <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2100, 1, 1))
+      } yield VatRate(rate, rateType, validFrom)
+    }
 
   implicit val arbitraryPeriod: Arbitrary[Period] =
     Arbitrary {

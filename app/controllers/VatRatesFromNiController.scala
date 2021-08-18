@@ -18,11 +18,16 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromNiFormProvider
-import models.{Index, Mode, Period}
+import models.{Index, Mode, Period, VatRate}
 import pages.VatRatesFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatRateService
+import uk.gov.hmrc.govukfrontend.views.viewmodels.checkboxes.CheckboxItem
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax._
+import viewmodels.govuk.checkbox._
 import views.html.VatRatesFromNiView
 
 import javax.inject.Inject
@@ -32,10 +37,10 @@ class VatRatesFromNiController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: VatRatesFromNiFormProvider,
                                         view: VatRatesFromNiView,
+                                        vatRateService: VatRateService
                                       )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
@@ -43,12 +48,16 @@ class VatRatesFromNiController @Inject()(
       getCountry(index) {
         country =>
 
+          val vatRates = vatRateService.vatRates(period, country)
+          val form     = formProvider(vatRates)
+
           val preparedForm = request.userAnswers.get(VatRatesFromNiPage(index)) match {
             case None => form
-            case Some(value) => form.fill(value)
+            case Some(value) =>
+              form.fill(value)
           }
 
-          Ok(view(preparedForm, mode, period, index, country))
+          Ok(view(preparedForm, mode, period, index, country, checkboxItems(vatRates)))
       }
   }
 
@@ -57,9 +66,12 @@ class VatRatesFromNiController @Inject()(
       getCountryAsync(index) {
         country =>
 
+          val vatRates = vatRateService.vatRates(period, country)
+          val form     = formProvider(vatRates)
+
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, index, country))),
+              BadRequest(view(formWithErrors, mode, period, index, country, checkboxItems(vatRates))).toFuture,
 
             value =>
               for {
@@ -69,4 +81,15 @@ class VatRatesFromNiController @Inject()(
           )
       }
   }
+
+  private def checkboxItems(vatRates: Seq[VatRate]): Seq[CheckboxItem] =
+    vatRates.zipWithIndex.map {
+      case (vatRate, index) =>
+        CheckboxItemViewModel(
+          content = Text(vatRate.rateForDisplay),
+          fieldId = "value",
+          index   = index,
+          value   = vatRate.rate.toString
+        )
+    }
 }

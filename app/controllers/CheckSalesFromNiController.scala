@@ -18,7 +18,7 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Index, Mode, NormalMode, Period}
+import models.{Index, Mode, Period}
 import pages.{CheckSalesFromNiPage, VatRatesFromNiPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -52,7 +52,7 @@ class CheckSalesFromNiController @Inject()(
               case (vatRate, i) =>
 
                 TitledSummaryList(
-                  title = messages("checkSalesFromNi.vatRateTitle", vatRate.toString),
+                  title = messages("checkSalesFromNi.vatRateTitle", vatRate.rateForDisplay),
                   list = SummaryListViewModel(
                     rows = Seq(
                       NetValueOfSalesFromNiSummary.row(request.userAnswers, index, Index(i)),

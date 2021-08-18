@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.VatOnSalesFromNiFormProvider
-import models.{Country, NormalMode, VatRatesFromNi}
+import models.{Country, NormalMode, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
@@ -39,11 +39,11 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
   private lazy val vatOnSalesFromNiRoute = routes.VatOnSalesFromNiController.onPageLoad(NormalMode, period, index, index).url
 
   private val country = arbitrary[Country].sample.value
-  private val vatRate = VatRatesFromNi.Option1
+  private val vatRate = arbitrary[VatRate].sample.value
   private val baseAnswers =
     emptyUserAnswers
       .set(CountryOfConsumptionFromNiPage(index), country).success.value
-      .set(VatRatesFromNiPage(index), List(VatRatesFromNi.Option1)).success.value
+      .set(VatRatesFromNiPage(index), List(vatRate)).success.value
 
   private val formProvider = new VatOnSalesFromNiFormProvider()
   private val form = formProvider(vatRate)

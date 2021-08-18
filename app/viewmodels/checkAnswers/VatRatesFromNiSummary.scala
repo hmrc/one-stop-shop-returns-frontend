@@ -35,9 +35,9 @@ object VatRatesFromNiSummary  {
         val value = ValueViewModel(
           HtmlContent(
             vatRatesFromNi.map {
-              answer => HtmlFormat.escape(messages(s"vatRatesFromNi.$answer")).toString
+              answer => HtmlFormat.escape(answer.rateForDisplay).toString
             }
-            .mkString(",<br>")
+            .mkString("<br>")
           )
         )
 
