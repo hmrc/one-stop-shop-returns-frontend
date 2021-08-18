@@ -109,6 +109,7 @@ vatRatesFromNi.title = Which VAT rates did you charge on sales?
 vatRatesFromNi.heading = Which VAT rates did you charge on sales?
 vatRatesFromNi.checkYourAnswersLabel = VAT rates on sales
 vatRatesFromNi.error.required = Select which VAT rates you charged on sales
+vatRatesFromNi.error.invalid = Select which VAT rates you charged on sales
 vatRatesFromNi.change.hidden = the VAT rates you charged on sales
 
 contactHmrc.title = contactHmrc
