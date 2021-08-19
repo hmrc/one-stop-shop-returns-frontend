@@ -17,7 +17,9 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, VatRate}
+import models.{CheckMode, Index, NormalMode, VatRate}
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
 
 class VatRatesFromNiPageSpec extends PageBehaviours {
@@ -36,6 +38,39 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
 
         VatRatesFromNiPage(index).navigate(NormalMode, emptyUserAnswers)
           .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, index, Index(0)))
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to Nat Value of Sales" in {
+
+        VatRatesFromNiPage(index).navigate(CheckMode, emptyUserAnswers)
+          .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, emptyUserAnswers.period, index, Index(0)))
+      }
+    }
+
+    "cleanup" - {
+      val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+
+      "must remove values when answer changes" in {
+        val newVatRates = Gen.listOfN(1, arbitrary[VatRate]).sample.value
+
+        val answers = emptyUserAnswers
+          .set(VatRatesFromNiPage(index), vatRates).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), BigDecimal(0)).success.value
+          .set(VatRatesFromNiPage(index), newVatRates).success.value
+
+
+        val expected = emptyUserAnswers
+          .set(VatRatesFromNiPage(index), newVatRates).success.value
+
+        val actual = VatRatesFromNiPage(index).cleanup(Some(newVatRates), answers).success.value
+
+        actual mustEqual expected
       }
     }
   }

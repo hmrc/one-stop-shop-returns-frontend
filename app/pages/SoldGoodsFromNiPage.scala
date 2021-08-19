@@ -17,9 +17,12 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.AllSalesFromNiQuery
+
+import scala.util.{Success, Try}
 
 case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
 
@@ -33,4 +36,16 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
       case _          => routes.IndexController.onPageLoad()
     }
 
+  override def navigateInCheckMode(answers: UserAnswers): Call =
+    answers.get(SoldGoodsFromNiPage) match {
+      case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, Index(0)) // TODO index
+      case _ => routes.CheckYourAnswersController.onPageLoad(answers.period)
+    }
+
+  override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
+    value match {
+      case Some(false) => userAnswers.remove(AllSalesFromNiQuery)
+      case _ => super.cleanup(value, userAnswers)
+    }
+  }
 }

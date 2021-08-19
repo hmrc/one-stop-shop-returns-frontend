@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package pages
+package models
 
-import controllers.routes
-import models.{CheckMode, NormalMode, UserAnswers}
-import play.api.mvc.Call
+import play.api.libs.json.{Json, OFormat}
 
-case object CheckSalesFromNiPage extends Page {
+case class SalesAtVatRate(
+                           vatOnSales: BigDecimal,
+                           netValueOfSales: BigDecimal
+                         )
 
-  override protected def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period)
+object SalesAtVatRate {
 
-  override protected def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.CheckYourAnswersController.onPageLoad(answers.period)
+  implicit val format: OFormat[SalesAtVatRate] =
+    Json.format[SalesAtVatRate]
 }
+
+

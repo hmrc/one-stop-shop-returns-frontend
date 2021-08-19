@@ -17,7 +17,8 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode}
+import models.{CheckMode, Country, Index, NormalMode, VatRate}
+import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
 class SoldGoodsFromNiPageSpec extends PageBehaviours {
@@ -46,6 +47,89 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
 
         SoldGoodsFromNiPage.navigate(NormalMode, answers)
           .mustEqual(routes.IndexController.onPageLoad())
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "when the answer is yes" - {
+
+        "to Country of Consumption" in {
+
+          val answers = emptyUserAnswers.set(SoldGoodsFromNiPage, true).success.value
+
+          SoldGoodsFromNiPage.navigate(CheckMode, answers)
+            .mustEqual(routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, index))
+        }
+      }
+
+      "when the answer is no" - {
+
+        "to Check Your Answers and clear previous set answers" in {
+
+          val answers = emptyUserAnswers
+            .set(SoldGoodsFromNiPage, false).success.value
+
+          SoldGoodsFromNiPage.navigate(CheckMode, answers)
+            .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
+        }
+      }
+    }
+
+    "cleanup" - {
+      val country: Country = arbitrary[Country].sample.value
+      val vatRate: VatRate = arbitrary[VatRate].sample.value
+
+      "must remove values when answer is no" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(CountryOfConsumptionFromNiPage(index), country).success.value
+          .set(VatRatesFromNiPage(index), List(vatRate)).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
+
+        val expected = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+        val result = SoldGoodsFromNiPage.cleanup(Some(false), answers).success.value
+
+        result mustBe expected
+      }
+
+      "must remove multiple values when answer is no" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(CountryOfConsumptionFromNiPage(index), country).success.value
+          .set(VatRatesFromNiPage(index), List(vatRate)).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), BigDecimal(0)).success.value
+          .set(CountryOfConsumptionFromNiPage(index + 1), country).success.value
+          .set(VatRatesFromNiPage(index + 1), List(vatRate)).success.value
+          .set(NetValueOfSalesFromNiPage(index + 1, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index + 1, index), BigDecimal(0)).success.value
+
+        val expected = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+        val result = SoldGoodsFromNiPage.cleanup(Some(false), answers).success.value
+
+        result mustBe expected
+      }
+
+      "must not remove values when answer is yes" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(CountryOfConsumptionFromNiPage(index), country).success.value
+          .set(VatRatesFromNiPage(index), List(vatRate)).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
+
+        val result = SoldGoodsFromNiPage.cleanup(Some(true), answers).success.value
+
+        result mustBe answers
       }
     }
   }
