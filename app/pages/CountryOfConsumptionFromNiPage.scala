@@ -20,6 +20,9 @@ import controllers.routes
 import models.{CheckMode, Country, Index, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.AllSalesAtVatRateQuery
+
+import scala.util.Try
 
 case class CountryOfConsumptionFromNiPage(index: Index) extends QuestionPage[Country] {
 
@@ -32,4 +35,13 @@ case class CountryOfConsumptionFromNiPage(index: Index) extends QuestionPage[Cou
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     routes.VatRatesFromNiController.onPageLoad(CheckMode, answers.period, index)
+
+  override def cleanup(value: Option[Country], userAnswers: UserAnswers): Try[UserAnswers] = {
+    value match {
+      case Some(_) => userAnswers
+        .remove(VatRatesFromNiPage(index))
+        .flatMap(_.remove(AllSalesAtVatRateQuery(index)))
+      case _ => super.cleanup(value, userAnswers)
+    }
+  }
 }

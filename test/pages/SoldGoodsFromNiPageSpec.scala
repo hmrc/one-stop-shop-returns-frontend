@@ -78,24 +78,50 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
 
     "cleanup" - {
       val country: Country = arbitrary[Country].sample.value
-      val vatRate = arbitrary[VatRate].sample.value
+      val vatRate: VatRate = arbitrary[VatRate].sample.value
 
       "must remove values when answer is no" in {
 
         val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
           .set(NetValueOfSalesFromNiPage(index, index), 0).success.value
           .set(VatOnSalesFromNiPage(index, index), 0).success.value
 
+        val expected = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
         val result = SoldGoodsFromNiPage.cleanup(Some(false), answers).success.value
 
-        result mustBe emptyUserAnswers
+        result mustBe expected
+      }
+
+      "must remove multiple values when answer is no" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(CountryOfConsumptionFromNiPage(index), country).success.value
+          .set(VatRatesFromNiPage(index), List(vatRate)).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), 0).success.value
+          .set(VatOnSalesFromNiPage(index, index), 0).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), 0).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), 0).success.value
+          .set(CountryOfConsumptionFromNiPage(index + 1), country).success.value
+          .set(VatRatesFromNiPage(index + 1), List(vatRate)).success.value
+          .set(NetValueOfSalesFromNiPage(index + 1, index), 0).success.value
+          .set(VatOnSalesFromNiPage(index + 1, index), 0).success.value
+
+        val expected = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+        val result = SoldGoodsFromNiPage.cleanup(Some(false), answers).success.value
+
+        result mustBe expected
       }
 
       "must not remove values when answer is yes" in {
 
         val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
           .set(NetValueOfSalesFromNiPage(index, index), 0).success.value

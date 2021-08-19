@@ -18,14 +18,15 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 
-// TODO: This will eventually be fleshed out to represent all the data of a sale from NI
-case class SalesFromNi(
-                        countryOfConsumption: Country,
-                        salesAtVatRate: List[SalesAtVatRate]
-                      )
+case class SalesAtVatRate(
+                           vatOnSales: Int,
+                           netValueOfSales: Int
+                         )
 
-object SalesFromNi {
+object SalesAtVatRate {
 
-  implicit val format: OFormat[SalesFromNi] =
-    Json.format[SalesFromNi]
+  implicit val format: OFormat[SalesAtVatRate] =
+    Json.format[SalesAtVatRate]
 }
+
+

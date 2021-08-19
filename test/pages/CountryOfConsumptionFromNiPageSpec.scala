@@ -17,7 +17,8 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Country, NormalMode}
+import models.{CheckMode, Country, Index, NormalMode, VatRate}
+import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
 
@@ -46,6 +47,28 @@ class CountryOfConsumptionFromNiPageSpec extends PageBehaviours {
 
         CountryOfConsumptionFromNiPage(index).navigate(CheckMode, emptyUserAnswers)
           .mustEqual(routes.VatRatesFromNiController.onPageLoad(CheckMode, emptyUserAnswers.period, index))
+      }
+    }
+
+    "cleanup" - {
+
+      "must remove values when answer changes" in {
+        val country: Country = arbitrary[Country].sample.value
+        val vatRate: VatRate = arbitrary[VatRate].sample.value
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(CountryOfConsumptionFromNiPage(index), country).success.value
+          .set(VatRatesFromNiPage(index), List(vatRate)).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), 0).success.value
+          .set(VatOnSalesFromNiPage(index, index), 0).success.value
+
+        val expected = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(CountryOfConsumptionFromNiPage(index), country).success.value
+        val result = CountryOfConsumptionFromNiPage(index).cleanup(Some(country), answers).success.value
+
+        result mustEqual expected
       }
     }
   }
