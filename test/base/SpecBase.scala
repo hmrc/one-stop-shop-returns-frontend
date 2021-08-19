@@ -18,13 +18,14 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.{Index, Period, Quarter, UserAnswers}
+import models.{Country, Index, Period, Quarter, UserAnswers, VatRate, VatRateType}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
+import pages.{CountryOfConsumptionFromNiPage, NetValueOfSalesFromNiPage, SoldGoodsFromNiPage, VatOnSalesFromNiPage, VatRatesFromNiPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -65,6 +66,13 @@ trait SpecBase
   )
 
   def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
+
+  def completeUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
+    .set(SoldGoodsFromNiPage, true).success.value
+    .set(CountryOfConsumptionFromNiPage(index), Country("COU", "country")).success.value
+    .set(VatRatesFromNiPage(index), List(VatRate(0, VatRateType.Reduced, arbitraryDate))).success.value
+    .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+    .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

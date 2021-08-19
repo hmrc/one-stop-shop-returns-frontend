@@ -18,10 +18,11 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
-import models.Period
+import models.{Index, Period}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import viewmodels.checkAnswers._
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -35,10 +36,31 @@ class CheckYourAnswersController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      val list = SummaryListViewModel(
-        rows = Seq.empty
+      val businessRows = Seq(
+        BusinessNameSummary.row(request.registration),
+        BusinessVRNSummary.row(request.registration),
+        ReturnPeriodSummary.row(request.userAnswers)
+      ).flatten
+
+      val businessSummaryList = SummaryListViewModel(
+        rows = businessRows
       )
 
-      Ok(view(list))
+      val rows = Seq(
+        CountryOfConsumptionFromNiSummary.row(request.userAnswers, Index(0)),
+        SoldGoodsFromNiSummary.row(request.userAnswers),
+        VatRatesFromNiSummary.row(request.userAnswers, Index(0)),
+        NetValueOfSalesFromNiSummary.row(request.userAnswers, Index(0), Index(0)),
+        VatOnSalesFromNiSummary.row(request.userAnswers, Index(0), Index(0))
+      ).flatten
+
+      val list = SummaryListViewModel(
+        rows = rows
+      )
+
+      Ok(view(Map(
+        None -> businessSummaryList,
+        Some("checkYourAnswers.salesFromNi.heading") -> list
+      )))
   }
 }

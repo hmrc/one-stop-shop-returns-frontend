@@ -209,3 +209,9 @@ salesFromNiList.error.required = Select yes if you need to add sales from anothe
 salesFromNiList.change.hidden = sales from {0}
 salesFromNiList.remove.hidden = sales from {0}
 salesFromNiList.addAnother = Add sales from another EU country?
+
+businessName.checkYourAnswersLabel = Business name
+businessVrn.checkYourAnswersLabel = UK VAT registration number
+returnPeriod.checkYourAnswersLabel = Return period
+
+checkYourAnswers.salesFromNi.heading = Sales from Northern Ireland to EU countries
