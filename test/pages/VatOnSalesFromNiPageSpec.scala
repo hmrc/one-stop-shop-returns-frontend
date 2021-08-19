@@ -26,11 +26,11 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
 
   "VatOnSalesFromNiPage" - {
 
-    beRetrievable[Int](VatOnSalesFromNiPage(index, index))
+    beRetrievable[BigDecimal](VatOnSalesFromNiPage(index, index))
 
-    beSettable[Int](VatOnSalesFromNiPage(index, index))
+    beSettable[BigDecimal](VatOnSalesFromNiPage(index, index))
 
-    beRemovable[Int](VatOnSalesFromNiPage(index, index))
+    beRemovable[BigDecimal](VatOnSalesFromNiPage(index, index))
 
     "must navigate in Normal Mode" - {
 

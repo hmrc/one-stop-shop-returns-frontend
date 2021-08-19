@@ -24,13 +24,13 @@ import javax.inject.Inject
 
 class VatOnSalesFromNiFormProvider @Inject() extends Mappings {
 
-  def apply(vatRate: VatRate): Form[Int] =
+  def apply(vatRate: VatRate): Form[BigDecimal] =
     Form(
-      "value" -> int(
+      "value" -> numeric(
         "vatOnSalesFromNi.error.required",
         "vatOnSalesFromNi.error.wholeNumber",
         "vatOnSalesFromNi.error.nonNumeric",
-        Seq(vatRate.rateForDisplay))
-          .verifying(inRange(0, Int.MaxValue, "vatOnSalesFromNi.error.outOfRange"))
+        args = Seq(vatRate.rateForDisplay))
+          .verifying(inRange[BigDecimal](0, 1000000, "vatOnSalesFromNi.error.outOfRange"))
     )
 }

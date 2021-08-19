@@ -22,7 +22,7 @@ import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Int] {
+case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[BigDecimal] {
 
   override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ salesAtVatRate \ vatRateIndex.position \ toString
 

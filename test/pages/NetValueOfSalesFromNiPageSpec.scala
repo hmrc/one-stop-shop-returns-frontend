@@ -24,11 +24,11 @@ class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
 
   "NetValueOfSalesFromNiPage" - {
 
-    beRetrievable[Int](NetValueOfSalesFromNiPage(index, index))
+    beRetrievable[BigDecimal](NetValueOfSalesFromNiPage(index, index))
 
-    beSettable[Int](NetValueOfSalesFromNiPage(index, index))
+    beSettable[BigDecimal](NetValueOfSalesFromNiPage(index, index))
 
-    beRemovable[Int](NetValueOfSalesFromNiPage(index, index))
+    beRemovable[BigDecimal](NetValueOfSalesFromNiPage(index, index))
 
     "must navigate in Normal mode" - {
 

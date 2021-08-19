@@ -17,10 +17,11 @@
 package generators
 
 import java.time.{Instant, LocalDate, ZoneOffset}
-
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
+
+import scala.math.BigDecimal.RoundingMode
 
 trait Generators extends UserAnswersGenerator with PageGenerators with ModelGenerators with UserAnswersEntryGenerators {
 
@@ -51,6 +52,11 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
     genIntersperseString(numberGen, ",")
   }
 
+  def decimalInRangeWithCommas(min: BigDecimal, max: BigDecimal): Gen[String] = {
+    val numberGen = choose[BigDecimal](min, max).map(_.setScale(2, RoundingMode.HALF_UP)).map(_.toString)
+    genIntersperseString(numberGen, ",")
+  }
+
   def intsLargerThanMaxValue: Gen[BigInt] =
     arbitrary[BigInt] suchThat(x => x > Int.MaxValue)
 
@@ -74,7 +80,7 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
 
   def intsOutsideRange(min: Int, max: Int): Gen[Int] =
     arbitrary[Int] suchThat(x => x < min || x > max)
-
+    
   def nonBooleans: Gen[String] =
     arbitrary[String]
       .suchThat (_.nonEmpty)
