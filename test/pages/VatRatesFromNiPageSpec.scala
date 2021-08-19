@@ -58,10 +58,10 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
 
         val answers = emptyUserAnswers
           .set(VatRatesFromNiPage(index), vatRates).success.value
-          .set(NetValueOfSalesFromNiPage(index, index), 0).success.value
-          .set(VatOnSalesFromNiPage(index, index), 0).success.value
-          .set(NetValueOfSalesFromNiPage(index, index + 1), 0).success.value
-          .set(VatOnSalesFromNiPage(index, index + 1), 0).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), BigDecimal(0)).success.value
           .set(VatRatesFromNiPage(index), newVatRates).success.value
 
 

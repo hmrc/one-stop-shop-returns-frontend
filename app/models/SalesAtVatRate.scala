@@ -19,8 +19,8 @@ package models
 import play.api.libs.json.{Json, OFormat}
 
 case class SalesAtVatRate(
-                           vatOnSales: Int,
-                           netValueOfSales: Int
+                           vatOnSales: BigDecimal,
+                           netValueOfSales: BigDecimal
                          )
 
 object SalesAtVatRate {

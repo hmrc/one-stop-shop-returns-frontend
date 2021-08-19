@@ -60,8 +60,8 @@ class CountryOfConsumptionFromNiPageSpec extends PageBehaviours {
           .set(SoldGoodsFromNiPage, true).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-          .set(NetValueOfSalesFromNiPage(index, index), 0).success.value
-          .set(VatOnSalesFromNiPage(index, index), 0).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
 
         val expected = emptyUserAnswers
           .set(SoldGoodsFromNiPage, true).success.value

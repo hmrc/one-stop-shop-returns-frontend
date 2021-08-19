@@ -86,8 +86,8 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
           .set(SoldGoodsFromNiPage, false).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-          .set(NetValueOfSalesFromNiPage(index, index), 0).success.value
-          .set(VatOnSalesFromNiPage(index, index), 0).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
 
         val expected = emptyUserAnswers
           .set(SoldGoodsFromNiPage, false).success.value
@@ -102,14 +102,14 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
           .set(SoldGoodsFromNiPage, false).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-          .set(NetValueOfSalesFromNiPage(index, index), 0).success.value
-          .set(VatOnSalesFromNiPage(index, index), 0).success.value
-          .set(NetValueOfSalesFromNiPage(index, index + 1), 0).success.value
-          .set(VatOnSalesFromNiPage(index, index + 1), 0).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), BigDecimal(0)).success.value
           .set(CountryOfConsumptionFromNiPage(index + 1), country).success.value
           .set(VatRatesFromNiPage(index + 1), List(vatRate)).success.value
-          .set(NetValueOfSalesFromNiPage(index + 1, index), 0).success.value
-          .set(VatOnSalesFromNiPage(index + 1, index), 0).success.value
+          .set(NetValueOfSalesFromNiPage(index + 1, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index + 1, index), BigDecimal(0)).success.value
 
         val expected = emptyUserAnswers
           .set(SoldGoodsFromNiPage, false).success.value
@@ -124,8 +124,8 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
           .set(SoldGoodsFromNiPage, true).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-          .set(NetValueOfSalesFromNiPage(index, index), 0).success.value
-          .set(VatOnSalesFromNiPage(index, index), 0).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
 
         val result = SoldGoodsFromNiPage.cleanup(Some(true), answers).success.value
 
