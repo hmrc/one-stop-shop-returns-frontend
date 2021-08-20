@@ -22,6 +22,7 @@ import models.{CheckMode, Country, VatRate, VatRateType}
 import pages.{CountryOfConsumptionFromNiPage, NetValueOfSalesFromNiPage, VatOnSalesFromNiPage, VatRatesFromNiPage}
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
@@ -38,7 +39,7 @@ class TotalVatOnSalesSummarySpec extends SpecBase {
 
       val expectedResult = SummaryListRowViewModel(
         "checkYourAnswers.vatOnSales.checkYourAnswersLabel",
-        ValueViewModel("&pound;1000.00"),
+        ValueViewModel(HtmlContent("&pound;1,000")),
         Seq.empty
       )
 
@@ -64,7 +65,7 @@ class TotalVatOnSalesSummarySpec extends SpecBase {
 
       val expectedResult = SummaryListRowViewModel(
         "checkYourAnswers.vatOnSales.checkYourAnswersLabel",
-        ValueViewModel("&pound;600.00"),
+        ValueViewModel(HtmlContent("&pound;600")),
         Seq.empty
       )
 
@@ -94,7 +95,7 @@ class TotalVatOnSalesSummarySpec extends SpecBase {
 
       val expectedResult = SummaryListRowViewModel(
         "checkYourAnswers.vatOnSales.checkYourAnswersLabel",
-        ValueViewModel("&pound;1600.00"),
+        ValueViewModel(HtmlContent("&pound;1,600")),
         Seq.empty
       )
 
