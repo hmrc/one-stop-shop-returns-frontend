@@ -17,9 +17,10 @@
 package pages
 
 import controllers.routes
-import models.{Index, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.DeriveNumberOfSalesFromNi
 
 case class DeleteSalesFromNiPage(index: Index) extends QuestionPage[Boolean] {
 
@@ -28,5 +29,14 @@ case class DeleteSalesFromNiPage(index: Index) extends QuestionPage[Boolean] {
   override def toString: String = "deleteSales"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    answers.get(DeriveNumberOfSalesFromNi) match {
+      case Some(n) if n > 0 => routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period)
+      case _                => routes.SoldGoodsFromNiController.onPageLoad(NormalMode, answers.period)
+    }
+
+  override def navigateInCheckMode(answers: UserAnswers): Call =
+    answers.get(DeriveNumberOfSalesFromNi) match {
+      case Some(n) if n > 0 => routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period)
+      case _                => routes.SoldGoodsFromNiController.onPageLoad(CheckMode, answers.period)
+    }
 }
