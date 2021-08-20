@@ -28,7 +28,7 @@ object ReturnPeriodSummary {
 
   def row(userAnswers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
-      key = "returnPeriod.checkYourAnswersLabel",
+      key = "checkYourAnswers.returnPeriod.checkYourAnswersLabel",
       value = ValueViewModel(HtmlFormat.escape(userAnswers.period.displayText).toString),
       actions = Seq(
         ActionItemViewModel("site.change", routes.StartReturnController.onPageLoad(userAnswers.period).url)

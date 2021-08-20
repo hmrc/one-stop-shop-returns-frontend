@@ -40,9 +40,6 @@ index.title = one-stop-shop-returns-frontend
 index.heading = one-stop-shop-returns-frontend
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
-checkYourAnswers.title = Check Your Answers
-checkYourAnswers.heading = Check Your Answers
-
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
 journeyRecovery.continue.guidance = [Add content to explain how to proceed.]
@@ -84,7 +81,7 @@ deleteSalesFromNi.error.required = Select yes if you need to remove the sales fr
 
 netValueOfSalesFromNi.title = What was your total sales at {0} rate excluding VAT?
 netValueOfSalesFromNi.heading = What was your total sales at {0} rate excluding VAT?
-netValueOfSalesFromNi.checkYourAnswersLabel = Total sales excluding VAT
+netValueOfSalesFromNi.checkYourAnswersLabel = Sales excluding VAT
 netValueOfSalesFromNi.error.nonNumeric = Enter your total sales at {0} using numbers
 netValueOfSalesFromNi.error.required = Enter your total sales at {0}
 netValueOfSalesFromNi.error.wholeNumber = Enter your total sales at {0} using whole numbers
@@ -99,7 +96,7 @@ soldGoodsFromNi.change.hidden = if you made taxable sales from Northern Ireland 
 
 vatOnSalesFromNi.title = What was the total VAT charged at {0} rate?
 vatOnSalesFromNi.heading = What was the total VAT charged at {0} rate?
-vatOnSalesFromNi.checkYourAnswersLabel = Total VAT
+vatOnSalesFromNi.checkYourAnswersLabel = VAT charged
 vatOnSalesFromNi.error.nonNumeric = Enter the total VAT charged at {0} rate using numbers
 vatOnSalesFromNi.error.required = Enter the total VAT charged at {0} rate
 vatOnSalesFromNi.error.wholeNumber = Enter the total VAT charged at {0} rate using whole numbers
@@ -210,8 +207,12 @@ salesFromNiList.change.hidden = sales from {0}
 salesFromNiList.remove.hidden = sales from {0}
 salesFromNiList.addAnother = Add sales from another EU country?
 
-businessName.checkYourAnswersLabel = Business name
-businessVrn.checkYourAnswersLabel = UK VAT registration number
-returnPeriod.checkYourAnswersLabel = Return period
-
+checkYourAnswers.title = Check Your Answers
+checkYourAnswers.heading = Check Your Answers
+checkYourAnswers.businessName.checkYourAnswersLabel = Business name
+checkYourAnswers.businessVrn.checkYourAnswersLabel = UK VAT registration number
+checkYourAnswers.returnPeriod.checkYourAnswersLabel = Return period
 checkYourAnswers.salesFromNi.heading = Sales from Northern Ireland to EU countries
+checkYourAnswers.allSales.heading = All sales
+checkYourAnswers.netValueOfSales.checkYourAnswersLabel = Total sales excluding VAT
+checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT owed

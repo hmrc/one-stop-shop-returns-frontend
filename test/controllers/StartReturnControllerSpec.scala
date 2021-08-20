@@ -18,11 +18,20 @@ package controllers
 
 import base.SpecBase
 import forms.StartReturnFormProvider
+import models.Country
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.StartReturnPage
+import pages.{CountryOfConsumptionFromNiPage, StartReturnPage}
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import views.html.StartReturnView
+
+import scala.concurrent.Future
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
@@ -63,6 +72,34 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = true).url
+      }
+    }
+
+    "must clear useranswers when answer is no" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
+
+      val country: Country = arbitrary[Country].sample.value
+
+      val answers = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), country).success.value
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+        .build()
+
+      running(application) {
+
+        val request =
+          FakeRequest(POST, startReturnRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = false).url
+        verify(mockSessionRepository, times(1)).clear(eqTo(answers.userId))
       }
     }
 

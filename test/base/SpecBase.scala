@@ -70,9 +70,9 @@ trait SpecBase
   def completeUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
     .set(SoldGoodsFromNiPage, true).success.value
     .set(CountryOfConsumptionFromNiPage(index), Country("COU", "country")).success.value
-    .set(VatRatesFromNiPage(index), List(VatRate(0, VatRateType.Reduced, arbitraryDate))).success.value
-    .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
-    .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
+    .set(VatRatesFromNiPage(index), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
+    .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
+    .set(VatOnSalesFromNiPage(index, index), BigDecimal(1000)).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

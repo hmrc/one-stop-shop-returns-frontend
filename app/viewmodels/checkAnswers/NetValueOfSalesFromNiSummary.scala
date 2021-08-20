@@ -20,11 +20,13 @@ import controllers.routes
 import models.{CheckMode, Index, UserAnswers}
 import pages.NetValueOfSalesFromNiPage
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object NetValueOfSalesFromNiSummary  {
+object NetValueOfSalesFromNiSummary extends CurrencyFormatter {
 
   def row(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex)).map {
@@ -32,7 +34,7 @@ object NetValueOfSalesFromNiSummary  {
 
         SummaryListRowViewModel(
           key     = "netValueOfSalesFromNi.checkYourAnswersLabel",
-          value   = ValueViewModel(answer.toString),
+          value   = ValueViewModel(HtmlContent(currencyFormat(answer))),
           actions = Seq(
             ActionItemViewModel("site.change", routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex).url)
               .withVisuallyHiddenText(messages("netValueOfSalesFromNi.change.hidden"))

@@ -39,28 +39,36 @@ class CheckYourAnswersController @Inject()(
       val businessRows = Seq(
         BusinessNameSummary.row(request.registration),
         BusinessVRNSummary.row(request.registration),
-        ReturnPeriodSummary.row(request.userAnswers)
+        ReturnPeriodSummary.row(request.userAnswers),
+        SoldGoodsFromNiSummary.row(request.userAnswers)
       ).flatten
 
       val businessSummaryList = SummaryListViewModel(
         rows = businessRows
-      )
+      ).withCssClass("govuk-!-margin-bottom-9")
 
       val rows = Seq(
-        CountryOfConsumptionFromNiSummary.row(request.userAnswers, Index(0)),
-        SoldGoodsFromNiSummary.row(request.userAnswers),
-        VatRatesFromNiSummary.row(request.userAnswers, Index(0)),
-        NetValueOfSalesFromNiSummary.row(request.userAnswers, Index(0), Index(0)),
-        VatOnSalesFromNiSummary.row(request.userAnswers, Index(0), Index(0))
+        TotalNINetValueOfSalesSummary.row(request.userAnswers),
+        TotalNIVatOnSalesSummary.row(request.userAnswers)
       ).flatten
 
       val list = SummaryListViewModel(
         rows = rows
-      )
+      ).withCssClass("govuk-!-margin-bottom-9")
+
+      val totalRows = Seq(
+        TotalNetValueOfSalesSummary.row(request.userAnswers),
+        TotalVatOnSalesSummary.row(request.userAnswers)
+      ).flatten
+
+      val totalList = SummaryListViewModel(
+        rows = totalRows
+      ).withCssClass("govuk-!-margin-bottom-9")
 
       Ok(view(Map(
         None -> businessSummaryList,
-        Some("checkYourAnswers.salesFromNi.heading") -> list
+        Some("checkYourAnswers.salesFromNi.heading") -> list,
+        Some("checkYourAnswers.allSales.heading") -> totalList
       )))
   }
 }

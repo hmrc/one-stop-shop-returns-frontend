@@ -83,6 +83,28 @@ class SessionRepositorySpec
     }
   }
 
+  ".clear" - {
+
+    "must remove a record" in {
+
+      val period = Period(2021, Q3)
+
+      val answers = UserAnswers("id", period)
+
+      insert(answers).futureValue
+
+      val result = repository.clear(answers.userId).futureValue
+
+      result mustEqual true
+      repository.get(answers.userId, period).futureValue must not be defined
+    }
+
+    "must return true when there is no record to remove" in {
+      val result = repository.clear("id that does not exist").futureValue
+
+      result mustEqual true
+    }
+  }
 
   ".keepAlive" - {
 

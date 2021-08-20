@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package models
+package utils
 
-import play.api.libs.json.{Json, OFormat}
-
-case class SalesAtVatRate(
-                           netValueOfSales: BigDecimal,
-                           vatOnSales: BigDecimal
-                         )
-
-object SalesAtVatRate {
-
-  implicit val format: OFormat[SalesAtVatRate] =
-    Json.format[SalesAtVatRate]
+trait CurrencyFormatter {
+  def currencyFormat(amt: BigDecimal): String = f"&pound;$amt%,1.2f".replace(".00","")
 }
+
+object CurrencyFormatter extends CurrencyFormatter
