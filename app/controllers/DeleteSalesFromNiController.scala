@@ -24,7 +24,9 @@ import models.{Index, Mode, Period}
 import pages.DeleteSalesFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.SalesFromNiQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax._
 import views.html.DeleteSalesFromNiView
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -62,13 +64,17 @@ class DeleteSalesFromNiController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, index, country))),
+              BadRequest(view(formWithErrors, mode, period, index, country)).toFuture,
 
             value =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesFromNiPage(index), value))
-                _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(DeleteSalesFromNiPage(index).navigate(mode, updatedAnswers))
+              if (value) {
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.remove(SalesFromNiQuery(index)))
+                  _ <- cc.sessionRepository.set(updatedAnswers)
+                } yield Redirect(DeleteSalesFromNiPage(index).navigate(mode, updatedAnswers))
+              } else {
+                Redirect(DeleteSalesFromNiPage(index).navigate(mode, request.userAnswers)).toFuture
+              }
           )
       }
   }
