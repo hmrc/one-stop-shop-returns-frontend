@@ -17,15 +17,15 @@
 package pages
 
 import controllers.routes
-import models.{CountryOfEstablishmentFromEu, UserAnswers}
+import models.{CountryOfEstablishmentFromEu, Index, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object CountryOfEstablishmentFromEuPage extends QuestionPage[CountryOfEstablishmentFromEu] {
+case class CountryOfEstablishmentFromEuPage(index: Index) extends QuestionPage[CountryOfEstablishmentFromEu] {
 
-  override def path: JsPath = JsPath \ toString
+  override def path: JsPath = JsPath \ PageConstants.salesFromEu \ index.position \ toString
 
-  override def toString: String = "countryOfEstablishmentFromEu"
+  override def toString: String = "countryOfEstablishment"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     routes.IndexController.onPageLoad()

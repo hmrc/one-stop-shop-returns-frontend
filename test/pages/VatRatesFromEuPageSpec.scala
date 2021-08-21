@@ -23,10 +23,10 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
 
   "VatRatesFromEuPage" - {
 
-    beRetrievable[Set[VatRatesFromEu]](VatRatesFromEuPage)
+    beRetrievable[Set[VatRatesFromEu]](VatRatesFromEuPage(index, index))
 
-    beSettable[Set[VatRatesFromEu]](VatRatesFromEuPage)
+    beSettable[Set[VatRatesFromEu]](VatRatesFromEuPage(index, index))
 
-    beRemovable[Set[VatRatesFromEu]](VatRatesFromEuPage)
+    beRemovable[Set[VatRatesFromEu]](VatRatesFromEuPage(index, index))
   }
 }

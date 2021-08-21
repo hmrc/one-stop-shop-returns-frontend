@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.DeleteSalesToEuFormProvider
-import models.{NormalMode, UserAnswers}
+import models.NormalMode
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -36,7 +36,7 @@ class DeleteSalesToEuControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new DeleteSalesToEuFormProvider()
   private val form = formProvider()
 
-  private lazy val deleteSalesToEuRoute = routes.DeleteSalesToEuController.onPageLoad(NormalMode, period).url
+  private lazy val deleteSalesToEuRoute = routes.DeleteSalesToEuController.onPageLoad(NormalMode, period, index, index).url
 
   "DeleteSalesToEu Controller" - {
 
@@ -52,13 +52,13 @@ class DeleteSalesToEuControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[DeleteSalesToEuView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(DeleteSalesToEuPage, true).success.value
+      val userAnswers = emptyUserAnswers.set(DeleteSalesToEuPage(index, index), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -70,7 +70,7 @@ class DeleteSalesToEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
@@ -91,10 +91,10 @@ class DeleteSalesToEuControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(DeleteSalesToEuPage, true).success.value
+        val expectedAnswers = emptyUserAnswers.set(DeleteSalesToEuPage(index, index), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual DeleteSalesToEuPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual DeleteSalesToEuPage(index, index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -115,7 +115,7 @@ class DeleteSalesToEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 

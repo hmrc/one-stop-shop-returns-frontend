@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Index, UserAnswers}
 import pages.CountryOfEstablishmentFromEuPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -28,8 +28,8 @@ import viewmodels.implicits._
 
 object CountryOfEstablishmentFromEuSummary  {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CountryOfEstablishmentFromEuPage).map {
+  def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(CountryOfEstablishmentFromEuPage(index)).map {
       answer =>
 
         val value = ValueViewModel(
@@ -42,7 +42,7 @@ object CountryOfEstablishmentFromEuSummary  {
           key     = "countryOfEstablishmentFromEu.checkYourAnswersLabel",
           value   = value,
           actions = Seq(
-            ActionItemViewModel("site.change", routes.CountryOfEstablishmentFromEuController.onPageLoad(CheckMode, answers.period).url)
+            ActionItemViewModel("site.change", routes.CountryOfEstablishmentFromEuController.onPageLoad(CheckMode, answers.period, index).url)
               .withVisuallyHiddenText(messages("countryOfEstablishmentFromEu.change.hidden"))
           )
         )

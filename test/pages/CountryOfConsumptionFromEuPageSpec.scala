@@ -23,10 +23,10 @@ class CountryOfConsumptionFromEuPageSpec extends PageBehaviours {
 
   "CountryOfConsumptionFromEuPage" - {
 
-    beRetrievable[String](CountryOfConsumptionFromEuPage)
+    beRetrievable[String](CountryOfConsumptionFromEuPage(index, index))
 
-    beSettable[String](CountryOfConsumptionFromEuPage)
+    beSettable[String](CountryOfConsumptionFromEuPage(index, index))
 
-    beRemovable[String](CountryOfConsumptionFromEuPage)
+    beRemovable[String](CountryOfConsumptionFromEuPage(index, index))
   }
 }

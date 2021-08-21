@@ -23,10 +23,10 @@ class CountryOfEstablishmentFromEuSpec extends PageBehaviours {
 
   "CountryOfEstablishmentFromEuPage" - {
 
-    beRetrievable[CountryOfEstablishmentFromEu](CountryOfEstablishmentFromEuPage)
+    beRetrievable[CountryOfEstablishmentFromEu](CountryOfEstablishmentFromEuPage(index))
 
-    beSettable[CountryOfEstablishmentFromEu](CountryOfEstablishmentFromEuPage)
+    beSettable[CountryOfEstablishmentFromEu](CountryOfEstablishmentFromEuPage(index))
 
-    beRemovable[CountryOfEstablishmentFromEu](CountryOfEstablishmentFromEuPage)
+    beRemovable[CountryOfEstablishmentFromEu](CountryOfEstablishmentFromEuPage(index))
   }
 }

@@ -23,10 +23,10 @@ class SalesDetailsFromEuPageSpec extends PageBehaviours {
 
   "SalesDetailsFromEuPage" - {
 
-    beRetrievable[SalesDetailsFromEu](SalesDetailsFromEuPage)
+    beRetrievable[SalesDetailsFromEu](SalesDetailsFromEuPage(index, index, index))
 
-    beSettable[SalesDetailsFromEu](SalesDetailsFromEuPage)
+    beSettable[SalesDetailsFromEu](SalesDetailsFromEuPage(index, index, index))
 
-    beRemovable[SalesDetailsFromEu](SalesDetailsFromEuPage)
+    beRemovable[SalesDetailsFromEu](SalesDetailsFromEuPage(index, index, index))
   }
 }

@@ -18,8 +18,9 @@ package controllers
 
 import controllers.actions._
 import forms.CountryOfConsumptionFromEuFormProvider
+
 import javax.inject.Inject
-import models.{Mode, Period}
+import models.{Index, Mode, Period}
 import pages.CountryOfConsumptionFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -37,29 +38,29 @@ class CountryOfConsumptionFromEuController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(CountryOfConsumptionFromEuPage) match {
+      val preparedForm = request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period))
+      Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
+  def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex))),
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryOfConsumptionFromEuPage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex), value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CountryOfConsumptionFromEuPage.navigate(mode, updatedAnswers))
+          } yield Redirect(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
       )
   }
 }

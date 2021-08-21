@@ -18,8 +18,9 @@ package controllers
 
 import controllers.actions._
 import forms.SalesDetailsFromEuFormProvider
+
 import javax.inject.Inject
-import models.{Mode, Period}
+import models.{Index, Mode, Period}
 import pages.SalesDetailsFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -37,29 +38,31 @@ class SalesDetailsFromEuController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
-    implicit request =>
+  def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index): Action[AnyContent] =
+    cc.authAndGetData(period) {
+      implicit request =>
 
-      val preparedForm = request.userAnswers.get(SalesDetailsFromEuPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
+        val preparedForm = request.userAnswers.get(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
+          case None => form
+          case Some(value) => form.fill(value)
+        }
 
-      Ok(view(preparedForm, mode, period))
-  }
+        Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, vatRateIndex))
+    }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
-    implicit request =>
+  def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index): Action[AnyContent] =
+    cc.authAndGetData(period).async {
+      implicit request =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+        form.bindFromRequest().fold(
+          formWithErrors =>
+            Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex))),
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesDetailsFromEuPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SalesDetailsFromEuPage.navigate(mode, updatedAnswers))
-      )
-  }
+          value =>
+            for {
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex), value))
+              _              <- cc.sessionRepository.set(updatedAnswers)
+            } yield Redirect(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex).navigate(mode, updatedAnswers))
+        )
+    }
 }

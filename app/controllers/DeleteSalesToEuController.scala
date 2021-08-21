@@ -18,8 +18,9 @@ package controllers
 
 import controllers.actions._
 import forms.DeleteSalesToEuFormProvider
+
 import javax.inject.Inject
-import models.{Mode, Period}
+import models.{Index, Mode, Period}
 import pages.DeleteSalesToEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -37,29 +38,29 @@ class DeleteSalesToEuController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(DeleteSalesToEuPage) match {
+      val preparedForm = request.userAnswers.get(DeleteSalesToEuPage(countryFromIndex, countryToIndex)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period))
+      Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
+  def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex))),
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesToEuPage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesToEuPage(countryFromIndex, countryToIndex), value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(DeleteSalesToEuPage.navigate(mode, updatedAnswers))
+          } yield Redirect(DeleteSalesToEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
       )
   }
 }
