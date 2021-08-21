@@ -26,6 +26,24 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 
 trait ModelGenerators {
 
+  implicit lazy val arbitraryVatRatesFromEu: Arbitrary[VatRatesFromEu] =
+    Arbitrary {
+      Gen.oneOf(VatRatesFromEu.values)
+    }
+
+  implicit lazy val arbitrarySalesDetailsFromEu: Arbitrary[SalesDetailsFromEu] =
+    Arbitrary {
+      for {
+        netValueOfSales <- arbitrary[String]
+        vatOnSales <- arbitrary[String]
+      } yield SalesDetailsFromEu(netValueOfSales, vatOnSales)
+    }
+
+  implicit lazy val arbitraryCountryOfEstablishmentFromEu: Arbitrary[CountryOfEstablishmentFromEu] =
+    Arbitrary {
+      Gen.oneOf(CountryOfEstablishmentFromEu.values.toSeq)
+    }
+
   private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
 
     def toMillis(date: LocalDate): Long =

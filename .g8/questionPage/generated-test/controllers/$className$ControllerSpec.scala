@@ -23,15 +23,7 @@ class $className$ControllerSpec extends SpecBase with MockitoSugar {
 
   private lazy val $className;format="decap"$Route = routes.$className$Controller.onPageLoad(NormalMode, period).url
 
-  val userAnswers = UserAnswers(
-    userAnswersId,
-    Json.obj(
-      $className$Page.toString -> Json.obj(
-        "$field1Name$" -> "value 1",
-        "$field2Name$" -> "value 2"
-      )
-    )
-  )
+  val userAnswers = emptyUserAnswers.set($className$Page, $className$("value 1", "value 2")).success.value
 
   "$className$ Controller" - {
 
@@ -86,7 +78,7 @@ class $className$ControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual $className$Page.navigate(NormalMode, userAnswers)
+        redirectLocation(result).value mustEqual $className$Page.navigate(NormalMode, userAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(userAnswers))
       }
     }
