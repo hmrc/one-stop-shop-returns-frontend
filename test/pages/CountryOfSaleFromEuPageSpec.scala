@@ -16,6 +16,7 @@
 
 package pages
 
+import models.Country
 import pages.behaviours.PageBehaviours
 
 
@@ -23,10 +24,10 @@ class CountryOfSaleFromEuPageSpec extends PageBehaviours {
 
   "CountryOfSaleFromEuPage" - {
 
-    beRetrievable[String](CountryOfSaleFromEuPage(index))
+    beRetrievable[Country](CountryOfSaleFromEuPage(index))
 
-    beSettable[String](CountryOfSaleFromEuPage(index))
+    beSettable[Country](CountryOfSaleFromEuPage(index))
 
-    beRemovable[String](CountryOfSaleFromEuPage(index))
+    beRemovable[Country](CountryOfSaleFromEuPage(index))
   }
 }

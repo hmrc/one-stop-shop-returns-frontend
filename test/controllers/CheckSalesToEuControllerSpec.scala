@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import models.NormalMode
+import models.{Country, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.{CheckSalesToEuPage, CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage}
 import play.api.test.FakeRequest
@@ -27,7 +27,7 @@ import views.html.CheckSalesToEuView
 
 class CheckSalesToEuControllerSpec extends SpecBase with SummaryListFluency {
 
-  val country: String = arbitrary[String].sample.value
+  val country: Country = arbitrary[Country].sample.value
   private val baseAnswers =
     emptyUserAnswers
       .set(CountryOfSaleFromEuPage(index), country).success.value
