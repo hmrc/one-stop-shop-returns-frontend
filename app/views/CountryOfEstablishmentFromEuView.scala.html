@@ -1,0 +1,31 @@
+@this(
+    layout: templates.Layout,
+    formHelper: FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    govukRadios: GovukRadios,
+    govukButton: GovukButton
+)
+
+@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = title(form, messages("countryOfEstablishmentFromEu.title"))) {
+
+    @formHelper(action = routes.CountryOfEstablishmentFromEuController.onSubmit(mode, period), 'autoComplete -> "off") {
+
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))
+        }
+
+        @govukRadios(
+            RadiosViewModel(
+                field  = form("value"),
+                legend = LegendViewModel(messages("countryOfEstablishmentFromEu.heading")).asPageHeading(),
+                items  = CountryOfEstablishmentFromEu.options
+            )
+        )
+
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
+        )
+    }
+}

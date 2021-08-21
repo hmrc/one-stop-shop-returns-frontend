@@ -22,6 +22,30 @@ import pages._
 
 trait PageGenerators {
 
+  implicit lazy val arbitraryVatRatesFromEuPage: Arbitrary[VatRatesFromEuPage.type] =
+    Arbitrary(VatRatesFromEuPage)
+
+  implicit lazy val arbitrarySoldGoodsFromEuPage: Arbitrary[SoldGoodsFromEuPage.type] =
+    Arbitrary(SoldGoodsFromEuPage)
+
+  implicit lazy val arbitrarySalesDetailsFromEuPage: Arbitrary[SalesDetailsFromEuPage.type] =
+    Arbitrary(SalesDetailsFromEuPage)
+
+  implicit lazy val arbitraryDeleteSalesToEuPage: Arbitrary[DeleteSalesToEuPage.type] =
+    Arbitrary(DeleteSalesToEuPage)
+
+  implicit lazy val arbitraryDeleteSalesFromEuPage: Arbitrary[DeleteSalesFromEuPage.type] =
+    Arbitrary(DeleteSalesFromEuPage)
+
+  implicit lazy val arbitraryCountryOfSaleFromEuPage: Arbitrary[CountryOfSaleFromEuPage.type] =
+    Arbitrary(CountryOfSaleFromEuPage)
+
+  implicit lazy val arbitraryCountryOfEstablishmentFromEuPage: Arbitrary[CountryOfEstablishmentFromEuPage.type] =
+    Arbitrary(CountryOfEstablishmentFromEuPage)
+
+  implicit lazy val arbitraryCountryOfConsumptionFromEuPage: Arbitrary[CountryOfConsumptionFromEuPage.type] =
+    Arbitrary(CountryOfConsumptionFromEuPage)
+
   implicit lazy val arbitraryVatRatesFromNiPage: Arbitrary[VatRatesFromNiPage] =
     Arbitrary(VatRatesFromNiPage(Index(0)))
 

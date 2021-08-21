@@ -1,0 +1,43 @@
+@import viewmodels.InputWidth._
+
+@this(
+    layout: templates.Layout,
+    formHelper: FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    govukInput: GovukInput,
+    govukButton: GovukButton
+)
+
+@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = title(form, messages("salesDetailsFromEu.title"))) {
+
+    @formHelper(action = routes.SalesDetailsFromEuController.onSubmit(mode, period), 'autoComplete -> "off") {
+
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
+        }
+
+        <h1 class="govuk-heading-xl">@messages("salesDetailsFromEu.heading")</h1>
+
+        @govukInput(
+            InputViewModel(
+                field = form("netValueOfSales"),
+                label = LabelViewModel(messages("salesDetailsFromEu.netValueOfSales"))
+            )
+            .withWidth(Full)
+        )
+
+        @govukInput(
+            InputViewModel(
+                field = form("vatOnSales"),
+                label = LabelViewModel(messages("salesDetailsFromEu.vatOnSales"))
+            )
+            .withWidth(Full)
+        )
+
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
+        )
+    }
+}

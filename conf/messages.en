@@ -128,3 +128,63 @@ salesFromNiList.error.required = Select yes if you need to add sales from Northe
 salesFromNiList.change.hidden = sales from Northern Ireland to {0}
 salesFromNiList.remove.hidden = sales from Northern Ireland to {0}
 salesFromNiList.addAnother = Add sales from Northern Ireland to another EU country?
+
+countryOfConsumptionFromEu.title = countryOfConsumptionFromEu
+countryOfConsumptionFromEu.heading = countryOfConsumptionFromEu
+countryOfConsumptionFromEu.checkYourAnswersLabel = countryOfConsumptionFromEu
+countryOfConsumptionFromEu.error.required = Enter countryOfConsumptionFromEu
+countryOfConsumptionFromEu.error.length = CountryOfConsumptionFromEu must be 100 characters or less
+countryOfConsumptionFromEu.change.hidden = CountryOfConsumptionFromEu
+
+countryOfEstablishmentFromEu.title = countryOfEstablishmentFromEu
+countryOfEstablishmentFromEu.heading = countryOfEstablishmentFromEu
+countryOfEstablishmentFromEu.option1 = Option 1
+countryOfEstablishmentFromEu.option2 = Option 2
+countryOfEstablishmentFromEu.checkYourAnswersLabel = countryOfEstablishmentFromEu
+countryOfEstablishmentFromEu.error.required = Select countryOfEstablishmentFromEu
+countryOfEstablishmentFromEu.change.hidden = CountryOfEstablishmentFromEu
+
+countryOfSaleFromEu.title = countryOfSaleFromEu
+countryOfSaleFromEu.heading = countryOfSaleFromEu
+countryOfSaleFromEu.checkYourAnswersLabel = countryOfSaleFromEu
+countryOfSaleFromEu.error.required = Enter countryOfSaleFromEu
+countryOfSaleFromEu.error.length = CountryOfSaleFromEu must be 100 characters or less
+countryOfSaleFromEu.change.hidden = CountryOfSaleFromEu
+
+deleteSalesFromEu.title = deleteSalesFromEu
+deleteSalesFromEu.heading = deleteSalesFromEu
+deleteSalesFromEu.checkYourAnswersLabel = deleteSalesFromEu
+deleteSalesFromEu.error.required = Select yes if deleteSalesFromEu
+deleteSalesFromEu.change.hidden = DeleteSalesFromEu
+
+deleteSalesToEu.title = deleteSalesToEu
+deleteSalesToEu.heading = deleteSalesToEu
+deleteSalesToEu.checkYourAnswersLabel = deleteSalesToEu
+deleteSalesToEu.error.required = Select yes if deleteSalesToEu
+deleteSalesToEu.change.hidden = DeleteSalesToEu
+
+salesDetailsFromEu.title = salesDetailsFromEu
+salesDetailsFromEu.heading = salesDetailsFromEu
+salesDetailsFromEu.netValueOfSales = netValueOfSales
+salesDetailsFromEu.vatOnSales = vatOnSales
+salesDetailsFromEu.checkYourAnswersLabel = SalesDetailsFromEu
+salesDetailsFromEu.error.netValueOfSales.required = Enter netValueOfSales
+salesDetailsFromEu.error.vatOnSales.required = Enter vatOnSales
+salesDetailsFromEu.error.netValueOfSales.length = netValueOfSales must be 100 characters or less
+salesDetailsFromEu.error.vatOnSales.length = vatOnSales must be 100 characters or less
+salesDetailsFromEu.netValueOfSales.change.hidden = netValueOfSales
+salesDetailsFromEu.vatOnSales.change.hidden = vatOnSales
+
+soldGoodsFromEu.title = soldGoodsFromEu
+soldGoodsFromEu.heading = soldGoodsFromEu
+soldGoodsFromEu.checkYourAnswersLabel = soldGoodsFromEu
+soldGoodsFromEu.error.required = Select yes if soldGoodsFromEu
+soldGoodsFromEu.change.hidden = SoldGoodsFromEu
+
+vatRatesFromEu.title = vatRatesFromEu
+vatRatesFromEu.heading = vatRatesFromEu
+vatRatesFromEu.option1 = Option 1
+vatRatesFromEu.option2 = Option 2
+vatRatesFromEu.checkYourAnswersLabel = vatRatesFromEu
+vatRatesFromEu.error.required = Select vatRatesFromEu
+vatRatesFromEu.change.hidden = VatRatesFromEu

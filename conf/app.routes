@@ -70,3 +70,43 @@ GET         /:period/changeVatRatesFromNi/:index                  controllers.Va
 POST        /:period/changeVatRatesFromNi/:index                  controllers.VatRatesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
 
 GET         /:period/contactHmrc                       controllers.ContactHmrcController.onPageLoad(period: Period)
+
+GET        /:period/countryOfConsumptionFromEu                        controllers.CountryOfConsumptionFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/countryOfConsumptionFromEu                        controllers.CountryOfConsumptionFromEuController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeCountryOfConsumptionFromEu                  controllers.CountryOfConsumptionFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeCountryOfConsumptionFromEu                  controllers.CountryOfConsumptionFromEuController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/countryOfEstablishmentFromEu                        controllers.CountryOfEstablishmentFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/countryOfEstablishmentFromEu                        controllers.CountryOfEstablishmentFromEuController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeCountryOfEstablishmentFromEu                  controllers.CountryOfEstablishmentFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeCountryOfEstablishmentFromEu                  controllers.CountryOfEstablishmentFromEuController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/countryOfSaleFromEu                        controllers.CountryOfSaleFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/countryOfSaleFromEu                        controllers.CountryOfSaleFromEuController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeCountryOfSaleFromEu                  controllers.CountryOfSaleFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeCountryOfSaleFromEu                  controllers.CountryOfSaleFromEuController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/deleteSalesFromEu                        controllers.DeleteSalesFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/deleteSalesFromEu                        controllers.DeleteSalesFromEuController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeDeleteSalesFromEu                  controllers.DeleteSalesFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeDeleteSalesFromEu                  controllers.DeleteSalesFromEuController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/deleteSalesToEu                        controllers.DeleteSalesToEuController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/deleteSalesToEu                        controllers.DeleteSalesToEuController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeDeleteSalesToEu                  controllers.DeleteSalesToEuController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeDeleteSalesToEu                  controllers.DeleteSalesToEuController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/salesDetailsFromEu                        controllers.SalesDetailsFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/salesDetailsFromEu                        controllers.SalesDetailsFromEuController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeSalesDetailsFromEu                  controllers.SalesDetailsFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeSalesDetailsFromEu                  controllers.SalesDetailsFromEuController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/soldGoodsFromEu                        controllers.SoldGoodsFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/soldGoodsFromEu                        controllers.SoldGoodsFromEuController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeSoldGoodsFromEu                  controllers.SoldGoodsFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeSoldGoodsFromEu                  controllers.SoldGoodsFromEuController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/vatRatesFromEu                        controllers.VatRatesFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/vatRatesFromEu                        controllers.VatRatesFromEuController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeVatRatesFromEu                  controllers.VatRatesFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeVatRatesFromEu                  controllers.VatRatesFromEuController.onSubmit(mode: Mode = CheckMode, period: Period)
