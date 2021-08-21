@@ -17,12 +17,12 @@
 package pages
 
 import controllers.routes
-import models.{Index, UserAnswers}
+import models.{Country, Index, UserAnswers}
 import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class CountryOfConsumptionFromEuPage(countryFromIndex: Index, countryToIndex: Index) extends QuestionPage[String] {
+case class CountryOfConsumptionFromEuPage(countryFromIndex: Index, countryToIndex: Index) extends QuestionPage[Country] {
 
   override def path: JsPath = JsPath \ salesFromEu \ countryFromIndex.position \ salesToEu \ countryToIndex.position \ toString
 

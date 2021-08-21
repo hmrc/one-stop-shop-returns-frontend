@@ -28,7 +28,7 @@ object SalesToEuSummary {
     answers.get(AllSalesToEuQuery(countryFromIndex)).getOrElse(List.empty).zipWithIndex.map {
       case (details, index) =>
         ListItem(
-          name = HtmlFormat.escape(details.countryOfConsumption).toString,
+          name = HtmlFormat.escape(details.countryOfConsumption.name).toString,
           changeUrl = routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, Index(index)).url,
           removeUrl = routes.DeleteSalesToEuController.onPageLoad(currentMode, answers.period, countryFromIndex, Index(index)).url
         )

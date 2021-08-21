@@ -33,7 +33,7 @@ object CountryOfSaleFromEuSummary  {
 
         SummaryListRowViewModel(
           key     = "countryOfSaleFromEu.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlFormat.escape(answer).toString),
+          value   = ValueViewModel(HtmlFormat.escape(answer.name).toString),
           actions = Seq(
             ActionItemViewModel("site.change", routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, index).url)
               .withVisuallyHiddenText(messages("countryOfSaleFromEu.change.hidden"))

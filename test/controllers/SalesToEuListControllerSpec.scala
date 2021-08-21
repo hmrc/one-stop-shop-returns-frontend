@@ -35,7 +35,7 @@ class SalesToEuListControllerSpec extends SpecBase with MockitoSugar {
 
   private lazy val salesToEuListRoute = routes.SalesToEuListController.onPageLoad(NormalMode, period, index).url
 
-  private val country = arbitrary[String].sample.value
+  private val country = arbitrary[Country].sample.value
 
   private val baseAnswers =
     emptyUserAnswers

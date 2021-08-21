@@ -18,9 +18,10 @@ package controllers
 
 import base.SpecBase
 import forms.CountryOfSaleFromEuFormProvider
-import models.{NormalMode, UserAnswers}
+import models.{Country, NormalMode, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.CountryOfSaleFromEuPage
 import play.api.inject.bind
@@ -35,6 +36,8 @@ class CountryOfSaleFromEuControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new CountryOfSaleFromEuFormProvider()
   private val form = formProvider()
+
+  val country: Country = arbitrary[Country].sample.value
 
   private lazy val countryOfSaleFromEuRoute = routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, period, index).url
 
@@ -58,7 +61,7 @@ class CountryOfSaleFromEuControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CountryOfSaleFromEuPage(index), "answer").success.value
+      val userAnswers = emptyUserAnswers.set(CountryOfSaleFromEuPage(index), country).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -70,7 +73,7 @@ class CountryOfSaleFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(country), NormalMode, period, index)(request, messages(application)).toString
       }
     }
 
@@ -88,10 +91,10 @@ class CountryOfSaleFromEuControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, countryOfSaleFromEuRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
+            .withFormUrlEncodedBody(("value", country.code))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CountryOfSaleFromEuPage(index), "answer").success.value
+        val expectedAnswers = emptyUserAnswers.set(CountryOfSaleFromEuPage(index), country).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual CountryOfSaleFromEuPage(index).navigate(NormalMode, expectedAnswers).url

@@ -33,10 +33,13 @@ object CountryOfConsumptionFromEuSummary  {
 
         SummaryListRowViewModel(
           key     = "countryOfConsumptionFromEu.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlFormat.escape(answer).toString),
+          value   = ValueViewModel(HtmlFormat.escape(answer.name).toString),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex).url)
-              .withVisuallyHiddenText(messages("countryOfConsumptionFromEu.change.hidden"))
+            ActionItemViewModel(
+              "site.change",
+              routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex).url
+            )
+            .withVisuallyHiddenText(messages("countryOfConsumptionFromEu.change.hidden"))
           )
         )
     }

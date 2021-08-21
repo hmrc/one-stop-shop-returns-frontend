@@ -26,7 +26,7 @@ class CountryOfConsumptionFromNiFormProvider @Inject() extends Mappings {
   def apply(): Form[Country] =
     Form(
       "value" -> text("countryOfConsumptionFromNi.error.required")
-        .verifying(maxLength(100, "countryOfConsumptionFromNi.error.length"))
+        .verifying("countryOfConsumptionFromNi.error.required", value => Country.euCountries.exists(_.code == value))
         .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
     )
 }

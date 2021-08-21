@@ -4,7 +4,7 @@
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
-    govukInput: GovukInput,
+    govukSelect: GovukSelect,
     govukButton: GovukButton
 )
 
@@ -18,12 +18,14 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukInput(
-            InputViewModel(
+        @govukSelect(
+            SelectViewModel(
                 field = form("value"),
+                items = Country.euCountrySelectItems,
                 label = LabelViewModel(messages("countryOfConsumptionFromEu.heading")).asPageHeading()
             )
-            .withWidth(Full)
+            .withCssClass(Fixed20.toString)
+            .withCssClass("autocomplete")
         )
 
         @govukButton(
