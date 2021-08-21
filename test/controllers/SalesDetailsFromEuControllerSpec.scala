@@ -37,9 +37,9 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new SalesDetailsFromEuFormProvider()
   private val form = formProvider()
 
-  private lazy val salesDetailsFromEuRoute = routes.SalesDetailsFromEuController.onPageLoad(NormalMode, period).url
+  private lazy val salesDetailsFromEuRoute = routes.SalesDetailsFromEuController.onPageLoad(NormalMode, period, index, index, index).url
 
-  private val userAnswers = emptyUserAnswers.set(SalesDetailsFromEuPage, SalesDetailsFromEu("value 1", "value 2")).success.value
+  private val userAnswers = emptyUserAnswers.set(SalesDetailsFromEuPage(index, index, index), SalesDetailsFromEu("value 1", "value 2")).success.value
 
   "SalesDetailsFromEu Controller" - {
 
@@ -55,7 +55,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index, index)(request, messages(application)).toString
       }
     }
 
@@ -71,7 +71,14 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(SalesDetailsFromEu("value 1", "value 2")), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form.fill(SalesDetailsFromEu("value 1", "value 2")),
+          NormalMode,
+          period,
+          index,
+          index,
+          index
+        )(request, messages(application)).toString
       }
     }
 
@@ -94,7 +101,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual SalesDetailsFromEuPage.navigate(NormalMode, userAnswers).url
+        redirectLocation(result).value mustEqual SalesDetailsFromEuPage(index, index, index).navigate(NormalMode, userAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(userAnswers))
       }
     }
@@ -115,7 +122,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index, index)(request, messages(application)).toString
       }
     }
 

@@ -8,11 +8,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("salesDetailsFromEu.title"))) {
 
-    @formHelper(action = routes.SalesDetailsFromEuController.onSubmit(mode, period), 'autoComplete -> "off") {
+    @formHelper(action = routes.SalesDetailsFromEuController.onSubmit(mode, period, countryFromIndex, countryToIndex, vatRateIndex), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Index, UserAnswers}
 import pages.SalesDetailsFromEuPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -28,8 +28,8 @@ import viewmodels.implicits._
 
 object SalesDetailsFromEuSummary  {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SalesDetailsFromEuPage).map {
+  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).map {
       answer =>
 
       val value = HtmlFormat.escape(answer.netValueOfSales).toString + "<br/>" + HtmlFormat.escape(answer.vatOnSales).toString
@@ -38,8 +38,11 @@ object SalesDetailsFromEuSummary  {
           key     = "salesDetailsFromEu.checkYourAnswersLabel",
           value   = ValueViewModel(HtmlContent(value)),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period).url)
-              .withVisuallyHiddenText(messages("salesDetailsFromEu.change.hidden"))
+            ActionItemViewModel(
+              "site.change",
+              routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
+            )
+            .withVisuallyHiddenText(messages("salesDetailsFromEu.change.hidden"))
           )
         )
     }

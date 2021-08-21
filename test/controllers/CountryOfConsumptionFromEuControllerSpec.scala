@@ -36,7 +36,7 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
   private val formProvider = new CountryOfConsumptionFromEuFormProvider()
   private val form = formProvider()
 
-  private lazy val countryOfConsumptionFromEuRoute = routes.CountryOfConsumptionFromEuController.onPageLoad(NormalMode, period).url
+  private lazy val countryOfConsumptionFromEuRoute = routes.CountryOfConsumptionFromEuController.onPageLoad(NormalMode, period, index, index).url
 
   "CountryOfConsumptionFromEu Controller" - {
 
@@ -52,13 +52,13 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
         val view = application.injector.instanceOf[CountryOfConsumptionFromEuView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CountryOfConsumptionFromEuPage, "answer").success.value
+      val userAnswers = emptyUserAnswers.set(CountryOfConsumptionFromEuPage(index, index), "answer").success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -70,7 +70,7 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
@@ -91,10 +91,10 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
             .withFormUrlEncodedBody(("value", "answer"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CountryOfConsumptionFromEuPage, "answer").success.value
+        val expectedAnswers = emptyUserAnswers.set(CountryOfConsumptionFromEuPage(index, index), "answer").success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CountryOfConsumptionFromEuPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual CountryOfConsumptionFromEuPage(index, index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -115,7 +115,7 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 

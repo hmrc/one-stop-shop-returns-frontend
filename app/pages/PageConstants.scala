@@ -20,4 +20,6 @@ object PageConstants {
 
   val salesFromNi: String = "salesFromNi"
   val salesAtVatRate: String = "salesAtVatRate"
+  val salesFromEu: String = "salesFromEu"
+  val salesToEu: String = "salesToEu"
 }

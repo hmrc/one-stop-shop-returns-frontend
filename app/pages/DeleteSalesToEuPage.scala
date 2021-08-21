@@ -17,15 +17,16 @@
 package pages
 
 import controllers.routes
-import models.UserAnswers
+import models.{Index, UserAnswers}
+import PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object DeleteSalesToEuPage extends QuestionPage[Boolean] {
+case class DeleteSalesToEuPage(countryFromIndex: Index, countryToIndex: Index) extends QuestionPage[Boolean] {
 
-  override def path: JsPath = JsPath \ toString
+  override def path: JsPath = JsPath \ salesFromEu \ countryFromIndex.position \ salesToEu \ countryToIndex.position \ toString
 
-  override def toString: String = "deleteSalesToEu"
+  override def toString: String = "deleteSales"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     routes.IndexController.onPageLoad()

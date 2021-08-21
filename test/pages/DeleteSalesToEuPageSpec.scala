@@ -22,10 +22,10 @@ class DeleteSalesToEuPageSpec extends PageBehaviours {
 
   "DeleteSalesToEuPage" - {
 
-    beRetrievable[Boolean](DeleteSalesToEuPage)
+    beRetrievable[Boolean](DeleteSalesToEuPage(index, index))
 
-    beSettable[Boolean](DeleteSalesToEuPage)
+    beSettable[Boolean](DeleteSalesToEuPage(index, index))
 
-    beRemovable[Boolean](DeleteSalesToEuPage)
+    beRemovable[Boolean](DeleteSalesToEuPage(index, index))
   }
 }

@@ -33,7 +33,7 @@ import scala.concurrent.Future
 
 class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar {
 
-  private lazy val vatRatesFromEuRoute = routes.VatRatesFromEuController.onPageLoad(NormalMode, period).url
+  private lazy val vatRatesFromEuRoute = routes.VatRatesFromEuController.onPageLoad(NormalMode, period, index, index).url
 
   private val formProvider = new VatRatesFromEuFormProvider()
   private val form = formProvider()
@@ -53,13 +53,13 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(VatRatesFromEuPage, VatRatesFromEu.values.toSet).success.value
+      val userAnswers = emptyUserAnswers.set(VatRatesFromEuPage(index, index), VatRatesFromEu.values.toSet).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -71,7 +71,13 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(VatRatesFromEu.values.toSet), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form.fill(VatRatesFromEu.values.toSet),
+          NormalMode,
+          period,
+          index,
+          index
+        )(request, messages(application)).toString
       }
     }
 
@@ -92,10 +98,10 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value[0]", VatRatesFromEu.values.head.toString))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(VatRatesFromEuPage, Set(VatRatesFromEu.values.head)).success.value
+        val expectedAnswers = emptyUserAnswers.set(VatRatesFromEuPage(index, index), Set(VatRatesFromEu.values.head)).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatRatesFromEuPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual VatRatesFromEuPage(index, index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -116,7 +122,7 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
