@@ -188,3 +188,11 @@ vatRatesFromEu.option2 = Option 2
 vatRatesFromEu.checkYourAnswersLabel = vatRatesFromEu
 vatRatesFromEu.error.required = Select vatRatesFromEu
 vatRatesFromEu.change.hidden = VatRatesFromEu
+
+checkSalesFromEu.title = Check your answers
+checkSalesFromEu.heading = Check your answers
+checkSalesFromEu.vatRateTitle = {0} VAT rate
+
+checkSalesToEu.title = Check your answers
+checkSalesToEu.heading = Check your answers
+checkSalesToEu.vatRateTitle = {0} VAT rate
