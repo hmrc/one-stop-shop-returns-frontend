@@ -1,0 +1,56 @@
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
+@import viewmodels.LegendSize
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukRadios: GovukRadios,
+        govukButton: GovukButton,
+        addToList: components.addToList
+)
+
+@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@defining(if(list.size == 1) ".singular" else "") { messageSuffix =>
+
+    @layout(pageTitle = title(
+        form,
+        messages("salesFromEuList.title" + messageSuffix, list.size),
+        Some(period.displayText)
+    )) {
+
+        @formHelper(action = routes.SalesFromEuListController.onSubmit(mode, period), 'autoComplete -> "off") {
+
+            @if(form.errors.nonEmpty) {
+                @govukErrorSummary(ErrorSummaryViewModel(form))
+            }
+
+            <h1 class="govuk-heading-xl">
+            @headingWithCaption(
+                messages("salesFromEuList.heading" + messageSuffix, list.size),
+                period.displayText
+            ).asHtml
+            </h1>
+
+            @addToList(list, Long, "salesFromEuList.change.hidden", "salesFromEuList.remove.hidden")
+
+            @if(canAddCountries) {
+                @govukRadios(
+                    RadiosViewModel.yesNo(
+                        field = form("value"),
+                        legend = LegendViewModel(
+                            HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("salesFromEuList.addAnother") + "</h2>"))
+                        ).withSize(LegendSize.Medium)
+                    )
+                )
+            } else {
+                <p class="govuk-body">@messages("salesFromEuList.maximumReached")</p>
+                <input type="hidden" name="value" id="value" value="false"/>
+            }
+
+            @govukButton(
+                ButtonViewModel(messages("site.continue"))
+            )
+        }
+    }
+}

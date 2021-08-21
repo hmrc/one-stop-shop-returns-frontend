@@ -121,3 +121,12 @@ POST        /:period/check-sales-to-eu/:countryFromIndex/:countryToIndex        
 GET         /:period/change-check-sales-to-eu/:countryFromIndex/:countryToIndex         controllers.CheckSalesToEuController.onPageLoad(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index)
 POST        /:period/change-check-sales-to-eu/:countryFromIndex/:countryToIndex         controllers.CheckSalesToEuController.onSubmit(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index)
 
+GET         /:period/add-sales-from-eu                  controllers.SalesFromEuListController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST        /:period/add-sales-from-eu                  controllers.SalesFromEuListController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET         /:period/check-add-sales-from-eu             controllers.SalesFromEuListController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST        /:period/check-add-sales-from-eu             controllers.SalesFromEuListController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET         /:period/add-sales-to-eu/:index                  controllers.SalesToEuListController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
+POST        /:period/add-sales-to-eu/:index                  controllers.SalesToEuListController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
+GET         /:period/check-add-sales-to-eu/:index             controllers.SalesToEuListController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
+POST        /:period/check-add-sales-to-eu/:index             controllers.SalesToEuListController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
