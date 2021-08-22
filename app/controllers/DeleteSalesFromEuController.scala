@@ -33,34 +33,41 @@ class DeleteSalesFromEuController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: DeleteSalesFromEuFormProvider,
                                        view: DeleteSalesFromEuView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+      getCountryFrom(index) {
+        country =>
 
-      val preparedForm = request.userAnswers.get(DeleteSalesFromEuPage(index)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+          val preparedForm = request.userAnswers.get(DeleteSalesFromEuPage(index)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          Ok(view(preparedForm, mode, period, index, country))
       }
-
-      Ok(view(preparedForm, mode, period, index))
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
+      getCountryFromAsync(index) {
+        country =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, index))),
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, mode, period, index, country))),
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesFromEuPage(index), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(DeleteSalesFromEuPage(index).navigate(mode, updatedAnswers))
-      )
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesFromEuPage(index), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(DeleteSalesFromEuPage(index).navigate(mode, updatedAnswers))
+          )
+      }
   }
 }

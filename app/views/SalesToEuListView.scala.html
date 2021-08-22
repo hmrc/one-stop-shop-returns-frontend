@@ -10,12 +10,12 @@
         addToList: components.addToList
 )
 
-@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, index: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, index: Index, canAddCountries: Boolean, countryFrom: Country)(implicit request: Request[_], messages: Messages)
 @defining(if(list.size == 1) ".singular" else "") { messageSuffix =>
 
     @layout(pageTitle = title(
         form,
-        messages("salesToEuList.title" + messageSuffix, list.size),
+        messages("salesToEuList.title" + messageSuffix, countryFrom.name, list.size),
         Some(period.displayText)
     )) {
 
@@ -27,7 +27,7 @@
 
             <h1 class="govuk-heading-xl">
             @headingWithCaption(
-                messages("salesToEuList.heading" + messageSuffix, list.size),
+                messages("salesToEuList.heading" + messageSuffix, countryFrom.name, list.size),
                 period.displayText
             ).asHtml
             </h1>
@@ -39,7 +39,7 @@
                     RadiosViewModel.yesNo(
                         field = form("value"),
                         legend = LegendViewModel(
-                            HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("salesToEuList.addAnother") + "</h2>"))
+                            HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("salesToEuList.addAnother", countryFrom.name) + "</h2>"))
                         ).withSize(LegendSize.Medium)
                     )
                 )

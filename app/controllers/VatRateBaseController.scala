@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
-package pages
+package controllers
 
-import controllers.routes
-import models.UserAnswers
-import play.api.mvc.Call
+import models.VatRate
+import uk.gov.hmrc.govukfrontend.views.viewmodels.checkboxes.CheckboxItem
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
+import viewmodels.govuk.checkbox._
 
-case object CheckSalesFromEuPage extends Page {
+trait VatRateBaseController {
 
-  override protected def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+  protected def checkboxItems(vatRates: Seq[VatRate]): Seq[CheckboxItem] =
+    vatRates.zipWithIndex.map {
+      case (vatRate, index) =>
+        CheckboxItemViewModel(
+          content = Text(vatRate.rateForDisplay),
+          fieldId = "value",
+          index   = index,
+          value   = vatRate.rate.toString
+        )
+    }
 }

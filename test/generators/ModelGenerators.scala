@@ -26,11 +26,6 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 
 trait ModelGenerators {
 
-  implicit lazy val arbitraryVatRatesFromEu: Arbitrary[VatRatesFromEu] =
-    Arbitrary {
-      Gen.oneOf(VatRatesFromEu.values)
-    }
-
   implicit lazy val arbitrarySalesDetailsFromEu: Arbitrary[SalesDetailsFromEu] =
     Arbitrary {
       for {

@@ -41,27 +41,27 @@ class SalesToEuListController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      getNumberOfSalesToEu(index) {
-        number =>
+      getNumberOfSalesToEuAndCountry(index) {
+        case (number, country) =>
 
           val canAddCountries = number < Country.euCountries.size
           val list            = SalesToEuSummary.addToListRows(request.userAnswers, mode, index)
 
-          Ok(view(form, mode, list, period, index, canAddCountries))
+          Ok(view(form, mode, list, period, index, canAddCountries, country))
       }
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      getNumberOfSalesToEu(index) {
-        number =>
+      getNumberOfSalesToEuAndCountry(index) {
+        case (number, country) =>
 
           val canAddCountries = number < Country.euCountries.size
 
           form.bindFromRequest().fold(
             formWithErrors => {
               val list = SalesToEuSummary.addToListRows(request.userAnswers, mode, index)
-              BadRequest(view(formWithErrors, mode, list, period, index, canAddCountries))
+              BadRequest(view(formWithErrors, mode, list, period, index, canAddCountries, country))
             },
             value =>
               Redirect(SalesToEuListPage(index).navigate(request.userAnswers, mode, value))

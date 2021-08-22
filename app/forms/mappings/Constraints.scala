@@ -16,8 +16,9 @@
 
 package forms.mappings
 
-import java.time.LocalDate
+import models.VatRate
 
+import java.time.LocalDate
 import play.api.data.validation.{Constraint, Invalid, Valid}
 
 trait Constraints {
@@ -113,6 +114,14 @@ trait Constraints {
   protected def nonEmptySeq(errorKey: String): Constraint[Seq[_]] =
     Constraint {
       case seq if seq.nonEmpty =>
+        Valid
+      case _ =>
+        Invalid(errorKey)
+    }
+
+  protected def validVatRates(vatRates: Seq[VatRate], errorKey: String): Constraint[List[String]] =
+    Constraint {
+      case seq if seq.forall(vatRates.map(_.rate.toString).contains) =>
         Valid
       case _ =>
         Invalid(errorKey)

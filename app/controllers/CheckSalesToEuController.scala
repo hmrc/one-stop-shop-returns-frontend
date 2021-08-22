@@ -32,22 +32,24 @@ class CheckSalesToEuController @Inject()(
                                           cc: AuthenticatedControllerComponents,
                                           view: CheckSalesToEuView
                                         )
-  extends FrontendBaseController with I18nSupport {
+  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+      getCountries(countryFromIndex, countryToIndex) {
+        case(countryFrom, countryTo) =>
 
-      val mainList = SummaryListViewModel(
-        rows = Seq.empty
-      )
+          val mainList = SummaryListViewModel(
+            rows = Seq.empty
+          )
 
-      val vatRateLists: Seq[TitledSummaryList] = Seq.empty
+          val vatRateLists: Seq[TitledSummaryList] = Seq.empty
 
-      Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex))
+          Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo))
+      }
   }
-
 
   def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>

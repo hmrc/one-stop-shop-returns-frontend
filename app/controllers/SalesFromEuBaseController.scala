@@ -90,11 +90,12 @@ trait SalesFromEuBaseController {
       .map(block(_))
       .orRecoverJourney
 
-  protected def getNumberOfSalesToEu(index: Index)
-                                    (block: Int => Result)
-                                    (implicit request: DataRequest[AnyContent]): Result =
-    request.userAnswers
-      .get(DeriveNumberOfSalesToEu(index))
-      .map(block(_))
+  protected def getNumberOfSalesToEuAndCountry(index: Index)
+                                              (block: (Int, Country) => Result)
+                                              (implicit request: DataRequest[AnyContent]): Result =
+    (for {
+      numberOfSales <- request.userAnswers.get(DeriveNumberOfSalesToEu(index))
+      countryFrom   <- request.userAnswers.get(CountryOfSaleFromEuPage(index))
+    } yield block(numberOfSales, countryFrom))
       .orRecoverJourney
 }

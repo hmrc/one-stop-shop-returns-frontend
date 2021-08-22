@@ -6,9 +6,21 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index)(implicit request: Request[_], messages: Messages)
+@(
+    form: Form[_],
+    mode: Mode,
+    period: Period,
+    countryFromIndex: Index,
+    countryToIndex: Index,
+    countryFrom: Country,
+    countryTo: Country
+)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("deleteSalesToEu.title"))) {
+@layout(pageTitle = title(
+    form,
+    messages("deleteSalesToEu.title", countryFrom.name, countryTo.name),
+    Some(period.displayText)
+)) {
 
     @formHelper(action = routes.DeleteSalesToEuController.onSubmit(mode, period, countryFromIndex, countryToIndex), 'autoComplete -> "off") {
 
@@ -19,7 +31,12 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("deleteSalesToEu.heading")).asPageHeading()
+                legend = LegendViewModel(
+                    headingWithCaption(
+                        messages("deleteSalesToEu.heading", countryFrom.name, countryTo.name),
+                        period.displayText
+                    )
+                ).asPageHeading()
             )
         )
 

@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.CountryOfEstablishmentFromEuFormProvider
-import models.{NormalMode, CountryOfEstablishmentFromEu, UserAnswers}
+import models.{CountryOfEstablishmentFromEu, NormalMode}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar

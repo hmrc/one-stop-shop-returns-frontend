@@ -8,7 +8,7 @@
 
 @(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("soldGoodsFromEu.title"))) {
+@layout(pageTitle = title(form, messages("soldGoodsFromEu.title"), Some(period.displayText))) {
 
     @formHelper(action = routes.SoldGoodsFromEuController.onSubmit(mode, period), 'autoComplete -> "off") {
 
@@ -19,7 +19,9 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("soldGoodsFromEu.heading")).asPageHeading()
+                legend = LegendViewModel(
+                    headingWithCaption(messages("soldGoodsFromEu.heading"), period.displayText)
+                ).asPageHeading()
             )
         )
 

@@ -16,17 +16,17 @@
 
 package pages
 
-import models.VatRatesFromEu
+import models.VatRate
 import pages.behaviours.PageBehaviours
 
 class VatRatesFromEuPageSpec extends PageBehaviours {
 
   "VatRatesFromEuPage" - {
 
-    beRetrievable[Set[VatRatesFromEu]](VatRatesFromEuPage(index, index))
+    beRetrievable[List[VatRate]](VatRatesFromEuPage(index, index))
 
-    beSettable[Set[VatRatesFromEu]](VatRatesFromEuPage(index, index))
+    beSettable[List[VatRate]](VatRatesFromEuPage(index, index))
 
-    beRemovable[Set[VatRatesFromEu]](VatRatesFromEuPage(index, index))
+    beRemovable[List[VatRate]](VatRatesFromEuPage(index, index))
   }
 }

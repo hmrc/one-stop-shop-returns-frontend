@@ -20,7 +20,6 @@ import forms.mappings.Mappings
 import models.VatRate
 import play.api.data.Form
 import play.api.data.Forms.list
-import play.api.data.validation.{Constraint, Invalid, Valid}
 
 import javax.inject.Inject
 
@@ -33,7 +32,7 @@ class VatRatesFromNiFormProvider @Inject() extends Mappings {
           .verifying(
             firstError(
               nonEmptySeq("vatRatesFromNi.error.required"),
-              validVatRates(vatRates)
+              validVatRates(vatRates, "vatRatesFromNi.error.invalid")
             )
           )
           .transform[List[VatRate]](
@@ -41,12 +40,4 @@ class VatRatesFromNiFormProvider @Inject() extends Mappings {
             _.map(_.rate.toString)
           )
     )
-
-  private def validVatRates(vatRates: Seq[VatRate]): Constraint[List[String]] =
-    Constraint {
-      case seq if seq.forall(vatRates.map(_.rate.toString).contains) =>
-        Valid
-      case _ =>
-        Invalid("vatRatesFromNi.error.invalid")
-    }
 }
