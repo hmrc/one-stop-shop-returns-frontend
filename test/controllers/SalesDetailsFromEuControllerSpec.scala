@@ -18,13 +18,14 @@ package controllers
 
 import base.SpecBase
 import forms.SalesDetailsFromEuFormProvider
-import models.{NormalMode, SalesDetailsFromEu, UserAnswers}
+import models.{Country, NormalMode, SalesDetailsFromEu, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar
-import pages.SalesDetailsFromEuPage
+import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage, SalesDetailsFromEuPage, VatRatesFromEuPage}
 import play.api.inject.bind
-import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
@@ -39,13 +40,23 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
 
   private lazy val salesDetailsFromEuRoute = routes.SalesDetailsFromEuController.onPageLoad(NormalMode, period, index, index, index).url
 
-  private val userAnswers = emptyUserAnswers.set(SalesDetailsFromEuPage(index, index, index), SalesDetailsFromEu("value 1", "value 2")).success.value
+  private val countryFrom = arbitrary[Country].sample.value
+  private val countryTo   = arbitrary[Country].sample.value
+  private val vatRates    = Gen.nonEmptyListOf(arbitrary[VatRate]).sample.value
+
+  private val baseAnswers =
+    emptyUserAnswers
+      .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+      .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+      .set(VatRatesFromEuPage(index, index), vatRates).success.value
+
+  private val userAnswers = baseAnswers.set(SalesDetailsFromEuPage(index, index, index), SalesDetailsFromEu("value 1", "value 2")).success.value
 
   "SalesDetailsFromEu Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, salesDetailsFromEuRoute)
@@ -55,7 +66,17 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, index, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form,
+          NormalMode,
+          period,
+          index,
+          index,
+          index,
+          countryFrom,
+          countryTo,
+          vatRates.head
+        )(request, messages(application)).toString
       }
     }
 
@@ -77,7 +98,10 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
           period,
           index,
           index,
-          index
+          index,
+          countryFrom,
+          countryTo,
+          vatRates.head
         )(request, messages(application)).toString
       }
     }
@@ -89,7 +113,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(baseAnswers))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
@@ -108,7 +132,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request =
@@ -122,7 +146,17 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          boundForm,
+          NormalMode,
+          period,
+          index,
+          index,
+          index,
+          countryFrom,
+          countryTo,
+          vatRates.head
+        )(request, messages(application)).toString
       }
     }
 

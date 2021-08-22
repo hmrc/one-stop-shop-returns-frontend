@@ -8,9 +8,23 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)(implicit request: Request[_], messages: Messages)
+@(
+    form: Form[_],
+    mode: Mode,
+    period: Period,
+    countryFromIndex: Index,
+    countryToIndex: Index,
+    vatRateIndex: Index,
+    countryFrom: Country,
+    countryTo: Country,
+    vatRate: VatRate
+)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("salesDetailsFromEu.title"))) {
+@layout(pageTitle = title(
+    form,
+    messages("salesDetailsFromEu.title", vatRate.toString),
+    Some(messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name))
+)) {
 
     @formHelper(action = routes.SalesDetailsFromEuController.onSubmit(mode, period, countryFromIndex, countryToIndex, vatRateIndex), 'autoComplete -> "off") {
 
@@ -23,7 +37,12 @@
         @govukInput(
             InputViewModel(
                 field = form("netValueOfSales"),
-                label = LabelViewModel(messages("salesDetailsFromEu.netValueOfSales"))
+                label = LabelViewModel(
+                    headingWithCaption(
+                        messages("salesDetailsFromEu.netValueOfSales"),
+                        messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
+                    )
+                )
             )
             .withWidth(Full)
         )

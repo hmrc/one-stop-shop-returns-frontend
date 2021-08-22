@@ -21,7 +21,7 @@ import forms.SalesToEuListFormProvider
 import models.{Country, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{CountryOfConsumptionFromEuPage, SalesToEuListPage}
+import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage, SalesToEuListPage}
 import play.api.i18n.Messages
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -35,11 +35,13 @@ class SalesToEuListControllerSpec extends SpecBase with MockitoSugar {
 
   private lazy val salesToEuListRoute = routes.SalesToEuListController.onPageLoad(NormalMode, period, index).url
 
-  private val country = arbitrary[Country].sample.value
+  private val countryFrom = arbitrary[Country].sample.value
+  private val countryTo   = arbitrary[Country].sample.value
 
   private val baseAnswers =
     emptyUserAnswers
-      .set(CountryOfConsumptionFromEuPage(index, index), country).success.value
+      .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+      .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
 
   "SalesToEuList Controller" - {
 
@@ -57,7 +59,7 @@ class SalesToEuListControllerSpec extends SpecBase with MockitoSugar {
         val list                    = SalesToEuSummary.addToListRows(baseAnswers, NormalMode, index)
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, list, period, index, canAddCountries = true)(request, implicitly).toString
+        contentAsString(result) mustEqual view(form, NormalMode, list, period, index, canAddCountries = true, countryFrom)(request, implicitly).toString
       }
     }
 
@@ -90,7 +92,7 @@ class SalesToEuListControllerSpec extends SpecBase with MockitoSugar {
         val list                    = SalesToEuSummary.addToListRows(baseAnswers, NormalMode, index)
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, list, period, index, canAddCountries = true)(request, implicitly).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, list, period, index, canAddCountries = true, countryFrom)(request, implicitly).toString
       }
     }
   }

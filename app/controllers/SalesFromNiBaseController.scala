@@ -16,13 +16,12 @@
 
 package controllers
 
+import controllers.JourneyRecoverySyntax._
 import models.requests.DataRequest
 import models.{Country, Index, VatRate}
 import pages.CountryOfConsumptionFromNiPage
-import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
-import queries.{DeriveNumberOfSalesFromNi, VatRateQuery}
-import utils.FutureSyntax._
+import queries.{DeriveNumberOfSalesFromNi, VatRateFromNiQuery}
 
 import scala.concurrent.Future
 
@@ -34,7 +33,7 @@ trait SalesFromNiBaseController {
     request.userAnswers
       .get(CountryOfConsumptionFromNiPage(index))
       .map(block(_))
-      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      .orRecoverJourney
 
 
   protected def getCountryAsync(index: Index)
@@ -43,30 +42,30 @@ trait SalesFromNiBaseController {
     request.userAnswers
       .get(CountryOfConsumptionFromNiPage(index))
       .map(block(_))
-      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
+      .orRecoverJourney
 
   protected def getCountryAndVatRate(countryIndex: Index, vatRateIndex: Index)
                                     (block: (Country, VatRate) => Result)
                                     (implicit request: DataRequest[AnyContent]): Result =
     (for {
       country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))
-      vatRate  <- request.userAnswers.get(VatRateQuery(countryIndex, vatRateIndex))
+      vatRate  <- request.userAnswers.get(VatRateFromNiQuery(countryIndex, vatRateIndex))
     } yield block(country, vatRate))
-      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      .orRecoverJourney
 
   protected def getCountryAndVatRateAsync(countryIndex: Index, vatRateIndex: Index)
                                          (block: (Country, VatRate) => Future[Result])
                                          (implicit request: DataRequest[AnyContent]): Future[Result] =
     (for {
       country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))
-      vatRate  <- request.userAnswers.get(VatRateQuery(countryIndex, vatRateIndex))
+      vatRate  <- request.userAnswers.get(VatRateFromNiQuery(countryIndex, vatRateIndex))
     } yield block(country, vatRate))
-      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
+      .orRecoverJourney
 
   protected def getNumberOfSalesFromNi(block: Int => Result)
                                       (implicit request: DataRequest[AnyContent]): Result =
     request.userAnswers
       .get(DeriveNumberOfSalesFromNi)
       .map(block(_))
-      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      .orRecoverJourney
 }

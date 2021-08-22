@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
-package pages
+package controllers
 
-import controllers.routes
-import models.UserAnswers
-import play.api.mvc.Call
+import play.api.mvc.Result
+import play.api.mvc.Results.Redirect
+import utils.FutureSyntax._
 
-case object CheckSalesFromEuPage extends Page {
+import scala.concurrent.Future
 
-  override protected def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+object JourneyRecoverySyntax {
+
+  implicit class OptionResultOps(val a: Option[Result]) {
+    def orRecoverJourney: Result =
+      a.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+  }
+
+  implicit class OptionFutureResultOps(val a: Option[Future[Result]]) {
+    def orRecoverJourney: Future[Result] =
+      a.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
+  }
 }

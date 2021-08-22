@@ -16,17 +16,28 @@
 
 package forms
 
-import javax.inject.Inject
-
 import forms.mappings.Mappings
+import models.VatRate
 import play.api.data.Form
-import play.api.data.Forms.set
-import models.VatRatesFromEu
+import play.api.data.Forms.list
+
+import javax.inject.Inject
 
 class VatRatesFromEuFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Set[VatRatesFromEu]] =
+  def apply(vatRates: Seq[VatRate]): Form[List[VatRate]] =
     Form(
-      "value" -> set(enumerable[VatRatesFromEu]("vatRatesFromEu.error.required")).verifying(nonEmptySet("vatRatesFromEu.error.required"))
+      "value" ->
+        list(text("vatRatesFromEu.error.required"))
+          .verifying(
+            firstError(
+              nonEmptySeq("vatRatesFromEu.error.required"),
+              validVatRates(vatRates, "vatRatesFromEu.error.invalid")
+            )
+          )
+          .transform[List[VatRate]](
+            _.map(rate => vatRates.find(_.rate.toString == rate).get),
+            _.map(_.rate.toString)
+          )
     )
 }

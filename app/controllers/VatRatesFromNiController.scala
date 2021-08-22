@@ -18,16 +18,13 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromNiFormProvider
-import models.{Index, Mode, Period, VatRate}
+import models.{Index, Mode, Period}
 import pages.VatRatesFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatRateService
-import uk.gov.hmrc.govukfrontend.views.viewmodels.checkboxes.CheckboxItem
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
-import viewmodels.govuk.checkbox._
 import views.html.VatRatesFromNiView
 
 import javax.inject.Inject
@@ -39,7 +36,7 @@ class VatRatesFromNiController @Inject()(
                                         view: VatRatesFromNiView,
                                         vatRateService: VatRateService
                                       )(implicit ec: ExecutionContext)
-  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
+  extends FrontendBaseController with SalesFromNiBaseController with VatRateBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -81,15 +78,4 @@ class VatRatesFromNiController @Inject()(
           )
       }
   }
-
-  private def checkboxItems(vatRates: Seq[VatRate]): Seq[CheckboxItem] =
-    vatRates.zipWithIndex.map {
-      case (vatRate, index) =>
-        CheckboxItemViewModel(
-          content = Text(vatRate.rateForDisplay),
-          fieldId = "value",
-          index   = index,
-          value   = vatRate.rate.toString
-        )
-    }
 }

@@ -27,11 +27,12 @@ import views.html.CheckSalesToEuView
 
 class CheckSalesToEuControllerSpec extends SpecBase with SummaryListFluency {
 
-  val country: Country = arbitrary[Country].sample.value
+  val countryFrom: Country = arbitrary[Country].sample.value
+  val countryTo: Country   = arbitrary[Country].sample.value
   private val baseAnswers =
     emptyUserAnswers
-      .set(CountryOfSaleFromEuPage(index), country).success.value
-      .set(CountryOfConsumptionFromEuPage(index, index), country).success.value
+      .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+      .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
 
   "Check Your Answers Controller" - {
 
@@ -48,7 +49,16 @@ class CheckSalesToEuControllerSpec extends SpecBase with SummaryListFluency {
         val mainList = SummaryListViewModel(Seq.empty)
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(NormalMode, mainList, Seq.empty, period, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          NormalMode,
+          mainList,
+          Seq.empty,
+          period,
+          index,
+          index,
+          countryFrom,
+          countryTo
+        )(request, messages(application)).toString
       }
     }
 

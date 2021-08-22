@@ -33,34 +33,41 @@ class DeleteSalesToEuController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: DeleteSalesToEuFormProvider,
                                        view: DeleteSalesToEuView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+      getCountries(countryFromIndex, countryToIndex) {
+        case (countryFrom, countryTo) =>
 
-      val preparedForm = request.userAnswers.get(DeleteSalesToEuPage(countryFromIndex, countryToIndex)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+          val preparedForm = request.userAnswers.get(DeleteSalesToEuPage(countryFromIndex, countryToIndex)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo))
       }
-
-      Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex))
   }
 
   def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
+      getCountriesAsync(countryFromIndex, countryToIndex) {
+        case (countryFrom, countryTo) =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex))),
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo))),
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesToEuPage(countryFromIndex, countryToIndex), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(DeleteSalesToEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
-      )
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesToEuPage(countryFromIndex, countryToIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(DeleteSalesToEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
+          )
+      }
   }
 }

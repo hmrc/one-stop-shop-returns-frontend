@@ -25,6 +25,7 @@ import pages.SalesDetailsFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax._
 import views.html.SalesDetailsFromEuView
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,7 +34,8 @@ class SalesDetailsFromEuController @Inject()(
                                       cc: AuthenticatedControllerComponents,
                                       formProvider: SalesDetailsFromEuFormProvider,
                                       view: SalesDetailsFromEuView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -41,28 +43,34 @@ class SalesDetailsFromEuController @Inject()(
   def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index): Action[AnyContent] =
     cc.authAndGetData(period) {
       implicit request =>
+        getCountriesAndVatRate(countryFromIndex, countryToIndex, vatRateIndex) {
+          case (countryFrom, countryTo, vatRate) =>
 
-        val preparedForm = request.userAnswers.get(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
-          case None => form
-          case Some(value) => form.fill(value)
+            val preparedForm = request.userAnswers.get(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
+
+            Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate))
         }
-
-        Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, vatRateIndex))
     }
 
   def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index): Action[AnyContent] =
     cc.authAndGetData(period).async {
       implicit request =>
+        getCountriesAndVatRateAsync(countryFromIndex, countryToIndex, vatRateIndex) {
+          case (countryFrom, countryTo, vatRate) =>
 
-        form.bindFromRequest().fold(
-          formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex))),
+            form.bindFromRequest().fold(
+              formWithErrors =>
+                BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate)).toFuture,
 
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex), value))
-              _              <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex).navigate(mode, updatedAnswers))
-        )
+              value =>
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex), value))
+                  _ <- cc.sessionRepository.set(updatedAnswers)
+                } yield Redirect(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex).navigate(mode, updatedAnswers))
+            )
+        }
     }
 }

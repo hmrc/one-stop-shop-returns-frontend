@@ -28,7 +28,7 @@ case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRate]] 
 
   override def path: JsPath = JsPath \ PageConstants.salesFromNi \ index.position \ toString
 
-  override def toString: String = "vatRates"
+  override def toString: String = PageConstants.vatRates
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, answers.period, index, Index(0))

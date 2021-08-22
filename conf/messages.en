@@ -55,6 +55,7 @@ signedOut.heading = For your security, we signed you out
 signedOut.guidance = We did not save your answers.
 
 caption.fromNi.periodAndCountry = {0}: Northern Ireland to {1}
+caption.fromEu.periodAndCountries = {0}: {1} to {2}
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
@@ -196,3 +197,23 @@ checkSalesFromEu.vatRateTitle = {0} VAT rate
 checkSalesToEu.title = Check your answers
 checkSalesToEu.heading = Check your answers
 checkSalesToEu.vatRateTitle = {0} VAT rate
+
+salesToEuList.title.singular = You added sales from {0} to one EU country
+salesToEuList.heading.singular = You added sales from {0} to one EU country
+salesToEuList.title = You added sales from {0} to {1} EU countries
+salesToEuList.heading = You added sales from {0} to {11} EU countries
+salesToEuList.maximumReached = You have added sales from {0} to every other EU country
+salesToEuList.error.required = Select yes if you need to add sales from {0} to another EU country
+salesToEuList.change.hidden = sales from {0} to {1}
+salesToEuList.remove.hidden = sales from {0} to {1}
+salesToEuList.addAnother = Add sales from {0} to another EU country?
+
+salesFromNiList.title.singular = You added sales from one EU country
+salesFromNiList.heading.singular = You added sales from one EU country
+salesFromNiList.title = You added sales from  {0} EU countries
+salesFromNiList.heading = You added sales from {0} EU countries
+salesFromNiList.maximumReached = You have added sales from every EU country
+salesFromNiList.error.required = Select yes if you need to add sales from another EU country
+salesFromNiList.change.hidden = sales from {0}
+salesFromNiList.remove.hidden = sales from {0}
+salesFromNiList.addAnother = Add sales from another EU country?
