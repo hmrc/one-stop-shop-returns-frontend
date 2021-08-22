@@ -26,7 +26,7 @@ case class VatRatesFromEuPage(countryFromIndex: Index, countryToIndex: Index) ex
 
   override def path: JsPath = JsPath \ salesFromEu \ countryFromIndex.position \ salesToEu \ countryToIndex.position \ toString
 
-  override def toString: String = "vatRates"
+  override def toString: String = PageConstants.vatRates
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     routes.IndexController.onPageLoad()

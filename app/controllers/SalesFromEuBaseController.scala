@@ -16,20 +16,79 @@
 
 package controllers
 
-import models.Index
+import controllers.JourneyRecoverySyntax._
 import models.requests.DataRequest
+import models.{Country, Index, VatRate}
+import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage}
 import play.api.mvc.{AnyContent, Result}
-import play.api.mvc.Results.Redirect
-import queries.{DeriveNumberOfSalesFromEu, DeriveNumberOfSalesToEu}
+import queries.{DeriveNumberOfSalesFromEu, DeriveNumberOfSalesToEu, VatRateFromEuQuery}
+
+import scala.concurrent.Future
 
 trait SalesFromEuBaseController {
+
+  // TODO: CountryOfSaleFromEuPage will need to change to a query in all of these methods
+
+  protected def getCountryFrom(index: Index)
+                              (block: Country => Result)
+                              (implicit request: DataRequest[AnyContent]): Result =
+    request.userAnswers
+      .get(CountryOfSaleFromEuPage(index))
+      .map(block(_))
+      .orRecoverJourney
+
+  protected def getCountryFromAsync(index: Index)
+                                   (block: Country => Future[Result])
+                                   (implicit request: DataRequest[AnyContent]): Future[Result] =
+    request.userAnswers
+      .get(CountryOfSaleFromEuPage(index))
+      .map(block(_))
+      .orRecoverJourney
+
+  protected def getCountries(countryFromIndex: Index, countryToIndex: Index)
+                            (block: (Country, Country) => Result)
+                            (implicit request: DataRequest[AnyContent]): Result =
+    (for {
+      countryFrom <- request.userAnswers.get(CountryOfSaleFromEuPage(countryFromIndex))
+      countryTo   <- request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex))
+    } yield block(countryFrom, countryTo))
+      .orRecoverJourney
+
+  protected def getCountriesAsync(countryFromIndex: Index, countryToIndex: Index)
+                                 (block: (Country, Country) => Future[Result])
+                                 (implicit request: DataRequest[AnyContent]): Future[Result] =
+    (for {
+      countryFrom <- request.userAnswers.get(CountryOfSaleFromEuPage(countryFromIndex))
+      countryTo   <- request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex))
+    } yield block(countryFrom, countryTo))
+      .orRecoverJourney
+
+  protected def getCountriesAndVatRate(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+                                      (block: (Country, Country, VatRate) => Result)
+                                      (implicit request: DataRequest[AnyContent]): Result =
+    (for {
+      countryFrom <- request.userAnswers.get(CountryOfSaleFromEuPage(countryFromIndex))
+      countryTo   <- request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex))
+      vatRate     <- request.userAnswers.get(VatRateFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex))
+    } yield block(countryFrom, countryTo, vatRate))
+      .orRecoverJourney
+
+  protected def getCountriesAndVatRateAsync(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+                                           (block: (Country, Country, VatRate) => Future[Result])
+                                           (implicit request: DataRequest[AnyContent]): Future[Result] =
+    (for {
+      countryFrom <- request.userAnswers.get(CountryOfSaleFromEuPage(countryFromIndex))
+      countryTo   <- request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex))
+      vatRate     <- request.userAnswers.get(VatRateFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex))
+    } yield block(countryFrom, countryTo, vatRate))
+      .orRecoverJourney
 
   protected def getNumberOfSalesFromEu(block: Int => Result)
                                       (implicit request: DataRequest[AnyContent]): Result =
     request.userAnswers
       .get(DeriveNumberOfSalesFromEu)
       .map(block(_))
-      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      .orRecoverJourney
 
   protected def getNumberOfSalesToEu(index: Index)
                                     (block: Int => Result)
@@ -37,5 +96,5 @@ trait SalesFromEuBaseController {
     request.userAnswers
       .get(DeriveNumberOfSalesToEu(index))
       .map(block(_))
-      .getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      .orRecoverJourney
 }

@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-package queries
+package controllers
 
-import models.{Index, VatRate}
-import pages.PageConstants.salesFromNi
-import play.api.libs.json.JsPath
+import play.api.mvc.Result
+import play.api.mvc.Results.Redirect
+import utils.FutureSyntax._
 
-case class VatRateQuery(countryIndex: Index, vatRateIndex: Index) extends Gettable[VatRate] {
+import scala.concurrent.Future
 
-  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ "vatRates" \ vatRateIndex.position
+object JourneyRecoverySyntax {
+
+  implicit class OptionResultOps(val a: Option[Result]) {
+    def orRecoverJourney: Result =
+      a.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+  }
+
+  implicit class OptionFutureResultOps(val a: Option[Future[Result]]) {
+    def orRecoverJourney: Future[Result] =
+      a.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
+  }
 }
