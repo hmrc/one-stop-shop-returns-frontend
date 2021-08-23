@@ -58,7 +58,7 @@ trait SpecBase
   val address: UkAddress = UkAddress("line 1", None, "town", None, "AA11 1AA")
   val registration: Registration = Registration(
     vrn                   = Vrn("123456789"),
-    registeredCompanyName = "name",
+    registeredCompanyName = arbitrary[String].sample.value,
     vatDetails            = VatDetails(LocalDate.of(2000, 1, 1), address, false, VatDetailSource.Mixed),
     euRegistrations       = Nil,
     contactDetails        = ContactDetails("name", "0123 456789", "email@example.com"),

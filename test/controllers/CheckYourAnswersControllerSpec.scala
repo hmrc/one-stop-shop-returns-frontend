@@ -17,11 +17,13 @@
 package controllers
 
 import base.SpecBase
+import controllers.actions.{FakeGetRegistrationAction, GetRegistrationAction}
+import models.registration.Registration
+import org.scalacheck.Arbitrary.arbitrary
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import viewmodels.govuk.SummaryListFluency
-import views.html.CheckYourAnswersView
 
 class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
@@ -36,11 +38,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[CheckYourAnswersView]
-        val list: Map[Option[String], SummaryList] = Map(Some("test") -> SummaryListViewModel(Seq.empty))
-
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(list)(request, messages(application)).toString
+        contentAsString(result).contains("Business name") mustBe true
+        contentAsString(result).contains(registration.registeredCompanyName) mustBe true
+        contentAsString(result).contains(registration.vrn.vrn) mustBe true
+        contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
       }
     }
 
