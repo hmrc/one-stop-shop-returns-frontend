@@ -29,7 +29,7 @@ case object StartReturnPage extends QuestionPage[Boolean] {
 
   def navigate(period: Period, startReturn: Boolean): Call =
     if (startReturn) {
-      routes.SoldGoodsFromUnregisteredCountryController.onPageLoad(period)
+      routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period)
     } else {
       routes.IndexController.onPageLoad()
     }
