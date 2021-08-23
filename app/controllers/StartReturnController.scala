@@ -50,8 +50,12 @@ class StartReturnController @Inject()(
         formWithErrors =>
           BadRequest(view(formWithErrors, period)),
 
-        value =>
+        value => {
+          if(!value) {
+            cc.sessionRepository.clear(request.userId)
+          }
           Redirect(StartReturnPage.navigate(period, value))
+        }
       )
   }
 }

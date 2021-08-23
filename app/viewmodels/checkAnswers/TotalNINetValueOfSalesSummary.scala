@@ -18,26 +18,30 @@ package viewmodels.checkAnswers
 
 import controllers.routes
 import models.{CheckMode, Index, UserAnswers}
-import pages.VatOnSalesFromNiPage
 import play.api.i18n.Messages
+import queries.AllSalesFromNiQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object VatOnSalesFromNiSummary extends CurrencyFormatter {
+object TotalNINetValueOfSalesSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex)).map {
-      answer =>
+  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(AllSalesFromNiQuery).map {
+      allSales =>
+
+        val totalNetValueOfSalesFromNi = allSales.map{ saleFromNi =>
+          saleFromNi.salesAtVatRate.map(_.netValueOfSales).sum
+        }.sum
 
         SummaryListRowViewModel(
-          key     = "vatOnSalesFromNi.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(answer))),
+          key     = "netValueOfSalesFromNi.checkYourAnswersLabel",
+          value   = ValueViewModel(HtmlContent(currencyFormat(totalNetValueOfSalesFromNi))),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.VatOnSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex).url)
-              .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden"))
+            ActionItemViewModel("site.change", routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period).url)
+              .withVisuallyHiddenText(messages("soldGoodsFromNi.change.hidden"))
           )
         )
     }

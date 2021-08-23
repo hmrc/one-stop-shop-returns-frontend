@@ -97,4 +97,10 @@ class SessionRepository @Inject()(
       .toFuture
       .map(_ => true)
   }
+
+  def clear(userId: String): Future[Boolean] =
+    collection
+      .deleteOne(byUserId(userId))
+      .toFuture
+      .map(_ => true)
 }

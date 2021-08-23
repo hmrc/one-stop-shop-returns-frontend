@@ -18,13 +18,14 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.{Index, Period, Quarter, UserAnswers}
+import models.{Country, Index, Period, Quarter, UserAnswers, VatRate, VatRateType}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
+import pages.{CountryOfConsumptionFromNiPage, NetValueOfSalesFromNiPage, SoldGoodsFromNiPage, VatOnSalesFromNiPage, VatRatesFromNiPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -57,7 +58,7 @@ trait SpecBase
   val address: UkAddress = UkAddress("line 1", None, "town", None, "AA11 1AA")
   val registration: Registration = Registration(
     vrn                   = Vrn("123456789"),
-    registeredCompanyName = "name",
+    registeredCompanyName = arbitrary[String].sample.value,
     vatDetails            = VatDetails(LocalDate.of(2000, 1, 1), address, false, VatDetailSource.Mixed),
     euRegistrations       = Nil,
     contactDetails        = ContactDetails("name", "0123 456789", "email@example.com"),
@@ -65,6 +66,13 @@ trait SpecBase
   )
 
   def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
+
+  def completeUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
+    .set(SoldGoodsFromNiPage, true).success.value
+    .set(CountryOfConsumptionFromNiPage(index), Country("COU", "country")).success.value
+    .set(VatRatesFromNiPage(index), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
+    .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
+    .set(VatOnSalesFromNiPage(index, index), BigDecimal(1000)).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
