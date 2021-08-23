@@ -33,34 +33,44 @@ class CountryOfConsumptionFromEuController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: CountryOfConsumptionFromEuFormProvider,
                                         view: CountryOfConsumptionFromEuView
-                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                    )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+      getCountryFrom(countryFromIndex) {
+        countryFrom =>
 
-      val preparedForm = request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+          val form = formProvider(countryFrom)
+
+          val preparedForm = request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom))
       }
-
-      Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex))
   }
 
   def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
+      getCountryFromAsync(countryFromIndex) {
+        countryFrom =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex))),
+          val form = formProvider(countryFrom)
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
-      )
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom))),
+
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
+          )
+      }
   }
 }

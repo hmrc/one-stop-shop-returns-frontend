@@ -23,11 +23,10 @@ import play.api.data.FormError
 
 class CountryOfConsumptionFromEuFormProviderSpec extends StringFieldBehaviours {
 
-  val requiredKey = "countryOfConsumptionFromEu.error.required"
-  val lengthKey = "countryOfConsumptionFromEu.error.length"
-  val maxLength = 100
+  private val requiredKey = "countryOfConsumptionFromEu.error.required"
+  private val countryFrom = arbitrary[Country].sample.value
 
-  val form = new CountryOfConsumptionFromEuFormProvider()()
+  val form = new CountryOfConsumptionFromEuFormProvider()(countryFrom)
 
   ".value" - {
 
@@ -36,14 +35,19 @@ class CountryOfConsumptionFromEuFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      arbitrary[Country].map(_.code)
+      arbitrary[Country].suchThat(_ != countryFrom).map(_.code)
     )
 
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, requiredKey)
+      requiredError = FormError(fieldName, requiredKey, Seq(countryFrom.name))
     )
+
+    "must not bind the country of sale" in {
+      val result = form.bind(Map("value" -> countryFrom.code)).apply(fieldName)
+      result.errors must contain only FormError(fieldName, requiredKey, Seq(countryFrom.name))
+    }
 
     "must not bind any values other than valid country codes" in {
 
@@ -52,7 +56,7 @@ class CountryOfConsumptionFromEuFormProviderSpec extends StringFieldBehaviours {
       forAll(invalidAnswers) {
         answer =>
           val result = form.bind(Map("value" -> answer)).apply(fieldName)
-          result.errors must contain only FormError(fieldName, requiredKey)
+          result.errors must contain only FormError(fieldName, requiredKey, Seq(countryFrom.name))
       }
     }
   }
