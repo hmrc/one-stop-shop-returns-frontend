@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.UserAnswers
+import models.{Index, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -28,5 +28,9 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
   override def toString: String = "soldGoodsFromEu"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    answers.get(SoldGoodsFromEuPage) match {
+      case Some(true)  => routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(0))
+      case Some(false) => routes.CheckYourAnswersController.onPageLoad(answers.period)
+      case None        => routes.JourneyRecoveryController.onPageLoad()
+    }
 }

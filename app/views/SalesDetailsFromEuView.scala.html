@@ -22,7 +22,7 @@
 
 @layout(pageTitle = title(
     form,
-    messages("salesDetailsFromEu.title", vatRate.toString),
+    messages("salesDetailsFromEu.title", vatRate.rateForDisplay),
     Some(messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name))
 )) {
 
@@ -32,17 +32,17 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <h1 class="govuk-heading-xl">@messages("salesDetailsFromEu.heading")</h1>
+        <h1 class="govuk-heading-xl">
+            @headingWithCaption(
+                messages("salesDetailsFromEu.heading", vatRate.rateForDisplay),
+                messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
+            ).asHtml
+        </h1>
 
         @govukInput(
             InputViewModel(
                 field = form("netValueOfSales"),
-                label = LabelViewModel(
-                    headingWithCaption(
-                        messages("salesDetailsFromEu.netValueOfSales"),
-                        messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
-                    )
-                )
+                label = LabelViewModel(messages("salesDetailsFromEu.netValueOfSales"))
             )
             .withWidth(Full)
         )

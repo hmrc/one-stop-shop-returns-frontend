@@ -16,6 +16,9 @@
 
 package pages
 
+import controllers.routes
+import models.{Country, NormalMode, SalesDetailsFromEu, VatRate}
+import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
 class DeleteSalesFromEuPageSpec extends PageBehaviours {
@@ -27,5 +30,38 @@ class DeleteSalesFromEuPageSpec extends PageBehaviours {
     beSettable[Boolean](DeleteSalesFromEuPage(index))
 
     beRemovable[Boolean](DeleteSalesFromEuPage(index))
+
+    "must navigate in Normal mode" - {
+
+      "when there are sales from at least one EU country in user answers" - {
+
+        "to Sales from EU list" in {
+
+          val countryFrom  = arbitrary[Country].sample.value
+          val countryTo    = arbitrary[Country].sample.value
+          val vatRate      = arbitrary[VatRate].sample.value
+          val salesDetails = arbitrary[SalesDetailsFromEu].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+              .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+              .set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
+              .set(SalesDetailsFromEuPage(index, index, index), salesDetails).success.value
+
+          DeleteSalesFromEuPage(index).navigate(NormalMode, answers)
+            .mustEqual(routes.SalesFromEuListController.onPageLoad(NormalMode, answers.period))
+        }
+      }
+
+      "when there aer no sales from EU in user answers" - {
+
+        "to Sold Goods from EU" in {
+
+          DeleteSalesFromEuPage(index).navigate(NormalMode, emptyUserAnswers)
+            .mustEqual(routes.SoldGoodsFromEuController.onPageLoad(NormalMode, emptyUserAnswers.period))
+        }
+      }
+    }
   }
 }

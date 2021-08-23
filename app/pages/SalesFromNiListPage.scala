@@ -23,6 +23,7 @@ import queries.DeriveNumberOfSalesFromNi
 
 case object SalesFromNiListPage extends Page {
 
+  // TODO: Navigation when addAnother is false will change for Check Mode
   def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call =
     if (addAnother) {
       answers.get(DeriveNumberOfSalesFromNi) match {
@@ -30,6 +31,6 @@ case object SalesFromNiListPage extends Page {
         case None       => routes.JourneyRecoveryController.onPageLoad()
       }
     } else {
-      routes.CheckYourAnswersController.onPageLoad(answers.period)
+      routes.SoldGoodsFromEuController.onPageLoad(mode, answers.period)
     }
 }

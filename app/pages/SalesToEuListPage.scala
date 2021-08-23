@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, Mode, UserAnswers}
+import models.{Index, Mode, NormalMode, UserAnswers}
 import play.api.mvc.Call
 import queries.DeriveNumberOfSalesToEu
 
@@ -31,6 +31,6 @@ case class SalesToEuListPage(index: Index) extends Page {
         case None       => routes.JourneyRecoveryController.onPageLoad()
       }
     } else {
-      routes.CheckYourAnswersController.onPageLoad(answers.period)
+      routes.SalesFromEuListController.onPageLoad(NormalMode, answers.period)
     }
 }

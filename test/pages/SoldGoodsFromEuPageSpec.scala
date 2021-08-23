@@ -16,6 +16,8 @@
 
 package pages
 
+import controllers.routes
+import models.{Index, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class SoldGoodsFromEuPageSpec extends PageBehaviours {
@@ -27,5 +29,24 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours {
     beSettable[Boolean](SoldGoodsFromEuPage)
 
     beRemovable[Boolean](SoldGoodsFromEuPage)
+
+    "must navigate in Normal mode" - {
+
+      "to Country of Sale from EU when the answer is yes" in {
+
+        val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, true).success.value
+
+        SoldGoodsFromEuPage.navigate(NormalMode, answers)
+          .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(0)))
+      }
+
+      "to Check your answers when the answer is no" in {
+
+        val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
+
+        SoldGoodsFromEuPage.navigate(NormalMode, answers)
+          .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
+      }
+    }
   }
 }
