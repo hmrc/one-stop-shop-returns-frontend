@@ -31,7 +31,7 @@ class StartReturnPageSpec extends PageBehaviours {
         forAll(arbitrary[Period]) {
           period =>
             StartReturnPage.navigate(period, startReturn = true)
-              .mustEqual(routes.SoldGoodsFromUnregisteredCountryController.onPageLoad(period))
+              .mustEqual(routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period))
         }
       }
 

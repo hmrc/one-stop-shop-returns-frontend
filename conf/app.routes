@@ -36,9 +36,6 @@ POST        /:period/check-add-sales-from-ni             controllers.SalesFromNi
 GET         /:period/startReturn                        controllers.StartReturnController.onPageLoad(period: Period)
 POST        /:period/startReturn                        controllers.StartReturnController.onSubmit(period: Period)
 
-GET         /:period/soldGoodsFromUnregisteredCountry                        controllers.SoldGoodsFromUnregisteredCountryController.onPageLoad(period: Period)
-POST        /:period/soldGoodsFromUnregisteredCountry                        controllers.SoldGoodsFromUnregisteredCountryController.onSubmit(period: Period)
-
 GET         /:period/countryOfConsumptionFromNi/:index                        controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
 POST        /:period/countryOfConsumptionFromNi/:index                        controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
 GET         /:period/changeCountryOfConsumptionFromNi/:index                  controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
@@ -68,8 +65,6 @@ GET         /:period/vatRatesFromNi/:index                        controllers.Va
 POST        /:period/vatRatesFromNi/:index                        controllers.VatRatesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
 GET         /:period/changeVatRatesFromNi/:index                  controllers.VatRatesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
 POST        /:period/changeVatRatesFromNi/:index                  controllers.VatRatesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
-
-GET         /:period/contactHmrc                       controllers.ContactHmrcController.onPageLoad(period: Period)
 
 GET        /:period/countryOfConsumptionFromEu/:countryFromIndex/:countryToIndex                        controllers.CountryOfConsumptionFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period, countryFromIndex: Index, countryToIndex: Index)
 POST       /:period/countryOfConsumptionFromEu/:countryFromIndex/:countryToIndex                        controllers.CountryOfConsumptionFromEuController.onSubmit(mode: Mode = NormalMode, period: Period, countryFromIndex: Index, countryToIndex: Index)

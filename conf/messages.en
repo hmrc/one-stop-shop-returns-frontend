@@ -65,10 +65,6 @@ startReturn.heading = Do you want to start your return for {0}?
 startReturn.error.required = Select yes if you want to start your return for {0}
 startReturn.change.hidden = if you want to start your return
 
-soldGoodsFromUnregisteredCountry.title = Did you make taxable sales of goods to consumers from an EU country you didn’t include in your registration?
-soldGoodsFromUnregisteredCountry.heading = Did you make taxable sales of goods to consumers from an EU country you didn’t include in your registration?
-soldGoodsFromUnregisteredCountry.error.required = Select yes if you made taxable sales from an EU country you didn’t include in your registration
-
 countryOfConsumptionFromNi.title = Which EU country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.heading = Which EU country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.checkYourAnswersLabel = Which EU country did you sell to from Northern Ireland?
