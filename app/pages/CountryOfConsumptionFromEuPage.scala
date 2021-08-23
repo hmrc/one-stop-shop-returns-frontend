@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Country, Index, UserAnswers}
+import models.{Country, Index, NormalMode, UserAnswers}
 import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -29,5 +29,5 @@ case class CountryOfConsumptionFromEuPage(countryFromIndex: Index, countryToInde
   override def toString: String = "countryOfConsumption"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    routes.VatRatesFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
 }

@@ -16,7 +16,8 @@
 
 package pages
 
-import models.Country
+import controllers.routes
+import models.{Country, Index, NormalMode}
 import pages.behaviours.PageBehaviours
 
 
@@ -29,5 +30,14 @@ class CountryOfConsumptionFromEuPageSpec extends PageBehaviours {
     beSettable[Country](CountryOfConsumptionFromEuPage(index, index))
 
     beRemovable[Country](CountryOfConsumptionFromEuPage(index, index))
+
+    "must navigate in Normal mode" - {
+
+      "to Vat Rates from EU" in {
+
+        CountryOfConsumptionFromEuPage(index, index).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.VatRatesFromEuController.onPageLoad(NormalMode, emptyUserAnswers.period, Index(0), Index(0)))
+      }
+    }
   }
 }

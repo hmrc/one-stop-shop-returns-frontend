@@ -16,7 +16,8 @@
 
 package pages
 
-import models.Country
+import controllers.routes
+import models.{Country, Index, NormalMode}
 import pages.behaviours.PageBehaviours
 
 
@@ -29,5 +30,14 @@ class CountryOfSaleFromEuPageSpec extends PageBehaviours {
     beSettable[Country](CountryOfSaleFromEuPage(index))
 
     beRemovable[Country](CountryOfSaleFromEuPage(index))
+
+    "must navigate in Normal mode" - {
+
+      "to Country of Consumption from EU" in {
+
+        CountryOfSaleFromEuPage(Index(0)).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.CountryOfConsumptionFromEuController.onPageLoad(NormalMode, emptyUserAnswers.period, Index(0), Index(0)))
+      }
+    }
   }
 }

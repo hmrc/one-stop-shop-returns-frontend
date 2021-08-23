@@ -16,38 +16,40 @@
 
 package pages
 
-import base.SpecBase
 import controllers.routes
 import models.{Country, Index, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
+import pages.behaviours.PageBehaviours
 
-class SalesFromNiListPageSpec extends SpecBase {
+class SalesToEuListPageSpec extends PageBehaviours {
 
-  private val country = arbitrary[Country].sample.value
-
-  "SalesFromNiListPage" - {
+  "SalesToEuList page" - {
 
     "must navigate in Normal mode" - {
 
-      "when the answer is yes" - {
+      "when the answer is Yes" - {
 
         "to Country of Consumption with an index equal to the number of countries we have details for" in {
 
+          val countryFrom = arbitrary[Country].sample.value
+          val countryTo   = arbitrary[Country].sample.value
+
           val answers =
             emptyUserAnswers
-            .set(CountryOfConsumptionFromNiPage(Index(0)), country).success.value
+              .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+              .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
 
-          SalesFromNiListPage.navigate(answers, NormalMode, addAnother = true)
-            .mustEqual(routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, Index(1)))
+          SalesToEuListPage(index).navigate(answers, NormalMode, addAnother = true)
+            .mustEqual(routes.CountryOfConsumptionFromEuController.onPageLoad(NormalMode, answers.period, index, Index(1)))
         }
       }
 
       "when the answer is no" - {
 
-        "to Sold Goods from EU" in {
+        "to Sales from EU List" in {
 
-          SalesFromNiListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false)
-            .mustEqual(routes.SoldGoodsFromEuController.onPageLoad(NormalMode, emptyUserAnswers.period))
+          SalesToEuListPage(index).navigate(emptyUserAnswers, NormalMode, addAnother = false)
+            .mustEqual(routes.SalesFromEuListController.onPageLoad(NormalMode, emptyUserAnswers.period))
         }
       }
     }

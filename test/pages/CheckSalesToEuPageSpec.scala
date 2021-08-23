@@ -17,16 +17,20 @@
 package pages
 
 import controllers.routes
-import models.{Country, Index, NormalMode, UserAnswers}
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import models.NormalMode
+import pages.behaviours.PageBehaviours
 
-case class CountryOfSaleFromEuPage(index: Index) extends QuestionPage[Country] {
+class CheckSalesToEuPageSpec extends PageBehaviours {
 
-  override def path: JsPath = JsPath\ PageConstants.salesFromEu \ index.position \ toString
+  "CheckSalesToEu page" - {
 
-  override def toString: String = "countryOfSale"
+    "must navigate in Normal mode" - {
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.CountryOfConsumptionFromEuController.onPageLoad(NormalMode, answers.period, index, Index(0))
+      "to sales to EU List" in {
+
+        CheckSalesToEuPage(index).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.SalesToEuListController.onPageLoad(NormalMode, emptyUserAnswers.period, index))
+      }
+    }
+  }
 }

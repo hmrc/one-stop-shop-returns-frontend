@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, SalesDetailsFromEu, UserAnswers}
+import models.{Index, NormalMode, SalesDetailsFromEu, UserAnswers}
 import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -30,5 +30,12 @@ case class SalesDetailsFromEuPage(countryFromIndex: Index, countryToIndex: Index
   override def toString: String = "salesDetails"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    answers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map {
+      rates =>
+        if (rates.size > vatRateIndex.position + 1) {
+          routes.SalesDetailsFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex + 1)
+        } else {
+          routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
+        }
+    }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 }

@@ -45,7 +45,7 @@
             @headingWithCaption(
                 messages("checkSalesToEu.heading"),
                 messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
-            )
+            ).asHtml
         </h1>
 
         @govukSummaryList(mainList)

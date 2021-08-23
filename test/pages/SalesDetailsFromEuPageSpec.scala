@@ -16,7 +16,10 @@
 
 package pages
 
-import models.SalesDetailsFromEu
+import controllers.routes
+import models.{Index, NormalMode, SalesDetailsFromEu, VatRate}
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
 
 class SalesDetailsFromEuPageSpec extends PageBehaviours {
@@ -28,5 +31,41 @@ class SalesDetailsFromEuPageSpec extends PageBehaviours {
     beSettable[SalesDetailsFromEu](SalesDetailsFromEuPage(index, index, index))
 
     beRemovable[SalesDetailsFromEu](SalesDetailsFromEuPage(index, index, index))
+
+    "must navigate in Normal mode" - {
+
+      "when there are more VAT rates to get answers for" - {
+
+        "to Sales Details from EU for the next index" in {
+
+          val countryIndex = Index(0)
+
+          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromEuPage(countryIndex, countryIndex), vatRates).success.value
+
+          SalesDetailsFromEuPage(countryIndex, countryIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.SalesDetailsFromEuController.onPageLoad(NormalMode, answers.period, countryIndex, countryIndex, Index(1)))
+        }
+      }
+
+      "when there are no more VAT rates to get answers for" - {
+
+        "to Check Sales to EU" in {
+
+          val countryIndex = Index(0)
+
+          val vatRate = arbitrary[VatRate].sample.value
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromEuPage(countryIndex, countryIndex), List(vatRate)).success.value
+
+          SalesDetailsFromEuPage(countryIndex, countryIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryIndex, countryIndex))
+        }
+      }
+    }
   }
 }

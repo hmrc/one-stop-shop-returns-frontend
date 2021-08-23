@@ -21,33 +21,33 @@ import controllers.routes
 import models.{Country, Index, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 
-class SalesFromNiListPageSpec extends SpecBase {
+class SalesFromEuListPageSpec extends SpecBase {
 
-  private val country = arbitrary[Country].sample.value
-
-  "SalesFromNiListPage" - {
+  "SalesFromEuList page" - {
 
     "must navigate in Normal mode" - {
 
       "when the answer is yes" - {
 
-        "to Country of Consumption with an index equal to the number of countries we have details for" in {
+        "to Country of Sale with an index equal to the number of countries we have details for" in {
+
+          val country = arbitrary[Country].sample.value
 
           val answers =
             emptyUserAnswers
-            .set(CountryOfConsumptionFromNiPage(Index(0)), country).success.value
+              .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
 
-          SalesFromNiListPage.navigate(answers, NormalMode, addAnother = true)
-            .mustEqual(routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, Index(1)))
+          SalesFromEuListPage.navigate(answers, NormalMode, addAnother = true)
+            .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(1)))
         }
       }
 
       "when the answer is no" - {
 
-        "to Sold Goods from EU" in {
+        "to Check your answers" in {
 
-          SalesFromNiListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false)
-            .mustEqual(routes.SoldGoodsFromEuController.onPageLoad(NormalMode, emptyUserAnswers.period))
+          SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false)
+            .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }
       }
     }
