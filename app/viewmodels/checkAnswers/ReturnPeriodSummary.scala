@@ -32,7 +32,7 @@ object ReturnPeriodSummary {
       value = ValueViewModel(HtmlFormat.escape(userAnswers.period.displayText).toString),
       actions = Seq(
         ActionItemViewModel("site.change", routes.StartReturnController.onPageLoad(userAnswers.period).url)
-          .withVisuallyHiddenText(messages("countryOfConsumptionFromNi.change.hidden"))
+          .withVisuallyHiddenText(messages("startReturn.change.hidden"))
       )))
   }
 }

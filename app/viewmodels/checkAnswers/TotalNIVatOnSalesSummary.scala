@@ -41,7 +41,7 @@ object TotalNIVatOnSalesSummary extends CurrencyFormatter {
           value   = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSalesFromNi))),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period).url)
-              .withVisuallyHiddenText(messages("soldGoodsFromNi.change.hidden"))
+              .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden"))
           )
         )
     }
