@@ -36,13 +36,14 @@ class DeleteSalesFromEuController @Inject()(
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
       getCountryFrom(index) {
         country =>
+
+          val form = formProvider(country)
 
           val preparedForm = request.userAnswers.get(DeleteSalesFromEuPage(index)) match {
             case None => form
@@ -57,6 +58,8 @@ class DeleteSalesFromEuController @Inject()(
     implicit request =>
       getCountryFromAsync(index) {
         country =>
+
+          val form = formProvider(country)
 
           form.bindFromRequest().fold(
             formWithErrors =>

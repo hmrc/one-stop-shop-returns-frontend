@@ -17,14 +17,18 @@
 package forms
 
 import forms.behaviours.BooleanFieldBehaviours
+import models.Country
+import org.scalacheck.Arbitrary.arbitrary
 import play.api.data.FormError
 
 class DeleteSalesToEuFormProviderSpec extends BooleanFieldBehaviours {
 
-  val requiredKey = "deleteSalesToEu.error.required"
-  val invalidKey = "error.boolean"
+  private val requiredKey = "deleteSalesToEu.error.required"
+  private val invalidKey = "error.boolean"
+  private val countryFrom = arbitrary[Country].sample.value
+  private val countryTo   = arbitrary[Country].sample.value
 
-  val form = new DeleteSalesToEuFormProvider()()
+  val form = new DeleteSalesToEuFormProvider()(countryFrom, countryTo)
 
   ".value" - {
 
@@ -33,13 +37,13 @@ class DeleteSalesToEuFormProviderSpec extends BooleanFieldBehaviours {
     behave like booleanField(
       form,
       fieldName,
-      invalidError = FormError(fieldName, invalidKey)
+      invalidError = FormError(fieldName, invalidKey, Seq(countryFrom.name, countryTo.name))
     )
 
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, requiredKey)
+      requiredError = FormError(fieldName, requiredKey, Seq(countryFrom.name, countryTo.name))
     )
   }
 }

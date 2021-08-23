@@ -17,14 +17,14 @@
 package forms
 
 import javax.inject.Inject
-
 import forms.mappings.Mappings
+import models.Country
 import play.api.data.Form
 
 class DeleteSalesToEuFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(countryFrom: Country, countryTo: Country): Form[Boolean] =
     Form(
-      "value" -> boolean("deleteSalesToEu.error.required")
+      "value" -> boolean("deleteSalesToEu.error.required", args = Seq(countryFrom.name, countryTo.name))
     )
 }

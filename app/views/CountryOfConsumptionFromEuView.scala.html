@@ -8,9 +8,9 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, countryFrom: Country)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("countryOfConsumptionFromEu.title"), Some(period.displayText))) {
+@layout(pageTitle = title(form, messages("countryOfConsumptionFromEu.title", countryFrom.name), Some(period.displayText))) {
 
     @formHelper(action = routes.CountryOfConsumptionFromEuController.onSubmit(mode, period, countryFromIndex, countryToIndex)) {
 
@@ -23,7 +23,10 @@
                 field = form("value"),
                 items = Country.euCountrySelectItems,
                 label = LabelViewModel(
-                    headingWithCaption(messages("countryOfConsumptionFromEu.heading"), period.displayText)
+                    headingWithCaption(
+                        messages("countryOfConsumptionFromEu.heading", countryFrom.name),
+                        period.displayText
+                    )
                 ).asPageHeading()
             )
             .withCssClass(Fixed20.toString)
