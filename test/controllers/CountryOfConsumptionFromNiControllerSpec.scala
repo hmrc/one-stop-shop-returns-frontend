@@ -35,7 +35,7 @@ import scala.concurrent.Future
 class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new CountryOfConsumptionFromNiFormProvider()
-  private val form = formProvider()
+  private val form = formProvider(index, Seq.empty)
 
   private lazy val countryOfConsumptionFromNiRoute = routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, period, index).url
 

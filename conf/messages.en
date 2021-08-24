@@ -71,6 +71,7 @@ countryOfConsumptionFromNi.checkYourAnswersLabel = Which EU country did you sell
 countryOfConsumptionFromNi.error.required = Select the country you sold to from Northern Ireland
 countryOfConsumptionFromNi.error.length = Country must be 100 characters or less
 countryOfConsumptionFromNi.change.hidden = the country you sold to from Northern Ireland
+countryOfConsumptionFromNi.error.duplicate = You selected this country already. Select a different one.
 
 deleteSalesFromNi.title = Are you sure you need to remove the sales from Northern Ireland to {0}?
 deleteSalesFromNi.heading = Are you sure you need to remove the sales from Northern Ireland to {0}?
