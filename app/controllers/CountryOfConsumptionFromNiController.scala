@@ -40,13 +40,13 @@ class CountryOfConsumptionFromNiController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-
       val form =
         formProvider(
           index,
           request.userAnswers.get(AllSalesFromNiQuery)
             .getOrElse(Seq.empty)
-            .map(_.countryOfConsumption)
+            .map(_.countryOfConsumption),
+          request.registration.isOnlineMarketplace
         )
 
       val preparedForm = request.userAnswers.get(CountryOfConsumptionFromNiPage(index)) match {
@@ -54,7 +54,7 @@ class CountryOfConsumptionFromNiController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period, index))
+      Ok(view(preparedForm, mode, period, index, request.registration.isOnlineMarketplace))
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period).async {
@@ -65,12 +65,19 @@ class CountryOfConsumptionFromNiController @Inject()(
           index,
           request.userAnswers.get(AllSalesFromNiQuery)
             .getOrElse(Seq.empty)
-            .map(_.countryOfConsumption)
+            .map(_.countryOfConsumption),
+          request.registration.isOnlineMarketplace
         )
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, index))),
+          Future.successful(BadRequest(view(
+            formWithErrors,
+            mode,
+            period,
+            index,
+            request.registration.isOnlineMarketplace
+          ))),
 
         value =>
           for {

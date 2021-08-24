@@ -28,44 +28,57 @@ class CountryOfConsumptionFromNiFormProviderSpec extends StringFieldBehaviours {
   val maxLength = 100
   val index = Index(0)
   val emptyExistingAnswers = Seq.empty[Country]
+  val fieldName = "value"
 
-  val form = new CountryOfConsumptionFromNiFormProvider()(index, emptyExistingAnswers)
+  "CountryOfConsumptionFromNiFormProvider" - {
 
-  ".value" - {
+    "when isOnlineMarketPlace is false" - {
 
-    val fieldName = "value"
+      val form = new CountryOfConsumptionFromNiFormProvider()(index, emptyExistingAnswers, false)
 
-    behave like fieldThatBindsValidData(
-      form,
-      fieldName,
-      arbitrary[Country].map(_.code)
-    )
+      behave like fieldThatBindsValidData(
+        form,
+        fieldName,
+        arbitrary[Country].map(_.code)
+      )
 
-    behave like mandatoryField(
-      form,
-      fieldName,
-      requiredError = FormError(fieldName, requiredKey)
-    )
+      behave like mandatoryField(
+        form,
+        fieldName,
+        requiredError = FormError(fieldName, requiredKey)
+      )
 
-    "must not bind any values other than valid country codes" in {
+      "must not bind any values other than valid country codes" in {
 
-      val invalidAnswers = arbitrary[String] suchThat (x => !Country.euCountries.map(_.code).contains(x))
+        val invalidAnswers = arbitrary[String] suchThat (x => !Country.euCountries.map(_.code).contains(x))
 
-      forAll(invalidAnswers) {
-        answer =>
-          val result = form.bind(Map("value" -> answer)).apply(fieldName)
-          result.errors must contain only FormError(fieldName, requiredKey)
+        forAll(invalidAnswers) {
+          answer =>
+            val result = form.bind(Map("value" -> answer)).apply(fieldName)
+            result.errors must contain only FormError(fieldName, requiredKey)
+        }
+      }
+
+      "must fail to bind when given a duplicate value" in {
+        val answer = Country.euCountries.tail.head
+        val existingAnswers = Seq(Country.euCountries.head, Country.euCountries.tail.head)
+
+        val duplicateForm = new CountryOfConsumptionFromNiFormProvider()(index, existingAnswers, false)
+
+        val result = duplicateForm.bind(Map(fieldName ->  answer.code)).apply(fieldName)
+        result.errors must contain only FormError(fieldName, "countryOfConsumptionFromNi.error.duplicate")
       }
     }
 
-    "must fail to bind when given a duplicate value" in {
-      val answer = Country.euCountries.tail.head
-      val existingAnswers = Seq(Country.euCountries.head, Country.euCountries.tail.head)
+    "when isOnlineMarketPlace is true" - {
 
-      val duplicateForm = new CountryOfConsumptionFromNiFormProvider()(index, existingAnswers)
+      "must bind valid Northern Ireland data" in {
+        val form = new CountryOfConsumptionFromNiFormProvider()(index, emptyExistingAnswers, true)
 
-      val result = duplicateForm.bind(Map(fieldName ->  answer.code)).apply(fieldName)
-      result.errors must contain only FormError(fieldName, "countryOfConsumptionFromNi.error.duplicate")
+        val result = form.bind(Map(fieldName -> "XI")).apply(fieldName)
+        result.value.value mustBe "XI"
+        result.errors mustBe empty
+      }
     }
   }
 }

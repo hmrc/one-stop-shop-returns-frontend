@@ -254,11 +254,17 @@ object Country {
     Country("ZW", "Zimbabwe")
   )
 
+  val euCountriesWithNI: Seq[Country] =
+    euCountries :+ Country("XI", "Northern Ireland")
+
   val internationalCountries: Seq[Country] =
     allCountries.filterNot(_.code == "GB")
 
   val euCountrySelectItems: Seq[SelectItem] =
     selectItems(euCountries)
+
+  val euCountryWithNISelectItems: Seq[SelectItem] =
+    selectItems(euCountriesWithNI)
 
   def selectItems(countries: Seq[Country]): Seq[SelectItem] =
     SelectItem(value = None, text = "") +:
