@@ -33,6 +33,7 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(SoldGoodsFromNiPage) match {
       case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, answers.period, Index(0))
+      case Some(false) => routes.SoldGoodsFromEuController.onPageLoad(NormalMode, answers.period)
       case _          => routes.IndexController.onPageLoad()
     }
 

@@ -41,12 +41,12 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
           .mustEqual(routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, answers.period, Index(0)))
       }
 
-      "to Index when the answer is no" in {
+      "to SoldGoodsFromEU when the answer is no" in {
 
         val answers = emptyUserAnswers.set(SoldGoodsFromNiPage, false).success.value
 
         SoldGoodsFromNiPage.navigate(NormalMode, answers)
-          .mustEqual(routes.IndexController.onPageLoad())
+          .mustEqual(routes.SoldGoodsFromEuController.onPageLoad(NormalMode, answers.period))
       }
     }
 
