@@ -17,22 +17,22 @@
 package controllers
 
 import controllers.actions._
-import forms.NetValueOfSalesFromNiFormProvider
+import forms.SalesAtVatRateFromNiFormProvider
 
 import javax.inject.Inject
 import models.{Index, Mode, Period}
-import pages.NetValueOfSalesFromNiPage
+import pages.SalesAtVatRateFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.NetValueOfSalesFromNiView
+import views.html.SalesAtVatRateFromNiView
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NetValueOfSalesFromNiController @Inject()(
-                                        cc: AuthenticatedControllerComponents,
-                                        formProvider: NetValueOfSalesFromNiFormProvider,
-                                        view: NetValueOfSalesFromNiView
+class SalesAtVatRateFromNiController @Inject()(
+                                                cc: AuthenticatedControllerComponents,
+                                                formProvider: SalesAtVatRateFromNiFormProvider,
+                                                view: SalesAtVatRateFromNiView
                                       )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
@@ -44,7 +44,7 @@ class NetValueOfSalesFromNiController @Inject()(
         case (country, vatRate) =>
 
           val form         = formProvider(vatRate)
-          val preparedForm = request.userAnswers.get(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex)) match {
+          val preparedForm = request.userAnswers.get(SalesAtVatRateFromNiPage(countryIndex, vatRateIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
@@ -66,9 +66,9 @@ class NetValueOfSalesFromNiController @Inject()(
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex), value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesAtVatRateFromNiPage(countryIndex, vatRateIndex), value))
                 _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex).navigate(mode, updatedAnswers))
+              } yield Redirect(SalesAtVatRateFromNiPage(countryIndex, vatRateIndex).navigate(mode, updatedAnswers))
           )
       }
   }

@@ -18,8 +18,8 @@ package viewmodels.checkAnswers
 
 import base.SpecBase
 import controllers.routes
-import models.{CheckMode, Country, VatRate, VatRateType}
-import pages.{CountryOfConsumptionFromNiPage, NetValueOfSalesFromNiPage, VatOnSalesFromNiPage, VatRatesFromNiPage}
+import models.{CheckMode, Country, SalesAtVatRate, VatRate, VatRateType}
+import pages.{CountryOfConsumptionFromNiPage, SalesAtVatRateFromNiPage, VatRatesFromNiPage}
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -62,10 +62,8 @@ class TotalNIVatOnSalesSummarySpec extends SpecBase {
             VatRate(20, VatRateType.Reduced, arbitraryDate)
           )
         ).success.value
-        .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
-        .set(VatOnSalesFromNiPage(index, index), BigDecimal(200)).success.value
-        .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(300)).success.value
-        .set(VatOnSalesFromNiPage(index, index + 1), BigDecimal(400)).success.value
+        .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(200))).success.value
+        .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(100), BigDecimal(400))).success.value
 
       val result = TotalNIVatOnSalesSummary.row(answers)
 
@@ -88,14 +86,11 @@ class TotalNIVatOnSalesSummarySpec extends SpecBase {
             VatRate(20, VatRateType.Reduced, arbitraryDate)
           )
         ).success.value
-        .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
-        .set(VatOnSalesFromNiPage(index, index), BigDecimal(200)).success.value
-        .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(300)).success.value
-        .set(VatOnSalesFromNiPage(index, index + 1), BigDecimal(400)).success.value
+        .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(200))).success.value
+        .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(300), BigDecimal(400))).success.value
         .set(CountryOfConsumptionFromNiPage(index + 1), Country("OTH", "OtherCountry")).success.value
         .set(VatRatesFromNiPage(index + 1), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
-        .set(NetValueOfSalesFromNiPage(index + 1, index), BigDecimal(100)).success.value
-        .set(VatOnSalesFromNiPage(index + 1, index), BigDecimal(1000)).success.value
+        .set(SalesAtVatRateFromNiPage(index + 1, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
 
       val result = TotalNIVatOnSalesSummary.row(answers)
 

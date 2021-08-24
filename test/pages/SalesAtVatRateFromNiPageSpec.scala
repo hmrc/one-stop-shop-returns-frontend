@@ -17,20 +17,20 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, VatRate}
-import org.scalacheck.Arbitrary.arbitrary
+import models.{CheckMode, Index, NormalMode, SalesAtVatRate, VatRate}
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
+import org.scalacheck.Arbitrary.arbitrary
 
-class VatOnSalesFromNiPageSpec extends PageBehaviours {
+class SalesAtVatRateFromNiPageSpec extends PageBehaviours {
 
-  "VatOnSalesFromNiPage" - {
+  "SalesAtVatRateFromNiPage" - {
 
-    beRetrievable[BigDecimal](VatOnSalesFromNiPage(index, index))
+    beRetrievable[SalesAtVatRate](SalesAtVatRateFromNiPage(index, index))
 
-    beSettable[BigDecimal](VatOnSalesFromNiPage(index, index))
+    beSettable[SalesAtVatRate](SalesAtVatRateFromNiPage(index, index))
 
-    beRemovable[BigDecimal](VatOnSalesFromNiPage(index, index))
+    beRemovable[SalesAtVatRate](SalesAtVatRateFromNiPage(index, index))
 
     "must navigate in Normal Mode" - {
 
@@ -46,8 +46,8 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
 
-          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
-            .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, Index(1)))
+          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.SalesAtVatRateFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, Index(1)))
         }
       }
 
@@ -62,7 +62,7 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(VatRatesFromNiPage(countryIndex), List(vatRate)).success.value
 
-          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
+          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
             .mustEqual(routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex))
         }
       }
@@ -82,8 +82,8 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
 
-          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(CheckMode, answers)
-            .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, Index(1)))
+          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(CheckMode, answers)
+            .mustEqual(routes.SalesAtVatRateFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, Index(1)))
         }
       }
 
@@ -98,7 +98,7 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(VatRatesFromNiPage(countryIndex), List(vatRate)).success.value
 
-          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(CheckMode, answers)
+          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(CheckMode, answers)
             .mustEqual(routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex))
         }
       }

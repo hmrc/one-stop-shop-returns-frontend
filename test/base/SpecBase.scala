@@ -18,14 +18,15 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.{Country, Index, Period, Quarter, UserAnswers, VatRate, VatRateType}
+import models.{Country, Index, Period, Quarter, SalesAtVatRate, UserAnswers, VatRate, VatRateType}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
-import pages.{CountryOfConsumptionFromNiPage, NetValueOfSalesFromNiPage, SoldGoodsFromNiPage, VatOnSalesFromNiPage, VatRatesFromNiPage}
+import pages.{CountryOfConsumptionFromNiPage, SalesAtVatRateFromNiPage, SoldGoodsFromNiPage, VatRatesFromNiPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -71,8 +72,7 @@ trait SpecBase
     .set(SoldGoodsFromNiPage, true).success.value
     .set(CountryOfConsumptionFromNiPage(index), Country("COU", "country")).success.value
     .set(VatRatesFromNiPage(index), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
-    .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
-    .set(VatOnSalesFromNiPage(index, index), BigDecimal(1000)).success.value
+    .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

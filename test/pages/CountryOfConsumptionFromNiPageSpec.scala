@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Country, Index, NormalMode, VatRate}
+import models.{CheckMode, Country, Index, NormalMode, SalesAtVatRate, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -60,8 +60,7 @@ class CountryOfConsumptionFromNiPageSpec extends PageBehaviours {
           .set(SoldGoodsFromNiPage, true).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
-          .set(VatOnSalesFromNiPage(index, index), BigDecimal(0)).success.value
+          .set(SalesAtVatRateFromNiPage(index, index), arbitrary[SalesAtVatRate].sample.value).success.value
 
         val expected = emptyUserAnswers
           .set(SoldGoodsFromNiPage, true).success.value
