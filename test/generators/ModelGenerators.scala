@@ -34,11 +34,6 @@ trait ModelGenerators {
       } yield SalesDetailsFromEu(netValueOfSales, vatOnSales)
     }
 
-  implicit lazy val arbitraryCountryOfEstablishmentFromEu: Arbitrary[CountryOfEstablishmentFromEu] =
-    Arbitrary {
-      Gen.oneOf(CountryOfEstablishmentFromEu.values.toSeq)
-    }
-
   private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
 
     def toMillis(date: LocalDate): Long =

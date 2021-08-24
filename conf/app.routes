@@ -71,11 +71,6 @@ POST       /:period/countryOfConsumptionFromEu/:countryFromIndex/:countryToIndex
 GET        /:period/changeCountryOfConsumptionFromEu/:countryFromIndex/:countryToIndex                  controllers.CountryOfConsumptionFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index)
 POST       /:period/changeCountryOfConsumptionFromEu/:countryFromIndex/:countryToIndex                  controllers.CountryOfConsumptionFromEuController.onSubmit(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index)
 
-GET        /:period/countryOfEstablishmentFromEu/:index                        controllers.CountryOfEstablishmentFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
-POST       /:period/countryOfEstablishmentFromEu/:index                        controllers.CountryOfEstablishmentFromEuController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
-GET        /:period/changeCountryOfEstablishmentFromEu/:index                  controllers.CountryOfEstablishmentFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
-POST       /:period/changeCountryOfEstablishmentFromEu/:index                  controllers.CountryOfEstablishmentFromEuController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
-
 GET        /:period/countryOfSaleFromEu/:index                        controllers.CountryOfSaleFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
 POST       /:period/countryOfSaleFromEu/:index                        controllers.CountryOfSaleFromEuController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
 GET        /:period/changeCountryOfSaleFromEu/:index                  controllers.CountryOfSaleFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)

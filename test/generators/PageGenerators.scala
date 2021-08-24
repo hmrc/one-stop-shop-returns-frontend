@@ -34,9 +34,6 @@ trait PageGenerators {
   implicit lazy val arbitraryCountryOfSaleFromEuPage: Arbitrary[CountryOfSaleFromEuPage] =
     Arbitrary(CountryOfSaleFromEuPage(Index(0)))
 
-  implicit lazy val arbitraryCountryOfEstablishmentFromEuPage: Arbitrary[CountryOfEstablishmentFromEuPage] =
-    Arbitrary(CountryOfEstablishmentFromEuPage(Index(0)))
-
   implicit lazy val arbitraryCountryOfConsumptionFromEuPage: Arbitrary[CountryOfConsumptionFromEuPage] =
     Arbitrary(CountryOfConsumptionFromEuPage(Index(0), Index(0)))
 

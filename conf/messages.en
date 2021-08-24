@@ -130,14 +130,6 @@ countryOfConsumptionFromEu.checkYourAnswersLabel = Which EU country did you sell
 countryOfConsumptionFromEu.error.required = Select which EU country you sold to from {0}
 countryOfConsumptionFromEu.change.hidden = which country you sold to
 
-countryOfEstablishmentFromEu.title = Which EU country did you sell from?
-countryOfEstablishmentFromEu.heading = Which EU country did you sell from?
-countryOfEstablishmentFromEu.option1 = Option 1
-countryOfEstablishmentFromEu.option2 = Option 2
-countryOfEstablishmentFromEu.checkYourAnswersLabel = Which EU country did you sell from?
-countryOfEstablishmentFromEu.error.required = Select which EU country you sold from
-countryOfEstablishmentFromEu.change.hidden = which EU country you sold from
-
 countryOfSaleFromEu.title = Which EU country did you sell goods from?
 countryOfSaleFromEu.heading = Which EU country did you sell goods from?
 countryOfSaleFromEu.checkYourAnswersLabel = Which EU country did you sell goods from?
