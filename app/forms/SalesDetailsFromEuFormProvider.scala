@@ -16,21 +16,28 @@
 
 package forms
 
-import javax.inject.Inject
-
+import config.Constants.maxCurrencyAmount
 import forms.mappings.Mappings
+import models.SalesDetailsFromEu
 import play.api.data.Form
 import play.api.data.Forms._
-import models.SalesDetailsFromEu
+
+import javax.inject.Inject
 
 class SalesDetailsFromEuFormProvider @Inject() extends Mappings {
 
    def apply(): Form[SalesDetailsFromEu] = Form(
      mapping(
-      "netValueOfSales" -> text("salesDetailsFromEu.error.netValueOfSales.required")
-        .verifying(maxLength(100, "salesDetailsFromEu.error.netValueOfSales.length")),
-      "vatOnSales" -> text("salesDetailsFromEu.error.vatOnSales.required")
-        .verifying(maxLength(100, "salesDetailsFromEu.error.vatOnSales.length"))
+      "netValueOfSales" -> numeric(
+        "salesDetailsFromEu.error.netValueOfSales.required",
+        "salesDetailsFromEu.error.netValueOfSales.invalidNumeric",
+        "salesDetailsFromEu.error.netValueOfSales.nonNumeric")
+        .verifying(inRange[BigDecimal](0, maxCurrencyAmount, "salesDetailsFromEu.error.netValueOfSales.outOfRange")),
+      "vatOnSales" -> numeric(
+        "salesDetailsFromEu.error.vatOnSales.required",
+        "salesDetailsFromEu.error.vatOnSales.invalidNumeric",
+        "salesDetailsFromEu.error.vatOnSales.nonNumeric")
+        .verifying(inRange[BigDecimal](0, maxCurrencyAmount, "salesDetailsFromEu.error.vatOnSales.outOfRange"))
     )(SalesDetailsFromEu.apply)(SalesDetailsFromEu.unapply)
    )
  }

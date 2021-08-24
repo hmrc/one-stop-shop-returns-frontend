@@ -50,7 +50,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
       .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
       .set(VatRatesFromEuPage(index, index), vatRates).success.value
 
-  private val userAnswers = baseAnswers.set(SalesDetailsFromEuPage(index, index, index), SalesDetailsFromEu("value 1", "value 2")).success.value
+  private val userAnswers = baseAnswers.set(SalesDetailsFromEuPage(index, index, index), SalesDetailsFromEu(1, 2)).success.value
 
   "SalesDetailsFromEu Controller" - {
 
@@ -93,7 +93,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form.fill(SalesDetailsFromEu("value 1", "value 2")),
+          form.fill(SalesDetailsFromEu(1, 2)),
           NormalMode,
           period,
           index,
@@ -120,7 +120,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, salesDetailsFromEuRoute)
-            .withFormUrlEncodedBody(("netValueOfSales", "value 1"), ("vatOnSales", "value 2"))
+            .withFormUrlEncodedBody(("netValueOfSales", "1"), ("vatOnSales", "2"))
 
         val result = route(application, request).value
 
@@ -181,7 +181,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, salesDetailsFromEuRoute)
-            .withFormUrlEncodedBody(("netValueOfSales", "value 1"), ("vatOnSales", "value 2"))
+            .withFormUrlEncodedBody(("netValueOfSales", "1"), ("vatOnSales", "2"))
 
         val result = route(application, request).value
 

@@ -16,6 +16,7 @@
 
 package generators
 
+import config.Constants.maxCurrencyAmount
 import models._
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
@@ -29,8 +30,8 @@ trait ModelGenerators {
   implicit lazy val arbitrarySalesDetailsFromEu: Arbitrary[SalesDetailsFromEu] =
     Arbitrary {
       for {
-        netValueOfSales <- arbitrary[String]
-        vatOnSales <- arbitrary[String]
+        netValueOfSales <- Gen.choose[BigDecimal](0, maxCurrencyAmount)
+        vatOnSales <- Gen.choose[BigDecimal](0, maxCurrencyAmount)
       } yield SalesDetailsFromEu(netValueOfSales, vatOnSales)
     }
 

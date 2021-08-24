@@ -23,6 +23,7 @@ import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CurrencyFormatter._
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
@@ -32,7 +33,10 @@ object SalesDetailsFromEuSummary  {
     answers.get(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).map {
       answer =>
 
-      val value = HtmlFormat.escape(answer.netValueOfSales).toString + "<br/>" + HtmlFormat.escape(answer.vatOnSales).toString
+      val value = HtmlFormat.escape(
+        currencyFormat(answer.netValueOfSales)) +
+        "<br/>" +
+        HtmlFormat.escape(currencyFormat(answer.vatOnSales))
 
         SummaryListRowViewModel(
           key     = "salesDetailsFromEu.checkYourAnswersLabel",
