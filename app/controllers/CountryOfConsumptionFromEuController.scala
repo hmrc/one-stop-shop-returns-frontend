@@ -20,7 +20,7 @@ import controllers.actions._
 import forms.CountryOfConsumptionFromEuFormProvider
 
 import javax.inject.Inject
-import models.{Index, Mode, Period}
+import models.{Country, Index, Mode, Period}
 import pages.CountryOfConsumptionFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -43,14 +43,16 @@ class CountryOfConsumptionFromEuController @Inject()(
       getCountryFrom(countryFromIndex) {
         countryFrom =>
 
-          val form = formProvider(countryFrom)
+          val form        = formProvider(countryFrom)
+          val countries   = Country.euCountries.filterNot(_ == countryFrom)
+          val selectItems = Country.selectItems(countries)
 
           val preparedForm = request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom))
+          Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom, selectItems))
       }
   }
 
@@ -59,11 +61,13 @@ class CountryOfConsumptionFromEuController @Inject()(
       getCountryFromAsync(countryFromIndex) {
         countryFrom =>
 
-          val form = formProvider(countryFrom)
+          val form        = formProvider(countryFrom)
+          val countries   = Country.euCountries.filterNot(_ == countryFrom)
+          val selectItems = Country.selectItems(countries)
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom))),
+              Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom, selectItems))),
 
             value =>
               for {

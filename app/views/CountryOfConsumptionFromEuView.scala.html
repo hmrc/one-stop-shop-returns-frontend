@@ -8,7 +8,7 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, countryFrom: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, countryFrom: Country, selectItems: Seq[SelectItem])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("countryOfConsumptionFromEu.title", countryFrom.name), Some(period.displayText))) {
 
@@ -21,7 +21,7 @@
         @govukSelect(
             SelectViewModel(
                 field = form("value"),
-                items = Country.euCountrySelectItems,
+                items = selectItems,
                 label = LabelViewModel(
                     headingWithCaption(
                         messages("countryOfConsumptionFromEu.heading", countryFrom.name),

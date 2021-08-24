@@ -28,6 +28,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import uk.gov.hmrc.govukfrontend.views.viewmodels.select.SelectItem
 import views.html.CountryOfConsumptionFromEuView
 
 import scala.concurrent.Future
@@ -36,6 +37,7 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
 
   val countryFrom: Country = arbitrary[Country].sample.value
   val countryTo: Country   = arbitrary[Country].suchThat(_ != countryFrom).sample.value
+  val selectItems: Seq[SelectItem] = Country.selectItems(Country.euCountries.filterNot(_ == countryFrom))
 
   private val formProvider = new CountryOfConsumptionFromEuFormProvider()
   private val form         = formProvider(countryFrom)
@@ -57,7 +59,7 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
         val view = application.injector.instanceOf[CountryOfConsumptionFromEuView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, index, index, countryFrom)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index, countryFrom, selectItems)(request, messages(application)).toString
       }
     }
 
@@ -75,7 +77,7 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(countryTo), NormalMode, period, index, index, countryFrom)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(countryTo), NormalMode, period, index, index, countryFrom, selectItems)(request, messages(application)).toString
       }
     }
 
@@ -120,7 +122,7 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index, countryFrom)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index, countryFrom, selectItems)(request, messages(application)).toString
       }
     }
 
