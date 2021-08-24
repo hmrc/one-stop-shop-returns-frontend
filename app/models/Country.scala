@@ -257,14 +257,16 @@ object Country {
   val internationalCountries: Seq[Country] =
     allCountries.filterNot(_.code == "GB")
 
-  val euCountrySelectItems: Seq[SelectItem] = {
+  val euCountrySelectItems: Seq[SelectItem] =
+    selectItems(euCountries)
+
+  def selectItems(countries: Seq[Country]): Seq[SelectItem] =
     SelectItem(value = None, text = "") +:
-      euCountries.map {
+      countries.map {
         country =>
           SelectItemViewModel(
             value = country.code,
             text  = country.name
           )
       }
-  }
 }
