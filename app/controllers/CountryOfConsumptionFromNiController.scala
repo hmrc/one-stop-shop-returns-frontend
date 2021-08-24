@@ -24,6 +24,7 @@ import models.{Index, Mode, Period}
 import pages.CountryOfConsumptionFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.AllSalesFromNiQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.CountryOfConsumptionFromNiView
 
@@ -35,11 +36,18 @@ class CountryOfConsumptionFromNiController @Inject()(
                                         view: CountryOfConsumptionFromNiView
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+
+      val form =
+        formProvider(
+          index,
+          request.userAnswers.get(AllSalesFromNiQuery)
+            .getOrElse(Seq.empty)
+            .map(_.countryOfConsumption)
+        )
 
       val preparedForm = request.userAnswers.get(CountryOfConsumptionFromNiPage(index)) match {
         case None => form
@@ -51,6 +59,14 @@ class CountryOfConsumptionFromNiController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
+
+      val form =
+        formProvider(
+          index,
+          request.userAnswers.get(AllSalesFromNiQuery)
+            .getOrElse(Seq.empty)
+            .map(_.countryOfConsumption)
+        )
 
       form.bindFromRequest().fold(
         formWithErrors =>

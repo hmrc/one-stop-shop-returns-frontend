@@ -17,8 +17,8 @@
 package forms.mappings
 
 import java.time.LocalDate
-
 import generators.Generators
+import models.Index
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatest.freespec.AnyFreeSpec
@@ -185,6 +185,39 @@ class ConstraintsSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyC
 
           val result = minDate(min, "error.past", "foo")(date)
           result mustEqual Invalid("error.past", "foo")
+      }
+    }
+
+    "notADuplicate" - {
+
+      "must return Valid when there is not another entry in the existing answers with the same value" in {
+
+        val answer = "foo"
+        val existingAnswers = Seq("bar", "baz")
+        val index = Index(0)
+
+        val result = notADuplicate(index, existingAnswers, "error.duplicate", "foo")(answer)
+        result mustEqual Valid
+      }
+
+      "must return Valid when this answer is in the existing answers at the same index position, but nowhere else" in {
+
+        val answer = "foo"
+        val existingAnswers = Seq("bar", "foo", "baz")
+        val index = Index(1)
+
+        val result = notADuplicate(index, existingAnswers, "error.duplicate", "foo")(answer)
+        result mustEqual Valid
+      }
+
+      "must return Invalid when this answer is in the existing answers at a different index position" in {
+
+        val answer = "foo"
+        val existingAnswers = Seq("bar", "foo", "baz")
+        val index = Index(0)
+
+        val result = notADuplicate(index, existingAnswers, "error.duplicate", "foo")(answer)
+        result mustEqual Invalid("error.duplicate", "foo")
       }
     }
   }
