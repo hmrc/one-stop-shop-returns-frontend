@@ -23,11 +23,11 @@ import play.api.data.Form
 
 class CountryOfConsumptionFromNiFormProvider @Inject() extends Mappings {
 
-  def apply(thisIndex: Index, existingAnswers: Seq[Country]): Form[Country] =
+  def apply(index: Index, existingAnswers: Seq[Country]): Form[Country] =
     Form(
       "value" -> text("countryOfConsumptionFromNi.error.required")
         .verifying("countryOfConsumptionFromNi.error.required", value => Country.euCountries.exists(_.code == value))
         .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
-        .verifying(notADuplicate(thisIndex, existingAnswers, "countryOfConsumptionFromNi.error.duplicate"))
+        .verifying(notADuplicate(index, existingAnswers, "countryOfConsumptionFromNi.error.duplicate"))
     )
 }

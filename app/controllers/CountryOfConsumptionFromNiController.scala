@@ -41,7 +41,13 @@ class CountryOfConsumptionFromNiController @Inject()(
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      val form = formProvider(index, request.userAnswers.get(AllSalesFromNiQuery).getOrElse(Seq.empty).map(_.countryOfConsumption))
+      val form =
+        formProvider(
+          index,
+          request.userAnswers.get(AllSalesFromNiQuery)
+            .getOrElse(Seq.empty)
+            .map(_.countryOfConsumption)
+        )
 
       val preparedForm = request.userAnswers.get(CountryOfConsumptionFromNiPage(index)) match {
         case None => form
@@ -54,7 +60,13 @@ class CountryOfConsumptionFromNiController @Inject()(
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
-      val form = formProvider(index, request.userAnswers.get(AllSalesFromNiQuery).getOrElse(Seq.empty).map(_.countryOfConsumption))
+      val form =
+        formProvider(
+          index,
+          request.userAnswers.get(AllSalesFromNiQuery)
+            .getOrElse(Seq.empty)
+            .map(_.countryOfConsumption)
+        )
 
       form.bindFromRequest().fold(
         formWithErrors =>
