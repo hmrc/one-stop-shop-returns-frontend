@@ -27,7 +27,8 @@ case class Registration(
                          vatDetails: VatDetails,
                          euRegistrations: Seq[EuTaxRegistration],
                          contactDetails: ContactDetails,
-                         commencementDate: LocalDate
+                         commencementDate: LocalDate,
+                         isOnlineMarketplace: Boolean
                        )
 
 object Registration {
