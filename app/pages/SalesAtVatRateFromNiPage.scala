@@ -27,13 +27,6 @@ case class SalesAtVatRateFromNiPage(countryIndex: Index, vatRateIndex: Index) ex
   override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ toString \ vatRateIndex.position
 
   override def toString: String = salesAtVatRate
-//  override def toString: String = "netValueOfSales"
-
-//  override def navigateInNormalMode(answers: UserAnswers): Call =
-//    routes.VatOnSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, vatRateIndex)
-//
-//  override def navigateInCheckMode(answers: UserAnswers): Call =
-//    routes.VatOnSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex)
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     commonNavigate(NormalMode, answers)
