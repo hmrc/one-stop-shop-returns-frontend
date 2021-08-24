@@ -17,16 +17,23 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
+import models.{CheckMode, Index, Mode, NormalMode, SalesAtVatRate, UserAnswers}
 import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[BigDecimal] {
+case class SalesAtVatRateFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[SalesAtVatRate] {
 
-  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ salesAtVatRate \ vatRateIndex.position \ toString
+  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ toString \ vatRateIndex.position
 
-  override def toString: String = "vatOnSales"
+  override def toString: String = salesAtVatRate
+//  override def toString: String = "netValueOfSales"
+
+//  override def navigateInNormalMode(answers: UserAnswers): Call =
+//    routes.VatOnSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, vatRateIndex)
+//
+//  override def navigateInCheckMode(answers: UserAnswers): Call =
+//    routes.VatOnSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex)
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     commonNavigate(NormalMode, answers)
@@ -38,7 +45,7 @@ case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extend
     answers.get(VatRatesFromNiPage(countryIndex)).map {
       rates =>
         if (rates.size > vatRateIndex.position + 1) {
-          routes.NetValueOfSalesFromNiController.onPageLoad(mode, answers.period, countryIndex, vatRateIndex + 1)
+          routes.SalesAtVatRateFromNiController.onPageLoad(mode, answers.period, countryIndex, vatRateIndex + 1)
         } else {
           routes.CheckSalesFromNiController.onPageLoad(mode, answers.period, countryIndex)
         }

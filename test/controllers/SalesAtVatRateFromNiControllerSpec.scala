@@ -17,26 +17,28 @@
 package controllers
 
 import base.SpecBase
-import forms.NetValueOfSalesFromNiFormProvider
-import models.{Country, NormalMode, VatRate}
+import forms.SalesAtVatRateFromNiFormProvider
+import models.{Country, NormalMode, SalesAtVatRate, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{CountryOfConsumptionFromNiPage, NetValueOfSalesFromNiPage, VatRatesFromNiPage}
+import pages.{CountryOfConsumptionFromNiPage, SalesAtVatRateFromNiPage, VatRatesFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.NetValueOfSalesFromNiView
+import views.html.SalesAtVatRateFromNiView
 
 import scala.concurrent.Future
 
-class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
+class SalesAtVatRateFromNiControllerSpec extends SpecBase with MockitoSugar {
 
-  private val validAnswer: BigDecimal = 0
+  private val validAnswerForNetValueOfSales: BigDecimal = 0
+  private val validAnswerVatOnSales: BigDecimal = 0
+  private val validAnswer: SalesAtVatRate = SalesAtVatRate(validAnswerForNetValueOfSales, validAnswerVatOnSales)
 
-  private lazy val netValueOfSalesFromNiRoute = routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, period, index, index).url
+  private lazy val salesAtVatRateFromNiRoute = routes.SalesAtVatRateFromNiController.onPageLoad(NormalMode, period, index, index).url
 
   private val country = arbitrary[Country].sample.value
   private val vatRate = arbitrary[VatRate].sample.value
@@ -45,21 +47,21 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
       .set(CountryOfConsumptionFromNiPage(index), country).success.value
       .set(VatRatesFromNiPage(index), List(vatRate)).success.value
 
-  private val formProvider = new NetValueOfSalesFromNiFormProvider()
+  private val formProvider = new SalesAtVatRateFromNiFormProvider()
   private val form = formProvider(vatRate)
 
-  "NetValueOfSalesFromNi Controller" - {
+  "SalesAtVatRateFromNi Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, netValueOfSalesFromNiRoute)
+        val request = FakeRequest(GET, salesAtVatRateFromNiRoute)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[NetValueOfSalesFromNiView]
+        val view = application.injector.instanceOf[SalesAtVatRateFromNiView]
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(form, NormalMode, period, index, index, country, vatRate)(request, messages(application)).toString
@@ -68,14 +70,14 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = baseAnswers.set(NetValueOfSalesFromNiPage(index, index), validAnswer).success.value
+      val userAnswers = baseAnswers.set(SalesAtVatRateFromNiPage(index, index), validAnswer).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, netValueOfSalesFromNiRoute)
+        val request = FakeRequest(GET, salesAtVatRateFromNiRoute)
 
-        val view = application.injector.instanceOf[NetValueOfSalesFromNiView]
+        val view = application.injector.instanceOf[SalesAtVatRateFromNiView]
 
         val result = route(application, request).value
 
@@ -105,14 +107,16 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, netValueOfSalesFromNiRoute)
-            .withFormUrlEncodedBody(("value", validAnswer.toString))
+          FakeRequest(POST, salesAtVatRateFromNiRoute)
+            .withFormUrlEncodedBody(
+              ("netValueOfSales", validAnswerForNetValueOfSales.toString()),
+              ("vatOnSales", validAnswerVatOnSales.toString()))
 
         val result = route(application, request).value
-        val expectedAnswers = baseAnswers.set(NetValueOfSalesFromNiPage(index, index), validAnswer).success.value
+        val expectedAnswers = baseAnswers.set(SalesAtVatRateFromNiPage(index, index), validAnswer).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual NetValueOfSalesFromNiPage(index, index).navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual SalesAtVatRateFromNiPage(index, index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -123,12 +127,12 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, netValueOfSalesFromNiRoute)
+          FakeRequest(POST, salesAtVatRateFromNiRoute)
             .withFormUrlEncodedBody(("value", "invalid value"))
 
         val boundForm = form.bind(Map("value" -> "invalid value"))
 
-        val view = application.injector.instanceOf[NetValueOfSalesFromNiView]
+        val view = application.injector.instanceOf[SalesAtVatRateFromNiView]
 
         val result = route(application, request).value
 
@@ -142,7 +146,7 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, netValueOfSalesFromNiRoute)
+        val request = FakeRequest(GET, salesAtVatRateFromNiRoute)
 
         val result = route(application, request).value
 
@@ -157,7 +161,7 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, netValueOfSalesFromNiRoute)
+          FakeRequest(POST, salesAtVatRateFromNiRoute)
             .withFormUrlEncodedBody(("value", validAnswer.toString))
 
         val result = route(application, request).value

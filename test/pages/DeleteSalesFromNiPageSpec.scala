@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Country, NormalMode, VatRate}
+import models.{CheckMode, Country, NormalMode, SalesAtVatRate, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -44,8 +44,7 @@ class DeleteSalesFromNiPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(CountryOfConsumptionFromNiPage(index), country).success.value
               .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-              .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(1)).success.value
-              .set(VatOnSalesFromNiPage(index, index), BigDecimal(1)).success.value
+              .set(SalesAtVatRateFromNiPage(index, index), arbitrary[SalesAtVatRate].sample.value).success.value
 
           DeleteSalesFromNiPage(index).navigate(NormalMode, answers)
             .mustEqual(routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period))
@@ -75,8 +74,7 @@ class DeleteSalesFromNiPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(CountryOfConsumptionFromNiPage(index), country).success.value
               .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-              .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(1)).success.value
-              .set(VatOnSalesFromNiPage(index, index), BigDecimal(1)).success.value
+              .set(SalesAtVatRateFromNiPage(index, index), arbitrary[SalesAtVatRate].sample.value).success.value
 
           DeleteSalesFromNiPage(index).navigate(CheckMode, answers)
             .mustEqual(routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period))

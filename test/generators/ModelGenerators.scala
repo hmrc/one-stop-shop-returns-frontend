@@ -26,6 +26,14 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 
 trait ModelGenerators {
 
+  implicit lazy val arbitrarySalesAtVatRate: Arbitrary[SalesAtVatRate] =
+    Arbitrary {
+      for {
+        netValueOfSales <- arbitrary[BigDecimal]
+        vatOnSales <- arbitrary[BigDecimal]
+      } yield SalesAtVatRate(netValueOfSales, vatOnSales)
+    }
+
   implicit lazy val arbitrarySalesDetailsFromEu: Arbitrary[SalesDetailsFromEu] =
     Arbitrary {
       for {

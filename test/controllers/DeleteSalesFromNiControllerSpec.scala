@@ -18,12 +18,12 @@ package controllers
 
 import base.SpecBase
 import forms.DeleteSalesFromNiFormProvider
-import models.{Country, NormalMode, VatRate}
+import models.{Country, NormalMode, SalesAtVatRate, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{never, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{CountryOfConsumptionFromNiPage, DeleteSalesFromNiPage, NetValueOfSalesFromNiPage, VatOnSalesFromNiPage, VatRatesFromNiPage}
+import pages.{CountryOfConsumptionFromNiPage, DeleteSalesFromNiPage, SalesAtVatRateFromNiPage, VatRatesFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -47,8 +47,7 @@ class DeleteSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
     emptyUserAnswers
       .set(CountryOfConsumptionFromNiPage(index), country).success.value
       .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-      .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(1)).success.value
-      .set(VatOnSalesFromNiPage(index, index), BigDecimal(1)).success.value
+      .set(SalesAtVatRateFromNiPage(index, index), arbitrary[SalesAtVatRate].sample.value).success.value
 
   "DeleteSalesFromNi Controller" - {
 

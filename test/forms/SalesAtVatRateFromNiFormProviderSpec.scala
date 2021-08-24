@@ -21,14 +21,14 @@ import models.VatRate
 import org.scalacheck.Arbitrary.arbitrary
 import play.api.data.FormError
 
-class NetValueOfSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
+class SalesAtVatRateFromNiFormProviderSpec extends DecimalFieldBehaviours {
 
   private val vatRate = arbitrary[VatRate].sample.value
-  private val form = new NetValueOfSalesFromNiFormProvider()(vatRate)
+  private val form = new SalesAtVatRateFromNiFormProvider()(vatRate)
 
-  ".value" - {
+  ".netValueOfSales" - {
 
-    val fieldName = "value"
+    val fieldName = "netValueOfSales"
 
     val minimum = 0
     val maximum = 1000000
@@ -60,6 +60,44 @@ class NetValueOfSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
       form,
       fieldName,
       requiredError = FormError(fieldName, "netValueOfSalesFromNi.error.required", Seq(vatRate.rateForDisplay))
+    )
+  }
+
+
+  ".vatOnSales" - {
+
+    val fieldName = "vatOnSales"
+
+    val minimum: BigDecimal = 0
+    val maximum: BigDecimal = 1000000
+
+    val validDataGenerator = decimalInRangeWithCommas(minimum, maximum)
+
+    behave like fieldThatBindsValidData(
+      form,
+      fieldName,
+      validDataGenerator
+    )
+
+    behave like decimalField(
+      form,
+      fieldName,
+      nonNumericError  = FormError(fieldName, "vatOnSalesFromNi.error.nonNumeric", Seq(vatRate.rateForDisplay)),
+      invalidNumericError  = FormError(fieldName, "vatOnSalesFromNi.error.wholeNumber", Seq(vatRate.rateForDisplay))
+    )
+
+    behave like decimalFieldWithRange(
+      form,
+      fieldName,
+      minimum       = minimum,
+      maximum       = maximum,
+      expectedError = FormError(fieldName, "vatOnSalesFromNi.error.outOfRange", Seq(minimum, maximum))
+    )
+
+    behave like mandatoryField(
+      form,
+      fieldName,
+      requiredError = FormError(fieldName, "vatOnSalesFromNi.error.required", Seq(vatRate.rateForDisplay))
     )
   }
 }

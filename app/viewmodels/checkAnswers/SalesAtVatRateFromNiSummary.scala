@@ -18,7 +18,7 @@ package viewmodels.checkAnswers
 
 import controllers.routes
 import models.{CheckMode, Index, UserAnswers}
-import pages.VatOnSalesFromNiPage
+import pages.SalesAtVatRateFromNiPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,19 +26,27 @@ import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object VatOnSalesFromNiSummary extends CurrencyFormatter {
+object SalesAtVatRateFromNiSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex)).map {
+  def row(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Seq[SummaryListRow] =
+    answers.get(SalesAtVatRateFromNiPage(countryIndex, vatRateIndex)).toSeq.flatMap {
       answer =>
 
+        Seq(SummaryListRowViewModel(
+          key     = "netValueOfSalesFromNi.checkYourAnswersLabel",
+          value   = ValueViewModel(HtmlContent(currencyFormat(answer.netValueOfSales))),
+          actions = Seq(
+            ActionItemViewModel("site.change", routes.SalesAtVatRateFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex).url)
+              .withVisuallyHiddenText(messages("netValueOfSalesFromNi.change.hidden"))
+          )
+        ),
         SummaryListRowViewModel(
           key     = "vatOnSalesFromNi.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(answer))),
+          value   = ValueViewModel(HtmlContent(currencyFormat(answer.vatOnSales))),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.VatOnSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex).url)
+            ActionItemViewModel("site.change", routes.SalesAtVatRateFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex).url)
               .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden"))
           )
-        )
+        ))
     }
 }

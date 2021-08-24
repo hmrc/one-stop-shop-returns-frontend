@@ -35,9 +35,8 @@ trait UserAnswersGenerator extends TryValues {
     arbitrary[(CountryOfEstablishmentFromEuPage, JsValue)] ::
     arbitrary[(CountryOfConsumptionFromEuPage, JsValue)] ::
     arbitrary[(VatRatesFromNiPage, JsValue)] ::
-    arbitrary[(VatOnSalesFromNiPage, JsValue)] ::
     arbitrary[(SoldGoodsFromNiPage.type, JsValue)] ::
-    arbitrary[(NetValueOfSalesFromNiPage, JsValue)] ::
+    arbitrary[(SalesAtVatRateFromNiPage, JsValue)] ::
     arbitrary[(DeleteSalesFromNiPage, JsValue)] ::
     arbitrary[(CountryOfConsumptionFromNiPage, JsValue)] ::
     arbitrary[(StartReturnPage.type, JsValue)] ::
