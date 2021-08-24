@@ -16,64 +16,71 @@
 
 package forms
 
-import forms.behaviours.StringFieldBehaviours
+import config.Constants.maxCurrencyAmount
+import forms.behaviours.DecimalFieldBehaviours
 import play.api.data.FormError
 
-class SalesDetailsFromEuFormProviderSpec extends StringFieldBehaviours {
+class SalesDetailsFromEuFormProviderSpec extends DecimalFieldBehaviours {
 
   val form = new SalesDetailsFromEuFormProvider()()
 
   ".netValueOfSales" - {
 
     val fieldName = "netValueOfSales"
-    val requiredKey = "salesDetailsFromEu.error.netValueOfSales.required"
-    val lengthKey = "salesDetailsFromEu.error.netValueOfSales.length"
-    val maxLength = 100
+    val requiredError = "salesDetailsFromEu.error.netValueOfSales.required"
+    val nonNumericError = "salesDetailsFromEu.error.netValueOfSales.nonNumeric"
+    val invalidNumericError = "salesDetailsFromEu.error.netValueOfSales.invalidNumeric"
+    val outOfRangeError = "salesDetailsFromEu.error.netValueOfSales.outOfRange"
 
-    behave like fieldThatBindsValidData(
+    behave like decimalField(
       form,
       fieldName,
-      stringsWithMaxLength(maxLength)
+      FormError(fieldName, nonNumericError),
+      FormError(fieldName, invalidNumericError)
     )
-
-    behave like fieldWithMaxLength(
+    
+    behave like decimalFieldWithRange(
       form,
       fieldName,
-      maxLength = maxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(maxLength))
+      minimum = 0,
+      maximum = maxCurrencyAmount,
+      expectedError = FormError(fieldName, outOfRangeError, Seq(0, maxCurrencyAmount))
     )
 
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, requiredKey)
+      requiredError = FormError(fieldName, requiredError)
     )
   }
 
   ".vatOnSales" - {
 
     val fieldName = "vatOnSales"
-    val requiredKey = "salesDetailsFromEu.error.vatOnSales.required"
-    val lengthKey = "salesDetailsFromEu.error.vatOnSales.length"
-    val maxLength = 100
+    val requiredError = "salesDetailsFromEu.error.vatOnSales.required"
+    val nonNumericError = "salesDetailsFromEu.error.vatOnSales.nonNumeric"
+    val invalidNumericError = "salesDetailsFromEu.error.vatOnSales.invalidNumeric"
+    val outOfRangeError = "salesDetailsFromEu.error.vatOnSales.outOfRange"
 
-    behave like fieldThatBindsValidData(
+    behave like decimalField(
       form,
       fieldName,
-      stringsWithMaxLength(maxLength)
+      FormError(fieldName, nonNumericError),
+      FormError(fieldName, invalidNumericError)
     )
 
-    behave like fieldWithMaxLength(
+    behave like decimalFieldWithRange(
       form,
       fieldName,
-      maxLength = maxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(maxLength))
+      minimum = 0,
+      maximum = maxCurrencyAmount,
+      expectedError = FormError(fieldName, outOfRangeError, Seq(0, maxCurrencyAmount))
     )
 
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, requiredKey)
+      requiredError = FormError(fieldName, requiredError)
     )
   }
 }

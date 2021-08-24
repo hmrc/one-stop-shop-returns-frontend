@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package models
+package config
 
-import play.api.libs.json._
+object Constants {
 
-case class SalesDetailsFromEu (netValueOfSales: BigDecimal, vatOnSales: BigDecimal)
-
-object SalesDetailsFromEu {
-  implicit val format: OFormat[SalesDetailsFromEu] = Json.format[SalesDetailsFromEu]
+  val maxCurrencyAmount: BigDecimal = 100000000
 }

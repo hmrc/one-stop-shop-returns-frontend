@@ -44,7 +44,10 @@
                 field = form("netValueOfSales"),
                 label = LabelViewModel(messages("salesDetailsFromEu.netValueOfSales"))
             )
-            .withWidth(Full)
+            .asNumeric()
+            .withWidth(Fixed10)
+            .withCssClass("govuk-currency-input__inner__input")
+            .withPrefix(PrefixOrSuffix(content = Text("£")))
         )
 
         @govukInput(
@@ -52,7 +55,10 @@
                 field = form("vatOnSales"),
                 label = LabelViewModel(messages("salesDetailsFromEu.vatOnSales"))
             )
-            .withWidth(Full)
+            .asNumeric()
+            .withWidth(Fixed10)
+            .withCssClass("govuk-currency-input__inner__input")
+            .withPrefix(PrefixOrSuffix(content = Text("£")))
         )
 
         @govukButton(

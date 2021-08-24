@@ -20,7 +20,7 @@ import play.api.data.{Form, FormError}
 
 trait DecimalFieldBehaviours extends FieldBehaviours {
 
-  def decimalField(form: Form[BigDecimal],
+  def decimalField(form: Form[_],
                    fieldName: String,
                    nonNumericError: FormError,
                    invalidNumericError: FormError): Unit = {
@@ -40,7 +40,7 @@ trait DecimalFieldBehaviours extends FieldBehaviours {
     }
   }
 
-  def fivePlaceDecimalField(form: Form[BigDecimal],
+  def fivePlaceDecimalField(form: Form[_],
                    fieldName: String,
                    nonNumericError: FormError,
                    invalidNumericError: FormError): Unit = {
@@ -60,7 +60,7 @@ trait DecimalFieldBehaviours extends FieldBehaviours {
     }
   }
 
-  def decimalFieldWithMinimum(form: Form[BigDecimal],
+  def decimalFieldWithMinimum(form: Form[_],
                               fieldName: String,
                               minimum: BigDecimal,
                               expectedError: FormError): Unit = {
@@ -72,7 +72,7 @@ trait DecimalFieldBehaviours extends FieldBehaviours {
     }
   }
 
-  def decimalFieldWithMaximum(form: Form[BigDecimal],
+  def decimalFieldWithMaximum(form: Form[_],
                               fieldName: String,
                               maximum: BigDecimal,
                               expectedError: FormError): Unit = {
@@ -84,7 +84,7 @@ trait DecimalFieldBehaviours extends FieldBehaviours {
     }
   }
 
-  def decimalFieldWithRange(form: Form[BigDecimal],
+  def decimalFieldWithRange(form: Form[_],
                             fieldName: String,
                             minimum: BigDecimal,
                             maximum: BigDecimal,

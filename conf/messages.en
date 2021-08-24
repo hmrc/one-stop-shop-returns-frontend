@@ -150,9 +150,11 @@ salesDetailsFromEu.netValueOfSales = Sales excluding VAT
 salesDetailsFromEu.vatOnSales = VAT charged
 salesDetailsFromEu.checkYourAnswersLabel = Sales at {0} VAT rate
 salesDetailsFromEu.error.netValueOfSales.required = Enter your sales excluding VAT
+salesDetailsFromEu.error.netValueOfSales.nonNumeric = Enter your sales excluding VAT using numbers
+salesDetailsFromEu.error.netValueOfSales.invalidNumeric = Enter your sales excluding VAT using numbers up to two decimal places
 salesDetailsFromEu.error.vatOnSales.required = Enter the VAT charged
-salesDetailsFromEu.error.netValueOfSales.length = netValueOfSales must be 100 characters or less
-salesDetailsFromEu.error.vatOnSales.length = vatOnSales must be 100 characters or less
+salesDetailsFromEu.error.vatOnSales.nonNumeric = Enter the VAT charged using numbers
+salesDetailsFromEu.error.vatOnSales.invalidNumeric = Enter the VAT charged using numbers up to two decimal places
 salesDetailsFromEu.netValueOfSales.change.hidden = your sales excluding VAT
 salesDetailsFromEu.vatOnSales.change.hidden = the VAT charged
 
