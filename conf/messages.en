@@ -154,7 +154,8 @@ salesDetailsFromEu.title = Sales at {0} VAT rate
 salesDetailsFromEu.heading = Sales at {0} VAT rate
 salesDetailsFromEu.netValueOfSales = Sales excluding VAT
 salesDetailsFromEu.vatOnSales = VAT charged
-salesDetailsFromEu.checkYourAnswersLabel = Sales at {0} VAT rate
+salesDetailsFromEu.netValueOfSales.checkYourAnswersLabel = Sales excluding VAT
+salesDetailsFromEu.vatOnSales.checkYourAnswersLabel = VAT charged
 salesDetailsFromEu.error.netValueOfSales.required = Enter your sales excluding VAT
 salesDetailsFromEu.error.netValueOfSales.nonNumeric = Enter your sales excluding VAT using numbers
 salesDetailsFromEu.error.netValueOfSales.invalidNumeric = Enter your sales excluding VAT using numbers up to two decimal places
@@ -176,9 +177,9 @@ vatRatesFromEu.checkYourAnswersLabel = VAT rates on sales
 vatRatesFromEu.error.required = Select which VAT rates you charged on sales
 vatRatesFromEu.change.hidden = which VAT rates you charged on sales
 
-checkSalesFromEu.title = Check your answers
-checkSalesFromEu.heading = Check your answers
-checkSalesFromEu.vatRateTitle = {0} VAT rate
+checkSalesToEu.title = Check your answers
+checkSalesToEu.heading = Check your answers
+checkSalesToEu.vatRateTitle = {0} VAT rate
 
 checkSalesToEu.title = Check your answers
 checkSalesToEu.heading = Check your answers
