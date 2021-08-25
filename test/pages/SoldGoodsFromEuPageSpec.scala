@@ -16,11 +16,12 @@
 
 package pages
 
+import base.SpecBase
 import controllers.routes
-import models.{Index, NormalMode}
+import models.{CheckMode, Index, NormalMode}
 import pages.behaviours.PageBehaviours
 
-class SoldGoodsFromEuPageSpec extends PageBehaviours {
+class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase {
 
   "SoldGoodsFromEuPage" - {
 
@@ -46,6 +47,42 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours {
 
         SoldGoodsFromEuPage.navigate(NormalMode, answers)
           .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to Country of Sale from EU when the answer is yes" in {
+
+        val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, true).success.value
+
+        SoldGoodsFromEuPage.navigate(CheckMode, answers)
+          .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0)))
+      }
+
+      "to Check your answers when the answer is no" in {
+
+        val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
+
+        SoldGoodsFromEuPage.navigate(CheckMode, answers)
+          .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
+      }
+    }
+
+    "cleanup" - {
+
+      "must not remove anything when answers is yes" in {
+        val result = SoldGoodsFromEuPage.cleanup(Some(true), completeUserAnswers).success.value
+
+        result mustBe completeUserAnswers
+      }
+
+      "must remove all EU countries sales when answers is no" in {
+        val answers = completeUserAnswers.set(SoldGoodsFromEuPage, false).success.value
+        val result = SoldGoodsFromEuPage.cleanup(Some(false), answers).success.value
+        val expectedUserAnswers = completeSalesFromNIUserAnswers.set(SoldGoodsFromEuPage, false).success.value
+
+        result mustBe expectedUserAnswers
       }
     }
   }

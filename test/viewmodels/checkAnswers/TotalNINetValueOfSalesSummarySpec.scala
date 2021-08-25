@@ -32,7 +32,7 @@ class TotalNINetValueOfSalesSummarySpec extends SpecBase {
   private val expectedAction = Seq(
     ActionItemViewModel(
       "site.change",
-      routes.SalesFromNiListController.onPageLoad(CheckMode, completeUserAnswers.period).url)
+      routes.SalesFromNiListController.onPageLoad(CheckMode, completeSalesFromNIUserAnswers.period).url)
       .withVisuallyHiddenText("soldGoodsFromNi.change.hidden")
   )
 
@@ -40,7 +40,7 @@ class TotalNINetValueOfSalesSummarySpec extends SpecBase {
 
     "must show correct net total sales for one country with one vat rate" in {
 
-      val answers = completeUserAnswers
+      val answers = completeSalesFromNIUserAnswers
       val result = TotalNINetValueOfSalesSummary.row(answers)
 
       val expectedResult = SummaryListRowViewModel(
@@ -54,7 +54,7 @@ class TotalNINetValueOfSalesSummarySpec extends SpecBase {
 
     "must show correct net total sales for one country with multiple vat rates" in {
 
-      val answers = completeUserAnswers
+      val answers = completeSalesFromNIUserAnswers
         .set(
           VatRatesFromNiPage(index),
           List(
@@ -78,7 +78,7 @@ class TotalNINetValueOfSalesSummarySpec extends SpecBase {
 
     "must show correct net total sales for multiple countries with vat rates" in {
 
-      val answers = completeUserAnswers
+      val answers = completeSalesFromNIUserAnswers
         .set(
           VatRatesFromNiPage(index),
           List(

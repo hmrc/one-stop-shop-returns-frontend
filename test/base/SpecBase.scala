@@ -18,15 +18,14 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.{Country, Index, Period, Quarter, SalesAtVatRate, UserAnswers, VatRate, VatRateType}
+import models.{Country, Index, Period, Quarter, SalesAtVatRate, SalesDetailsFromEu, UserAnswers, VatRate, VatRateType}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
-import pages.{CountryOfConsumptionFromNiPage, SalesAtVatRateFromNiPage, SoldGoodsFromNiPage, VatRatesFromNiPage}
+import pages.{CountryOfConsumptionFromEuPage, CountryOfConsumptionFromNiPage, SalesAtVatRateFromNiPage, SalesDetailsFromEuPage, SoldGoodsFromEuPage, SoldGoodsFromNiPage, VatRatesFromEuPage, VatRatesFromNiPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -67,13 +66,21 @@ trait SpecBase
     isOnlineMarketplace   = false
   )
 
+  val twentyPercentVatRate = VatRate(20, VatRateType.Reduced, arbitraryDate)
+
   def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
 
-  def completeUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
+  def completeSalesFromNIUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
     .set(SoldGoodsFromNiPage, true).success.value
     .set(CountryOfConsumptionFromNiPage(index), Country("COU", "country")).success.value
     .set(VatRatesFromNiPage(index), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
     .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
+
+  def completeUserAnswers : UserAnswers = completeSalesFromNIUserAnswers
+    .set(SoldGoodsFromEuPage,true).success.value
+    .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), Country("BE", "Belgium")).success.value
+    .set(VatRatesFromEuPage(Index(0), Index(0)), List(twentyPercentVatRate)).success.value
+    .set(SalesDetailsFromEuPage(Index(0), Index(0), Index(0)), SalesDetailsFromEu(BigDecimal(100), BigDecimal(20))).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

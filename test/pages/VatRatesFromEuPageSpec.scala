@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Country, Index, NormalMode, SalesDetailsFromEu, VatRate}
+import models.{CheckMode, Country, Index, NormalMode, SalesDetailsFromEu, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -45,6 +45,23 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
 
         VatRatesFromEuPage(index, index).navigate(NormalMode, answers)
           .mustEqual(routes.SalesDetailsFromEuController.onPageLoad(NormalMode, answers.period, index, index, Index(0)))
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to Sales Details from EU" in {
+
+        val countryFrom  = arbitrary[Country].sample.value
+        val countryTo    = arbitrary[Country].sample.value
+
+        val answers =
+          emptyUserAnswers
+            .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+            .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+
+        VatRatesFromEuPage(index, index).navigate(CheckMode, answers)
+          .mustEqual(routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period, index, index, Index(0)))
       }
     }
   }
