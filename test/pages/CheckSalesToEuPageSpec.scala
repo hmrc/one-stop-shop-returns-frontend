@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.NormalMode
+import models.{CheckMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class CheckSalesToEuPageSpec extends PageBehaviours {
@@ -30,6 +30,15 @@ class CheckSalesToEuPageSpec extends PageBehaviours {
 
         CheckSalesToEuPage(index).navigate(NormalMode, emptyUserAnswers)
           .mustEqual(routes.SalesToEuListController.onPageLoad(NormalMode, emptyUserAnswers.period, index))
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to sales to EU List" in {
+
+        CheckSalesToEuPage(index).navigate(CheckMode, emptyUserAnswers)
+          .mustEqual(routes.SalesToEuListController.onPageLoad(CheckMode, emptyUserAnswers.period, index))
       }
     }
   }

@@ -24,7 +24,9 @@ import models.{Index, Mode, Period}
 import pages.DeleteSalesFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.SalesFromEuQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax._
 import views.html.DeleteSalesFromEuView
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -63,13 +65,17 @@ class DeleteSalesFromEuController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, index, country))),
+              BadRequest(view(formWithErrors, mode, period, index, country)).toFuture,
 
             value =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteSalesFromEuPage(index), value))
-                _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(DeleteSalesFromEuPage(index).navigate(mode, updatedAnswers))
+              if(value) {
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.remove(SalesFromEuQuery(index)))
+                  _ <- cc.sessionRepository.set(updatedAnswers)
+                } yield Redirect(DeleteSalesFromEuPage(index).navigate(mode, updatedAnswers))
+              } else {
+                Redirect(DeleteSalesFromEuPage(index).navigate(mode, request.userAnswers)).toFuture
+              }
           )
       }
   }

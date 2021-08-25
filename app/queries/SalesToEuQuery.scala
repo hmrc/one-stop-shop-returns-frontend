@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package pages
+package queries
 
-import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers}
-import play.api.mvc.Call
+import models.{Index, SalesFromCountry}
+import pages.PageConstants._
+import play.api.libs.json.JsPath
 
-case class CheckSalesToEuPage(index: Index) extends Page {
+case class SalesToEuQuery(indexFrom: Index, indexTo: Index) extends Gettable[SalesFromCountry] with Settable[SalesFromCountry] {
 
-  override protected def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.SalesToEuListController.onPageLoad(NormalMode, answers.period, index)
-
-  override protected def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.SalesToEuListController.onPageLoad(CheckMode, answers.period, index)
+  override def path: JsPath = JsPath \ salesFromEu \ indexFrom.position \ salesFromCountry \ indexTo.position
 }

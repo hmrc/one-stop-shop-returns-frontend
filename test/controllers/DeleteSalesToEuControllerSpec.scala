@@ -20,13 +20,14 @@ import base.SpecBase
 import forms.DeleteSalesToEuFormProvider
 import models.{Country, NormalMode}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage, DeleteSalesToEuPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.SalesToEuQuery
 import repositories.SessionRepository
 import views.html.DeleteSalesToEuView
 
@@ -90,7 +91,7 @@ class DeleteSalesToEuControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must save the answer and redirect to the next page when valid data is submitted" in {
+    "must delete a record and redirect to the next page when the user answers Yes" in {
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -107,11 +108,35 @@ class DeleteSalesToEuControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = baseAnswers.set(DeleteSalesToEuPage(index, index), true).success.value
+        val expectedAnswers = baseAnswers.remove(SalesToEuQuery(index, index)).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual DeleteSalesToEuPage(index, index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+      }
+    }
+
+    "must not delete a record and redirect to the next page when the user answers No" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      val application =
+        applicationBuilder(userAnswers = Some(baseAnswers))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, deleteSalesToEuRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual DeleteSalesToEuPage(index, index).navigate(NormalMode, baseAnswers).url
+        verify(mockSessionRepository, never()).set(any())
       }
     }
 

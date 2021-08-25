@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Country, Index, NormalMode}
+import models.{CheckMode, Country, Index, NormalMode}
 import pages.behaviours.PageBehaviours
 
 
@@ -37,6 +37,15 @@ class CountryOfConsumptionFromEuPageSpec extends PageBehaviours {
 
         CountryOfConsumptionFromEuPage(index, index).navigate(NormalMode, emptyUserAnswers)
           .mustEqual(routes.VatRatesFromEuController.onPageLoad(NormalMode, emptyUserAnswers.period, Index(0), Index(0)))
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to Vat Rates from EU" in {
+
+        CountryOfConsumptionFromEuPage(index, index).navigate(CheckMode, emptyUserAnswers)
+          .mustEqual(routes.VatRatesFromEuController.onPageLoad(CheckMode, emptyUserAnswers.period, Index(0), Index(0)))
       }
     }
   }

@@ -31,6 +31,6 @@ case class SalesToEuListPage(index: Index) extends Page {
         case None       => routes.JourneyRecoveryController.onPageLoad()
       }
     } else {
-      routes.SalesFromEuListController.onPageLoad(NormalMode, answers.period)
+      routes.SalesFromEuListController.onPageLoad(mode, answers.period)
     }
 }

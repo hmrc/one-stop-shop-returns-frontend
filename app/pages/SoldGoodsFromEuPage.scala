@@ -17,9 +17,12 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.AllSalesFromEuQuery
+
+import scala.util.Try
 
 case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
 
@@ -33,4 +36,19 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
       case Some(false) => routes.CheckYourAnswersController.onPageLoad(answers.period)
       case None        => routes.JourneyRecoveryController.onPageLoad()
     }
+
+  override protected def navigateInCheckMode(answers: UserAnswers): Call = {
+    answers.get(SoldGoodsFromEuPage) match {
+      case Some(true)  => routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0))
+      case Some(false) => routes.CheckYourAnswersController.onPageLoad(answers.period)
+      case None        => routes.JourneyRecoveryController.onPageLoad()
+    }
+  }
+
+  override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
+    value match {
+      case Some(false) => userAnswers.remove(AllSalesFromEuQuery)
+      case _           => super.cleanup(value, userAnswers)
+    }
+  }
 }
