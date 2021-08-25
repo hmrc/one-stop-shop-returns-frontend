@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, SalesDetailsFromEu, VatRate}
+import models.{Index, NormalMode, SalesAtVatRate, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
@@ -26,11 +26,11 @@ class SalesDetailsFromEuPageSpec extends PageBehaviours {
 
   "SalesDetailsFromEuPage" - {
 
-    beRetrievable[SalesDetailsFromEu](SalesDetailsFromEuPage(index, index, index))
+    beRetrievable[SalesAtVatRate](SalesDetailsFromEuPage(index, index, index))
 
-    beSettable[SalesDetailsFromEu](SalesDetailsFromEuPage(index, index, index))
+    beSettable[SalesAtVatRate](SalesDetailsFromEuPage(index, index, index))
 
-    beRemovable[SalesDetailsFromEu](SalesDetailsFromEuPage(index, index, index))
+    beRemovable[SalesAtVatRate](SalesDetailsFromEuPage(index, index, index))
 
     "must navigate in Normal mode" - {
 

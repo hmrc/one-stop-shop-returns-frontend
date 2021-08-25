@@ -16,7 +16,6 @@
 
 package generators
 
-import config.Constants.maxCurrencyAmount
 import models._
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
@@ -38,14 +37,6 @@ trait ModelGenerators {
         netValueOfSales <- arbitrary[BigDecimal]
         vatOnSales <- arbitrary[BigDecimal]
       } yield SalesAtVatRate(netValueOfSales, vatOnSales)
-    }
-
-  implicit lazy val arbitrarySalesDetailsFromEu: Arbitrary[SalesDetailsFromEu] =
-    Arbitrary {
-      for {
-        netValueOfSales <- Gen.choose[BigDecimal](0, maxCurrencyAmount)
-        vatOnSales <- Gen.choose[BigDecimal](0, maxCurrencyAmount)
-      } yield SalesDetailsFromEu(netValueOfSales, vatOnSales)
     }
 
   private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
@@ -77,12 +68,7 @@ trait ModelGenerators {
   }
 
   implicit def arbitraryVrn: Arbitrary[Vrn] = Arbitrary {
-    for {
-      prefix <- Gen.oneOf("", "GB")
-      chars  <- Gen.listOfN(9, Gen.numChar)
-    } yield {
-      Vrn(prefix + chars.mkString(""))
-    }
+    Gen.listOfN(9, Gen.numChar).map(_.mkString).map(Vrn(_))
   }
 
   implicit lazy val arbitraryCountry: Arbitrary[Country] =

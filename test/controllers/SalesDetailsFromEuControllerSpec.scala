@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.SalesDetailsFromEuFormProvider
-import models.{Country, NormalMode, SalesDetailsFromEu, VatRate}
+import models.{Country, NormalMode, SalesAtVatRate, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
@@ -50,7 +50,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
       .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
       .set(VatRatesFromEuPage(index, index), vatRates).success.value
 
-  private val userAnswers = baseAnswers.set(SalesDetailsFromEuPage(index, index, index), SalesDetailsFromEu(1, 2)).success.value
+  private val userAnswers = baseAnswers.set(SalesDetailsFromEuPage(index, index, index), SalesAtVatRate(1, 2)).success.value
 
   "SalesDetailsFromEu Controller" - {
 
@@ -93,7 +93,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form.fill(SalesDetailsFromEu(1, 2)),
+          form.fill(SalesAtVatRate(1, 2)),
           NormalMode,
           period,
           index,
