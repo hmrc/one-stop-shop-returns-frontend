@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Country, NormalMode, SalesDetailsFromEu, VatRate}
+import models.{Country, NormalMode, SalesAtVatRate, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -40,7 +40,7 @@ class DeleteSalesFromEuPageSpec extends PageBehaviours {
           val countryFrom  = arbitrary[Country].sample.value
           val countryTo    = arbitrary[Country].sample.value
           val vatRate      = arbitrary[VatRate].sample.value
-          val salesDetails = arbitrary[SalesDetailsFromEu].sample.value
+          val salesDetails = arbitrary[SalesAtVatRate].sample.value
 
           val answers =
             emptyUserAnswers

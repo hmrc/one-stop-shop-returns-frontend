@@ -17,10 +17,10 @@
 package queries
 
 import models.{Index, SalesToEu}
-import pages.PageConstants.{salesFromEu, salesToEu}
+import pages.PageConstants.{salesFromEu, salesFromCountry}
 import play.api.libs.json.JsPath
 
 case class AllSalesToEuQuery(index: Index) extends Gettable[List[SalesToEu]] with Settable[List[SalesToEu]] {
 
-  override def path: JsPath = JsPath \ salesFromEu \ index.position \ salesToEu
+  override def path: JsPath = JsPath \ salesFromEu \ index.position \ salesFromCountry
 }

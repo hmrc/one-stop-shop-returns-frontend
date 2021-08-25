@@ -25,7 +25,7 @@ import queries.DeriveNumberOfSalesToEu
 
 case class DeleteSalesToEuPage(countryFromIndex: Index, countryToIndex: Index) extends QuestionPage[Boolean] {
 
-  override def path: JsPath = JsPath \ salesFromEu \ countryFromIndex.position \ salesToEu \ countryToIndex.position \ toString
+  override def path: JsPath = JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ toString
 
   override def toString: String = "deleteSales"
 

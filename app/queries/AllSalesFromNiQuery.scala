@@ -16,11 +16,11 @@
 
 package queries
 
-import models.SalesFromNi
+import models.SalesFromCountry
 import pages.PageConstants
 import play.api.libs.json.JsPath
 
-case object AllSalesFromNiQuery extends Gettable[List[SalesFromNi]] with Settable[List[SalesFromNi]] {
+case object AllSalesFromNiQuery extends Gettable[List[SalesFromCountry]] with Settable[List[SalesFromCountry]] {
 
   override def path: JsPath = JsPath \ PageConstants.salesFromNi
 }

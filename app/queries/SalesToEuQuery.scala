@@ -16,11 +16,11 @@
 
 package queries
 
-import models.{Index, SalesFromNi}
-import pages.PageConstants
+import models.{Index, SalesFromCountry}
+import pages.PageConstants._
 import play.api.libs.json.JsPath
 
-case class SalesToEuQuery(indexFrom: Index, indexTo: Index) extends Gettable[SalesFromNi] with Settable[SalesFromNi] {
+case class SalesToEuQuery(indexFrom: Index, indexTo: Index) extends Gettable[SalesFromCountry] with Settable[SalesFromCountry] {
 
-  override def path: JsPath = JsPath \ PageConstants.salesFromEu \ indexFrom.position \ PageConstants.salesToEu \ indexTo.position
+  override def path: JsPath = JsPath \ salesFromEu \ indexFrom.position \ salesFromCountry \ indexTo.position
 }

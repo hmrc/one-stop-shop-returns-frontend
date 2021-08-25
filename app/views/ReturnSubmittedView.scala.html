@@ -1,0 +1,50 @@
+@*
+* Copyright 2021 HM Revenue & Customs
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*@
+
+@this(
+        layout: templates.Layout,
+        govukButton: GovukButton
+)
+
+@(period: Period, returnReference: ReturnReference, vatOwed: String, email: String)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {
+    <div class="grid-row column-two-thirds" id="submitted">
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">@messages("returnSubmitted.heading")</h1>
+            <div class="govuk-panel__body">
+                @messages("returnSubmitted.reference")<br><strong> @returnReference.value </strong>
+            </div>
+        </div>
+
+        <p class="govuk-body">@messages("returnSubmitted.sentConfirmation", HtmlFormat.escape(email))</p>
+
+        <h2 class="govuk-heading-m">@messages("returnSubmitted.payVatOwed")</h2>
+
+        <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p1", period.displayText) <strong>@Html(vatOwed)</strong>.</p>
+        <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p2")</p>
+
+        <button class="govuk-button">@messages("returnSubmitted.payNow")</button>
+
+        <p class="govuk-body">@messages("returnSubmitted.payBy.p1", period.paymentDeadlineDisplay)</p>
+
+        <p class="govuk-body">@messages("returnSubmitted.payBy.p2")
+
+        <p class="govuk-body">
+            <a href="@routes.IndexController.onPageLoad()" class="govuk-link">@messages("returnSubmitted.backToAccount.link.text")</a>
+        </p>
+    </div>
+}

@@ -23,5 +23,5 @@ import play.api.libs.json.JsPath
 case class VatRateFromEuQuery(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index) extends Gettable[VatRate] {
 
   override def path: JsPath =
-    JsPath \ salesFromEu \ countryFromIndex.position \ salesToEu \ countryToIndex.position \ vatRates \ vatRateIndex.position
+    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ vatRates \ vatRateIndex.position
 }

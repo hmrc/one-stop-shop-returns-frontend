@@ -24,7 +24,7 @@ import play.api.mvc.Call
 
 case class VatRatesFromEuPage(countryFromIndex: Index, countryToIndex: Index) extends QuestionPage[List[VatRate]] {
 
-  override def path: JsPath = JsPath \ salesFromEu \ countryFromIndex.position \ salesToEu \ countryToIndex.position \ toString
+  override def path: JsPath = JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ toString
 
   override def toString: String = PageConstants.vatRates
 
