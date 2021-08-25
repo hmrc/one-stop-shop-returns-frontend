@@ -72,9 +72,9 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase {
     "cleanup" - {
 
       "must not remove anything when answers is yes" in {
-        val result = SoldGoodsFromEuPage.cleanup(Some(true), completeSalesFromNIUserAnswers).success.value
+        val result = SoldGoodsFromEuPage.cleanup(Some(true), completeUserAnswers).success.value
 
-        result mustBe completeSalesFromNIUserAnswers
+        result mustBe completeUserAnswers
       }
 
       "must remove all EU countries sales when answers is no" in {

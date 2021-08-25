@@ -18,7 +18,7 @@ package pages
 
 import base.SpecBase
 import controllers.routes
-import models.{Country, Index, NormalMode}
+import models.{CheckMode, Country, Index, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 
 class SalesFromEuListPageSpec extends SpecBase {
@@ -47,6 +47,33 @@ class SalesFromEuListPageSpec extends SpecBase {
         "to Check your answers" in {
 
           SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false)
+            .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+        }
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "when the answer is yes" - {
+
+        "to Country of Sale with an index equal to the number of countries we have details for" in {
+
+          val country = arbitrary[Country].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
+
+          SalesFromEuListPage.navigate(answers, CheckMode, addAnother = true)
+            .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(1)))
+        }
+      }
+
+      "when the answer is no" - {
+
+        "to Check your answers" in {
+
+          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }
       }
