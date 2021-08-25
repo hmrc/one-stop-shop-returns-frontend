@@ -34,7 +34,7 @@ class TotalNetValueOfSalesSummarySpec extends SpecBase {
 
     "must show correct net total sales for one country with one vat rate" in {
 
-      val answers = completeUserAnswers
+      val answers = completeSalesFromNIUserAnswers
       val result = TotalNetValueOfSalesSummary.row(answers)
 
       val expectedResult = SummaryListRowViewModel(
@@ -47,7 +47,7 @@ class TotalNetValueOfSalesSummarySpec extends SpecBase {
     }
 
     "must show correct net total sales for one country with multiple vat rates" in {
-      val answers = completeUserAnswers
+      val answers = completeSalesFromNIUserAnswers
         .set(
           VatRatesFromNiPage(index),
           List(
@@ -69,7 +69,7 @@ class TotalNetValueOfSalesSummarySpec extends SpecBase {
     }
 
     "must show correct net total sales for multiple countries with multiple vat rates" in {
-      val answers = completeUserAnswers
+      val answers = completeSalesFromNIUserAnswers
         .set(
           VatRatesFromNiPage(index),
           List(
