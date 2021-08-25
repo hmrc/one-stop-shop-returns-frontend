@@ -63,7 +63,8 @@ trait SpecBase
     vatDetails            = VatDetails(LocalDate.of(2000, 1, 1), address, false, VatDetailSource.Mixed),
     euRegistrations       = Nil,
     contactDetails        = ContactDetails("name", "0123 456789", "email@example.com"),
-    commencementDate      = LocalDate.now
+    commencementDate      = LocalDate.now,
+    isOnlineMarketplace   = false
   )
 
   def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)

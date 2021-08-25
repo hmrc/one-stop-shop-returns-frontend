@@ -10,7 +10,7 @@
     govukSelect: GovukSelect
 )
 
-@(form: Form[_], mode: Mode, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, index: Index, isOnlineMarketPlace: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("countryOfConsumptionFromNi.title"), Some(period.displayText))) {
 
@@ -23,7 +23,7 @@
         @govukSelect(
             SelectViewModel(
                 field = form("value"),
-                items = Country.euCountrySelectItems,
+                items = if(isOnlineMarketPlace) Country.euCountryWithNISelectItems else Country.euCountrySelectItems,
                 label = LabelViewModel(
                     headingWithCaption(messages("countryOfConsumptionFromNi.heading"), period.displayText)
                 ).asPageHeading()

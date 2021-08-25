@@ -18,16 +18,22 @@ package forms
 
 import javax.inject.Inject
 import forms.mappings.Mappings
+import models.Country.{euCountries, euCountriesWithNI}
 import models.{Country, Index}
 import play.api.data.Form
 
 class CountryOfConsumptionFromNiFormProvider @Inject() extends Mappings {
 
-  def apply(index: Index, existingAnswers: Seq[Country]): Form[Country] =
+  def apply(index: Index, existingAnswers: Seq[Country], isOnlineMarketPlace: Boolean): Form[Country] = {
+
+    val countries =
+      if(isOnlineMarketPlace) euCountriesWithNI else euCountries
+
     Form(
       "value" -> text("countryOfConsumptionFromNi.error.required")
-        .verifying("countryOfConsumptionFromNi.error.required", value => Country.euCountries.exists(_.code == value))
-        .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
+        .verifying("countryOfConsumptionFromNi.error.required", value => countries.exists(_.code == value))
+        .transform[Country](value => countries.find(_.code == value).get, _.code)
         .verifying(notADuplicate(index, existingAnswers, "countryOfConsumptionFromNi.error.duplicate"))
     )
+  }
 }

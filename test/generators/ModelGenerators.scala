@@ -117,7 +117,6 @@ trait ModelGenerators {
       )
     }
 
-
   implicit lazy val arbitraryDesAddress: Arbitrary[DesAddress] =
     Arbitrary {
       for {
@@ -179,7 +178,8 @@ trait ModelGenerators {
         name              <- arbitrary[String]
         vatDetails        <- arbitrary[VatDetails]
         contactDetails    <- arbitrary[ContactDetails]
-        commencementDate <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
-      } yield Registration(vrn, name, vatDetails, Nil, contactDetails, commencementDate)
+        commencementDate  <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
+        isOnlineMarketplace <- arbitrary[Boolean]
+      } yield Registration(vrn, name, vatDetails, Nil, contactDetails, commencementDate, isOnlineMarketplace)
     }
 }

@@ -37,7 +37,7 @@ class VatRateService @Inject()(env: Environment, config: Configuration) {
     parsedRates.map {
       case(countryCode, rates) =>
         val country =
-          Country.euCountries
+          Country.euCountriesWithNI
             .find(_.code == countryCode)
             .getOrElse(throw new Exception(s"VAT rates file contained entry $countryCode that is not recognised"))
 

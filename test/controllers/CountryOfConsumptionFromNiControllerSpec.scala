@@ -34,8 +34,9 @@ import scala.concurrent.Future
 
 class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSugar {
 
+  private val isOnlineMarketPlace = false
   private val formProvider = new CountryOfConsumptionFromNiFormProvider()
-  private val form = formProvider(index, Seq.empty)
+  private val form = formProvider(index, Seq.empty, isOnlineMarketPlace)
 
   private lazy val countryOfConsumptionFromNiRoute = routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, period, index).url
 
@@ -55,7 +56,9 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
         val view = application.injector.instanceOf[CountryOfConsumptionFromNiView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form, NormalMode, period, index, isOnlineMarketPlace
+        )(request, messages(application)).toString
       }
     }
 
@@ -73,7 +76,9 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(country), NormalMode, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form.fill(country), NormalMode, period, index, isOnlineMarketPlace
+        )(request, messages(application)).toString
       }
     }
 
@@ -118,7 +123,9 @@ class CountryOfConsumptionFromNiControllerSpec extends SpecBase with MockitoSuga
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          boundForm, NormalMode, period, index, isOnlineMarketPlace
+        )(request, messages(application)).toString
       }
     }
 

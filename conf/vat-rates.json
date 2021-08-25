@@ -487,5 +487,17 @@
       "rate": 10.0,
       "rateType": "REDUCED"
     }
+  ],
+  "XI": [
+    {
+      "validFrom": "2021-07-01",
+      "rate": 20.0,
+      "rateType": "STANDARD"
+    },
+    {
+      "validFrom": "2021-07-01",
+      "rate": 5.0,
+      "rateType": "REDUCED"
+    }
   ]
 }
