@@ -17,12 +17,12 @@
 package queries
 
 import models.Index
-import pages.PageConstants.{salesFromEu, salesToEu}
+import pages.PageConstants.{salesFromEu, salesFromCountry}
 import play.api.libs.json.{JsObject, JsPath}
 
 case class DeriveNumberOfSalesToEu(index: Index) extends Derivable[List[JsObject], Int] {
 
   override val derive: List[JsObject] => Int = _.size
 
-  override def path: JsPath = JsPath \ salesFromEu \ index.position \ salesToEu
+  override def path: JsPath = JsPath \ salesFromEu \ index.position \ salesFromCountry
 }

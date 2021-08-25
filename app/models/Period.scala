@@ -29,7 +29,7 @@ case class Period(year: Int, quarter: Quarter) {
 
   val firstDay: LocalDate        = LocalDate.of(year, quarter.startMonth, 1)
   val lastDay: LocalDate         = firstDay.plusMonths(3).minusDays(1)
-  val paymentDeadline: LocalDate = firstDay.plusMonths(4)
+  val paymentDeadline: LocalDate = firstDay.plusMonths(4).minusDays(1)
 
   private val firstDayFormatter = DateTimeFormatter.ofPattern("d MMMM")
   private val lastDayFormatter  = DateTimeFormatter.ofPattern("d MMMM yyyy")

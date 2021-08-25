@@ -36,7 +36,7 @@ class ReturnSubmittedController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      // TODO: Get amount owed from user answers / service
+      // TODO: Get amount owed from user answers / service / submitted payload
       val vatOwed         = currencyFormat(1)
       val returnReference = ReturnReference(request.vrn, period)
       val email           = request.registration.contactDetails.emailAddress

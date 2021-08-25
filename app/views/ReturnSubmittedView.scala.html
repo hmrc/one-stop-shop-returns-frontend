@@ -22,10 +22,10 @@
 @(period: Period, returnReference: ReturnReference, vatOwed: String, email: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {
-    <div class="grid-row column-two-thirds" id="application_complete_id">
+    <div class="grid-row column-two-thirds" id="submitted">
         <div class="govuk-panel govuk-panel--confirmation">
             <h1 class="govuk-panel__title">@messages("returnSubmitted.heading")</h1>
-            <div class="govuk-panel--body">
+            <div class="govuk-panel__body">
                 @messages("returnSubmitted.reference")<br><strong> @returnReference.value </strong>
             </div>
         </div>
@@ -34,7 +34,7 @@
 
         <h2 class="govuk-heading-m">@messages("returnSubmitted.payVatOwed")</h2>
 
-        <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p1", period.displayText) <strong>@vatOwed</strong>.</p>
+        <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p1", period.displayText) <strong>@Html(vatOwed)</strong>.</p>
         <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p2")</p>
 
         <button class="govuk-button">@messages("returnSubmitted.payNow")</button>

@@ -132,4 +132,43 @@ class PeriodSpec
       }
     }
   }
+
+  ".paymentDeadline" - {
+
+    "must be the 30th of April when the quarter is Q1" in {
+
+      forAll(Gen.choose(2022, 2100)) {
+        year =>
+          val period = Period(year, Q1)
+          period.paymentDeadline mustEqual LocalDate.of(year, APRIL, 30)
+      }
+    }
+
+    "must be the 31st of July when the quarter is Q2" in {
+
+      forAll(Gen.choose(2022, 2100)) {
+        year =>
+          val period = Period(year, Q2)
+          period.paymentDeadline mustEqual LocalDate.of(year, JULY, 31)
+      }
+    }
+
+    "must be the 31st of October when the quarter is Q3" in {
+
+      forAll(Gen.choose(2021, 2100)) {
+        year =>
+          val period = Period(year, Q3)
+          period.paymentDeadline mustEqual LocalDate.of(year, OCTOBER, 31)
+      }
+    }
+
+    "must be the 31st of January of the following year when the quarter is Q4" in {
+
+      forAll(Gen.choose(2021, 2100)) {
+        year =>
+          val period = Period(year, Q4)
+          period.paymentDeadline mustEqual LocalDate.of(year + 1, JANUARY, 31)
+      }
+    }
+  }
 }
