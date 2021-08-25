@@ -27,6 +27,11 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 
 trait ModelGenerators {
 
+  implicit val arbitraryQuarter: Arbitrary[Quarter] =
+    Arbitrary {
+      Gen.oneOf(Quarter.values)
+    }
+
   implicit lazy val arbitrarySalesAtVatRate: Arbitrary[SalesAtVatRate] =
     Arbitrary {
       for {

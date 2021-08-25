@@ -214,3 +214,14 @@ salesFromEuList.change.hidden = sales from {0}
 salesFromEuList.remove.hidden = sales from {0}
 salesFromEuList.addAnother = Add sales from another EU country?
 
+returnSubmitted.title = Return submitted
+returnSubmitted.heading = Return submitted
+returnSubmitted.reference = Your return reference is
+returnSubmitted.sentConfirmation = We have sent a confirmation of your return to {0}
+returnSubmitted.payVatOwed = Pay VAT owed
+returnSubmitted.payVatOwed.p1 = For {0}, you owe
+returnSubmitted.payVatOwed.p2 = You can pay by corporate card or bank transfer.
+returnSubmitted.payNow = Pay now
+returnSubmitted.payBy.p1 = You need to pay be {0}.
+returnSubmitted.payBy.p2 = EU countries can charge you interest or penalties for late payments.
+returnSubmitted.backToAccount.link.text = Back to your account

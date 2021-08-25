@@ -112,3 +112,5 @@ GET         /:period/add-sales-to-eu/:index                  controllers.SalesTo
 POST        /:period/add-sales-to-eu/:index                  controllers.SalesToEuListController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
 GET         /:period/check-add-sales-to-eu/:index             controllers.SalesToEuListController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
 POST        /:period/check-add-sales-to-eu/:index             controllers.SalesToEuListController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
+
+GET         /:period/successful                             controllers.ReturnSubmittedController.onPageLoad(period: Period)
