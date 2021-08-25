@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, SalesAtVatRate, VatRate}
+import models.{CheckLoopMode, CheckMode, Index, NormalMode, SalesAtVatRate, VatRate}
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
 import org.scalacheck.Arbitrary.arbitrary
@@ -102,6 +102,28 @@ class SalesAtVatRateFromNiPageSpec extends PageBehaviours {
             .mustEqual(routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex))
         }
       }
+    }
+
+    "must navigate in Check Loop Mode" - {
+
+      "when there are other vat rates" - {
+
+        "it will navigate to the check sales from ni page" in {
+
+          val countryIndex = Index(0)
+
+          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
+
+          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(CheckLoopMode, answers)
+            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex))
+
+        }
+      }
+
     }
   }
 }

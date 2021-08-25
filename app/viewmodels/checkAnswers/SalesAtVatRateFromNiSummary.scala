@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, Index, UserAnswers}
+import models.{CheckLoopMode, CheckMode, Index, UserAnswers}
 import pages.SalesAtVatRateFromNiPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -36,7 +36,7 @@ object SalesAtVatRateFromNiSummary extends CurrencyFormatter {
           key     = "netValueOfSalesFromNi.checkYourAnswersLabel",
           value   = ValueViewModel(HtmlContent(currencyFormat(answer.netValueOfSales))),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SalesAtVatRateFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex).url)
+            ActionItemViewModel("site.change", routes.SalesAtVatRateFromNiController.onPageLoad(CheckLoopMode, answers.period, countryIndex, vatRateIndex).url)
               .withVisuallyHiddenText(messages("netValueOfSalesFromNi.change.hidden"))
           )
         ),
@@ -44,7 +44,7 @@ object SalesAtVatRateFromNiSummary extends CurrencyFormatter {
           key     = "vatOnSalesFromNi.checkYourAnswersLabel",
           value   = ValueViewModel(HtmlContent(currencyFormat(answer.vatOnSales))),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SalesAtVatRateFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex).url)
+            ActionItemViewModel("site.change", routes.SalesAtVatRateFromNiController.onPageLoad(CheckLoopMode, answers.period, countryIndex, vatRateIndex).url)
               .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden"))
           )
         ))
