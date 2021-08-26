@@ -25,9 +25,9 @@ import play.api.mvc.Call
 case class SalesDetailsFromEuPage(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index) extends QuestionPage[SalesAtVatRate] {
 
   override def path: JsPath =
-    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ salesAtVatRate \ vatRateIndex.position \ toString
+    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ toString \ vatRateIndex.position
 
-  override def toString: String = "salesDetails"
+  override def toString: String = salesAtVatRate
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map {
