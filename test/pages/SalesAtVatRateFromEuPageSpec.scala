@@ -119,7 +119,7 @@ class SalesAtVatRateFromEuPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), vatRates).success.value
 
-          SalesDetailsFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(CheckLoopMode, answers)
+          SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(CheckLoopMode, answers)
             .mustEqual(routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex))
 
         }
