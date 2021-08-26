@@ -67,6 +67,7 @@ startReturn.change.hidden = if you want to start your return
 
 countryOfConsumptionFromNi.title = Which EU country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.heading = Which EU country did you sell to from Northern Ireland?
+countryOfConsumptionFromNi.heading.not.eu = Which country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.checkYourAnswersLabel = Which EU country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.error.required = Select the country you sold to from Northern Ireland
 countryOfConsumptionFromNi.error.length = Country must be 100 characters or less
