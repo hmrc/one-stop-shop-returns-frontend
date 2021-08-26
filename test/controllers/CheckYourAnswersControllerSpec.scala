@@ -43,6 +43,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
         contentAsString(result).contains(registration.registeredCompanyName) mustBe true
         contentAsString(result).contains(registration.vrn.vrn) mustBe true
         contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
+        contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
       }
     }
 

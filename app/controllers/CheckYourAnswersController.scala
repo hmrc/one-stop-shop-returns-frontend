@@ -36,39 +36,38 @@ class CheckYourAnswersController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      val businessRows = Seq(
-        BusinessNameSummary.row(request.registration),
-        BusinessVRNSummary.row(request.registration),
-        ReturnPeriodSummary.row(request.userAnswers)
-      ).flatten
-
       val businessSummaryList = SummaryListViewModel(
-        rows = businessRows
+        rows = Seq(
+          BusinessNameSummary.row(request.registration),
+          BusinessVRNSummary.row(request.registration),
+          ReturnPeriodSummary.row(request.userAnswers)
+        ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
-      val rows = Seq(
-        SoldGoodsFromNiSummary.row(request.userAnswers),
-        TotalNINetValueOfSalesSummary.row(request.userAnswers),
-        TotalNIVatOnSalesSummary.row(request.userAnswers)
-      ).flatten
-
-      val list = SummaryListViewModel(
-        rows = rows
+      val salesFromNiSummaryList = SummaryListViewModel(
+        rows = Seq(
+          SoldGoodsFromNiSummary.row(request.userAnswers),
+          TotalNINetValueOfSalesSummary.row(request.userAnswers),
+          TotalNIVatOnSalesSummary.row(request.userAnswers)
+        ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
-      val totalRows = Seq(
-        TotalNetValueOfSalesSummary.row(request.userAnswers),
-        TotalVatOnSalesSummary.row(request.userAnswers)
-      ).flatten
+      val salesFromEuSummaryList = SummaryListViewModel(
+        rows = Seq()
+      ).withCssClass("govuk-!-margin-bottom-9")
 
-      val totalList = SummaryListViewModel(
-        rows = totalRows
+      val totalSummaryList = SummaryListViewModel(
+        rows = Seq(
+          TotalNetValueOfSalesSummary.row(request.userAnswers),
+          TotalVatOnSalesSummary.row(request.userAnswers)
+        ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
       Ok(view(Map(
         None -> businessSummaryList,
-        Some("checkYourAnswers.salesFromNi.heading") -> list,
-        Some("checkYourAnswers.allSales.heading") -> totalList
+        Some("checkYourAnswers.salesFromNi.heading") -> salesFromNiSummaryList,
+        Some("checkYourAnswers.salesFromEU.heading") -> salesFromEuSummaryList,
+        Some("checkYourAnswers.allSales.heading") -> totalSummaryList
       )))
   }
 }
