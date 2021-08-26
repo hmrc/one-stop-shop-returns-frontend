@@ -24,7 +24,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.govuk.summarylist._
 import viewmodels.TitledSummaryList
-import viewmodels.checkAnswers.{SalesDetailsFromEuSummary, VatRatesFromEuSummary}
+import viewmodels.checkAnswers.{SalesAtVatRateFromEuSummary, VatRatesFromEuSummary}
 import views.html.CheckSalesToEuView
 
 import javax.inject.Inject
@@ -55,7 +55,7 @@ class CheckSalesToEuController @Inject()(
                 TitledSummaryList(
                   title = messages("checkSalesToEu.vatRateTitle", vatRate.rateForDisplay),
                   list = SummaryListViewModel(
-                    rows = SalesDetailsFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i))
+                    rows = SalesAtVatRateFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i))
                   )
                 )
             }).getOrElse(Seq.empty)

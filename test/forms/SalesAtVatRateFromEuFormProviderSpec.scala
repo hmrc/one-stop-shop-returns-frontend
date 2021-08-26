@@ -20,17 +20,17 @@ import config.Constants.maxCurrencyAmount
 import forms.behaviours.DecimalFieldBehaviours
 import play.api.data.FormError
 
-class SalesDetailsFromEuFormProviderSpec extends DecimalFieldBehaviours {
+class SalesAtVatRateFromEuFormProviderSpec extends DecimalFieldBehaviours {
 
-  val form = new SalesDetailsFromEuFormProvider()()
+  val form = new SalesAtVatRateFromEuFormProvider()()
 
   ".netValueOfSales" - {
 
     val fieldName = "netValueOfSales"
-    val requiredError = "salesDetailsFromEu.error.netValueOfSales.required"
-    val nonNumericError = "salesDetailsFromEu.error.netValueOfSales.nonNumeric"
-    val invalidNumericError = "salesDetailsFromEu.error.netValueOfSales.invalidNumeric"
-    val outOfRangeError = "salesDetailsFromEu.error.netValueOfSales.outOfRange"
+    val requiredError = "salesAtVatRateFromEu.error.netValueOfSales.required"
+    val nonNumericError = "salesAtVatRateFromEu.error.netValueOfSales.nonNumeric"
+    val invalidNumericError = "salesAtVatRateFromEu.error.netValueOfSales.invalidNumeric"
+    val outOfRangeError = "salesAtVatRateFromEu.error.netValueOfSales.outOfRange"
 
     behave like decimalField(
       form,
@@ -57,10 +57,10 @@ class SalesDetailsFromEuFormProviderSpec extends DecimalFieldBehaviours {
   ".vatOnSales" - {
 
     val fieldName = "vatOnSales"
-    val requiredError = "salesDetailsFromEu.error.vatOnSales.required"
-    val nonNumericError = "salesDetailsFromEu.error.vatOnSales.nonNumeric"
-    val invalidNumericError = "salesDetailsFromEu.error.vatOnSales.invalidNumeric"
-    val outOfRangeError = "salesDetailsFromEu.error.vatOnSales.outOfRange"
+    val requiredError = "salesAtVatRateFromEu.error.vatOnSales.required"
+    val nonNumericError = "salesAtVatRateFromEu.error.vatOnSales.nonNumeric"
+    val invalidNumericError = "salesAtVatRateFromEu.error.vatOnSales.invalidNumeric"
+    val outOfRangeError = "salesAtVatRateFromEu.error.vatOnSales.outOfRange"
 
     behave like decimalField(
       form,

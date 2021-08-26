@@ -47,7 +47,7 @@ class DeleteSalesToEuPageSpec extends PageBehaviours {
               .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
               .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
               .set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
-              .set(SalesDetailsFromEuPage(index, index, index), salesDetails).success.value
+              .set(SalesAtVatRateFromEuPage(index, index, index), salesDetails).success.value
 
           DeleteSalesToEuPage(index, index).navigate(NormalMode, answers)
             .mustEqual(routes.SalesToEuListController.onPageLoad(NormalMode, answers.period, index))

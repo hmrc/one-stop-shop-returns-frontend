@@ -80,7 +80,7 @@ trait SpecBase
     .set(SoldGoodsFromEuPage,true).success.value
     .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), Country("BE", "Belgium")).success.value
     .set(VatRatesFromEuPage(Index(0), Index(0)), List(twentyPercentVatRate)).success.value
-    .set(SalesDetailsFromEuPage(Index(0), Index(0), Index(0)), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+    .set(SalesAtVatRateFromEuPage(Index(0), Index(0), Index(0)), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

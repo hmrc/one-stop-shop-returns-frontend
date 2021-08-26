@@ -24,20 +24,20 @@ import play.api.data.Forms._
 
 import javax.inject.Inject
 
-class SalesDetailsFromEuFormProvider @Inject() extends Mappings {
+class SalesAtVatRateFromEuFormProvider @Inject() extends Mappings {
 
    def apply(): Form[SalesAtVatRate] = Form(
      mapping(
       "netValueOfSales" -> numeric(
-        "salesDetailsFromEu.error.netValueOfSales.required",
-        "salesDetailsFromEu.error.netValueOfSales.invalidNumeric",
-        "salesDetailsFromEu.error.netValueOfSales.nonNumeric")
-        .verifying(inRange[BigDecimal](0, maxCurrencyAmount, "salesDetailsFromEu.error.netValueOfSales.outOfRange")),
+        "salesAtVatRateFromEu.error.netValueOfSales.required",
+        "salesAtVatRateFromEu.error.netValueOfSales.invalidNumeric",
+        "salesAtVatRateFromEu.error.netValueOfSales.nonNumeric")
+        .verifying(inRange[BigDecimal](0, maxCurrencyAmount, "salesAtVatRateFromEu.error.netValueOfSales.outOfRange")),
       "vatOnSales" -> numeric(
-        "salesDetailsFromEu.error.vatOnSales.required",
-        "salesDetailsFromEu.error.vatOnSales.invalidNumeric",
-        "salesDetailsFromEu.error.vatOnSales.nonNumeric")
-        .verifying(inRange[BigDecimal](0, maxCurrencyAmount, "salesDetailsFromEu.error.vatOnSales.outOfRange"))
+        "salesAtVatRateFromEu.error.vatOnSales.required",
+        "salesAtVatRateFromEu.error.vatOnSales.invalidNumeric",
+        "salesAtVatRateFromEu.error.vatOnSales.nonNumeric")
+        .verifying(inRange[BigDecimal](0, maxCurrencyAmount, "salesAtVatRateFromEu.error.vatOnSales.outOfRange"))
     )(SalesAtVatRate.apply)(SalesAtVatRate.unapply)
    )
  }
