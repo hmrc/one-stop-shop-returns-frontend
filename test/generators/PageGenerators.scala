@@ -28,8 +28,8 @@ trait PageGenerators {
   implicit lazy val arbitrarySoldGoodsFromEuPage: Arbitrary[SoldGoodsFromEuPage.type] =
     Arbitrary(SoldGoodsFromEuPage)
 
-  implicit lazy val arbitrarySalesDetailsFromEuPage: Arbitrary[SalesDetailsFromEuPage] =
-    Arbitrary(SalesDetailsFromEuPage(Index(0), Index(0), Index(0)))
+  implicit lazy val arbitrarySalesAtVatRateFromEuPage: Arbitrary[SalesAtVatRateFromEuPage] =
+    Arbitrary(SalesAtVatRateFromEuPage(Index(0), Index(0), Index(0)))
 
   implicit lazy val arbitraryCountryOfSaleFromEuPage: Arbitrary[CountryOfSaleFromEuPage] =
     Arbitrary(CountryOfSaleFromEuPage(Index(0)))

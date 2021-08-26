@@ -40,10 +40,10 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
       } yield (page, value)
     }
 
-  implicit lazy val arbitrarySalesDetailsFromEuUserAnswersEntry: Arbitrary[(SalesDetailsFromEuPage, JsValue)] =
+  implicit lazy val arbitrarySalesAtVatRateFromEuUserAnswersEntry: Arbitrary[(SalesAtVatRateFromEuPage, JsValue)] =
     Arbitrary {
       for {
-        page  <- arbitrary[SalesDetailsFromEuPage]
+        page  <- arbitrary[SalesAtVatRateFromEuPage]
         value <- arbitrary[SalesAtVatRate].map(Json.toJson(_))
       } yield (page, value)
     }

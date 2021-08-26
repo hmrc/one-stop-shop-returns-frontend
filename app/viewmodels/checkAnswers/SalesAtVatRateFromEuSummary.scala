@@ -18,7 +18,7 @@ package viewmodels.checkAnswers
 
 import controllers.routes
 import models.{CheckMode, Index, NormalMode, UserAnswers}
-import pages.SalesDetailsFromEuPage
+import pages.SalesAtVatRateFromEuPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,27 +26,27 @@ import utils.CurrencyFormatter._
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object SalesDetailsFromEuSummary  {
+object SalesAtVatRateFromEuSummary  {
 
   def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Seq[SummaryListRow] =
-    answers.get(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).toSeq.flatMap {
+    answers.get(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).toSeq.flatMap {
       answer =>
         Seq(SummaryListRowViewModel(
-          key     = "salesDetailsFromEu.netValueOfSales.checkYourAnswersLabel",
+          key     = "salesAtVatRateFromEu.netValueOfSales.checkYourAnswersLabel",
           value   = ValueViewModel(HtmlContent(currencyFormat(answer.netValueOfSales))),
           actions = Seq(
             ActionItemViewModel("site.change",
-              routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url)
-              .withVisuallyHiddenText(messages("salesDetailsFromEu.netValueOfSales.change.hidden"))
+              routes.SalesAtVatRateFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url)
+              .withVisuallyHiddenText(messages("salesAtVatRateFromEu.netValueOfSales.change.hidden"))
           )
         ),
           SummaryListRowViewModel(
-            key     = "salesDetailsFromEu.vatOnSales.checkYourAnswersLabel",
+            key     = "salesAtVatRateFromEu.vatOnSales.checkYourAnswersLabel",
             value   = ValueViewModel(HtmlContent(currencyFormat(answer.vatOnSales))),
             actions = Seq(
               ActionItemViewModel("site.change",
-                routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url)
-                .withVisuallyHiddenText(messages("salesDetailsFromEu.vatOnSales.change.hidden"))
+                routes.SalesAtVatRateFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url)
+                .withVisuallyHiddenText(messages("salesAtVatRateFromEu.vatOnSales.change.hidden"))
             )
           ))
 

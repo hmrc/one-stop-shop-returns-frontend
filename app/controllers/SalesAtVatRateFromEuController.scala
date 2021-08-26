@@ -17,23 +17,23 @@
 package controllers
 
 import controllers.actions._
-import forms.SalesDetailsFromEuFormProvider
+import forms.SalesAtVatRateFromEuFormProvider
 
 import javax.inject.Inject
 import models.{Index, Mode, Period}
-import pages.SalesDetailsFromEuPage
+import pages.SalesAtVatRateFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
-import views.html.SalesDetailsFromEuView
+import views.html.SalesAtVatRateFromEuView
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SalesDetailsFromEuController @Inject()(
-                                      cc: AuthenticatedControllerComponents,
-                                      formProvider: SalesDetailsFromEuFormProvider,
-                                      view: SalesDetailsFromEuView
+class SalesAtVatRateFromEuController @Inject()(
+                                              cc: AuthenticatedControllerComponents,
+                                              formProvider: SalesAtVatRateFromEuFormProvider,
+                                              view: SalesAtVatRateFromEuView
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
@@ -46,7 +46,7 @@ class SalesDetailsFromEuController @Inject()(
         getCountriesAndVatRate(countryFromIndex, countryToIndex, vatRateIndex) {
           case (countryFrom, countryTo, vatRate) =>
 
-            val preparedForm = request.userAnswers.get(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
+            val preparedForm = request.userAnswers.get(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
             }
@@ -67,9 +67,9 @@ class SalesDetailsFromEuController @Inject()(
 
               value =>
                 for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex), value))
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex), value))
                   _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex).navigate(mode, updatedAnswers))
+                } yield Redirect(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex).navigate(mode, updatedAnswers))
             )
         }
     }
