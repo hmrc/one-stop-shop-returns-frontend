@@ -35,7 +35,7 @@ import scala.concurrent.Future
 class CountryOfSaleFromEuControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new CountryOfSaleFromEuFormProvider()
-  private val form = formProvider()
+  private val form = formProvider(index, Seq.empty)
 
   val country: Country = arbitrary[Country].sample.value
 

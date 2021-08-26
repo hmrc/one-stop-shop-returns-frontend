@@ -17,7 +17,7 @@
 package forms
 
 import forms.behaviours.StringFieldBehaviours
-import models.Country
+import models.{Country, Index}
 import org.scalacheck.Arbitrary.arbitrary
 import play.api.data.FormError
 
@@ -26,8 +26,9 @@ class CountryOfSaleFromEuFormProviderSpec extends StringFieldBehaviours {
   val requiredKey = "countryOfSaleFromEu.error.required"
   val lengthKey = "countryOfSaleFromEu.error.length"
   val maxLength = 100
+  val index = Index(0)
 
-  val form = new CountryOfSaleFromEuFormProvider()()
+  val form = new CountryOfSaleFromEuFormProvider()(index, Seq.empty)
 
   ".value" - {
 
@@ -54,6 +55,16 @@ class CountryOfSaleFromEuFormProviderSpec extends StringFieldBehaviours {
           val result = form.bind(Map("value" -> answer)).apply(fieldName)
           result.errors must contain only FormError(fieldName, requiredKey)
       }
+    }
+
+    "must fail to bind when given a duplicate value" in {
+      val answer = Country.euCountries.tail.head
+      val existingAnswers = Seq(Country.euCountries.head, Country.euCountries.tail.head)
+
+      val duplicateForm = new CountryOfSaleFromEuFormProvider()(index, existingAnswers)
+
+      val result = duplicateForm.bind(Map(fieldName ->  answer.code)).apply(fieldName)
+      result.errors must contain only FormError(fieldName, "countryOfSaleFromEu.error.duplicate")
     }
 
   }
