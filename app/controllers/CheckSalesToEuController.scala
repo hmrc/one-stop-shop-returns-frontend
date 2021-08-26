@@ -18,12 +18,13 @@ package controllers
 
 import controllers.actions.AuthenticatedControllerComponents
 import models.{Index, Mode, Period}
-import pages.CheckSalesToEuPage
+import pages.{CheckSalesToEuPage, VatRatesFromEuPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.govuk.summarylist._
 import viewmodels.TitledSummaryList
+import viewmodels.checkAnswers.{SalesAtVatRateFromEuSummary, VatRatesFromEuSummary}
 import views.html.CheckSalesToEuView
 
 import javax.inject.Inject
@@ -41,11 +42,23 @@ class CheckSalesToEuController @Inject()(
       getCountries(countryFromIndex, countryToIndex) {
         case(countryFrom, countryTo) =>
 
+          val messages = messagesApi.preferred(request)
+
           val mainList = SummaryListViewModel(
-            rows = Seq.empty
+            rows = Seq(VatRatesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex)).flatten
           )
 
-          val vatRateLists: Seq[TitledSummaryList] = Seq.empty
+          val vatRateLists: Seq[TitledSummaryList] =
+            request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map(_.zipWithIndex.map {
+              case (vatRate, i) =>
+
+                TitledSummaryList(
+                  title = messages("checkSalesToEu.vatRateTitle", vatRate.rateForDisplay),
+                  list = SummaryListViewModel(
+                    rows = SalesAtVatRateFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i))
+                  )
+                )
+            }).getOrElse(Seq.empty)
 
           Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo))
       }

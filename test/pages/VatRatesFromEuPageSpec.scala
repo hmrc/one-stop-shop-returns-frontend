@@ -45,7 +45,7 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
             .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
 
         VatRatesFromEuPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(routes.SalesDetailsFromEuController.onPageLoad(NormalMode, answers.period, index, index, Index(0)))
+          .mustEqual(routes.SalesAtVatRateFromEuController.onPageLoad(NormalMode, answers.period, index, index, Index(0)))
       }
     }
 
@@ -62,7 +62,7 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
             .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
 
         VatRatesFromEuPage(index, index).navigate(CheckMode, answers)
-          .mustEqual(routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period, index, index, Index(0)))
+          .mustEqual(routes.SalesAtVatRateFromEuController.onPageLoad(CheckMode, answers.period, index, index, Index(0)))
       }
     }
   }

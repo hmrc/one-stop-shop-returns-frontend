@@ -30,12 +30,12 @@ object VatRatesFromEuSummary  {
 
   def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map {
-      answer =>
+      vatRatesFromEu =>
 
         val value = ValueViewModel(
           HtmlContent(
-            answer.map {
-              x => HtmlFormat.escape(messages(s"vatRatesFromEu.$x")).toString
+            vatRatesFromEu.map {
+              answer => HtmlFormat.escape(answer.rateForDisplay).toString
             }
             .mkString(",<br>")
           )

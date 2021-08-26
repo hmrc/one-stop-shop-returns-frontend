@@ -17,28 +17,28 @@
 package controllers
 
 import base.SpecBase
-import forms.SalesDetailsFromEuFormProvider
+import forms.SalesAtVatRateFromEuFormProvider
 import models.{Country, NormalMode, SalesAtVatRate, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage, SalesDetailsFromEuPage, VatRatesFromEuPage}
+import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage, SalesAtVatRateFromEuPage, VatRatesFromEuPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.SalesDetailsFromEuView
+import views.html.SalesAtVatRateFromEuView
 
 import scala.concurrent.Future
 
-class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
+class SalesAtVatRateFromEuControllerSpec extends SpecBase with MockitoSugar {
 
-  private val formProvider = new SalesDetailsFromEuFormProvider()
+  private val formProvider = new SalesAtVatRateFromEuFormProvider()
   private val form = formProvider()
 
-  private lazy val salesDetailsFromEuRoute = routes.SalesDetailsFromEuController.onPageLoad(NormalMode, period, index, index, index).url
+  private lazy val salesAtVatRateFromEuRoute = routes.SalesAtVatRateFromEuController.onPageLoad(NormalMode, period, index, index, index).url
 
   private val countryFrom = arbitrary[Country].sample.value
   private val countryTo   = arbitrary[Country].sample.value
@@ -50,18 +50,18 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
       .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
       .set(VatRatesFromEuPage(index, index), vatRates).success.value
 
-  private val userAnswers = baseAnswers.set(SalesDetailsFromEuPage(index, index, index), SalesAtVatRate(1, 2)).success.value
+  private val userAnswers = baseAnswers.set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(1, 2)).success.value
 
-  "SalesDetailsFromEu Controller" - {
+  "SalesAtVatRateFromEu Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, salesDetailsFromEuRoute)
+        val request = FakeRequest(GET, salesAtVatRateFromEuRoute)
 
-        val view = application.injector.instanceOf[SalesDetailsFromEuView]
+        val view = application.injector.instanceOf[SalesAtVatRateFromEuView]
 
         val result = route(application, request).value
 
@@ -85,9 +85,9 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, salesDetailsFromEuRoute)
+        val request = FakeRequest(GET, salesAtVatRateFromEuRoute)
 
-        val view = application.injector.instanceOf[SalesDetailsFromEuView]
+        val view = application.injector.instanceOf[SalesAtVatRateFromEuView]
 
         val result = route(application, request).value
 
@@ -119,13 +119,13 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, salesDetailsFromEuRoute)
+          FakeRequest(POST, salesAtVatRateFromEuRoute)
             .withFormUrlEncodedBody(("netValueOfSales", "1"), ("vatOnSales", "2"))
 
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual SalesDetailsFromEuPage(index, index, index).navigate(NormalMode, userAnswers).url
+        redirectLocation(result).value mustEqual SalesAtVatRateFromEuPage(index, index, index).navigate(NormalMode, userAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(userAnswers))
       }
     }
@@ -136,12 +136,12 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, salesDetailsFromEuRoute)
+          FakeRequest(POST, salesAtVatRateFromEuRoute)
             .withFormUrlEncodedBody(("value", "invalid value"))
 
         val boundForm = form.bind(Map("value" -> "invalid value"))
 
-        val view = application.injector.instanceOf[SalesDetailsFromEuView]
+        val view = application.injector.instanceOf[SalesAtVatRateFromEuView]
 
         val result = route(application, request).value
 
@@ -165,7 +165,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, salesDetailsFromEuRoute)
+        val request = FakeRequest(GET, salesAtVatRateFromEuRoute)
 
         val result = route(application, request).value
 
@@ -180,7 +180,7 @@ class SalesDetailsFromEuControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, salesDetailsFromEuRoute)
+          FakeRequest(POST, salesAtVatRateFromEuRoute)
             .withFormUrlEncodedBody(("netValueOfSales", "1"), ("vatOnSales", "2"))
 
         val result = route(application, request).value

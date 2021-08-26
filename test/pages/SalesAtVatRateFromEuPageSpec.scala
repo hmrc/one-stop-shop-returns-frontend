@@ -22,15 +22,15 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
 
-class SalesDetailsFromEuPageSpec extends PageBehaviours {
+class SalesAtVatRateFromEuPageSpec extends PageBehaviours {
 
-  "SalesDetailsFromEuPage" - {
+  "SalesAtVatRateFromEuPage" - {
 
-    beRetrievable[SalesAtVatRate](SalesDetailsFromEuPage(index, index, index))
+    beRetrievable[SalesAtVatRate](SalesAtVatRateFromEuPage(index, index, index))
 
-    beSettable[SalesAtVatRate](SalesDetailsFromEuPage(index, index, index))
+    beSettable[SalesAtVatRate](SalesAtVatRateFromEuPage(index, index, index))
 
-    beRemovable[SalesAtVatRate](SalesDetailsFromEuPage(index, index, index))
+    beRemovable[SalesAtVatRate](SalesAtVatRateFromEuPage(index, index, index))
 
     "must navigate in Normal mode" - {
 
@@ -46,8 +46,8 @@ class SalesDetailsFromEuPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(VatRatesFromEuPage(countryIndex, countryIndex), vatRates).success.value
 
-          SalesDetailsFromEuPage(countryIndex, countryIndex, Index(0)).navigate(NormalMode, answers)
-            .mustEqual(routes.SalesDetailsFromEuController.onPageLoad(NormalMode, answers.period, countryIndex, countryIndex, Index(1)))
+          SalesAtVatRateFromEuPage(countryIndex, countryIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.SalesAtVatRateFromEuController.onPageLoad(NormalMode, answers.period, countryIndex, countryIndex, Index(1)))
         }
       }
 
@@ -62,7 +62,7 @@ class SalesDetailsFromEuPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(VatRatesFromEuPage(countryIndex, countryIndex), List(vatRate)).success.value
 
-          SalesDetailsFromEuPage(countryIndex, countryIndex, Index(0)).navigate(NormalMode, answers)
+          SalesAtVatRateFromEuPage(countryIndex, countryIndex, Index(0)).navigate(NormalMode, answers)
             .mustEqual(routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryIndex, countryIndex))
         }
       }
@@ -82,8 +82,8 @@ class SalesDetailsFromEuPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(VatRatesFromEuPage(countryIndex, countryIndex), vatRates).success.value
 
-          SalesDetailsFromEuPage(countryIndex, countryIndex, Index(0)).navigate(CheckMode, answers)
-            .mustEqual(routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period, countryIndex, countryIndex, Index(1)))
+          SalesAtVatRateFromEuPage(countryIndex, countryIndex, Index(0)).navigate(CheckMode, answers)
+            .mustEqual(routes.SalesAtVatRateFromEuController.onPageLoad(CheckMode, answers.period, countryIndex, countryIndex, Index(1)))
         }
       }
 
@@ -98,7 +98,7 @@ class SalesDetailsFromEuPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(VatRatesFromEuPage(countryIndex, countryIndex), List(vatRate)).success.value
 
-          SalesDetailsFromEuPage(countryIndex, countryIndex, Index(0)).navigate(CheckMode, answers)
+          SalesAtVatRateFromEuPage(countryIndex, countryIndex, Index(0)).navigate(CheckMode, answers)
             .mustEqual(routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryIndex, countryIndex))
         }
       }

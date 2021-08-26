@@ -151,19 +151,20 @@ deleteSalesToEu.title = Are you sure you want to remove the sales from {0} to {1
 deleteSalesToEu.heading = Are you sure you want to remove the sales from {0} to {1}?
 deleteSalesToEu.error.required = Select yes if you want to remove the sales from {0} to {1}
 
-salesDetailsFromEu.title = Sales at {0} VAT rate
-salesDetailsFromEu.heading = Sales at {0} VAT rate
-salesDetailsFromEu.netValueOfSales = Sales excluding VAT
-salesDetailsFromEu.vatOnSales = VAT charged
-salesDetailsFromEu.checkYourAnswersLabel = Sales at {0} VAT rate
-salesDetailsFromEu.error.netValueOfSales.required = Enter your sales excluding VAT
-salesDetailsFromEu.error.netValueOfSales.nonNumeric = Enter your sales excluding VAT using numbers
-salesDetailsFromEu.error.netValueOfSales.invalidNumeric = Enter your sales excluding VAT using numbers up to two decimal places
-salesDetailsFromEu.error.vatOnSales.required = Enter the VAT charged
-salesDetailsFromEu.error.vatOnSales.nonNumeric = Enter the VAT charged using numbers
-salesDetailsFromEu.error.vatOnSales.invalidNumeric = Enter the VAT charged using numbers up to two decimal places
-salesDetailsFromEu.netValueOfSales.change.hidden = your sales excluding VAT
-salesDetailsFromEu.vatOnSales.change.hidden = the VAT charged
+salesAtVatRateFromEu.title = Sales at {0} VAT rate
+salesAtVatRateFromEu.heading = Sales at {0} VAT rate
+salesAtVatRateFromEu.netValueOfSales = Sales excluding VAT
+salesAtVatRateFromEu.vatOnSales = VAT charged
+salesAtVatRateFromEu.netValueOfSales.checkYourAnswersLabel = Sales excluding VAT
+salesAtVatRateFromEu.vatOnSales.checkYourAnswersLabel = VAT charged
+salesAtVatRateFromEu.error.netValueOfSales.required = Enter your sales excluding VAT
+salesAtVatRateFromEu.error.netValueOfSales.nonNumeric = Enter your sales excluding VAT using numbers
+salesAtVatRateFromEu.error.netValueOfSales.invalidNumeric = Enter your sales excluding VAT using numbers up to two decimal places
+salesAtVatRateFromEu.error.vatOnSales.required = Enter the VAT charged
+salesAtVatRateFromEu.error.vatOnSales.nonNumeric = Enter the VAT charged using numbers
+salesAtVatRateFromEu.error.vatOnSales.invalidNumeric = Enter the VAT charged using numbers up to two decimal places
+salesAtVatRateFromEu.netValueOfSales.change.hidden = your sales excluding VAT
+salesAtVatRateFromEu.vatOnSales.change.hidden = the VAT charged
 
 soldGoodsFromEu.title = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
 soldGoodsFromEu.heading = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
@@ -177,9 +178,9 @@ vatRatesFromEu.checkYourAnswersLabel = VAT rates on sales
 vatRatesFromEu.error.required = Select which VAT rates you charged on sales
 vatRatesFromEu.change.hidden = which VAT rates you charged on sales
 
-checkSalesFromEu.title = Check your answers
-checkSalesFromEu.heading = Check your answers
-checkSalesFromEu.vatRateTitle = {0} VAT rate
+checkSalesToEu.title = Check your answers
+checkSalesToEu.heading = Check your answers
+checkSalesToEu.vatRateTitle = {0} VAT rate
 
 checkSalesToEu.title = Check your answers
 checkSalesToEu.heading = Check your answers
