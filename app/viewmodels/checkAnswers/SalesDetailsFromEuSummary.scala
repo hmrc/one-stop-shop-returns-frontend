@@ -17,10 +17,9 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, Index, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import pages.SalesDetailsFromEuPage
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import utils.CurrencyFormatter._
@@ -29,25 +28,27 @@ import viewmodels.implicits._
 
 object SalesDetailsFromEuSummary  {
 
-  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).map {
+  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Seq[SummaryListRow] =
+    answers.get(SalesDetailsFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).toSeq.flatMap {
       answer =>
-
-      val value = HtmlFormat.escape(
-        currencyFormat(answer.netValueOfSales)) +
-        "<br/>" +
-        HtmlFormat.escape(currencyFormat(answer.vatOnSales))
-
-        SummaryListRowViewModel(
-          key     = "salesDetailsFromEu.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(value)),
+        Seq(SummaryListRowViewModel(
+          key     = "salesDetailsFromEu.netValueOfSales.checkYourAnswersLabel",
+          value   = ValueViewModel(HtmlContent(currencyFormat(answer.netValueOfSales))),
           actions = Seq(
-            ActionItemViewModel(
-              "site.change",
-              routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
-            )
-            .withVisuallyHiddenText(messages("salesDetailsFromEu.change.hidden"))
+            ActionItemViewModel("site.change",
+              routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url)
+              .withVisuallyHiddenText(messages("salesDetailsFromEu.netValueOfSales.change.hidden"))
           )
-        )
+        ),
+          SummaryListRowViewModel(
+            key     = "salesDetailsFromEu.vatOnSales.checkYourAnswersLabel",
+            value   = ValueViewModel(HtmlContent(currencyFormat(answer.vatOnSales))),
+            actions = Seq(
+              ActionItemViewModel("site.change",
+                routes.SalesDetailsFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url)
+                .withVisuallyHiddenText(messages("salesDetailsFromEu.vatOnSales.change.hidden"))
+            )
+          ))
+
     }
 }
