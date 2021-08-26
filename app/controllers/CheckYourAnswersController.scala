@@ -39,8 +39,7 @@ class CheckYourAnswersController @Inject()(
       val businessRows = Seq(
         BusinessNameSummary.row(request.registration),
         BusinessVRNSummary.row(request.registration),
-        ReturnPeriodSummary.row(request.userAnswers),
-        SoldGoodsFromNiSummary.row(request.userAnswers)
+        ReturnPeriodSummary.row(request.userAnswers)
       ).flatten
 
       val businessSummaryList = SummaryListViewModel(
@@ -48,6 +47,7 @@ class CheckYourAnswersController @Inject()(
       ).withCssClass("govuk-!-margin-bottom-9")
 
       val rows = Seq(
+        SoldGoodsFromNiSummary.row(request.userAnswers),
         TotalNINetValueOfSalesSummary.row(request.userAnswers),
         TotalNIVatOnSalesSummary.row(request.userAnswers)
       ).flatten
