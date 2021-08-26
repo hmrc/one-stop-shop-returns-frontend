@@ -55,6 +55,7 @@ class CheckYourAnswersController @Inject()(
       val salesFromEuSummaryList = SummaryListViewModel(
         rows = Seq(
           SoldGoodsFromEuSummary.row(request.userAnswers),
+          TotalEUNetValueOfSalesSummary.row(request.userAnswers)
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
