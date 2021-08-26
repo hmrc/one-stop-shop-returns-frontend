@@ -135,6 +135,7 @@ countryOfConsumptionFromEu.heading = Which EU country did you sell to from {0}?
 countryOfConsumptionFromEu.checkYourAnswersLabel = Which EU country did you sell to from {0}?
 countryOfConsumptionFromEu.error.required = Select which EU country you sold to from {0}
 countryOfConsumptionFromEu.change.hidden = which country you sold to
+countryOfConsumptionFromEu.error.duplicate = You selected this country already. Select a different one.
 
 countryOfSaleFromEu.title = Which EU country did you sell goods from?
 countryOfSaleFromEu.heading = Which EU country did you sell goods from?

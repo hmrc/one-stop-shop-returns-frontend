@@ -40,7 +40,7 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
   val selectItems: Seq[SelectItem] = Country.selectItems(Country.euCountries.filterNot(_ == countryFrom))
 
   private val formProvider = new CountryOfConsumptionFromEuFormProvider()
-  private val form         = formProvider(countryFrom)
+  private val form         = formProvider(index, Seq.empty, countryFrom)
   private val baseAnswers  = emptyUserAnswers.set(CountryOfSaleFromEuPage(index), countryFrom).success.value
 
   private lazy val countryOfConsumptionFromEuRoute = routes.CountryOfConsumptionFromEuController.onPageLoad(NormalMode, period, index, index).url
