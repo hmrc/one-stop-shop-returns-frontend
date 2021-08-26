@@ -66,7 +66,7 @@ class CountryOfConsumptionFromEuFormProviderSpec extends StringFieldBehaviours {
       val answer = Country.euCountries.tail.head
       val existingAnswers = Seq(Country.euCountries.head, Country.euCountries.tail.head)
 
-      val duplicateForm = new CountryOfConsumptionFromEuFormProvider()(index, existingAnswers, countryFrom)
+      val duplicateForm = new CountryOfConsumptionFromEuFormProvider()(index, existingAnswers, Country.euCountries.reverse.head)
 
       val result = duplicateForm.bind(Map(fieldName ->  answer.code)).apply(fieldName)
       result.errors must contain only FormError(fieldName, "countryOfConsumptionFromEu.error.duplicate")
