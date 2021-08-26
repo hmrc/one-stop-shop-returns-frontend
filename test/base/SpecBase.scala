@@ -67,6 +67,7 @@ trait SpecBase
   )
 
   val twentyPercentVatRate = VatRate(20, VatRateType.Reduced, arbitraryDate)
+  val fivePercentVatRate = VatRate(5, VatRateType.Reduced, arbitraryDate)
 
   def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
 
@@ -78,6 +79,7 @@ trait SpecBase
 
   def completeUserAnswers : UserAnswers = completeSalesFromNIUserAnswers
     .set(SoldGoodsFromEuPage,true).success.value
+    .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
     .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
     .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
     .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value

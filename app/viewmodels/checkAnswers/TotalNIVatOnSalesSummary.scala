@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, Index, UserAnswers}
+import models.{CheckMode, UserAnswers}
 import play.api.i18n.Messages
 import queries.AllSalesFromNiQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent

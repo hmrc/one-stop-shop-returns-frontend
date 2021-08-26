@@ -88,6 +88,11 @@ netValueOfSalesFromNi.error.wholeNumber = Enter your total sales at {0} using wh
 netValueOfSalesFromNi.error.outOfRange = Total sales must be between {0} and {1}
 netValueOfSalesFromNi.change.hidden = your total sales excluding VAT
 
+netValueOfSalesFromEu.checkYourAnswersLabel = Sales excluding VAT
+
+
+
+
 soldGoodsFromNi.title = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
 soldGoodsFromNi.heading = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
 soldGoodsFromNi.checkYourAnswersLabel = Sales made from Northern Ireland

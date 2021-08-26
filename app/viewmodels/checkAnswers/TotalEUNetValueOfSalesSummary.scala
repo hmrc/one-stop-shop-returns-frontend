@@ -30,10 +30,20 @@ object TotalEUNetValueOfSalesSummary extends CurrencyFormatter {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
     answers.get(AllSalesFromEuQuery).map {
-      _ =>
+      allSalesFromEu =>
+
+        val totalNetSalesFromEu =
+          allSalesFromEu.map {
+            saleFromEu =>
+              saleFromEu.salesFromCountry.map {
+                salesToCountry =>
+                  salesToCountry.salesAtVatRate.map(_.netValueOfSales).sum
+              }.sum
+          }.sum
+
         SummaryListRowViewModel(
           key     = "netValueOfSalesFromEu.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(100))),
+          value   = ValueViewModel(HtmlContent(currencyFormat(totalNetSalesFromEu))),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesFromEuListController.onPageLoad(CheckMode, answers.period).url)
               .withVisuallyHiddenText(messages("soldGoodsFromEu.change.hidden"))
