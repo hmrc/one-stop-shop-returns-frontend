@@ -17,20 +17,24 @@
 package pages
 
 import controllers.routes
-import models.{Index, Mode, UserAnswers}
+import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
 import play.api.mvc.Call
 import queries.DeriveNumberOfSalesFromNi
 
 case object SalesFromNiListPage extends Page {
 
-  // TODO: Navigation when addAnother is false will change for Check Mode
   def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call =
     if (addAnother) {
       answers.get(DeriveNumberOfSalesFromNi) match {
         case Some(size) => routes.CountryOfConsumptionFromNiController.onPageLoad(mode, answers.period, Index(size))
-        case None       => routes.JourneyRecoveryController.onPageLoad()
+        case None => routes.JourneyRecoveryController.onPageLoad()
       }
     } else {
-      routes.SoldGoodsFromEuController.onPageLoad(mode, answers.period)
+      mode match {
+        case NormalMode =>
+          routes.SoldGoodsFromEuController.onPageLoad(mode, answers.period)
+        case CheckMode =>
+          routes.CheckYourAnswersController.onPageLoad(answers.period)
+      }
     }
 }
