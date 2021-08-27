@@ -18,17 +18,18 @@ package forms
 
 import javax.inject.Inject
 import forms.mappings.Mappings
-import models.Country
+import models.{Country, Index}
 import play.api.data.Form
 import play.api.data.validation.{Constraint, Invalid, Valid}
 
 class CountryOfConsumptionFromEuFormProvider @Inject() extends Mappings {
 
-  def apply(countryFrom: Country): Form[Country] =
+  def apply(index: Index, existingAnswers: Seq[Country], countryFrom: Country): Form[Country] =
     Form(
       "value" -> text("countryOfConsumptionFromEu.error.required", args = Seq(countryFrom.name))
         .verifying(validCountry(countryFrom))
         .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
+        .verifying(notADuplicate(index, existingAnswers, "countryOfConsumptionFromEu.error.duplicate"))
     )
 
   private def validCountry(countryFrom: Country): Constraint[String] =

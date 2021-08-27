@@ -18,22 +18,22 @@ package controllers
 
 import controllers.actions._
 import forms.CountryOfConsumptionFromEuFormProvider
-
-import javax.inject.Inject
 import models.{Country, Index, Mode, Period}
 import pages.CountryOfConsumptionFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.AllSalesToEuQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.CountryOfConsumptionFromEuView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CountryOfConsumptionFromEuController @Inject()(
-                                        cc: AuthenticatedControllerComponents,
-                                        formProvider: CountryOfConsumptionFromEuFormProvider,
-                                        view: CountryOfConsumptionFromEuView
-                                    )(implicit ec: ExecutionContext)
+                                                      cc: AuthenticatedControllerComponents,
+                                                      formProvider: CountryOfConsumptionFromEuFormProvider,
+                                                      view: CountryOfConsumptionFromEuView
+                                                    )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -43,8 +43,16 @@ class CountryOfConsumptionFromEuController @Inject()(
       getCountryFrom(countryFromIndex) {
         countryFrom =>
 
-          val form        = formProvider(countryFrom)
-          val countries   = Country.euCountries.filterNot(_ == countryFrom)
+          val form =
+            formProvider(
+              countryToIndex,
+              request.userAnswers
+                .get(AllSalesToEuQuery(countryFromIndex))
+                .getOrElse(Seq.empty)
+                .map(_.countryOfConsumption),
+              countryFrom
+            )
+          val countries = Country.euCountries.filterNot(_ == countryFrom)
           val selectItems = Country.selectItems(countries)
 
           val preparedForm = request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex)) match {
@@ -61,8 +69,14 @@ class CountryOfConsumptionFromEuController @Inject()(
       getCountryFromAsync(countryFromIndex) {
         countryFrom =>
 
-          val form        = formProvider(countryFrom)
-          val countries   = Country.euCountries.filterNot(_ == countryFrom)
+          val form = formProvider(
+            countryToIndex,
+            request.userAnswers
+              .get(AllSalesToEuQuery(countryFromIndex))
+              .getOrElse(Seq.empty)
+              .map(_.countryOfConsumption),
+            countryFrom)
+          val countries = Country.euCountries.filterNot(_ == countryFrom)
           val selectItems = Country.selectItems(countries)
 
           form.bindFromRequest().fold(
