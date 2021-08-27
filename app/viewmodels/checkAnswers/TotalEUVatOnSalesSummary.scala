@@ -26,7 +26,7 @@ import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object TotalEUNetValueOfSalesSummary extends CurrencyFormatter {
+object TotalEUVatOnSalesSummary extends CurrencyFormatter {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
     answers.get(AllSalesFromEuQuery).map {
@@ -35,7 +35,7 @@ object TotalEUNetValueOfSalesSummary extends CurrencyFormatter {
         val totalNetSalesFromEu =
           allSalesFromEu.map (
             _.salesFromCountry.map (
-              _.salesAtVatRate.map(_.netValueOfSales).sum
+              _.salesAtVatRate.map(_.vatOnSales).sum
             ).sum
           ).sum
 
