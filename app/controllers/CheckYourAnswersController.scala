@@ -21,6 +21,7 @@ import controllers.actions.AuthenticatedControllerComponents
 import models.Period
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.SalesAtVatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.checkAnswers._
 import viewmodels.govuk.summarylist._
@@ -28,6 +29,7 @@ import views.html.CheckYourAnswersView
 
 class CheckYourAnswersController @Inject()(
                                             cc: AuthenticatedControllerComponents,
+                                            service: SalesAtVatRateService,
                                             view: CheckYourAnswersView
                                           ) extends FrontendBaseController with I18nSupport {
 
@@ -47,16 +49,16 @@ class CheckYourAnswersController @Inject()(
       val salesFromNiSummaryList = SummaryListViewModel(
         rows = Seq(
           SoldGoodsFromNiSummary.row(request.userAnswers),
-          TotalNINetValueOfSalesSummary.row(request.userAnswers),
-          TotalNIVatOnSalesSummary.row(request.userAnswers)
+          TotalNINetValueOfSalesSummary.row(request.userAnswers, service.getNiTotalNetSales(request.userAnswers)),
+          TotalNIVatOnSalesSummary.row(request.userAnswers, service.getNiTotalVatOnSales(request.userAnswers))
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
       val salesFromEuSummaryList = SummaryListViewModel(
         rows = Seq(
           SoldGoodsFromEuSummary.row(request.userAnswers),
-          TotalEUNetValueOfSalesSummary.row(request.userAnswers),
-          TotalEUVatOnSalesSummary.row(request.userAnswers)
+          TotalEUNetValueOfSalesSummary.row(request.userAnswers, service.getEuTotalNetSales(request.userAnswers)),
+          TotalEUVatOnSalesSummary.row(request.userAnswers, service.getEuTotalVatOnSales(request.userAnswers))
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 

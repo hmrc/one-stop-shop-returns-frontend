@@ -19,7 +19,6 @@ package viewmodels.checkAnswers
 import controllers.routes
 import models.{CheckMode, UserAnswers}
 import play.api.i18n.Messages
-import queries.AllSalesFromEuQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import utils.CurrencyFormatter
@@ -28,20 +27,12 @@ import viewmodels.implicits._
 
 object TotalEUNetValueOfSalesSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
-    answers.get(AllSalesFromEuQuery).map {
-      allSalesFromEu =>
-
-        val totalNetSalesFromEu =
-          allSalesFromEu.map (
-            _.salesFromCountry.map (
-              _.salesAtVatRate.map(_.netValueOfSales).sum
-            ).sum
-          ).sum
-
+  def row(answers: UserAnswers, totalEUNetValueOfSalesOption: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
+    totalEUNetValueOfSalesOption.map {
+      totalEUNetValueOfSalesOption =>
         SummaryListRowViewModel(
-          key     = "netValueOfSalesFromEu.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(totalNetSalesFromEu))),
+          key = "netValueOfSalesFromEu.checkYourAnswersLabel",
+          value = ValueViewModel(HtmlContent(currencyFormat(totalEUNetValueOfSalesOption))),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesFromEuListController.onPageLoad(CheckMode, answers.period).url)
               .withVisuallyHiddenText(messages("soldGoodsFromEu.change.hidden"))

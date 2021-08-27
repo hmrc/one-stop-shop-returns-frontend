@@ -28,21 +28,17 @@ import viewmodels.implicits._
 
 object TotalNIVatOnSalesSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(AllSalesFromNiQuery).map {
-      allSales =>
-
-        val totalVatOnSalesFromNi = allSales.map{ saleFromNi =>
-          saleFromNi.salesAtVatRate.map(_.vatOnSales).sum
-        }.sum
-
+  def row(answers: UserAnswers, totalVatOnSalesFromNiOption: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
+    totalVatOnSalesFromNiOption.map {
+      totalVatOnSalesFromNiOption =>
         SummaryListRowViewModel(
           key     = "vatOnSalesFromNi.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSalesFromNi))),
+          value   = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSalesFromNiOption))),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period).url)
               .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden"))
           )
         )
     }
+  }
 }

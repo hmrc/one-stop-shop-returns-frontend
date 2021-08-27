@@ -38,10 +38,9 @@ class TotalNIVatOnSalesSummarySpec extends SpecBase {
 
   "TotalVatOnSalesFromNiSummary" - {
 
-    "must show correct vat total for one country with one vat rate" in {
+    "must show summary when totalVatOnSalesFromNi exists" in {
 
-      val answers = completeSalesFromNIUserAnswers
-      val result = TotalNIVatOnSalesSummary.row(answers)
+      val result = TotalNIVatOnSalesSummary.row(emptyUserAnswers, Some(BigDecimal(1000)))
 
       val expectedResult = SummaryListRowViewModel(
         "vatOnSalesFromNi.checkYourAnswersLabel",
@@ -52,55 +51,11 @@ class TotalNIVatOnSalesSummarySpec extends SpecBase {
       result mustBe Some(expectedResult)
     }
 
-    "must show correct vat total sales for one country with multiple vat rates" in {
+    "must not show summary when totalVatOnSalesFromNi doesn't exist" in {
 
-      val answers = completeSalesFromNIUserAnswers
-        .set(
-          VatRatesFromNiPage(index),
-          List(
-            VatRate(10, VatRateType.Reduced, arbitraryDate),
-            VatRate(20, VatRateType.Reduced, arbitraryDate)
-          )
-        ).success.value
-        .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(200))).success.value
-        .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(100), BigDecimal(400))).success.value
+      val result = TotalNIVatOnSalesSummary.row(emptyUserAnswers, None)
 
-      val result = TotalNIVatOnSalesSummary.row(answers)
-
-      val expectedResult = SummaryListRowViewModel(
-        "vatOnSalesFromNi.checkYourAnswersLabel",
-        ValueViewModel(HtmlContent("&pound;600")),
-        expectedAction
-      )
-
-      result mustBe Some(expectedResult)
-    }
-
-    "must show correct vat total sales for multiple countries with vat rates" in {
-
-      val answers = completeSalesFromNIUserAnswers
-        .set(
-          VatRatesFromNiPage(index),
-          List(
-            VatRate(10, VatRateType.Reduced, arbitraryDate),
-            VatRate(20, VatRateType.Reduced, arbitraryDate)
-          )
-        ).success.value
-        .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(200))).success.value
-        .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(300), BigDecimal(400))).success.value
-        .set(CountryOfConsumptionFromNiPage(index + 1), Country("OTH", "OtherCountry")).success.value
-        .set(VatRatesFromNiPage(index + 1), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
-        .set(SalesAtVatRateFromNiPage(index + 1, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
-
-      val result = TotalNIVatOnSalesSummary.row(answers)
-
-      val expectedResult = SummaryListRowViewModel(
-        "vatOnSalesFromNi.checkYourAnswersLabel",
-        ValueViewModel(HtmlContent("&pound;1,600")),
-        expectedAction
-      )
-
-      result mustBe Some(expectedResult)
+      result mustBe None
     }
   }
 }

@@ -18,8 +18,7 @@ package viewmodels.checkAnswers
 
 import base.SpecBase
 import controllers.routes
-import models.{CheckMode, Country, Index, SalesAtVatRate}
-import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage, SalesAtVatRateFromEuPage, SoldGoodsFromEuPage, VatRatesFromEuPage}
+import models.CheckMode
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -30,9 +29,6 @@ class TotalEUNetValueOfSalesSummarySpec extends SpecBase {
 
   implicit val m: Messages = stubMessages()
 
-  private val index0 = Index(0)
-  private val index1 = Index(1)
-
   private val expectedAction = Seq(
     ActionItemViewModel(
       "site.change",
@@ -42,9 +38,9 @@ class TotalEUNetValueOfSalesSummarySpec extends SpecBase {
 
   "TotalEUNetValueOfSalesSummary" - {
 
-    "must show correct net total sales for one country from, one country to with one vat rate" in {
+    "must show summary when totalEUNetValueOfSales exists" in {
 
-      val result = TotalEUNetValueOfSalesSummary.row(completeUserAnswers)
+      val result = TotalEUNetValueOfSalesSummary.row(completeUserAnswers, Some(BigDecimal(100)))
 
       val expectedResult = SummaryListRowViewModel(
         "netValueOfSalesFromEu.checkYourAnswersLabel",
@@ -55,77 +51,11 @@ class TotalEUNetValueOfSalesSummarySpec extends SpecBase {
       result mustBe Some(expectedResult)
     }
 
-    "must show correct net total sales for one country from, one country to with multiple vat rates" in {
-      val answers = completeUserAnswers
-        .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-        .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-        .set(SalesAtVatRateFromEuPage(index, index, index + 1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+    "must not show summary when totalEUNetValueOfSales doesn't exist" in {
 
-      val result = TotalEUNetValueOfSalesSummary.row(answers)
+      val result = TotalEUNetValueOfSalesSummary.row(completeUserAnswers, None)
 
-      val expectedResult = SummaryListRowViewModel(
-        "netValueOfSalesFromEu.checkYourAnswersLabel",
-        ValueViewModel(HtmlContent("&pound;300")),
-        expectedAction
-      )
-
-      result mustBe Some(expectedResult)
-    }
-
-    "must show correct net total sales for one country from, multiple countries to with multiple vat rates" in {
-      val answers = completeUserAnswers
-        .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-        .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-        .set(SalesAtVatRateFromEuPage(index, index, index + 1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
-        .set(CountryOfConsumptionFromEuPage(index, index + 1), Country("DK", "Denmark")).success.value
-        .set(VatRatesFromEuPage(index, index + 1), List(twentyPercentVatRate)).success.value
-        .set(SalesAtVatRateFromEuPage(index, index + 1, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-
-      val result = TotalEUNetValueOfSalesSummary.row(answers)
-
-      val expectedResult = SummaryListRowViewModel(
-        "netValueOfSalesFromEu.checkYourAnswersLabel",
-        ValueViewModel(HtmlContent("&pound;400")),
-        expectedAction
-      )
-
-      result mustBe Some(expectedResult)
-    }
-
-    "must show correct net total sales for multiple country from, multiple countries to with multiple vat rates" in {
-      val answers = emptyUserAnswers
-        .set(SoldGoodsFromEuPage,true).success.value
-        //countries from
-        .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
-        .set(CountryOfSaleFromEuPage(index1), Country("EE", "Estonia")).success.value
-
-        //countries to
-        .set(CountryOfConsumptionFromEuPage(index0, index0), Country("BE", "Belgium")).success.value
-        .set(CountryOfConsumptionFromEuPage(index0, index1), Country("DK", "Denmark")).success.value
-        .set(CountryOfConsumptionFromEuPage(index1, index0), Country("BE", "Belgium")).success.value
-        .set(CountryOfConsumptionFromEuPage(index1, index1), Country("DK", "Denmark")).success.value
-
-        //vat rates
-        .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
-        .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
-        .set(VatRatesFromEuPage(index1, index0), List(twentyPercentVatRate)).success.value
-        .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
-
-        //sales at vat rate
-        .set(SalesAtVatRateFromEuPage(index0, index0, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-        .set(SalesAtVatRateFromEuPage(index0, index1, index0), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
-        .set(SalesAtVatRateFromEuPage(index1, index0, index0), SalesAtVatRate(BigDecimal(300), BigDecimal(20))).success.value
-        .set(SalesAtVatRateFromEuPage(index1, index1, index0), SalesAtVatRate(BigDecimal(400), BigDecimal(20))).success.value
-
-      val result = TotalEUNetValueOfSalesSummary.row(answers)
-
-      val expectedResult = SummaryListRowViewModel(
-        "netValueOfSalesFromEu.checkYourAnswersLabel",
-        ValueViewModel(HtmlContent("&pound;1,000")),
-        expectedAction
-      )
-
-      result mustBe Some(expectedResult)
+      result mustBe None
     }
   }
 }

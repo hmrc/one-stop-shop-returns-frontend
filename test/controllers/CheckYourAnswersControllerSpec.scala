@@ -17,13 +17,14 @@
 package controllers
 
 import base.SpecBase
-import controllers.actions.{FakeGetRegistrationAction, GetRegistrationAction}
-import models.registration.Registration
-import org.scalacheck.Arbitrary.arbitrary
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import viewmodels.govuk.SummaryListFluency
+import services.SalesAtVatRateService
 
 class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
@@ -58,6 +59,32 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must display total sales sections from eu and ni" in {
+      val salesAtVatRateService = mock[SalesAtVatRateService]
+
+      when(salesAtVatRateService.getEuTotalVatOnSales(any())).thenReturn(Some(BigDecimal(3333)))
+      when(salesAtVatRateService.getEuTotalNetSales(any())).thenReturn(Some(BigDecimal(4444)))
+      when(salesAtVatRateService.getNiTotalVatOnSales(any())).thenReturn(Some(BigDecimal(5555)))
+      when(salesAtVatRateService.getNiTotalNetSales(any())).thenReturn(Some(BigDecimal(6666)))
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(bind[SalesAtVatRateService].toInstance(salesAtVatRateService))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(period).url)
+
+        val result = route(application, request).value
+
+        println(contentAsString(result))
+        status(result) mustEqual OK
+        contentAsString(result).contains("&pound;6,666") mustBe true
+        contentAsString(result).contains("&pound;5,555") mustBe true
+        contentAsString(result).contains("&pound;4,444") mustBe true
+        contentAsString(result).contains("&pound;3,333") mustBe true
       }
     }
   }
