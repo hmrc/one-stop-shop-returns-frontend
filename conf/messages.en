@@ -143,7 +143,7 @@ countryOfSaleFromEu.error.required = Select which EU country you sold goods from
 countryOfSaleFromEu.change.hidden = which EU country you sold goods from
 
 deleteSalesFromEu.title = Are you sure you want to remove the sales from {0}?
-deleteSalesFromEu.heading = Are you sure you want to remove the sales from {1}?
+deleteSalesFromEu.heading = Are you sure you want to remove the sales from {0}?
 deleteSalesFromEu.error.required = Select yes if you want to remove the sales from {0}
 
 deleteSalesToEu.title = Are you sure you want to remove the sales from {0} to {1}?
