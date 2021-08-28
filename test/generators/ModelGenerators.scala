@@ -16,7 +16,8 @@
 
 package generators
 
-import models._
+import models.{domain, _}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
@@ -148,7 +149,7 @@ trait ModelGenerators {
       for {
         identifierType <- arbitrary[EuTaxIdentifierType]
         value          <- arbitrary[Int].map(_.toString)
-      } yield EuTaxIdentifier(identifierType, value)
+      } yield domain.EuTaxIdentifier(identifierType, value)
     }
 
   implicit val arbitraryVatDetails: Arbitrary[VatDetails] =

@@ -18,6 +18,7 @@ package models.registration
 
 import generators.Generators
 import models.Country
+import models.domain.EuTaxIdentifier
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
