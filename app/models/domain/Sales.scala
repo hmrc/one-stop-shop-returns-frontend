@@ -21,8 +21,8 @@ import play.api.libs.json.{Json, OFormat}
 
 case class SalesFromEuCountry(
                                countryOfSale: Country,
-                               taxIdentifier: EuTaxIdentifier,
-                               sales: Set[SalesToCountry]
+                               taxIdentifier: Option[EuTaxIdentifier],
+                               sales: List[SalesToCountry]
                              )
 
 object SalesFromEuCountry {
@@ -32,7 +32,7 @@ object SalesFromEuCountry {
 
 case class SalesToCountry(
                            countryOfConsumption: Country,
-                           amounts: Set[SalesDetails]
+                           amounts: List[SalesDetails]
                          )
 
 object SalesToCountry {

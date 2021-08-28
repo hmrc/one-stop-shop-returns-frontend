@@ -28,8 +28,8 @@ case class VatReturnRequest(
                              period: Period,
                              startDate: Option[LocalDate],
                              endDate: Option[LocalDate],
-                             salesFromNi: Set[SalesToCountry],
-                             salesFromEu: Set[SalesFromEuCountry],
+                             salesFromNi: List[SalesToCountry],
+                             salesFromEu: List[SalesFromEuCountry],
                            )
 
 object VatReturnRequest {

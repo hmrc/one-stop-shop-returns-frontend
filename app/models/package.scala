@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+import cats.data.ValidatedNec
 import play.api.libs.json._
 
 package object models {
+
+  type ValidationResult[A] = ValidatedNec[ValidationError, A]
 
   implicit class RichJsObject(jsObject: JsObject) {
 
