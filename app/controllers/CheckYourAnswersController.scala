@@ -21,6 +21,7 @@ import controllers.actions.AuthenticatedControllerComponents
 import models.{Index, Period}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.checkAnswers._
 import viewmodels.govuk.summarylist._
@@ -28,7 +29,8 @@ import views.html.CheckYourAnswersView
 
 class CheckYourAnswersController @Inject()(
                                             cc: AuthenticatedControllerComponents,
-                                            view: CheckYourAnswersView
+                                            view: CheckYourAnswersView,
+                                            vatReturnService: VatReturnService
                                           ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
