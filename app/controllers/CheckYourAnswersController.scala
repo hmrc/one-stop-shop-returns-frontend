@@ -26,6 +26,7 @@ import models.{NormalMode, Period}
 import pages.CheckYourAnswersPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import repositories.RegistrationRepository
 import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
@@ -39,7 +40,8 @@ class CheckYourAnswersController @Inject()(
                                             cc: AuthenticatedControllerComponents,
                                             view: CheckYourAnswersView,
                                             vatReturnService: VatReturnService,
-                                            vatReturnConnector: VatReturnConnector
+                                            vatReturnConnector: VatReturnConnector,
+                                            registrationRepository: RegistrationRepository
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -88,28 +90,35 @@ class CheckYourAnswersController @Inject()(
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
-      val vatReturnRequest = vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period)
+      registrationRepository.get(request.userId).flatMap {
+        case Some(registration) =>
 
-      vatReturnRequest match {
-        case Valid(returnRequest) =>
-          vatReturnConnector.submit(returnRequest).flatMap {
-            case Right(_) =>
-              Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers)).toFuture
+          val vatReturnRequest =
+            vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, registration)
 
-            case Left(ConflictFound) =>
-              Redirect(routes.IndexController.onPageLoad()).toFuture
+          vatReturnRequest match {
+            case Valid(returnRequest) =>
+              vatReturnConnector.submit(returnRequest).flatMap {
+                case Right(_) =>
+                  Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers)).toFuture
 
-            case Left(e) =>
-              logger.error(s"Unexpected result on submit: ${e.toString}")
+                case Left(ConflictFound) =>
+                  Redirect(routes.IndexController.onPageLoad()).toFuture
+
+                case Left(e) =>
+                  logger.error(s"Unexpected result on submit: ${e.toString}")
+                  Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+              }
+
+            case Invalid(errors) =>
+              val errorList = errors.toChain.toList
+              val errorMessages = errorList.map(_.errorMessage).mkString("\n")
+              logger.error(s"Unable to create a VAT return request from user answers: $errorMessages")
+
               Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
           }
 
-
-        case Invalid(errors) =>
-          val errorList = errors.toChain.toList
-          val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-          logger.error(s"Unable to create a VAT return request from user answers: $errorMessages")
-
+        case None =>
           Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
       }
   }
