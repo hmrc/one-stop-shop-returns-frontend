@@ -16,22 +16,31 @@
 
 package controllers
 
+import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
+import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Index, Period}
+import logging.Logging
+import models.responses.ConflictFound
+import models.{NormalMode, Period}
+import pages.CheckYourAnswersPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax._
 import viewmodels.checkAnswers._
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
+import scala.concurrent.ExecutionContext
+
 class CheckYourAnswersController @Inject()(
                                             cc: AuthenticatedControllerComponents,
                                             view: CheckYourAnswersView,
-                                            vatReturnService: VatReturnService
-                                          ) extends FrontendBaseController with I18nSupport {
+                                            vatReturnService: VatReturnService,
+                                            vatReturnConnector: VatReturnConnector
+                                          )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -67,10 +76,41 @@ class CheckYourAnswersController @Inject()(
         rows = totalRows
       ).withCssClass("govuk-!-margin-bottom-9")
 
-      Ok(view(Map(
-        None -> businessSummaryList,
-        Some("checkYourAnswers.salesFromNi.heading") -> list,
-        Some("checkYourAnswers.allSales.heading") -> totalList
-      )))
+      Ok(view(
+        Map(
+          None -> businessSummaryList,
+          Some("checkYourAnswers.salesFromNi.heading") -> list,
+          Some("checkYourAnswers.allSales.heading") -> totalList
+        ),
+        period
+      ))
+  }
+
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
+    implicit request =>
+      val vatReturnRequest = vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period)
+
+      vatReturnRequest match {
+        case Valid(returnRequest) =>
+          vatReturnConnector.submit(returnRequest).flatMap {
+            case Right(_) =>
+              Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers)).toFuture
+
+            case Left(ConflictFound) =>
+              Redirect(routes.IndexController.onPageLoad()).toFuture
+
+            case Left(e) =>
+              logger.error(s"Unexpected result on submit: ${e.toString}")
+              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+          }
+
+
+        case Invalid(errors) =>
+          val errorList = errors.toChain.toList
+          val errorMessages = errorList.map(_.errorMessage).mkString("\n")
+          logger.error(s"Unable to create a VAT return request from user answers: $errorMessages")
+
+          Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+      }
   }
 }
