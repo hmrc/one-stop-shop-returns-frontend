@@ -22,7 +22,7 @@ import models.requests.VatReturnRequest
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import org.scalatest.EitherValues
 import play.api.Application
-import play.api.http.Status.{CONFLICT, INTERNAL_SERVER_ERROR}
+import play.api.http.Status.{CONFLICT, CREATED, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -39,14 +39,14 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
     val url = "/one-stop-shop-returns/vat-returns"
 
-    "must return Right when the server responds with OK" in {
+    "must return Right when the server responds with CREATED" in {
 
       running(application) {
         val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
 
         val connector = application.injector.instanceOf[VatReturnConnector]
 
-        server.stubFor(post(urlEqualTo(url)).willReturn(ok()))
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(CREATED)))
 
         val result = connector.submit(vatReturnRequest).futureValue
 

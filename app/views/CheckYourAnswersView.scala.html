@@ -25,7 +25,7 @@
 
 @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
 
-    @formHelper(action = routes.CheckYourAnswersController.onPageLoad(period)) {
+    @formHelper(action = routes.CheckYourAnswersController.onSubmit(period)) {
 
         <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
 

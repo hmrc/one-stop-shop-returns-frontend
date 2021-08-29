@@ -17,7 +17,7 @@
 package connectors
 
 import models.responses.{ConflictFound, ErrorResponse, UnexpectedResponseStatus}
-import play.api.http.Status.{CONFLICT, OK}
+import play.api.http.Status.{CONFLICT, CREATED}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object VatReturnHttpParser {
@@ -27,9 +27,9 @@ object VatReturnHttpParser {
   implicit object VatReturnReads extends HttpReads[VatReturnResponse] {
     override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {
       response.status match {
-        case OK => Right(())
+        case CREATED  => Right(())
         case CONFLICT => Left(ConflictFound)
-        case status => Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
+        case status   => Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }
     }
   }
