@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.registration
+package models.domain
 
 import models.{Enumerable, WithName}
 import play.api.libs.json._

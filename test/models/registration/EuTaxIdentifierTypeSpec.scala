@@ -16,6 +16,7 @@
 
 package models.registration
 
+import models.domain.EuTaxIdentifierType
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers

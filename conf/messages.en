@@ -11,6 +11,7 @@ site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
 site.to = to
+site.submit = Submit
 
 date.day = Day
 date.month = Month

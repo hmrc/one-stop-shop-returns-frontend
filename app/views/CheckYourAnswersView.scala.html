@@ -16,19 +16,28 @@
 
 @this(
     layout: templates.Layout,
-    govukSummaryList: GovukSummaryList
+    formHelper: FormWithCSRF,
+    govukSummaryList: GovukSummaryList,
+    govukButton: GovukButton
 )
 
-@(summaryListMap: Map[Option[String], SummaryList])(implicit request: Request[_], messages: Messages)
+@(summaryListMap: Map[Option[String], SummaryList], period: Period)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
 
-    <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
+    @formHelper(action = routes.CheckYourAnswersController.onSubmit(period)) {
 
-    @summaryListMap.map { case (heading, summaryList) =>
-        @if(heading.isDefined) {
-            <h2 class="govuk-heading-m">@messages(heading.get)</h2>
+        <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
+
+        @summaryListMap.map { case (heading, summaryList) =>
+            @if(heading.isDefined) {
+                <h2 class="govuk-heading-m">@messages(heading.get)</h2>
+            }
+            @govukSummaryList(summaryList)
         }
-        @govukSummaryList(summaryList)
+
+        @govukButton(
+            ButtonViewModel(messages("site.submit"))
+        )
     }
 }

@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package models.registration
+package logging
 
-import play.api.libs.json.{Json, OFormat}
+import org.slf4j.{Logger, LoggerFactory}
 
-case class EuTaxIdentifier(identifierType: EuTaxIdentifierType, value: String)
+trait Logging {
 
-object EuTaxIdentifier {
-
-  implicit val format: OFormat[EuTaxIdentifier] = Json.format[EuTaxIdentifier]
+  protected val logger: Logger =
+    LoggerFactory.getLogger("application." + getClass.getCanonicalName)
 }
