@@ -17,21 +17,23 @@
 package services
 
 import cats.implicits._
-import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry}
 import models._
+import models.domain.EuTaxIdentifierType.Vat
+import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry}
+import models.registration.{EuVatRegistration, Registration, RegistrationWithFixedEstablishment}
 import models.requests.VatReturnRequest
 import pages._
-import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery, SalesFromEuQuery}
+import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery}
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
 
 class VatReturnService @Inject()() {
 
-  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): ValidationResult[VatReturnRequest] =
+  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, registration: Registration): ValidationResult[VatReturnRequest] =
     (
       getSalesFromNi(answers),
-      getSalesFromEu(answers)
+      getSalesFromEu(answers, registration)
     ).mapN(
       (salesFromNi, salesFromEu) =>
         VatReturnRequest(vrn, period, None, None, salesFromNi, salesFromEu)
@@ -94,10 +96,10 @@ class VatReturnService @Inject()() {
     }
 
 
-  private def getSalesFromEu(answers: UserAnswers): ValidationResult[List[SalesFromEuCountry]] =
+  private def getSalesFromEu(answers: UserAnswers, registration: Registration): ValidationResult[List[SalesFromEuCountry]] =
     answers.get(SoldGoodsFromEuPage) match {
       case Some(true) =>
-        processSalesFromEu(answers)
+        processSalesFromEu(answers, registration)
 
       case Some(false) =>
         List.empty[SalesFromEuCountry].validNec
@@ -106,8 +108,7 @@ class VatReturnService @Inject()() {
         DataMissingError(SoldGoodsFromEuPage).invalidNec
     }
 
-  // TODO: Include tax identifier if we have it, instead of hardcoded `None`
-  private def processSalesFromEu(answers: UserAnswers): ValidationResult[List[SalesFromEuCountry]] =
+  private def processSalesFromEu(answers: UserAnswers, registration: Registration): ValidationResult[List[SalesFromEuCountry]] =
     answers.get(AllSalesFromEuQuery) match {
       case Some(salesFromEu) if salesFromEu.nonEmpty =>
         salesFromEu.zipWithIndex.map {
@@ -117,7 +118,12 @@ class VatReturnService @Inject()() {
           salesDetails =>
             salesFromEu.zip(salesDetails).map {
               case (sales, salesDetails) =>
-                SalesFromEuCountry(sales.countryOfSale, None, salesDetails)
+                val taxIdentifier = registration.euRegistrations.find(_.country == sales.countryOfSale) match {
+                  case Some(r: EuVatRegistration)                  => Some(EuTaxIdentifier(Vat, r.vatNumber))
+                  case Some(r: RegistrationWithFixedEstablishment) => Some(r.taxIdentifier)
+                  case _                                           => None
+                }
+                SalesFromEuCountry(sales.countryOfSale, taxIdentifier, salesDetails)
             }
         }
 

@@ -19,7 +19,9 @@ package services
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
-import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry}
+import models.domain.EuTaxIdentifierType.{Other, Vat}
+import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry}
+import models.registration._
 import models.{Country, DataMissingError, Index, SalesAtVatRate, VatRate}
 import models.requests.VatReturnRequest
 import org.scalacheck.Arbitrary.arbitrary
@@ -29,8 +31,7 @@ import pages._
 import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery}
 
 class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
-
-
+  
   ".fromUserAnswers" - {
 
     "must return a vat return request" - {
@@ -44,7 +45,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
         private val expectedResult = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
 
-        service.fromUserAnswers(answers, vrn, period) mustEqual Valid(expectedResult)
+        service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails) mustEqual Valid(expectedResult)
       }
 
       "when the user has sold goods from NI" in new Fixture {
@@ -83,53 +84,127 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             List.empty
           )
 
-        service.fromUserAnswers(answers, vrn, period) mustEqual Valid(expectedResult)
+        service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails) mustEqual Valid(expectedResult)
       }
 
-      "when the user has sold goods from the EU" in new Fixture {
+      "when the user has sold goods from the EU" - {
 
-        private val answers =
-          emptyUserAnswers
-            .set(SoldGoodsFromNiPage, false).success.value
-            .set(SoldGoodsFromEuPage, true).success.value
-            .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
-            .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
-            .set(VatRatesFromEuPage(Index(0), Index(0)), List(vatRate1)).success.value
-            .set(SalesAtVatRateFromEuPage(Index(0), Index(0), Index(0)), salesDetails1).success.value
-            .set(CountryOfConsumptionFromEuPage(Index(0), Index(1)), country3).success.value
-            .set(VatRatesFromEuPage(Index(0), Index(1)), List(vatRate2, vatRate3)).success.value
-            .set(SalesAtVatRateFromEuPage(Index(0), Index(1), Index(0)), salesDetails2).success.value
-            .set(SalesAtVatRateFromEuPage(Index(0), Index(1), Index(1)), salesDetails3).success.value
+        "with no EU registrations" in new Fixture {
 
-        private val expectedResult =
-          VatReturnRequest(
-            vrn,
-            period,
-            None,
-            None,
-            List.empty,
-            List(
-              SalesFromEuCountry(
-                country1,
-                None,
-                List(
-                  SalesToCountry(
-                    country2,
-                    List(SalesDetails(vatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
-                  ),
-                  SalesToCountry(
-                    country3,
-                    List(
-                      SalesDetails(vatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales),
-                      SalesDetails(vatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales)
+          private val answers =
+            emptyUserAnswers
+              .set(SoldGoodsFromNiPage, false).success.value
+              .set(SoldGoodsFromEuPage, true).success.value
+              .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
+              .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
+              .set(VatRatesFromEuPage(Index(0), Index(0)), List(vatRate1)).success.value
+              .set(SalesAtVatRateFromEuPage(Index(0), Index(0), Index(0)), salesDetails1).success.value
+              .set(CountryOfConsumptionFromEuPage(Index(0), Index(1)), country3).success.value
+              .set(VatRatesFromEuPage(Index(0), Index(1)), List(vatRate2, vatRate3)).success.value
+              .set(SalesAtVatRateFromEuPage(Index(0), Index(1), Index(0)), salesDetails2).success.value
+              .set(SalesAtVatRateFromEuPage(Index(0), Index(1), Index(1)), salesDetails3).success.value
+
+          private val expectedResult =
+            VatReturnRequest(
+              vrn,
+              period,
+              None,
+              None,
+              List.empty,
+              List(
+                SalesFromEuCountry(
+                  country1,
+                  None,
+                  List(
+                    SalesToCountry(
+                      country2,
+                      List(SalesDetails(vatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
+                    ),
+                    SalesToCountry(
+                      country3,
+                      List(
+                        SalesDetails(vatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales),
+                        SalesDetails(vatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales)
+                      )
                     )
                   )
                 )
               )
             )
+
+          service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails) mustEqual Valid(expectedResult)
+        }
+
+        "with EU registrations" in new Fixture {
+
+          private val registration = registrationWithoutEuDetails.copy (
+            euRegistrations = Seq(
+              EuVatRegistration(country1, "VAT number"),
+              RegistrationWithFixedEstablishment(country3, EuTaxIdentifier(Other, "Tax identifier"), arbitrary[FixedEstablishment].sample.value),
+              RegistrationWithoutFixedEstablishment(country4)
+            )
           )
 
-        service.fromUserAnswers(answers, vrn, period) mustEqual Valid(expectedResult)
+          private val answers =
+            emptyUserAnswers
+              .set(SoldGoodsFromNiPage, false).success.value
+              .set(SoldGoodsFromEuPage, true).success.value
+              .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
+              .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
+              .set(VatRatesFromEuPage(Index(0), Index(0)), List(vatRate1)).success.value
+              .set(SalesAtVatRateFromEuPage(Index(0), Index(0), Index(0)), salesDetails1).success.value
+              .set(CountryOfSaleFromEuPage(Index(1)), country3).success.value
+              .set(CountryOfConsumptionFromEuPage(Index(1), Index(0)), country2).success.value
+              .set(VatRatesFromEuPage(Index(1), Index(0)), List(vatRate2)).success.value
+              .set(SalesAtVatRateFromEuPage(Index(1), Index(0), Index(0)), salesDetails2).success.value
+              .set(CountryOfSaleFromEuPage(Index(2)), country4).success.value
+              .set(CountryOfConsumptionFromEuPage(Index(2), Index(0)), country2).success.value
+              .set(VatRatesFromEuPage(Index(2), Index(0)), List(vatRate3)).success.value
+              .set(SalesAtVatRateFromEuPage(Index(2), Index(0), Index(0)), salesDetails3).success.value
+
+          private val expectedResult =
+            VatReturnRequest(
+              vrn,
+              period,
+              None,
+              None,
+              List.empty,
+              List(
+                SalesFromEuCountry(
+                  country1,
+                  Some(EuTaxIdentifier(Vat, "VAT number")),
+                  List(
+                    SalesToCountry(
+                      country2,
+                      List(SalesDetails(vatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
+                    )
+                  )
+                ),
+                SalesFromEuCountry(
+                  country3,
+                  Some(EuTaxIdentifier(Other, "Tax identifier")),
+                  List(
+                    SalesToCountry(
+                      country2,
+                      List(SalesDetails(vatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales))
+                    )
+                  )
+                ),
+                SalesFromEuCountry(
+                  country4,
+                  None,
+                  List(
+                    SalesToCountry(
+                      country2,
+                      List(SalesDetails(vatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales))
+                    )
+                  )
+                )
+              )
+            )
+
+          service.fromUserAnswers(answers, vrn, period, registration) mustEqual Valid(expectedResult)
+        }
       }
     }
 
@@ -141,7 +216,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
           emptyUserAnswers
             .set(SoldGoodsFromEuPage, false).success.value
 
-        private val result = service.fromUserAnswers(answers, vrn, period)
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(SoldGoodsFromNiPage)))
       }
 
@@ -152,7 +227,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(SoldGoodsFromNiPage, true).success.value
             .set(SoldGoodsFromEuPage, false).success.value
 
-        private val result = service.fromUserAnswers(answers, vrn, period)
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromNiQuery)))
       }
 
@@ -164,7 +239,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(CountryOfConsumptionFromNiPage(Index(0)), country1).success.value
             .set(SoldGoodsFromEuPage, false).success.value
 
-        private val result = service.fromUserAnswers(answers, vrn, period)
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromNiQuery)))
       }
 
@@ -178,7 +253,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(SalesAtVatRateFromNiPage(Index(0), Index(0)), salesDetails1).success.value
             .set(SoldGoodsFromEuPage, false).success.value
 
-        private val result = service.fromUserAnswers(answers, vrn, period)
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(SalesAtVatRateFromNiPage(Index(0), Index(1)))))
       }
 
@@ -189,7 +264,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(SoldGoodsFromNiPage, false).success.value
             .set(SoldGoodsFromEuPage, true).success.value
 
-        private val result = service.fromUserAnswers(answers, vrn, period)
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
       }
 
@@ -201,7 +276,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(SoldGoodsFromEuPage, true).success.value
             .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
 
-        private val result = service.fromUserAnswers(answers, vrn, period)
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
       }
 
@@ -214,7 +289,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
             .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
 
-        private val result = service.fromUserAnswers(answers, vrn, period)
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
       }
 
@@ -228,7 +303,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
             .set(VatRatesFromEuPage(Index(0), Index(0)), List(vatRate1)).success.value
 
-        private val result = service.fromUserAnswers(answers, vrn, period)
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
       }
     }
@@ -248,5 +323,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     protected val salesDetails1: SalesAtVatRate = arbitrary[SalesAtVatRate].sample.value
     protected val salesDetails2: SalesAtVatRate = arbitrary[SalesAtVatRate].sample.value
     protected val salesDetails3: SalesAtVatRate = arbitrary[SalesAtVatRate].sample.value
+    
+    protected val registrationWithoutEuDetails: Registration = registration
   }
 }

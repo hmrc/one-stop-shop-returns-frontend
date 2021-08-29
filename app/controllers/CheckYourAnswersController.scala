@@ -88,7 +88,8 @@ class CheckYourAnswersController @Inject()(
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
-      val vatReturnRequest = vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period)
+      val vatReturnRequest =
+        vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
 
       vatReturnRequest match {
         case Valid(returnRequest) =>
@@ -103,7 +104,6 @@ class CheckYourAnswersController @Inject()(
               logger.error(s"Unexpected result on submit: ${e.toString}")
               Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
           }
-
 
         case Invalid(errors) =>
           val errorList = errors.toChain.toList

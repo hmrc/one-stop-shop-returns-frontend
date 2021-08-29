@@ -18,13 +18,10 @@ package controllers
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import controllers.actions.{FakeGetRegistrationAction, GetRegistrationAction}
-import models.registration.Registration
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.MockitoSugar.when
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{SoldGoodsFromEuPage, SoldGoodsFromNiPage}
@@ -37,7 +34,7 @@ import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with SummaryListFluency with BeforeAndAfterEach {
 
-  private val vatReturnConnector = mock[VatReturnConnector]
+  private val vatReturnConnector     = mock[VatReturnConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
@@ -91,7 +88,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val app =
           applicationBuilder(Some(answers))
-            .overrides(bind[VatReturnConnector].toInstance(vatReturnConnector))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
             .build()
 
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(()))
@@ -118,7 +117,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val app =
           applicationBuilder(Some(answers))
-            .overrides(bind[VatReturnConnector].toInstance(vatReturnConnector))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
             .build()
 
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
@@ -145,7 +146,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val app =
           applicationBuilder(Some(answers))
-            .overrides(bind[VatReturnConnector].toInstance(vatReturnConnector))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
             .build()
 
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
@@ -167,7 +170,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val app =
           applicationBuilder(Some(emptyUserAnswers))
-            .overrides(bind[VatReturnConnector].toInstance(vatReturnConnector))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
             .build()
 
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(()))
