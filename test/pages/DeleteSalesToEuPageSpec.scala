@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Country, Index, NormalMode, SalesAtVatRate, VatRate}
+import models.{CheckMode, Country, Index, NormalMode, SalesAtVatRate, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -66,6 +66,45 @@ class DeleteSalesToEuPageSpec extends PageBehaviours {
 
           DeleteSalesToEuPage(index, index).navigate(NormalMode, answers)
             .mustEqual(routes.CountryOfConsumptionFromEuController.onPageLoad(NormalMode, answers.period, index, Index(0)))
+        }
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "when there are sales from at least one EU country in user answers" - {
+
+        "to Sales from EU list" in {
+
+          val countryFrom  = arbitrary[Country].sample.value
+          val countryTo    = arbitrary[Country].sample.value
+          val vatRate      = arbitrary[VatRate].sample.value
+          val salesDetails = arbitrary[SalesAtVatRate].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+              .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+              .set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
+              .set(SalesAtVatRateFromEuPage(index, index, index), salesDetails).success.value
+
+          DeleteSalesToEuPage(index, index).navigate(CheckMode, answers)
+            .mustEqual(routes.SalesToEuListController.onPageLoad(CheckMode, answers.period, index))
+        }
+      }
+
+      "when there are no sales to EU countries in user answers" - {
+
+        "to Country of Consumption from EU" in {
+
+          val countryFrom = arbitrary[Country].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+
+          DeleteSalesToEuPage(index, index).navigate(CheckMode, answers)
+            .mustEqual(routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, answers.period, index, Index(0)))
         }
       }
     }
