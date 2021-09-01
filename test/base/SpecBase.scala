@@ -73,7 +73,7 @@ trait SpecBase
 
   def completeSalesFromNIUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
     .set(SoldGoodsFromNiPage, true).success.value
-    .set(CountryOfConsumptionFromNiPage(index), Country("COU", "country")).success.value
+    .set(CountryOfConsumptionFromNiPage(index), Country.northernIreland).success.value
     .set(VatRatesFromNiPage(index), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
     .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
 

@@ -17,7 +17,7 @@
 package services
 
 import base.SpecBase
-import models.{Country, Index, SalesAtVatRate, VatRate, VatRateType}
+import models.{Country, Index, SalesAtVatRate, TotalVatToCountry, VatRate, VatRateType}
 import pages._
 
 class SalesAtVatRateServiceSpec extends SpecBase {
@@ -278,6 +278,123 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
 
         service.getTotalVatOnSales(answers) mustBe BigDecimal(20)
+      }
+    }
+
+    "getVatOwedToEuCountries" - {
+
+      val belgium: Country = Country("BE", "Belgium")
+      val denmark: Country = Country("DK", "Denmark")
+
+      "must return correct total vat to eu countries for one country from, one country to with one vat rate" in {
+        val ua = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
+          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+
+        val expected = List(TotalVatToCountry(belgium, BigDecimal(20)))
+
+        service.getVatOwedToEuCountries(ua) mustBe expected
+      }
+
+      "must return correct total vat to eu countries for one country from, one country to with multiple vat rates" in {
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(SalesAtVatRateFromEuPage(index, index, index + 1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+
+        val expected = List(TotalVatToCountry(belgium, BigDecimal(40)))
+
+        service.getVatOwedToEuCountries(answers) mustBe expected
+      }
+
+      "must return correct total vat to eu countries for one country from, multiple countries to with multiple vat rates" in {
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(SalesAtVatRateFromEuPage(index, index, index + 1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index + 1), denmark).success.value
+          .set(VatRatesFromEuPage(index, index + 1), List(twentyPercentVatRate)).success.value
+          .set(SalesAtVatRateFromEuPage(index, index + 1, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+
+        service.getVatOwedToEuCountries(answers) must contain allOf(
+          TotalVatToCountry(belgium, BigDecimal(40)),
+          TotalVatToCountry(denmark, BigDecimal(20))
+        )
+      }
+
+      "must return correct total vat to eu countries for multiple country from, multiple countries to with multiple vat rates" in {
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          //countries from
+          .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
+          .set(CountryOfSaleFromEuPage(index1), Country("EE", "Estonia")).success.value
+
+          //countries to
+          .set(CountryOfConsumptionFromEuPage(index0, index0), belgium).success.value
+          .set(CountryOfConsumptionFromEuPage(index0, index1), denmark).success.value
+          .set(CountryOfConsumptionFromEuPage(index1, index0), belgium).success.value
+          .set(CountryOfConsumptionFromEuPage(index1, index1), denmark).success.value
+
+          //vat rates
+          .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
+          .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
+          .set(VatRatesFromEuPage(index1, index0), List(twentyPercentVatRate)).success.value
+          .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
+
+          //sales at vat rate
+          .set(SalesAtVatRateFromEuPage(index0, index0, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(SalesAtVatRateFromEuPage(index0, index1, index0), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+          .set(SalesAtVatRateFromEuPage(index1, index0, index0), SalesAtVatRate(BigDecimal(300), BigDecimal(20))).success.value
+          .set(SalesAtVatRateFromEuPage(index1, index1, index0), SalesAtVatRate(BigDecimal(400), BigDecimal(20))).success.value
+
+        service.getVatOwedToEuCountries(answers) must contain allOf(
+          TotalVatToCountry(belgium, BigDecimal(40)),
+          TotalVatToCountry(denmark, BigDecimal(40))
+        )
+      }
+
+      "must return correct total vat to eu countries for multiple country from, multiple countries to with multiple vat rates with NI sales and Eu sales" in {
+        val answers = completeSalesFromNIUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          //countries from
+          .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
+          .set(CountryOfSaleFromEuPage(index1), Country("EE", "Estonia")).success.value
+
+          //countries to
+          .set(CountryOfConsumptionFromEuPage(index0, index0), belgium).success.value
+          .set(CountryOfConsumptionFromEuPage(index0, index1), denmark).success.value
+          .set(CountryOfConsumptionFromEuPage(index1, index0), belgium).success.value
+          .set(CountryOfConsumptionFromEuPage(index1, index1), denmark).success.value
+
+          //vat rates
+          .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
+          .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
+          .set(VatRatesFromEuPage(index1, index0), List(twentyPercentVatRate)).success.value
+          .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
+
+          //sales at vat rate
+          .set(SalesAtVatRateFromEuPage(index0, index0, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(SalesAtVatRateFromEuPage(index0, index1, index0), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+          .set(SalesAtVatRateFromEuPage(index1, index0, index0), SalesAtVatRate(BigDecimal(300), BigDecimal(20))).success.value
+          .set(SalesAtVatRateFromEuPage(index1, index1, index0), SalesAtVatRate(BigDecimal(400), BigDecimal(20))).success.value
+
+        val expected = List(
+          TotalVatToCountry(belgium, BigDecimal(40)),
+          TotalVatToCountry(denmark, BigDecimal(40)),
+          TotalVatToCountry(Country.northernIreland, BigDecimal(1000))
+        )
+        service.getVatOwedToEuCountries(answers) must contain allOf(
+          TotalVatToCountry(belgium, BigDecimal(40)),
+          TotalVatToCountry(denmark, BigDecimal(40))
+        )
       }
     }
   }

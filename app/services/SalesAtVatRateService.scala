@@ -16,7 +16,8 @@
 
 package services
 
-import models.UserAnswers
+import models.Country.northernIreland
+import models.{Country, TotalVatToCountry, UserAnswers}
 import queries.AllSalesFromEuQuery
 import queries.AllSalesFromNiQuery
 
@@ -68,5 +69,35 @@ class SalesAtVatRateService @Inject()() {
     val euVat = getEuTotalVatOnSales(userAnswers).getOrElse(BigDecimal(0))
 
     niVat + euVat
+  }
+
+  def getVatOwedToEuCountries(userAnswers: UserAnswers): List[TotalVatToCountry] = {
+
+    val vatOwedToEuCountriesFromEu =
+      userAnswers.get(AllSalesFromEuQuery).map(
+        _.flatMap(
+          _.salesFromCountry.flatMap(salesFromCountry =>
+            salesFromCountry.salesAtVatRate.map(saleAtVatRate =>
+              TotalVatToCountry(salesFromCountry.countryOfConsumption, saleAtVatRate.vatOnSales)
+            )
+          )
+        )
+      ).getOrElse(List.empty)
+
+    val vatOwedToEuCountriesFromNI =
+      userAnswers.get(AllSalesFromNiQuery).map(allSales =>
+        allSales.flatMap(_.salesAtVatRate.map(saleAtVatRate =>
+          TotalVatToCountry(northernIreland, saleAtVatRate.vatOnSales))
+        )
+      ).getOrElse(List.empty)
+
+    val vatOwedToEuCountries =
+      vatOwedToEuCountriesFromEu ++ vatOwedToEuCountriesFromNI
+
+    vatOwedToEuCountries.groupBy(_.country).map {
+      case (country, salesToCountry) =>
+        val totalVatToCountry = salesToCountry.map(_.totalVat).sum
+        TotalVatToCountry(country, totalVatToCountry)
+    }.toList
   }
 }
