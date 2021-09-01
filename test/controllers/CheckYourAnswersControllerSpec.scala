@@ -46,7 +46,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(period).url)
@@ -207,7 +207,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val result = route(application, request).value
 
-        println(contentAsString(result))
         status(result) mustEqual OK
         contentAsString(result).contains("&pound;6,666") mustBe true
         contentAsString(result).contains("&pound;5,555") mustBe true

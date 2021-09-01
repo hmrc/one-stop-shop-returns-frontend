@@ -22,7 +22,7 @@ import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.responses.ConflictFound
-import models.{NormalMode, Period, Index}
+import models.{NormalMode, Period}
 import pages.CheckYourAnswersPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -75,17 +75,16 @@ class CheckYourAnswersController @Inject()(
 
       val totalSummaryList = SummaryListViewModel(
         rows = Seq(
-          TotalNetValueOfSalesSummary.row(request.userAnswers),
-          TotalVatOnSalesSummary.row(request.userAnswers)
+          TotalVatOnSalesSummary.row(service.getTotalVatOnSales(request.userAnswers))
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
       Ok(view(
         Map(
-          None -> businessSummaryList,
-          Some("checkYourAnswers.salesFromNi.heading") -> salesFromNiSummaryList,
-          Some("checkYourAnswers.salesFromEU.heading") -> salesFromEuSummaryList,
-          Some("checkYourAnswers.allSales.heading") -> totalSummaryList
+          businessSummaryList    -> None,
+          salesFromNiSummaryList -> Some("checkYourAnswers.salesFromNi.heading"),
+          salesFromEuSummaryList -> Some("checkYourAnswers.salesFromEU.heading"),
+          totalSummaryList       -> None
         ),
         period
       ))

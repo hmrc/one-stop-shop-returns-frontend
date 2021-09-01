@@ -30,10 +30,10 @@ object TotalNIVatOnSalesSummary extends CurrencyFormatter {
 
   def row(answers: UserAnswers, totalVatOnSalesFromNiOption: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
     totalVatOnSalesFromNiOption.map {
-      totalVatOnSalesFromNiOption =>
+      totalVatOnSalesFromNi =>
         SummaryListRowViewModel(
           key     = "vatOnSalesFromNi.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSalesFromNiOption))),
+          value   = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSalesFromNi))),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period).url)
               .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden"))

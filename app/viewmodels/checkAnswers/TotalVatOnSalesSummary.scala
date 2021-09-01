@@ -16,9 +16,7 @@
 
 package viewmodels.checkAnswers
 
-import models.UserAnswers
 import play.api.i18n.Messages
-import queries.AllSalesFromNiQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import utils.CurrencyFormatter
@@ -27,18 +25,10 @@ import viewmodels.implicits._
 
 object TotalVatOnSalesSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(AllSalesFromNiQuery).map {
-      allSales =>
-
-        val totalVatOnSalesFromNi = allSales.map{ saleFromNi =>
-          saleFromNi.salesAtVatRate.map(_.vatOnSales).sum
-        }.sum
-
-        SummaryListRowViewModel(
-          key     = "checkYourAnswers.vatOnSales.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSalesFromNi))),
-          actions = Seq.empty
-        )
-    }
+  def row(totalVatOnSales: BigDecimal)(implicit messages: Messages): Option[SummaryListRow] =
+    Some(SummaryListRowViewModel(
+      key     = "checkYourAnswers.vatOnSales.checkYourAnswersLabel",
+      value   = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales))),
+      actions = Seq.empty
+    ))
 }
