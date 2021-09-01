@@ -285,6 +285,7 @@ class SalesAtVatRateServiceSpec extends SpecBase {
 
       val belgium: Country = Country("BE", "Belgium")
       val denmark: Country = Country("DK", "Denmark")
+      val spain: Country = Country("ES", "Spain")
 
       "must return correct total vat to eu countries for one country from, one country to with one vat rate" in {
         val ua = emptyUserAnswers
@@ -386,14 +387,10 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(SalesAtVatRateFromEuPage(index1, index0, index0), SalesAtVatRate(BigDecimal(300), BigDecimal(20))).success.value
           .set(SalesAtVatRateFromEuPage(index1, index1, index0), SalesAtVatRate(BigDecimal(400), BigDecimal(20))).success.value
 
-        val expected = List(
-          TotalVatToCountry(belgium, BigDecimal(40)),
-          TotalVatToCountry(denmark, BigDecimal(40)),
-          TotalVatToCountry(Country.northernIreland, BigDecimal(1000))
-        )
         service.getVatOwedToEuCountries(answers) must contain allOf(
           TotalVatToCountry(belgium, BigDecimal(40)),
-          TotalVatToCountry(denmark, BigDecimal(40))
+          TotalVatToCountry(denmark, BigDecimal(40)),
+          TotalVatToCountry(spain, BigDecimal(1000))
         )
       }
     }

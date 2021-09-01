@@ -16,7 +16,6 @@
 
 package services
 
-import models.Country.northernIreland
 import models.{TotalVatToCountry, UserAnswers}
 import queries.AllSalesFromEuQuery
 import queries.AllSalesFromNiQuery
@@ -85,9 +84,11 @@ class SalesAtVatRateService @Inject()() {
       ).getOrElse(List.empty)
 
     val vatOwedToEuCountriesFromNI =
-      userAnswers.get(AllSalesFromNiQuery).map(allSales =>
-        allSales.flatMap(_.salesAtVatRate.map(saleAtVatRate =>
-          TotalVatToCountry(northernIreland, saleAtVatRate.vatOnSales))
+      userAnswers.get(AllSalesFromNiQuery).map(allSalesFromNi =>
+        allSalesFromNi.flatMap(salesFromCountry =>
+          salesFromCountry.salesAtVatRate.map(saleAtVatRate =>
+            TotalVatToCountry(salesFromCountry.countryOfConsumption, saleAtVatRate.vatOnSales)
+          )
         )
       ).getOrElse(List.empty)
 

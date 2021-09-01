@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import org.mockito.Mockito.when
 import connectors.VatReturnConnector
+import models.{Country, TotalVatToCountry}
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -193,11 +194,15 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
     "must display total sales sections from eu and ni" in {
       val salesAtVatRateService = mock[SalesAtVatRateService]
+      val spain = Country("ES", "Spain")
 
       when(salesAtVatRateService.getEuTotalVatOnSales(any())).thenReturn(Some(BigDecimal(3333)))
       when(salesAtVatRateService.getEuTotalNetSales(any())).thenReturn(Some(BigDecimal(4444)))
       when(salesAtVatRateService.getNiTotalVatOnSales(any())).thenReturn(Some(BigDecimal(5555)))
       when(salesAtVatRateService.getNiTotalNetSales(any())).thenReturn(Some(BigDecimal(6666)))
+      when(salesAtVatRateService.getTotalVatOnSales(any())).thenReturn(BigDecimal(8888))
+      when(salesAtVatRateService.getVatOwedToEuCountries(any()))
+        .thenReturn(List(TotalVatToCountry(spain, BigDecimal(7777))))
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(bind[SalesAtVatRateService].toInstance(salesAtVatRateService))
@@ -213,6 +218,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         contentAsString(result).contains("&pound;5,555") mustBe true
         contentAsString(result).contains("&pound;4,444") mustBe true
         contentAsString(result).contains("&pound;3,333") mustBe true
+        contentAsString(result).contains("&pound;7,777") mustBe true
+        contentAsString(result).contains("&pound;8,888") mustBe true
       }
     }
   }
