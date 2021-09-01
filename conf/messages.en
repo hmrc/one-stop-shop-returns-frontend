@@ -90,9 +90,7 @@ netValueOfSalesFromNi.error.outOfRange = Total sales must be between {0} and {1}
 netValueOfSalesFromNi.change.hidden = your total sales excluding VAT
 
 netValueOfSalesFromEu.checkYourAnswersLabel = Sales excluding VAT
-
-
-
+vatFromEu.checkYourAnswersLabel = VAT charged
 
 soldGoodsFromNi.title = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
 soldGoodsFromNi.heading = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
@@ -176,7 +174,7 @@ salesAtVatRateFromEu.vatOnSales.change.hidden = the VAT charged
 
 soldGoodsFromEu.title = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
 soldGoodsFromEu.heading = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
-soldGoodsFromEu.checkYourAnswersLabel = Sales made from EU countries to EU countries
+soldGoodsFromEu.checkYourAnswersLabel = Sales made from EU countries
 soldGoodsFromEu.error.required = Select yes if you made taxable sales from EU countries to consumers in other EU countries
 soldGoodsFromEu.change.hidden = if you made taxable sales from EU countries to consumers in other EU countries
 
