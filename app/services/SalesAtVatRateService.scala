@@ -17,7 +17,7 @@
 package services
 
 import models.Country.northernIreland
-import models.{Country, TotalVatToCountry, UserAnswers}
+import models.{TotalVatToCountry, UserAnswers}
 import queries.AllSalesFromEuQuery
 import queries.AllSalesFromNiQuery
 
