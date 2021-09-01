@@ -73,6 +73,11 @@ class CheckYourAnswersController @Inject()(
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
+      val vatToEuCountriesSummaryList = SummaryListViewModel(
+        rows =
+          VatOwedToEuCountriesSummary.row(service.getVatOwedToEuCountries(request.userAnswers))
+      ).withCssClass("govuk-!-margin-bottom-9")
+
       val totalSummaryList = SummaryListViewModel(
         rows = Seq(
           TotalVatOnSalesSummary.row(service.getTotalVatOnSales(request.userAnswers))
@@ -80,11 +85,12 @@ class CheckYourAnswersController @Inject()(
       ).withCssClass("govuk-!-margin-bottom-9")
 
       Ok(view(
-        Map(
-          businessSummaryList    -> None,
-          salesFromNiSummaryList -> Some("checkYourAnswers.salesFromNi.heading"),
-          salesFromEuSummaryList -> Some("checkYourAnswers.salesFromEU.heading"),
-          totalSummaryList       -> None
+        Seq(
+          (None, businessSummaryList),
+          (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
+          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
+          (Some("checkYourAnswers.vatOwedToEuCountries.heading"), vatToEuCountriesSummaryList),
+          (None, totalSummaryList)
         ),
         period
       ))

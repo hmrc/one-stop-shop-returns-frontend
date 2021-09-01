@@ -211,6 +211,7 @@ checkYourAnswers.businessVrn.checkYourAnswersLabel = UK VAT registration number
 checkYourAnswers.returnPeriod.checkYourAnswersLabel = Return period
 checkYourAnswers.salesFromNi.heading = Sales from Northern Ireland to EU countries
 checkYourAnswers.salesFromEU.heading = Sales from EU countries to other EU countries
+checkYourAnswers.vatOwedToEuCountries.heading = Vat owed to EU countries
 checkYourAnswers.allSales.heading = All sales
 checkYourAnswers.netValueOfSales.checkYourAnswersLabel = Total sales excluding VAT
 checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT owed
