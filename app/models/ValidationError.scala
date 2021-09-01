@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package pages
+package models
 
-import controllers.routes
-import models.{CheckMode, NormalMode, UserAnswers}
-import play.api.mvc.Call
+import queries.Gettable
 
-case object CheckSalesFromNiPage extends Page {
+sealed trait ValidationError {
 
-  override protected def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period)
+  val errorMessage: String
+}
 
-  override protected def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period)
+case class DataMissingError(page: Gettable[_]) extends ValidationError {
+
+  override val errorMessage: String = s"Data missing at ${page.path.toString}"
 }

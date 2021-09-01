@@ -35,12 +35,12 @@ import scala.concurrent.Future
 
 class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSugar {
 
-  val countryFrom: Country = arbitrary[Country].sample.value
-  val countryTo: Country   = arbitrary[Country].suchThat(_ != countryFrom).sample.value
+  val countryFrom: Country = Country("LV", "Latvia")
+  val countryTo: Country   = Country("NL", "Netherlands")
   val selectItems: Seq[SelectItem] = Country.selectItems(Country.euCountries.filterNot(_ == countryFrom))
 
   private val formProvider = new CountryOfConsumptionFromEuFormProvider()
-  private val form         = formProvider(countryFrom)
+  private val form         = formProvider(index, Seq.empty, countryFrom)
   private val baseAnswers  = emptyUserAnswers.set(CountryOfSaleFromEuPage(index), countryFrom).success.value
 
   private lazy val countryOfConsumptionFromEuRoute = routes.CountryOfConsumptionFromEuController.onPageLoad(NormalMode, period, index, index).url

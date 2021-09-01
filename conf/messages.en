@@ -11,6 +11,7 @@ site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
 site.to = to
+site.submit = Submit
 
 date.day = Day
 date.month = Month
@@ -141,15 +142,17 @@ countryOfConsumptionFromEu.heading = Which EU country did you sell to from {0}?
 countryOfConsumptionFromEu.checkYourAnswersLabel = Which EU country did you sell to from {0}?
 countryOfConsumptionFromEu.error.required = Select which EU country you sold to from {0}
 countryOfConsumptionFromEu.change.hidden = which country you sold to
+countryOfConsumptionFromEu.error.duplicate = You selected this country already. Select a different one.
 
 countryOfSaleFromEu.title = Which EU country did you sell goods from?
 countryOfSaleFromEu.heading = Which EU country did you sell goods from?
 countryOfSaleFromEu.checkYourAnswersLabel = Which EU country did you sell goods from?
 countryOfSaleFromEu.error.required = Select which EU country you sold goods from
 countryOfSaleFromEu.change.hidden = which EU country you sold goods from
+countryOfSaleFromEu.error.duplicate = You selected this country already. Select a different one.
 
 deleteSalesFromEu.title = Are you sure you want to remove the sales from {0}?
-deleteSalesFromEu.heading = Are you sure you want to remove the sales from {1}?
+deleteSalesFromEu.heading = Are you sure you want to remove the sales from {0}?
 deleteSalesFromEu.error.required = Select yes if you want to remove the sales from {0}
 
 deleteSalesToEu.title = Are you sure you want to remove the sales from {0} to {1}?

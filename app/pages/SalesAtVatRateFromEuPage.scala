@@ -48,4 +48,10 @@ case class SalesAtVatRateFromEuPage(countryFromIndex: Index, countryToIndex: Ind
           routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex)
         }
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
+
+  override protected def navigateInCheckLoopMode(answers: UserAnswers): Call =
+    answers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map {
+      _ =>
+        routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
+    }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 }

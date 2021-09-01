@@ -10,7 +10,8 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"     % "5.7.0",
     "uk.gov.hmrc"       %% "play-language"                  % "5.1.0-play-28",
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-27"             % "0.51.0",
-    "uk.gov.hmrc"       %% "domain"                         % "5.11.0-play-27"
+    "uk.gov.hmrc"       %% "domain"                         % "5.11.0-play-27",
+    "org.typelevel"     %% "cats-core"                      % "2.6.1"
   )
 
   val test = Seq(

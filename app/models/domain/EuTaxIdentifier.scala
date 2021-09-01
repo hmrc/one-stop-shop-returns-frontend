@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package pages
+package models.domain
 
-import controllers.routes
-import models.{CheckMode, NormalMode, UserAnswers}
-import play.api.mvc.Call
+import play.api.libs.json.{Json, OFormat}
 
-case object CheckSalesFromNiPage extends Page {
+case class EuTaxIdentifier(identifierType: EuTaxIdentifierType, value: String)
 
-  override protected def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period)
+object EuTaxIdentifier {
 
-  override protected def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period)
+  implicit val format: OFormat[EuTaxIdentifier] = Json.format[EuTaxIdentifier]
 }

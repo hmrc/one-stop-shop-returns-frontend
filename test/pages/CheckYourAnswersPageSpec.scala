@@ -17,14 +17,20 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, NormalMode, UserAnswers}
-import play.api.mvc.Call
+import models.NormalMode
+import pages.behaviours.PageBehaviours
 
-case object CheckSalesFromNiPage extends Page {
+class CheckYourAnswersPageSpec extends PageBehaviours {
 
-  override protected def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period)
+  "CheckYourAnswers page" - {
 
-  override protected def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period)
+    "must navigate in Normal mode" - {
+
+      "to Return Submitted" in {
+
+        CheckYourAnswersPage.navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.ReturnSubmittedController.onPageLoad(emptyUserAnswers.period))
+      }
+    }
+  }
 }

@@ -22,6 +22,7 @@ GET         /unauthorised                                controllers.Unauthorise
 GET         /notRegistered                       controllers.NotRegisteredController.onPageLoad()
 
 GET         /:period/check-your-answers                          controllers.CheckYourAnswersController.onPageLoad(period: Period)
+POST        /:period/check-your-answers                          controllers.CheckYourAnswersController.onSubmit(period: Period)
 
 GET         /:period/check-sales-from-ni/:index                controllers.CheckSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
 POST        /:period/check-sales-from-ni/:index                controllers.CheckSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
@@ -83,10 +84,12 @@ POST       /:period/deleteSalesToEu/:countryFromIndex/:countryToIndex           
 GET        /:period/changeDeleteSalesToEu/:countryFromIndex/:countryToIndex                  controllers.DeleteSalesToEuController.onPageLoad(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index)
 POST       /:period/changeDeleteSalesToEu/:countryFromIndex/:countryToIndex                  controllers.DeleteSalesToEuController.onSubmit(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index)
 
-GET        /:period/salesDetailsFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex                        controllers.SalesAtVatRateFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
-POST       /:period/salesDetailsFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex                        controllers.SalesAtVatRateFromEuController.onSubmit(mode: Mode = NormalMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
-GET        /:period/changeSalesDetailsFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex                  controllers.SalesAtVatRateFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
-POST       /:period/changeSalesDetailsFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex                  controllers.SalesAtVatRateFromEuController.onSubmit(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+GET        /:period/salesAtVatRateFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex                        controllers.SalesAtVatRateFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+POST       /:period/salesAtVatRateFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex                        controllers.SalesAtVatRateFromEuController.onSubmit(mode: Mode = NormalMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+GET        /:period/changeSalesAtVatRateFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex                  controllers.SalesAtVatRateFromEuController.onPageLoad(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+POST       /:period/changeSalesAtVatRateFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex                  controllers.SalesAtVatRateFromEuController.onSubmit(mode: Mode = CheckMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+GET        /:period/firstCheckSalesAtVatRateFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex              controllers.SalesAtVatRateFromEuController.onPageLoad(mode: Mode = CheckLoopMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+POST       /:period/firstCheckSalesAtVatRateFromEu/:countryFromIndex/:countryToIndex/:vatRateIndex              controllers.SalesAtVatRateFromEuController.onSubmit(mode: Mode = CheckLoopMode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
 
 GET        /:period/soldGoodsFromEu                        controllers.SoldGoodsFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST       /:period/soldGoodsFromEu                        controllers.SoldGoodsFromEuController.onSubmit(mode: Mode = NormalMode, period: Period)

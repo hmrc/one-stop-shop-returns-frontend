@@ -15,16 +15,12 @@
  */
 
 package pages
-
 import controllers.routes
-import models.{CheckMode, NormalMode, UserAnswers}
+import models.UserAnswers
 import play.api.mvc.Call
 
-case object CheckSalesFromNiPage extends Page {
+case object CheckYourAnswersPage extends Page {
 
   override protected def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period)
-
-  override protected def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period)
+    routes.ReturnSubmittedController.onPageLoad(answers.period)
 }

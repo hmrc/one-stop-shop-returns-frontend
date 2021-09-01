@@ -254,8 +254,13 @@ object Country {
     Country("ZW", "Zimbabwe")
   )
 
-  val euCountriesWithNI: Seq[Country] =
-    euCountries :+ Country("XI", "Northern Ireland")
+  val northernIreland: Country =
+    Country("XI", "Northern Ireland")
+
+  val euCountriesWithNI: Seq[Country] = {
+    val positionOfNI = 20
+    euCountries.take(positionOfNI) ++ Seq(northernIreland) ++ euCountries.drop(positionOfNI)
+  }
 
   val internationalCountries: Seq[Country] =
     allCountries.filterNot(_.code == "GB")

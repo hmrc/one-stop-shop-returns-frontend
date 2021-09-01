@@ -17,16 +17,30 @@
 package controllers
 
 import base.SpecBase
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar.mock
+import connectors.VatReturnConnector
+import models.responses.{ConflictFound, UnexpectedResponseStatus}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
+import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar
+import pages.{SoldGoodsFromEuPage, SoldGoodsFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import viewmodels.govuk.SummaryListFluency
 import services.SalesAtVatRateService
 
-class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
+import scala.concurrent.Future
+
+class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with SummaryListFluency with BeforeAndAfterEach {
+
+  private val vatReturnConnector = mock[VatReturnConnector]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(vatReturnConnector)
+    super.beforeEach()
+  }
 
   "Check Your Answers Controller" - {
 
@@ -59,6 +73,120 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+  }
+
+  "on submit" - {
+
+    "when the user answered all necessary data and submission of the registration succeeds" - {
+
+      "must redirect to the next page" in {
+
+        val answers =
+          emptyUserAnswers
+            .set(SoldGoodsFromNiPage, false).success.value
+            .set(SoldGoodsFromEuPage, false).success.value
+
+        val app =
+          applicationBuilder(Some(answers))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
+            .build()
+
+        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(()))
+
+        running(app) {
+
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
+        }
+      }
+    }
+
+    "when the user has already submitted a return for this period" - {
+
+      "must redirect to Index" in {
+
+        val answers =
+          emptyUserAnswers
+            .set(SoldGoodsFromNiPage, false).success.value
+            .set(SoldGoodsFromEuPage, false).success.value
+
+        val app =
+          applicationBuilder(Some(answers))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
+            .build()
+
+        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
+
+        running(app) {
+
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
+        }
+      }
+    }
+
+    "when the submission to the backend fails" - {
+
+      "must redirect to Journey Recovery" in {
+
+        val answers =
+          emptyUserAnswers
+            .set(SoldGoodsFromNiPage, false).success.value
+            .set(SoldGoodsFromEuPage, false).success.value
+
+        val app =
+          applicationBuilder(Some(answers))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
+            .build()
+
+        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+
+        running(app) {
+
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+    }
+
+    "when the user has not answered all necessary questions" - {
+
+      "must redirect to Journey Recovery" in {
+
+        val app =
+          applicationBuilder(Some(emptyUserAnswers))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
+            .build()
+
+        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(()))
+
+        running(app) {
+
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        }
       }
     }
 

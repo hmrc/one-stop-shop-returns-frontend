@@ -17,9 +17,12 @@
 package models.registration
 
 import models.Country
+import models.domain.EuTaxIdentifier
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
-sealed trait EuTaxRegistration
+sealed trait EuTaxRegistration {
+  val country: Country
+}
 
 object EuTaxRegistration {
 

@@ -38,7 +38,7 @@ class CheckSalesFromNiPageSpec extends PageBehaviours {
       "to Sales From NI List" in {
 
         CheckSalesFromNiPage.navigate(CheckMode, emptyUserAnswers)
-          .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+          .mustEqual(routes.SalesFromNiListController.onPageLoad(CheckMode, emptyUserAnswers.period))
       }
     }
   }

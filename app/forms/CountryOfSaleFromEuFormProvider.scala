@@ -18,15 +18,16 @@ package forms
 
 import javax.inject.Inject
 import forms.mappings.Mappings
-import models.Country
+import models.{Country, Index}
 import play.api.data.Form
 
 class CountryOfSaleFromEuFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Country] =
+  def apply(index: Index, existingAnswers: Seq[Country]): Form[Country] =
     Form(
       "value" -> text("countryOfSaleFromEu.error.required")
         .verifying("countryOfSaleFromEu.error.required", value => Country.euCountries.exists(_.code == value))
         .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
+        .verifying(notADuplicate(index, existingAnswers, "countryOfSaleFromEu.error.duplicate"))
     )
 }
