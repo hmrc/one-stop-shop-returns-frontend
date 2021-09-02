@@ -16,19 +16,42 @@
 
 package connectors
 
-import models.responses.{ConflictFound, ErrorResponse, UnexpectedResponseStatus}
-import play.api.http.Status.{CONFLICT, CREATED}
+import models.domain.VatReturn
+import models.responses._
+import play.api.http.Status._
+import play.api.libs.json.{JsError, JsSuccess}
+import logging.Logging
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
-object VatReturnHttpParser {
+object VatReturnHttpParser extends Logging {
 
-  type VatReturnResponse = Either[ErrorResponse, Unit]
+  type SubmittedVatReturnResponse = Either[ErrorResponse, Unit]
+
+  implicit object SubmittedVatReturnReads extends HttpReads[SubmittedVatReturnResponse] {
+    override def read(method: String, url: String, response: HttpResponse): SubmittedVatReturnResponse = {
+      response.status match {
+        case CREATED  => Right(())
+        case CONFLICT => Left(ConflictFound)
+        case status   => Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
+      }
+    }
+  }
+
+  type VatReturnResponse = Either[ErrorResponse, VatReturn]
 
   implicit object VatReturnReads extends HttpReads[VatReturnResponse] {
     override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {
       response.status match {
-        case CREATED  => Right(())
-        case CONFLICT => Left(ConflictFound)
+        case OK =>
+          response.json.validate[VatReturn] match {
+            case JsSuccess(model, _) => Right(model)
+            case JsError(errors) =>
+              logger.warn("Failed trying to parse JSON", errors)
+              Left(InvalidJson)
+          }
+        case NOT_FOUND =>
+          logger.warn("Received not found from vat return")
+          Left(NotFound)
         case status   => Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }
     }

@@ -1,0 +1,37 @@
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
+@import viewmodels.LegendSize
+@import models.domain.VatReturn
+@import viewmodels.TitledSummaryList
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukSummaryList: GovukSummaryList,
+        govukButton: GovukButton
+)
+
+
+@(mode: Mode, vatReturn: VatReturn, mainList: SummaryList, salesList: Seq[TitledSummaryList])(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = titleNoForm(
+    messages("previousReturn.title"),
+    Some(vatReturn.period.displayText)
+)) {
+
+    <h1 class="govuk-heading-xl">
+    @headingWithCaption(
+        messages("previousReturn.title"),
+        vatReturn.period.displayText
+    ).asHtml
+    </h1>
+
+    @govukSummaryList(mainList)
+
+    @for(list <- salesList) {
+        <h2 class="govuk-heading-m">@{
+            list.title
+        }</h2>
+
+        @govukSummaryList(list.list)
+    }
+}

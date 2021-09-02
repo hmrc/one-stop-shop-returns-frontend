@@ -17,13 +17,14 @@
 package generators
 
 import models.{domain, _}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate, ZoneOffset}
+import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
 
@@ -173,5 +174,50 @@ trait ModelGenerators {
         commencementDate  <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
         isOnlineMarketplace <- arbitrary[Boolean]
       } yield Registration(vrn, name, vatDetails, Nil, contactDetails, commencementDate, isOnlineMarketplace)
+    }
+
+  implicit val arbitrarySalesDetails: Arbitrary[SalesDetails] =
+    Arbitrary {
+      for {
+        vatRate       <- arbitrary[VatRate]
+        taxableAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
+        vatAmount     <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
+      } yield SalesDetails(
+        vatRate,
+        taxableAmount.setScale(2, RoundingMode.HALF_EVEN),
+        vatAmount.setScale(2, RoundingMode.HALF_EVEN)
+      )
+    }
+
+  implicit val arbitrarySalesToCountry: Arbitrary[SalesToCountry] =
+    Arbitrary {
+      for {
+        country <- arbitrary[Country]
+        number  <- Gen.choose(1, 2)
+        amounts <- Gen.listOfN(number, arbitrary[SalesDetails])
+      } yield SalesToCountry(country, amounts)
+    }
+
+  implicit val arbitrarySalesFromEuCountry: Arbitrary[SalesFromEuCountry] =
+    Arbitrary {
+      for {
+        country       <- arbitrary[Country]
+        taxIdentifier <- Gen.option(arbitrary[EuTaxIdentifier])
+        number        <- Gen.choose(1, 3)
+        amounts       <- Gen.listOfN(number, arbitrary[SalesToCountry])
+      } yield SalesFromEuCountry(country, taxIdentifier, amounts)
+    }
+
+  implicit val arbitraryVatReturn: Arbitrary[VatReturn] =
+    Arbitrary {
+      for {
+        vrn         <- arbitrary[Vrn]
+        period      <- arbitrary[Period]
+        niSales     <- Gen.choose(1, 3)
+        euSales     <- Gen.choose(1, 3)
+        salesFromNi <- Gen.listOfN(niSales, arbitrary[SalesToCountry])
+        salesFromEu <- Gen.listOfN(euSales, arbitrary[SalesFromEuCountry])
+        now         = Instant.now
+      } yield VatReturn(vrn, period, ReturnReference(vrn, period), None, None, salesFromNi, salesFromEu, now, now)
     }
 }
