@@ -19,7 +19,7 @@ package viewmodels.checkAnswers
 import models.TotalVatToCountry
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
 import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
@@ -27,10 +27,16 @@ import viewmodels.implicits._
 object VatOwedToEuCountriesSummary extends CurrencyFormatter {
 
   def row(totalVatToCountries: List[TotalVatToCountry])(implicit messages: Messages): Seq[SummaryListRow] =
+    Seq(SummaryListRowViewModel(
+      key     = "checkYourAnswersLabel.country",
+      value   =
+        ValueViewModel("checkYourAnswersLabel.amount").withCssClass("govuk-!-font-weight-bold"),
+      actions = Seq.empty
+    )) ++
     totalVatToCountries.map {
       totalVatToCountry =>
         SummaryListRowViewModel(
-          key     = totalVatToCountry.country.name,
+          key     = Key(totalVatToCountry.country.name).withCssClass("govuk-!-font-weight-regular"),
           value   = ValueViewModel(HtmlContent(currencyFormat(totalVatToCountry.totalVat))),
           actions = Seq.empty
         )

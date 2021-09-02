@@ -73,24 +73,19 @@ class SalesAtVatRateService @Inject()() {
   def getVatOwedToEuCountries(userAnswers: UserAnswers): List[TotalVatToCountry] = {
 
     val vatOwedToEuCountriesFromEu =
-      userAnswers.get(AllSalesFromEuQuery).map(
-        _.flatMap(
-          _.salesFromCountry.flatMap(salesFromCountry =>
-            salesFromCountry.salesAtVatRate.map(saleAtVatRate =>
-              TotalVatToCountry(salesFromCountry.countryOfConsumption, saleAtVatRate.vatOnSales)
-            )
-          )
-        )
-      ).getOrElse(List.empty)
+      for {
+        allSalesFromEu   <- userAnswers.get(AllSalesFromEuQuery).toSeq
+        saleFromEu       <- allSalesFromEu
+        salesFromCountry <- saleFromEu.salesFromCountry
+        salesAtVatRate   <- salesFromCountry.salesAtVatRate
+      } yield TotalVatToCountry(salesFromCountry.countryOfConsumption, salesAtVatRate.vatOnSales)
 
     val vatOwedToEuCountriesFromNI =
-      userAnswers.get(AllSalesFromNiQuery).map(allSalesFromNi =>
-        allSalesFromNi.flatMap(salesFromCountry =>
-          salesFromCountry.salesAtVatRate.map(saleAtVatRate =>
-            TotalVatToCountry(salesFromCountry.countryOfConsumption, saleAtVatRate.vatOnSales)
-          )
-        )
-      ).getOrElse(List.empty)
+      for {
+        allSalesFromNi <- userAnswers.get(AllSalesFromNiQuery).toSeq
+        saleFromNi     <- allSalesFromNi
+        salesAtVatRate <- saleFromNi.salesAtVatRate
+      } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.vatOnSales)
 
     val vatOwedToEuCountries =
       vatOwedToEuCountriesFromEu ++ vatOwedToEuCountriesFromNI

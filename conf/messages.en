@@ -91,6 +91,8 @@ netValueOfSalesFromNi.change.hidden = your total sales excluding VAT
 
 netValueOfSalesFromEu.checkYourAnswersLabel = Sales excluding VAT
 vatFromEu.checkYourAnswersLabel = VAT charged
+checkYourAnswersLabel.country = Country
+checkYourAnswersLabel.amount = Amount
 
 soldGoodsFromNi.title = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
 soldGoodsFromNi.heading = Did you make taxable sales of goods to consumers from Northern Ireland during this period?

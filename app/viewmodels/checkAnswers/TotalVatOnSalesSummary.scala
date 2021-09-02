@@ -28,7 +28,9 @@ object TotalVatOnSalesSummary extends CurrencyFormatter {
   def row(totalVatOnSales: BigDecimal)(implicit messages: Messages): Option[SummaryListRow] =
     Some(SummaryListRowViewModel(
       key     = "checkYourAnswers.vatOnSales.checkYourAnswersLabel",
-      value   = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales))),
+      value   =
+        ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales)))
+          .withCssClass("govuk-!-font-weight-bold"),
       actions = Seq.empty
     ))
 }

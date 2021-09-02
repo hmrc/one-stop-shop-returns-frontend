@@ -35,7 +35,8 @@ class TotalVatOnSalesSummarySpec extends SpecBase {
     "must show correct total vat owed" in {
       val expectedResult = SummaryListRowViewModel(
         "checkYourAnswers.vatOnSales.checkYourAnswersLabel",
-        ValueViewModel(HtmlContent("&pound;1,000")),
+        ValueViewModel(HtmlContent("&pound;1,000"))
+          .withCssClass("govuk-!-font-weight-bold"),
         Seq.empty
       )
 
