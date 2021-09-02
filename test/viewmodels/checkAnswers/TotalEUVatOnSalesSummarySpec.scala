@@ -43,7 +43,7 @@ class TotalEUVatOnSalesSummarySpec extends SpecBase {
       val result = TotalEUVatOnSalesSummary.row(completeUserAnswers, Some(BigDecimal(20)))
 
       val expectedResult = SummaryListRowViewModel(
-        "netValueOfSalesFromEu.checkYourAnswersLabel",
+        "vatFromEu.checkYourAnswersLabel",
         ValueViewModel(HtmlContent("&pound;20")),
         expectedAction
       )
