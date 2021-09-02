@@ -22,7 +22,7 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.AllSalesFromNiQuery
 
-import scala.util.{Success, Try}
+import scala.util.Try
 
 case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
 

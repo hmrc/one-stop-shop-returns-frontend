@@ -25,7 +25,10 @@
                 field = form("value"),
                 items = if(isOnlineMarketPlace) Country.euCountryWithNISelectItems else Country.euCountrySelectItems,
                 label = LabelViewModel(
-                    headingWithCaption(messages("countryOfConsumptionFromNi.heading"), period.displayText)
+                    headingWithCaption(
+                        messages(if(isOnlineMarketPlace) { "countryOfConsumptionFromNi.heading.not.eu" } else { "countryOfConsumptionFromNi.heading"}),
+                        period.displayText
+                    )
                 ).asPageHeading()
             )
             .withCssClass(InputWidth.Fixed20.toString)

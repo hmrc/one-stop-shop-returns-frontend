@@ -18,42 +18,42 @@ package viewmodels.checkAnswers
 
 import base.SpecBase
 import controllers.routes
-import models.{CheckMode, Country, SalesAtVatRate, VatRate, VatRateType}
-import pages.{CountryOfConsumptionFromNiPage, SalesAtVatRateFromNiPage, VatRatesFromNiPage}
+import models.CheckMode
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-class TotalNIVatOnSalesSummarySpec extends SpecBase {
+class TotalEUVatOnSalesSummarySpec extends SpecBase {
 
   implicit val m: Messages = stubMessages()
+
   private val expectedAction = Seq(
     ActionItemViewModel(
       "site.change",
-      routes.SalesFromNiListController.onPageLoad(CheckMode, completeSalesFromNIUserAnswers.period).url)
-      .withVisuallyHiddenText("vatOnSalesFromNi.change.hidden")
+      routes.SalesFromEuListController.onPageLoad(CheckMode, completeUserAnswers.period).url)
+      .withVisuallyHiddenText("soldGoodsFromEu.change.hidden")
   )
 
-  "TotalVatOnSalesFromNiSummary" - {
+  "TotalEUVatOnSalesSummary" - {
 
-    "must show summary when totalVatOnSalesFromNi exists" in {
+    "must show summary when totalEUVatOnSales exists" in {
 
-      val result = TotalNIVatOnSalesSummary.row(emptyUserAnswers, Some(BigDecimal(1000)))
+      val result = TotalEUVatOnSalesSummary.row(completeUserAnswers, Some(BigDecimal(20)))
 
       val expectedResult = SummaryListRowViewModel(
-        "vatOnSalesFromNi.checkYourAnswersLabel",
-        ValueViewModel(HtmlContent("&pound;1,000")),
+        "vatFromEu.checkYourAnswersLabel",
+        ValueViewModel(HtmlContent("&pound;20")),
         expectedAction
       )
 
       result mustBe Some(expectedResult)
     }
 
-    "must not show summary when totalVatOnSalesFromNi doesn't exist" in {
+    "must not show summary when totalEUVatOnSales doesn't exist" in {
 
-      val result = TotalNIVatOnSalesSummary.row(emptyUserAnswers, None)
+      val result = TotalEUVatOnSalesSummary.row(completeUserAnswers, None)
 
       result mustBe None
     }

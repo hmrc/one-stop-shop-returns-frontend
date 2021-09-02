@@ -68,6 +68,7 @@ startReturn.change.hidden = if you want to start your return
 
 countryOfConsumptionFromNi.title = Which EU country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.heading = Which EU country did you sell to from Northern Ireland?
+countryOfConsumptionFromNi.heading.not.eu = Which country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.checkYourAnswersLabel = Which EU country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.error.required = Select the country you sold to from Northern Ireland
 countryOfConsumptionFromNi.error.length = Country must be 100 characters or less
@@ -88,9 +89,14 @@ netValueOfSalesFromNi.error.wholeNumber = Enter your total sales at {0} using wh
 netValueOfSalesFromNi.error.outOfRange = Total sales must be between {0} and {1}
 netValueOfSalesFromNi.change.hidden = your total sales excluding VAT
 
+netValueOfSalesFromEu.checkYourAnswersLabel = Sales excluding VAT
+vatFromEu.checkYourAnswersLabel = VAT charged
+checkYourAnswersLabel.country = Country
+checkYourAnswersLabel.amount = Amount
+
 soldGoodsFromNi.title = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
 soldGoodsFromNi.heading = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
-soldGoodsFromNi.checkYourAnswersLabel = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
+soldGoodsFromNi.checkYourAnswersLabel = Sales made from Northern Ireland
 soldGoodsFromNi.error.required = Select yes if you made taxable sales from Northern Ireland during this period
 soldGoodsFromNi.change.hidden = if you made taxable sales from Northern Ireland during this period
 
@@ -170,7 +176,7 @@ salesAtVatRateFromEu.vatOnSales.change.hidden = the VAT charged
 
 soldGoodsFromEu.title = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
 soldGoodsFromEu.heading = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
-soldGoodsFromEu.checkYourAnswersLabel = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
+soldGoodsFromEu.checkYourAnswersLabel = Sales made from EU countries
 soldGoodsFromEu.error.required = Select yes if you made taxable sales from EU countries to consumers in other EU countries
 soldGoodsFromEu.change.hidden = if you made taxable sales from EU countries to consumers in other EU countries
 
@@ -198,12 +204,14 @@ salesToEuList.change.hidden = sales from {0} to {1}
 salesToEuList.remove.hidden = sales from {0} to {1}
 salesToEuList.addAnother = Add sales from {0} to another EU country?
 
-checkYourAnswers.title = Check Your Answers
-checkYourAnswers.heading = Check Your Answers
+checkYourAnswers.title = Check your answers
+checkYourAnswers.heading = Check your answers
 checkYourAnswers.businessName.checkYourAnswersLabel = Business name
 checkYourAnswers.businessVrn.checkYourAnswersLabel = UK VAT registration number
 checkYourAnswers.returnPeriod.checkYourAnswersLabel = Return period
 checkYourAnswers.salesFromNi.heading = Sales from Northern Ireland to EU countries
+checkYourAnswers.salesFromEU.heading = Sales from EU countries to other EU countries
+checkYourAnswers.vatOwedToEuCountries.heading = Vat owed to EU countries
 checkYourAnswers.allSales.heading = All sales
 checkYourAnswers.netValueOfSales.checkYourAnswersLabel = Total sales excluding VAT
 checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT owed

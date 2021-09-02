@@ -26,6 +26,7 @@ import models.{NormalMode, Period}
 import pages.CheckYourAnswersPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.SalesAtVatRateService
 import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
@@ -37,6 +38,7 @@ import scala.concurrent.ExecutionContext
 
 class CheckYourAnswersController @Inject()(
                                             cc: AuthenticatedControllerComponents,
+                                            service: SalesAtVatRateService,
                                             view: CheckYourAnswersView,
                                             vatReturnService: VatReturnService,
                                             vatReturnConnector: VatReturnConnector
@@ -47,40 +49,48 @@ class CheckYourAnswersController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      val businessRows = Seq(
-        BusinessNameSummary.row(request.registration),
-        BusinessVRNSummary.row(request.registration),
-        ReturnPeriodSummary.row(request.userAnswers),
-        SoldGoodsFromNiSummary.row(request.userAnswers)
-      ).flatten
-
       val businessSummaryList = SummaryListViewModel(
-        rows = businessRows
+        rows = Seq(
+          BusinessNameSummary.row(request.registration),
+          BusinessVRNSummary.row(request.registration),
+          ReturnPeriodSummary.row(request.userAnswers)
+        ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
-      val rows = Seq(
-        TotalNINetValueOfSalesSummary.row(request.userAnswers),
-        TotalNIVatOnSalesSummary.row(request.userAnswers)
-      ).flatten
-
-      val list = SummaryListViewModel(
-        rows = rows
+      val salesFromNiSummaryList = SummaryListViewModel(
+        rows = Seq(
+          SoldGoodsFromNiSummary.row(request.userAnswers),
+          TotalNINetValueOfSalesSummary.row(request.userAnswers, service.getNiTotalNetSales(request.userAnswers)),
+          TotalNIVatOnSalesSummary.row(request.userAnswers, service.getNiTotalVatOnSales(request.userAnswers))
+        ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
-      val totalRows = Seq(
-        TotalNetValueOfSalesSummary.row(request.userAnswers),
-        TotalVatOnSalesSummary.row(request.userAnswers)
-      ).flatten
+      val salesFromEuSummaryList = SummaryListViewModel(
+        rows = Seq(
+          SoldGoodsFromEuSummary.row(request.userAnswers),
+          TotalEUNetValueOfSalesSummary.row(request.userAnswers, service.getEuTotalNetSales(request.userAnswers)),
+          TotalEUVatOnSalesSummary.row(request.userAnswers, service.getEuTotalVatOnSales(request.userAnswers))
+        ).flatten
+      ).withCssClass("govuk-!-margin-bottom-9")
 
-      val totalList = SummaryListViewModel(
-        rows = totalRows
+      val vatToEuCountriesSummaryList = SummaryListViewModel(
+        rows =
+          VatOwedToEuCountriesSummary.row(service.getVatOwedToEuCountries(request.userAnswers))
+      ).withCssClass("govuk-!-margin-bottom-9")
+
+      val totalSummaryList = SummaryListViewModel(
+        rows = Seq(
+          TotalVatOnSalesSummary.row(service.getTotalVatOnSales(request.userAnswers))
+        ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
       Ok(view(
-        Map(
-          None -> businessSummaryList,
-          Some("checkYourAnswers.salesFromNi.heading") -> list,
-          Some("checkYourAnswers.allSales.heading") -> totalList
+        Seq(
+          (None, businessSummaryList),
+          (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
+          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
+          (Some("checkYourAnswers.vatOwedToEuCountries.heading"), vatToEuCountriesSummaryList),
+          (None, totalSummaryList)
         ),
         period
       ))

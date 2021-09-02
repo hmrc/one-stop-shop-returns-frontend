@@ -16,29 +16,29 @@
 
 package viewmodels.checkAnswers
 
-import controllers.routes
-import models.{CheckMode, UserAnswers}
+import models.TotalVatToCountry
 import play.api.i18n.Messages
-import queries.AllSalesFromNiQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
 import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object TotalNIVatOnSalesSummary extends CurrencyFormatter {
+object VatOwedToEuCountriesSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers, totalVatOnSalesFromNiOption: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
-    totalVatOnSalesFromNiOption.map {
-      totalVatOnSalesFromNi =>
+  def row(totalVatToCountries: List[TotalVatToCountry])(implicit messages: Messages): Seq[SummaryListRow] =
+    Seq(SummaryListRowViewModel(
+      key     = "checkYourAnswersLabel.country",
+      value   =
+        ValueViewModel("checkYourAnswersLabel.amount").withCssClass("govuk-!-font-weight-bold"),
+      actions = Seq.empty
+    )) ++
+    totalVatToCountries.map {
+      totalVatToCountry =>
         SummaryListRowViewModel(
-          key     = "vatOnSalesFromNi.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSalesFromNi))),
-          actions = Seq(
-            ActionItemViewModel("site.change", routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period).url)
-              .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden"))
-          )
+          key     = Key(totalVatToCountry.country.name).withCssClass("govuk-!-font-weight-regular"),
+          value   = ValueViewModel(HtmlContent(currencyFormat(totalVatToCountry.totalVat))),
+          actions = Seq.empty
         )
     }
-  }
 }

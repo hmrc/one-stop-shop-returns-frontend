@@ -67,20 +67,22 @@ trait SpecBase
   )
 
   val twentyPercentVatRate = VatRate(20, VatRateType.Reduced, arbitraryDate)
+  val fivePercentVatRate = VatRate(5, VatRateType.Reduced, arbitraryDate)
 
   def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
 
   def completeSalesFromNIUserAnswers : UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
     .set(SoldGoodsFromNiPage, true).success.value
-    .set(CountryOfConsumptionFromNiPage(index), Country("COU", "country")).success.value
+    .set(CountryOfConsumptionFromNiPage(index), Country("ES", "Spain")).success.value
     .set(VatRatesFromNiPage(index), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
     .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
 
   def completeUserAnswers : UserAnswers = completeSalesFromNIUserAnswers
     .set(SoldGoodsFromEuPage,true).success.value
-    .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), Country("BE", "Belgium")).success.value
-    .set(VatRatesFromEuPage(Index(0), Index(0)), List(twentyPercentVatRate)).success.value
-    .set(SalesAtVatRateFromEuPage(Index(0), Index(0), Index(0)), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+    .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+    .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+    .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
+    .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
