@@ -37,9 +37,14 @@ error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
 
-index.title = one-stop-shop-returns-frontend
-index.heading = one-stop-shop-returns-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
+index.title = Your account
+index.heading = Your account
+index.vrn = VAT registration number: {0}
+index.yourReturns = Your returns
+index.yourReturns.returnDue = July to September 2021 is due by 31 October 2021
+index.yourReturns.startReturn = Start your return
+index.history = History
+index.history.previousReturns = View past returns
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service

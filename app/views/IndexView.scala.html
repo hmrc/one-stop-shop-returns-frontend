@@ -15,17 +15,34 @@
  *@
 
 @this(
-    layout: templates.Layout
+    layout: templates.Layout,
+    govukButton: GovukButton
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(businessName: String, vrn: String, period: Period)(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle    = titleNoForm(messages("index.title")),
     showBackLink = false
 ) {
 
-    <h1 class="govuk-heading-xl">@messages("index.heading")</h1>
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-0">@messages("index.heading")</h1>
+    <span class="govuk-caption-m">@businessName</span>
+    <span class="govuk-caption-m">@messages("index.vrn", vrn)</span>
 
-    <p class="govuk-body">@messages("index.guidance")</p>
+    <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
+
+    <p class="govuk-body">@messages("index.yourReturns.returnDue")</p>
+
+    <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url">
+        <span aria-hidden="true">@messages("index.yourReturns.startReturn")</span>
+        <span class="govuk-visually-hidden">@messages("index.yourReturns.startReturn")</span>
+    </a>
+
+    <h2 class="govuk-heading-m">@messages("index.history")</h2>
+
+    <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url">
+        <span aria-hidden="true">@messages("index.history.previousReturns")</span>
+        <span class="govuk-visually-hidden">@messages("index.history.previousReturns")</span>
+    </a>
 }
