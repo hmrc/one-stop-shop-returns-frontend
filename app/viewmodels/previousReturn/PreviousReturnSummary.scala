@@ -19,15 +19,18 @@ package viewmodels.previousReturn
 import models.domain.VatReturn
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import uk.gov.hmrc.govukfrontend.views.Aliases.Key
+import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object PreviousReturnSummary {
+object PreviousReturnSummary extends CurrencyFormatter {
 
-  def rows(vatReturn: VatReturn)(implicit messages: Messages): Seq[SummaryListRow] = {
+  def rows(vatReturn: VatReturn, vatOwed: BigDecimal)(implicit messages: Messages): Seq[SummaryListRow] = {
     Seq(
-      vatOwedRow(vatReturn),
+      vatOwedRow(vatOwed),
       dateSubmittedRow(vatReturn),
       dateDueRow(vatReturn),
       returnReferenceNumber(vatReturn),
@@ -35,10 +38,12 @@ object PreviousReturnSummary {
     ).flatten
   }
 
-  private[this] def vatOwedRow(vatReturn: VatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
+  private[this] def vatOwedRow(vatOwed: BigDecimal)(implicit messages: Messages): Option[SummaryListRow] = {
       Some(SummaryListRowViewModel(
-        key = "previousReturn.vatOwed.label",
-        value = ValueViewModel(HtmlFormat.escape(vatReturn.toString).toString),
+        key = Key("previousReturn.vatOwed.label")
+          .withCssClass("govuk-!-width-one-half"),
+        value = ValueViewModel(HtmlContent(currencyFormat(vatOwed)))
+          .withCssClass("govuk-!-width-one-half"),
         actions = Seq.empty
       ))
   }

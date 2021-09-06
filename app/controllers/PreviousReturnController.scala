@@ -18,41 +18,70 @@ package controllers
 
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Mode, Period}
-import play.api.i18n.{I18nSupport, MessagesApi}
+import logging.Logging
+import models.Period
+import models.domain.VatReturn
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatReturnSalesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.TitledSummaryList
-import viewmodels.previousReturn.PreviousReturnSummary
-import views.html.PreviousReturnView
 import viewmodels.govuk.summarylist._
+import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary, TotalSalesSummary}
+import views.html.PreviousReturnView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class PreviousReturnController @Inject()(
-                                           override val messagesApi: MessagesApi,
-                                           cc: AuthenticatedControllerComponents,
-                                           view: PreviousReturnView,
-                                           vatReturnConnector: VatReturnConnector
-                                         )(implicit ec: ExecutionContext)
-  extends FrontendBaseController with I18nSupport {
+                                          override val messagesApi: MessagesApi,
+                                          cc: AuthenticatedControllerComponents,
+                                          view: PreviousReturnView,
+                                          vatReturnConnector: VatReturnConnector,
+                                          vatReturnSalesService: VatReturnSalesService
+                                        )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
     implicit request =>
+
       vatReturnConnector.get(period).map {
         case Right(vatReturn) =>
+
+          val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn)
           val mainList = SummaryListViewModel(
-            rows = PreviousReturnSummary.rows(vatReturn))
-          val salesList: Seq[TitledSummaryList] = ???
+            rows = PreviousReturnSummary.rows(vatReturn, vatOwed))
 
-          Ok(view(mode, vatReturn, mainList, salesList))
-        case _ =>
-          ???
+          Ok(view(
+            vatReturn,
+            mainList,
+            SaleAtVatRateSummary.getAllNiSales(vatReturn),
+            SaleAtVatRateSummary.getAllEuSales(vatReturn),
+            getAllSales(vatReturn, vatOwed)))
+        case Left(NotFound) =>
+          Redirect(routes.IndexController.onPageLoad()) // TODO
+      }.recover {
+        case e: Exception =>
+          logger.error(s"Error was ${e.getMessage}", e)
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
+  }
 
+  private[this] def getAllSales(vatReturn: VatReturn, vatOwed: BigDecimal)(implicit messages: Messages): TitledSummaryList = {
+    val netSalesFromNi = vatReturnSalesService.getTotalNetSalesToCountry(vatReturn.salesFromNi)
+    val netSalesFromEu = vatReturnSalesService.getEuTotalNetSales(vatReturn.salesFromEu)
+    val vatOnSalesFromNi = vatReturnSalesService.getTotalVatOnSalesToCountry(vatReturn.salesFromNi)
+    val vatOnSalesFromEu = vatReturnSalesService.getEuTotalVatOnSales(vatReturn.salesFromEu)
+    val totalVatOnSales = vatOwed
+
+    TitledSummaryList(
+      title = messages("previousReturn.allSales.title"),
+      list = SummaryListViewModel(
+        rows = TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales)
+      )
+    )
   }
 
 }

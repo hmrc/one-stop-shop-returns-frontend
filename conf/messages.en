@@ -237,3 +237,25 @@ returnSubmitted.payNow = Pay now
 returnSubmitted.payBy.p1 = You need to pay by {0}.
 returnSubmitted.payBy.p2 = EU countries can charge you interest or penalties for late payments.
 returnSubmitted.backToAccount.link.text = Back to your account
+
+previousReturn.title = Submitted return for
+previousReturn.summary.title = Summary
+previousReturn.details.title = Details
+previousReturn.vatOwed.label = VAT owed this period
+previousReturn.dateSubmitted.label = Date submitted
+previousReturn.dateDue.label = Date due
+previousReturn.returnReference.label = Return reference number
+previousReturn.paymentReference.label = Payment reference number
+previousReturn.payNow = Pay now
+
+previousReturn.salesAtVatRate.title = Sales from {0} to {1}
+previousReturn.salesAtVatRate.vatRate = {0} VAT rate
+previousReturn.saleAtVatRate.netValueOfSales.label = Sales excluding VAT
+previousReturn.saleAtVatRate.vatOnSales.label = VAT
+
+previousReturn.allSales.title = All sales
+previousReturn.netSalesFromNi.label = Sales excluding VAT from Northern Ireland
+previousReturn.netSalesFromEu.label = Sales excluding VAT from EU countries
+previousReturn.vatOnSalesFromNi.label = VAT on sales from Northern Ireland
+previousReturn.vatOnSalesFromEu.label = VAT on sales from EU countries
+previousReturn.totalVatOnSales.label = VAT owed this period

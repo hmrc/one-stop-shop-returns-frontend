@@ -18,9 +18,8 @@ package connectors
 
 import config.Service
 import connectors.VatReturnHttpParser._
-import models.domain.VatReturn
-import models.requests.VatReturnRequest
 import models.Period
+import models.requests.VatReturnRequest
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 

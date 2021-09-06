@@ -17,26 +17,46 @@
 package controllers
 
 import base.SpecBase
+import connectors.VatReturnConnector
 import forms.SalesToEuListFormProvider
 import models.{Country, NormalMode}
+import models.domain.VatReturn
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage}
 import play.api.i18n.Messages
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import viewmodels.checkAnswers.SalesToEuSummary
+import services.VatReturnSalesService
+import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary, TotalSalesSummary}
+import viewmodels.govuk.summarylist._
+import viewmodels.TitledSummaryList
 import views.html.PreviousReturnView
 
-class PreviousReturnControllerSpec extends SpecBase with MockitoSugar {
+import scala.concurrent.Future
 
-  private val formProvider = new SalesToEuListFormProvider()
-  private val form         = formProvider()
+class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private lazy val salesToEuListRoute = routes.SalesToEuListController.onPageLoad(NormalMode, period, index).url
+  private val vatReturnConnector = mock[VatReturnConnector]
+  private val vatReturnSalesService = mock[VatReturnSalesService]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(vatReturnConnector)
+    Mockito.reset(vatReturnSalesService)
+    super.beforeEach()
+  }
+
+  private lazy val previousReturnRoute = routes.PreviousReturnController.onPageLoad(period).url
 
   private val countryFrom = arbitrary[Country].sample.value
   private val countryTo   = arbitrary[Country].sample.value
+
+  private val vatReturn = arbitrary[VatReturn].sample.value
 
   private val baseAnswers =
     emptyUserAnswers
@@ -47,19 +67,43 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(Some(baseAnswers)).build()
+      val application = applicationBuilder(Some(baseAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService)
+        ).build()
+
+      val netSalesFromNi = BigDecimal(4141)
+      val netSalesFromEu = BigDecimal(2333)
+      val vatOnSalesFromNi = BigDecimal(55)
+      val vatOnSalesFromEu = BigDecimal(44)
+      val totalVatOnSales = vatOnSalesFromNi + vatOnSalesFromEu
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
+      when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
+      when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
+      when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
+      when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn totalVatOnSales
 
       running(application) {
-        val request = FakeRequest(GET, salesToEuListRoute)
+        val request = FakeRequest(GET, previousReturnRoute)
 
         val result = route(application, request).value
 
         val view                    = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
-        val list                    = SalesToEuSummary.addToListRows(baseAnswers, NormalMode, index)
+        val summaryList             = SummaryListViewModel(rows = PreviousReturnSummary.rows(vatReturn, totalVatOnSales))
+        val niSalesList             = SaleAtVatRateSummary.getAllNiSales(vatReturn)
+        val euSalesList             = SaleAtVatRateSummary.getAllEuSales(vatReturn)
+        val totalSalesList          = TitledSummaryList(
+          title = "All sales",
+          list = SummaryListViewModel(
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales)
+          ))
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(NormalMode, ???, ???, ???)(request, implicitly).toString
+        contentAsString(result) mustEqual view(vatReturn, summaryList, niSalesList, euSalesList, totalSalesList)(request, implicitly).toString
       }
     }
 
