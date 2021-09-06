@@ -30,14 +30,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad(period).url)
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view()(request, messages(application)).toString
       }
     }
   }
