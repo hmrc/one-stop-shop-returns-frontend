@@ -43,8 +43,8 @@ object VatReturnHttpParser extends Logging {
     override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {
       response.status match {
         case OK =>
-          response.json.validate[List[VatReturn]] match {
-            case JsSuccess(model, _) => Right(model.head) // TODO remove head
+          response.json.validate[VatReturn] match {
+            case JsSuccess(model, _) => Right(model) // TODO remove head
             case JsError(errors) =>
               logger.warn("Failed trying to parse JSON", errors)
               Left(InvalidJson)

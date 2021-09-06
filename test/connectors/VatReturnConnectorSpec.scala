@@ -20,12 +20,11 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.requests.VatReturnRequest
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
-import models.Period
 import models.domain.VatReturn
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
-import play.api.http.Status.{CONFLICT, CREATED, INTERNAL_SERVER_ERROR}
+import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
@@ -94,48 +93,15 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
     val responseJson = Json.toJson(vatReturn)
 
-/*    val responseJson =
-      """{
-        |  "vrn": "123456789",
-        |  "period": "2021-Q3",
-        |  "reference": "XI/XI123456789/Q3.2021",
-        |  "startDate": "2021-08-20",
-        |  "endDate": "2021-08-20",
-        |  "salesFromNi": {
-        |    "countryOfConsumption": {
-        |      "code": "",
-        |      "name": ""
-        |    },
-        |    "amounts": []
-        |  },
-        |  "salesFromEu": {
-        |    "countryOfSale": {
-        |      "code": "",
-        |      "name": ""
-        |    },
-        |    "taxIdentifier": {
-        |      "identifierType": "vat",
-        |      "value": "20"
-        |    },
-        |    "sales": [{
-        |      "countryOfConsumption": {
-        |        "code": "",
-        |        "name": ""
-        |      },
-        |      "amounts": []
-        |    }]
-        |  },
-        |  "submissionReceived": "",
-        |  "lastUpdated": ""
-        |}
-        |""".stripMargin*/
-
     "must return Right when the server responds with OK" in {
 
       running(application) {
         val connector = application.injector.instanceOf[VatReturnConnector]
 
-        server.stubFor(get(urlEqualTo(s"$url/${period.toString}")).willReturn(ok(responseJson.toString())))
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+          .willReturn(
+            aResponse().withStatus(OK).withBody(responseJson.toString())))
 
         val result = connector.get(period).futureValue
 
