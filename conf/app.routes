@@ -118,4 +118,6 @@ POST        /:period/check-add-sales-to-eu/:index             controllers.SalesT
 
 GET         /:period/successful                             controllers.ReturnSubmittedController.onPageLoad(period: Period)
 
+GET         /:period/past-returns                           controllers.SubmittedReturnsHistoryController.onPageLoad(period: Period)
+
 GET         /return/:period                             controllers.PreviousReturnController.onPageLoad(period: Period)
