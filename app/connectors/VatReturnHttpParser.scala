@@ -44,7 +44,7 @@ object VatReturnHttpParser extends Logging {
       response.status match {
         case OK =>
           response.json.validate[VatReturn] match {
-            case JsSuccess(model, _) => Right(model) // TODO remove head
+            case JsSuccess(model, _) => Right(model)
             case JsError(errors) =>
               logger.warn("Failed trying to parse JSON", errors)
               Left(InvalidJson)

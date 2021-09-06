@@ -101,7 +101,8 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         server.stubFor(
           get(urlEqualTo(s"$url/${period.toString}"))
           .willReturn(
-            aResponse().withStatus(OK).withBody(responseJson.toString())))
+            aResponse().withStatus(OK).withBody(responseJson.toString())
+          ))
 
         val result = connector.get(period).futureValue
 
