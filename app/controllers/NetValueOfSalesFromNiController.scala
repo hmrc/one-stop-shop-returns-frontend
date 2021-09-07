@@ -36,13 +36,14 @@ class NetValueOfSalesFromNiController @Inject()(
                                       )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
       getCountryAndVatRate(countryIndex, vatRateIndex) {
         case (country, vatRate) =>
+
+          val form = formProvider(vatRate)
 
           val preparedForm = request.userAnswers.get(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex)) match {
             case None => form
@@ -57,6 +58,8 @@ class NetValueOfSalesFromNiController @Inject()(
     implicit request =>
       getCountryAndVatRateAsync(countryIndex, vatRateIndex) {
         case (country, vatRate) =>
+
+          val form = formProvider(vatRate)
 
           form.bindFromRequest().fold(
             formWithErrors =>

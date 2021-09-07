@@ -16,12 +16,15 @@
 
 package forms
 
-import forms.behaviours.IntFieldBehaviours
+import forms.behaviours.DecimalFieldBehaviours
+import models.VatRate
+import org.scalacheck.Arbitrary.arbitrary
 import play.api.data.FormError
 
-class NetValueOfSalesFromNiFormProviderSpec extends IntFieldBehaviours {
+class NetValueOfSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
 
-  val form = new NetValueOfSalesFromNiFormProvider()()
+  private val vatRate = arbitrary[VatRate].sample.value
+  val form = new NetValueOfSalesFromNiFormProvider()(vatRate)
 
   ".value" - {
 
@@ -38,14 +41,14 @@ class NetValueOfSalesFromNiFormProviderSpec extends IntFieldBehaviours {
       validDataGenerator
     )
 
-    behave like intField(
+    behave like decimalField(
       form,
       fieldName,
-      nonNumericError  = FormError(fieldName, "netValueOfSalesFromNi.error.nonNumeric"),
-      wholeNumberError = FormError(fieldName, "netValueOfSalesFromNi.error.wholeNumber")
+      nonNumericError     = FormError(fieldName, "netValueOfSalesFromNi.error.nonNumeric", Seq(vatRate.rateForDisplay)),
+      invalidNumericError = FormError(fieldName, "netValueOfSalesFromNi.error.wholeNumber", Seq(vatRate.rateForDisplay))
     )
 
-    behave like intFieldWithRange(
+    behave like decimalFieldWithRange(
       form,
       fieldName,
       minimum       = minimum,
@@ -56,7 +59,7 @@ class NetValueOfSalesFromNiFormProviderSpec extends IntFieldBehaviours {
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, "netValueOfSalesFromNi.error.required")
+      requiredError = FormError(fieldName, "netValueOfSalesFromNi.error.required", Seq(vatRate.rateForDisplay))
     )
   }
 }
