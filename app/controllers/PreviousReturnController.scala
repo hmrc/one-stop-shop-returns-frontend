@@ -62,6 +62,9 @@ class PreviousReturnController @Inject()(
             getAllSales(vatReturn, vatOwed)))
         case Left(NotFound) =>
           Redirect(routes.IndexController.onPageLoad())
+        case Left(e) =>
+          logger.error(s"Unexpected result from api while getting return: ${e}")
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
       }.recover {
         case e: Exception =>
           logger.error(s"Error while getting previous return: ${e.getMessage}", e)
