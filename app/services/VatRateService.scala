@@ -22,6 +22,7 @@ import play.api.{Configuration, Environment}
 
 import javax.inject.Inject
 import scala.io.Source
+import scala.math.BigDecimal.RoundingMode
 
 class VatRateService @Inject()(env: Environment, config: Configuration) {
 
@@ -50,4 +51,7 @@ class VatRateService @Inject()(env: Environment, config: Configuration) {
       .getOrElse(country, Seq.empty)
       .filter(_.validFrom isBefore period.lastDay.plusDays(1))
       .filter(rate => rate.validUntil.fold(true)(_.isAfter(period.firstDay.minusDays(1))))
+
+  def standardVatOnSales(netSales: BigDecimal, vatRate: VatRate): BigDecimal =
+    ((netSales * vatRate.rate) / 100).setScale(2, RoundingMode.HALF_UP)
 }
