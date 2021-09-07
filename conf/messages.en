@@ -237,3 +237,21 @@ returnSubmitted.payNow = Pay now
 returnSubmitted.payBy.p1 = You need to pay by {0}.
 returnSubmitted.payBy.p2 = EU countries can charge you interest or penalties for late payments.
 returnSubmitted.backToAccount.link.text = Back to your account
+
+netValueOfSalesFromNi.title = NetValueOfSalesFromNi
+netValueOfSalesFromNi.heading = NetValueOfSalesFromNi
+netValueOfSalesFromNi.checkYourAnswersLabel = NetValueOfSalesFromNi
+netValueOfSalesFromNi.error.nonNumeric = Enter your netValueOfSalesFromNi using numbers
+netValueOfSalesFromNi.error.required = Enter your netValueOfSalesFromNi
+netValueOfSalesFromNi.error.wholeNumber = Enter your netValueOfSalesFromNi using whole numbers
+netValueOfSalesFromNi.error.outOfRange = NetValueOfSalesFromNi must be between {0} and {1}
+netValueOfSalesFromNi.change.hidden = NetValueOfSalesFromNi
+
+vatOnSalesFromNi.title = VatOnSalesFromNi
+vatOnSalesFromNi.heading = VatOnSalesFromNi
+vatOnSalesFromNi.checkYourAnswersLabel = VatOnSalesFromNi
+vatOnSalesFromNi.error.nonNumeric = Enter your vatOnSalesFromNi using numbers
+vatOnSalesFromNi.error.required = Enter your vatOnSalesFromNi
+vatOnSalesFromNi.error.wholeNumber = Enter your vatOnSalesFromNi using whole numbers
+vatOnSalesFromNi.error.outOfRange = VatOnSalesFromNi must be between {0} and {1}
+vatOnSalesFromNi.change.hidden = VatOnSalesFromNi

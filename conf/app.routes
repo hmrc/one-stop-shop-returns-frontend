@@ -117,3 +117,13 @@ GET         /:period/check-add-sales-to-eu/:index             controllers.SalesT
 POST        /:period/check-add-sales-to-eu/:index             controllers.SalesToEuListController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
 
 GET         /:period/successful                             controllers.ReturnSubmittedController.onPageLoad(period: Period)
+
+GET        /:period/netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period)
