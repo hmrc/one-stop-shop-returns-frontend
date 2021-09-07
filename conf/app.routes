@@ -118,10 +118,10 @@ POST        /:period/check-add-sales-to-eu/:index             controllers.SalesT
 
 GET         /:period/successful                             controllers.ReturnSubmittedController.onPageLoad(period: Period)
 
-GET        /:period/netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST       /:period/netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET        /:period/changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST       /:period/changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET        /:period/netValueOfSalesFromNi/:countryIndex/:vatRateIndex                  controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, countryIndex: Index, vatRateIndex: Index)
+POST       /:period/netValueOfSalesFromNi/:countryIndex/:vatRateIndex                  controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, countryIndex: Index, vatRateIndex: Index)
+GET        /:period/changeNetValueOfSalesFromNi/:countryIndex/:vatRateIndex                        controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, countryIndex: Index, vatRateIndex: Index)
+POST       /:period/changeNetValueOfSalesFromNi/:countryIndex/:vatRateIndex                        controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period, countryIndex: Index, vatRateIndex: Index)
 
 GET        /:period/vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST       /:period/vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)

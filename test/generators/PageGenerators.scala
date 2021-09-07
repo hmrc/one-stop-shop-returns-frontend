@@ -25,8 +25,8 @@ trait PageGenerators {
   implicit lazy val arbitraryVatOnSalesFromNiPage: Arbitrary[VatOnSalesFromNiPage.type] =
     Arbitrary(VatOnSalesFromNiPage)
 
-  implicit lazy val arbitraryNetValueOfSalesFromNiPage: Arbitrary[NetValueOfSalesFromNiPage.type] =
-    Arbitrary(NetValueOfSalesFromNiPage)
+  implicit lazy val arbitraryNetValueOfSalesFromNiPage: Arbitrary[NetValueOfSalesFromNiPage] =
+    Arbitrary(NetValueOfSalesFromNiPage(Index(0), Index(0)))
 
   implicit lazy val arbitraryVatRatesFromEuPage: Arbitrary[VatRatesFromEuPage] =
     Arbitrary(VatRatesFromEuPage(Index(0), Index(0)))
