@@ -16,22 +16,47 @@
 
 package controllers
 
+import connectors.VatReturnConnector
 import controllers.actions._
+import models.Quarter.Q3
+import models.Period
+
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
+import logging.Logging
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmittedReturnsHistoryView
+import models.responses.{NotFound => NotFoundResponse}
+
+import scala.concurrent.ExecutionContext
 
 class SubmittedReturnsHistoryController @Inject()(
                                        cc: AuthenticatedControllerComponents,
-                                       view: SubmittedReturnsHistoryView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                       view: SubmittedReturnsHistoryView,
+                                       vatReturnConnector: VatReturnConnector
+                                     ) (implicit ec: ExecutionContext)
+    extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.auth {
+  val period = new Period(2021, Q3)
+
+  def onPageLoad: Action[AnyContent] = cc.authAndGetOptionalData(period).async {
     implicit request =>
-      Ok(view())
+      vatReturnConnector.get(period).map {
+        case Right(vatReturn) =>
+          Ok(view(Some(vatReturn)))
+        case Left(NotFoundResponse) =>
+          Ok(view(None))
+        case Left(e) =>
+          logger.error(s"Unexpected result from api while getting return: ${e}")
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
+      }.recover {
+        case e: Exception =>
+          logger.error(s"Error while getting previous return: ${e.getMessage}", e)
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
+      }
+
   }
 }

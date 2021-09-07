@@ -1,8 +1,10 @@
+@import models.domain.VatReturn
+
 @this(
         layout: templates.Layout
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(vatReturn: Option[VatReturn])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title")), showBackLink = false) {
 
@@ -33,12 +35,16 @@
         <div class="govuk-tabs__panel" id="returns_year_2021">
             <h2 class="govuk-heading-m">2021 returns</h2>
             <table class="govuk-table">
+                @if(vatReturn.isDefined) {
                 <ul class="govuk-list govuk-list--bullet">
                     <li>
-                        <a class="govuk-link" href="#">1 July to 30 September 2021</a>
+                        <a class="govuk-link" href="#">vatReturn.period.displayText</a>
                     </li>
                 </ul>
-@*                <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>*@
+                }
+                else {
+                <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
+                }
             </table>
 
         </div>

@@ -17,17 +17,60 @@
 package controllers
 
 import base.SpecBase
+import connectors.VatReturnConnector
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
+import org.mockito.Mockito.when
+import org.mockito.MockitoSugar.mock
+import org.scalatest.BeforeAndAfterEach
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.SubmittedReturnsHistoryView
 
-class SubmittedReturnsHistoryControllerSpec extends SpecBase {
+import models.responses.{ConflictFound, NotFound => NotFoundResponse}
+
+import scala.concurrent.Future
+
+class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfterEach {
+
+  private val vatReturnConnector = mock[VatReturnConnector]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(vatReturnConnector)
+    super.beforeEach()
+  }
 
   "SubmittedReturnsHistory Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and correct view with the current period when a return for this period exists" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
+        ).build()
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
+
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value
+        println("Result for Right: " + result)
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(Some(completeVatReturn))(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and correct view with no-returns message when no returns exist" in {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
+        ).build()
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -37,16 +80,26 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        contentAsString(result) mustEqual view(None)(request, messages(application)).toString
       }
     }
 
-    "must return OK and correct view with list of return periods when returns for those periods exist" in {
+    "must return redirect to Journey Controller when an unexpected result is returned" in {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
+        ).build()
 
-    }
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(ConflictFound))
 
-    "must return OK and correct view with no-returns message when no returns exist" in {
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
     }
   }
 }
