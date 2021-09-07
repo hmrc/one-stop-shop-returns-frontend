@@ -17,8 +17,8 @@
 package services
 
 import base.SpecBase
-import models.{Country, Index, SalesAtVatRate, TotalVatToCountry, VatRate, VatRateType}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry}
+import models.{Country, Index}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate, VatRateType}
 import pages._
 
 import java.time.LocalDate
@@ -81,23 +81,17 @@ class VatReturnSalesServiceSpec extends SpecBase {
         val salesFromNi = List(SalesToCountry(Country("LT",
           "Lithuania"),
           List(SalesDetails(VatRate(45.54,
-            VatRateType.Reduced,
-            LocalDate.of(2099, 7, 17),
-            None),
+            VatRateType.Reduced),
             306338.71,
             230899.32),
             SalesDetails(VatRate(98.54,
-              VatRateType.Reduced,
-              LocalDate.of(2048, 2, 10),
-              None),
+              VatRateType.Reduced),
               295985.50,
               319051.84))),
           SalesToCountry(Country("MT",
             "Malta"),
             List(SalesDetails(VatRate(80.28,
-              VatRateType.Standard,
-              LocalDate.of(2040, 5, 25),
-              None),
+              VatRateType.Standard),
               357873.00,
               191855.64))))
 
@@ -111,9 +105,7 @@ class VatReturnSalesServiceSpec extends SpecBase {
           List(SalesToCountry(Country("FI",
             "Finland"),
             List(SalesDetails(VatRate(56.02,
-              VatRateType.Standard,
-              LocalDate.of(2098, 1, 14),
-              None),
+              VatRateType.Standard),
               543742.51,
               801143.05))))),
           SalesFromEuCountry(Country("IE",
@@ -122,15 +114,11 @@ class VatReturnSalesServiceSpec extends SpecBase {
             List(SalesToCountry(Country("CY",
               "Republic of Cyprus"),
               List(SalesDetails(VatRate(98.97,
-                VatRateType.Reduced,
-                LocalDate.of(2026, 5, 31),
-                None),
+                VatRateType.Reduced),
                 356270.07,
                 24080.60),
                 SalesDetails(VatRate(98.92,
-                  VatRateType.Reduced,
-                  LocalDate.of(2041, 5, 19),
-                  None),
+                  VatRateType.Reduced),
                   122792.32,
                   554583.78))))))
 

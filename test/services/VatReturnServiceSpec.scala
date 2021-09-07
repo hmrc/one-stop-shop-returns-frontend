@@ -20,7 +20,7 @@ import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import models.domain.EuTaxIdentifierType.{Other, Vat}
-import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry}
+import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate}
 import models.registration._
 import models.{Country, DataMissingError, Index, SalesAtVatRate, VatRate}
 import models.requests.VatReturnRequest
@@ -71,13 +71,13 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             List(
               SalesToCountry(
                 country1,
-                List(SalesDetails(vatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
+                List(SalesDetails(domainVatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
               ),
               SalesToCountry(
                 country2,
                 List(
-                  SalesDetails(vatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales),
-                  SalesDetails(vatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales)
+                  SalesDetails(domainVatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales),
+                  SalesDetails(domainVatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales)
                 )
               )
             ),
@@ -118,13 +118,13 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
                   List(
                     SalesToCountry(
                       country2,
-                      List(SalesDetails(vatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
+                      List(SalesDetails(domainVatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
                     ),
                     SalesToCountry(
                       country3,
                       List(
-                        SalesDetails(vatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales),
-                        SalesDetails(vatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales)
+                        SalesDetails(domainVatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales),
+                        SalesDetails(domainVatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales)
                       )
                     )
                   )
@@ -176,7 +176,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
                   List(
                     SalesToCountry(
                       country2,
-                      List(SalesDetails(vatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
+                      List(SalesDetails(domainVatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
                     )
                   )
                 ),
@@ -186,7 +186,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
                   List(
                     SalesToCountry(
                       country2,
-                      List(SalesDetails(vatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales))
+                      List(SalesDetails(domainVatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales))
                     )
                   )
                 ),
@@ -196,7 +196,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
                   List(
                     SalesToCountry(
                       country2,
-                      List(SalesDetails(vatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales))
+                      List(SalesDetails(domainVatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales))
                     )
                   )
                 )
@@ -320,6 +320,9 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     protected val vatRate1: VatRate             = arbitrary[VatRate].sample.value
     protected val vatRate2: VatRate             = arbitrary[VatRate].sample.value
     protected val vatRate3: VatRate             = arbitrary[VatRate].sample.value
+    protected val domainVatRate1: DomainVatRate = arbitrary[DomainVatRate].sample.value
+    protected val domainVatRate2: DomainVatRate = arbitrary[DomainVatRate].sample.value
+    protected val domainVatRate3: DomainVatRate = arbitrary[DomainVatRate].sample.value
     protected val salesDetails1: SalesAtVatRate = arbitrary[SalesAtVatRate].sample.value
     protected val salesDetails2: SalesAtVatRate = arbitrary[SalesAtVatRate].sample.value
     protected val salesDetails3: SalesAtVatRate = arbitrary[SalesAtVatRate].sample.value
