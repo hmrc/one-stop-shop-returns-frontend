@@ -17,15 +17,16 @@
 package pages
 
 import controllers.routes
-import models.UserAnswers
+import models.{Index, UserAnswers}
+import pages.PageConstants.salesFromNi
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object VatOnSalesFromNiPage extends QuestionPage[Int] {
+case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Int] {
 
-  override def path: JsPath = JsPath \ toString
+  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ toString \ vatRateIndex.position
 
-  override def toString: String = "vatOnSalesFromNi"
+  override def toString: String = "vatOnSales"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     routes.IndexController.onPageLoad()

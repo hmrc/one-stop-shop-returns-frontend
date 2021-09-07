@@ -22,10 +22,10 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
 
   "VatOnSalesFromNiPage" - {
 
-    beRetrievable[Int](VatOnSalesFromNiPage)
+    beRetrievable[Int](VatOnSalesFromNiPage(index, index))
 
-    beSettable[Int](VatOnSalesFromNiPage)
+    beSettable[Int](VatOnSalesFromNiPage(index, index))
 
-    beRemovable[Int](VatOnSalesFromNiPage)
+    beRemovable[Int](VatOnSalesFromNiPage(index, index))
   }
 }

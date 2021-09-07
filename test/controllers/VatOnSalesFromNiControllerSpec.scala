@@ -18,11 +18,12 @@ package controllers
 
 import base.SpecBase
 import forms.VatOnSalesFromNiFormProvider
-import models.{NormalMode, UserAnswers}
+import models.{Country, NormalMode, UserAnswers, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.VatOnSalesFromNiPage
+import pages.{CountryOfConsumptionFromNiPage, NetValueOfSalesFromNiPage, VatOnSalesFromNiPage, VatRatesFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -33,18 +34,26 @@ import scala.concurrent.Future
 
 class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
+  private val country = arbitrary[Country].sample.value
+  private val vatRate = arbitrary[VatRate].sample.value
+  private val baseAnswers =
+    emptyUserAnswers
+      .set(CountryOfConsumptionFromNiPage(index), country).success.value
+      .set(VatRatesFromNiPage(index), List(vatRate)).success.value
+      .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(0)).success.value
+
   private val formProvider = new VatOnSalesFromNiFormProvider()
   private val form = formProvider()
 
   private val validAnswer = 0
 
-  private lazy val vatOnSalesFromNiRoute = routes.VatOnSalesFromNiController.onPageLoad(NormalMode, period).url
+  private lazy val vatOnSalesFromNiRoute = routes.VatOnSalesFromNiController.onPageLoad(NormalMode, period, index, index).url
 
   "VatOnSalesFromNi Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, vatOnSalesFromNiRoute)
@@ -54,13 +63,13 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatOnSalesFromNiView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(VatOnSalesFromNiPage, validAnswer).success.value
+      val userAnswers = baseAnswers.set(VatOnSalesFromNiPage(index, index), validAnswer).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -72,7 +81,7 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(validAnswer), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(validAnswer), NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
@@ -83,7 +92,7 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(baseAnswers))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
@@ -93,17 +102,17 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", validAnswer.toString))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(VatOnSalesFromNiPage, validAnswer).success.value
+        val expectedAnswers = baseAnswers.set(VatOnSalesFromNiPage(index, index), validAnswer).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatOnSalesFromNiPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual VatOnSalesFromNiPage(index, index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request =
@@ -117,7 +126,7 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 

@@ -123,7 +123,7 @@ POST       /:period/netValueOfSalesFromNi/:countryIndex/:vatRateIndex           
 GET        /:period/changeNetValueOfSalesFromNi/:countryIndex/:vatRateIndex                        controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, countryIndex: Index, vatRateIndex: Index)
 POST       /:period/changeNetValueOfSalesFromNi/:countryIndex/:vatRateIndex                        controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period, countryIndex: Index, vatRateIndex: Index)
 
-GET        /:period/vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST       /:period/vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET        /:period/changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST       /:period/changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET        /:period/vatOnSalesFromNi/:countryIndex/:vatRateIndex                  controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, countryIndex: Index, vatRateIndex: Index)
+POST       /:period/vatOnSalesFromNi/:countryIndex/:vatRateIndex                  controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, countryIndex: Index, vatRateIndex: Index)
+GET        /:period/changeVatOnSalesFromNi/:countryIndex/:vatRateIndex                        controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, countryIndex: Index, vatRateIndex: Index)
+POST       /:period/changeVatOnSalesFromNi/:countryIndex/:vatRateIndex                        controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period, countryIndex: Index, vatRateIndex: Index)
