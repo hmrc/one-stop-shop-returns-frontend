@@ -17,7 +17,7 @@
 package generators
 
 import models.{domain, _}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType, VatReturn}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
@@ -176,10 +176,18 @@ trait ModelGenerators {
       } yield Registration(vrn, name, vatDetails, Nil, contactDetails, commencementDate, isOnlineMarketplace)
     }
 
+  implicit val arbitraryDomainVatRate: Arbitrary[DomainVatRate] =
+    Arbitrary {
+      for {
+        vatRateType <- Gen.oneOf(DomainVatRateType.values)
+        rate        <- Gen.choose(BigDecimal(0), BigDecimal(100))
+      } yield DomainVatRate(rate.setScale(2, RoundingMode.HALF_EVEN), vatRateType)
+    }
+
   implicit val arbitrarySalesDetails: Arbitrary[SalesDetails] =
     Arbitrary {
       for {
-        vatRate       <- arbitrary[VatRate]
+        vatRate       <- arbitrary[DomainVatRate]
         taxableAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
         vatAmount     <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
       } yield SalesDetails(
