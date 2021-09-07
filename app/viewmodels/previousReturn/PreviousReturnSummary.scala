@@ -16,6 +16,7 @@
 
 package viewmodels.previousReturn
 
+import formats.Format
 import models.domain.VatReturn
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -25,6 +26,10 @@ import uk.gov.hmrc.govukfrontend.views.Aliases.Key
 import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
+
+import java.time.format.{DateTimeFormatter, FormatStyle}
+import java.time.ZoneId
+import java.util.Locale
 
 object PreviousReturnSummary extends CurrencyFormatter {
 
@@ -51,7 +56,8 @@ object PreviousReturnSummary extends CurrencyFormatter {
   private[this] def dateSubmittedRow(vatReturn: VatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
       key = "previousReturn.dateSubmitted.label",
-      value = ValueViewModel(HtmlFormat.escape(vatReturn.submissionReceived.toString).toString),
+      value = ValueViewModel(
+        HtmlContent(Format.localDateFormatter.format(vatReturn.submissionReceived))),
       actions = Seq.empty
     ))
   }
@@ -59,7 +65,8 @@ object PreviousReturnSummary extends CurrencyFormatter {
   private[this] def dateDueRow(vatReturn: VatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
       key = "previousReturn.dateDue.label",
-      value = ValueViewModel(HtmlFormat.escape(vatReturn.submissionReceived.toString).toString),
+      value = ValueViewModel(
+        HtmlContent(Format.localDateFormatter.format(vatReturn.period.paymentDeadline))),
       actions = Seq.empty
     ))
   }
