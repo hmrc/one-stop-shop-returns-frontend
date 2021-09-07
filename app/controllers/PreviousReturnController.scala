@@ -61,10 +61,10 @@ class PreviousReturnController @Inject()(
             SaleAtVatRateSummary.getAllEuSales(vatReturn),
             getAllSales(vatReturn, vatOwed)))
         case Left(NotFound) =>
-          Redirect(routes.IndexController.onPageLoad()) // TODO
+          Redirect(routes.IndexController.onPageLoad())
       }.recover {
         case e: Exception =>
-          logger.error(s"Error was ${e.getMessage}", e)
+          logger.error(s"Error while getting previous return: ${e.getMessage}", e)
           Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
   }
