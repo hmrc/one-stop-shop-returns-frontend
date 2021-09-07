@@ -40,5 +40,13 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase {
         contentAsString(result) mustEqual view()(request, messages(application)).toString
       }
     }
+
+    "must return OK and correct view with list of return periods when returns for those periods exist" in {
+
+    }
+
+    "must return OK and correct view with no-returns message when no returns exist" in {
+
+    }
   }
 }
