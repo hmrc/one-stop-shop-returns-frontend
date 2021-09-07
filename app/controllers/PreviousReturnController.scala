@@ -29,6 +29,7 @@ import viewmodels.TitledSummaryList
 import viewmodels.govuk.summarylist._
 import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary, TotalSalesSummary}
 import views.html.PreviousReturnView
+import models.responses.{NotFound => NotFoundResponse}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -60,7 +61,7 @@ class PreviousReturnController @Inject()(
             SaleAtVatRateSummary.getAllNiSales(vatReturn),
             SaleAtVatRateSummary.getAllEuSales(vatReturn),
             getAllSales(vatReturn, vatOwed)))
-        case Left(NotFound) =>
+        case Left(NotFoundResponse) =>
           Redirect(routes.IndexController.onPageLoad())
         case Left(e) =>
           logger.error(s"Unexpected result from api while getting return: ${e}")
