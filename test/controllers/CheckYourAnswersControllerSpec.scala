@@ -17,29 +17,36 @@
 package controllers
 
 import base.SpecBase
-import org.mockito.Mockito.when
+import cats.data.Validated.Valid
+import org.mockito.Mockito.{doNothing, times, verify, when}
 import connectors.VatReturnConnector
-import models.{Country, TotalVatToCountry}
+import models.Quarter.Q3
+import models.audit.{ReturnsAuditModel, SubmissionResult}
+import models.requests.DataRequest
+import models.{Country, NormalMode, Period, TotalVatToCountry}
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{SoldGoodsFromEuPage, SoldGoodsFromNiPage}
+import pages.{CheckYourAnswersPage, SoldGoodsFromEuPage, SoldGoodsFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import viewmodels.govuk.SummaryListFluency
-import services.SalesAtVatRateService
+import services.{AuditService, SalesAtVatRateService, VatReturnService}
 
 import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with SummaryListFluency with BeforeAndAfterEach {
 
   private val vatReturnConnector = mock[VatReturnConnector]
+  private val vatReturnService = mock[VatReturnService]
+  private val auditService = mock[AuditService]
 
   override def beforeEach(): Unit = {
-    Mockito.reset(vatReturnConnector)
+    Mockito.reset(vatReturnConnector, vatReturnService, auditService)
     super.beforeEach()
   }
 
@@ -108,6 +115,32 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
         }
       }
+
+      "must audit the event and redirect to the next page and successfully send email confirmation" in {
+
+        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(()))
+        doNothing().when(auditService).audit(any())(any(), any())
+
+        val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+          .overrides(
+            bind[VatReturnService].toInstance(vatReturnService),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[AuditService].toInstance(auditService)
+          ).build()
+
+        running(application) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(Period(2021, Q3)).url)
+          val result = route(application, request).value
+          val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+          val expectedAuditEvent = ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Success, dataRequest)
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, completeUserAnswers).url
+
+          verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+        }
+      }
     }
 
     "when the user has already submitted a return for this period" - {
@@ -122,19 +155,26 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         val app =
           applicationBuilder(Some(answers))
             .overrides(
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnService].toInstance(vatReturnService),
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[AuditService].toInstance(auditService)
             )
             .build()
 
+        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
+        doNothing().when(auditService).audit(any())(any(), any())
 
         running(app) {
 
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
           val result = route(app, request).value
+          val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+          val expectedAuditEvent = ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Duplicate, dataRequest)
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
+          verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
     }
@@ -151,19 +191,26 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         val app =
           applicationBuilder(Some(answers))
             .overrides(
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnService].toInstance(vatReturnService),
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[AuditService].toInstance(auditService)
             )
             .build()
 
+        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+        doNothing().when(auditService).audit(any())(any(), any())
 
         running(app) {
 
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
           val result = route(app, request).value
+          val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+          val expectedAuditEvent = ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Failure, dataRequest)
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
     }

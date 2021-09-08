@@ -17,16 +17,10 @@
 package services
 
 import base.SpecBase
-import models.{Country, Index}
+import models.Country
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate, VatRateType}
-import pages._
-
-import java.time.LocalDate
 
 class VatReturnSalesServiceSpec extends SpecBase {
-
-  private val index0 = Index(0)
-  private val index1 = Index(1)
 
   val service = new VatReturnSalesService()
 
@@ -125,6 +119,5 @@ class VatReturnSalesServiceSpec extends SpecBase {
         service.getTotalVatOnSales(emptyVatReturn.copy(salesFromEu = salesFromEu)) mustBe BigDecimal(1379807.43)
       }
     }
-
   }
 }

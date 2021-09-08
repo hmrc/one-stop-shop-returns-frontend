@@ -18,8 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import forms.SalesToEuListFormProvider
-import models.{Country, NormalMode}
+import models.Country
 import models.domain.VatReturn
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
