@@ -17,6 +17,8 @@
 package controllers
 
 import controllers.actions.AuthenticatedControllerComponents
+import models.Period
+import models.Quarter.Q3
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -31,8 +33,15 @@ class IndexController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.auth {
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
     implicit request =>
-        Ok(view())
+
+      val period = Period(2021, Q3)
+
+      Ok(view(
+        request.registration.registeredCompanyName,
+        request.vrn.vrn,
+        period
+      ))
   }
 }
