@@ -34,16 +34,19 @@
         </ul>
         <div class="govuk-tabs__panel" id="returns_year_2021">
             <h2 class="govuk-heading-m">2021 returns</h2>
-            @if(vatReturn.isDefined) {
-            <table class="govuk-table">
-                <ul class="govuk-list govuk-list--bullet">
-                    <li>
-                        <a class="govuk-link" href="@routes.PreviousReturnController.onPageLoad(vatReturn.get.period)">@vatReturn.get.period.displayText</a>
-                    </li>
-                </ul>
-            </table>
-            } else {
-                <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
+            @vatReturn match {
+                case Some(vatReturn) => {
+                    <table class="govuk-table">
+                        <ul class="govuk-list govuk-list--bullet">
+                            <li>
+                                <a class="govuk-link" href="@routes.PreviousReturnController.onPageLoad(vatReturn.period)">@vatReturn.period.displayText</a>
+                            </li>
+                        </ul>
+                    </table>
+                }
+                case _ => {
+                    <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
+                }
             }
         </div>
     </div>

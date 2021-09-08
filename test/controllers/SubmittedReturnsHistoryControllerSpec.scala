@@ -56,7 +56,6 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
         val result = route(application, request).value
-        println("Result for Right: " + result)
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustEqual OK
