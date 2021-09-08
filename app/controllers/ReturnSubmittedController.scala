@@ -16,31 +16,47 @@
 
 package controllers
 
+import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
+import logging.Logging
 import models.{Period, ReturnReference}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatReturnSalesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CurrencyFormatter._
 import views.html.ReturnSubmittedView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class ReturnSubmittedController @Inject()(
                                            cc: AuthenticatedControllerComponents,
-                                           view: ReturnSubmittedView
-                                         ) extends FrontendBaseController with I18nSupport {
+                                           view: ReturnSubmittedView,
+                                           vatReturnConnector: VatReturnConnector,
+                                           vatReturnSalesService: VatReturnSalesService
+                                         )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
-      // TODO: Get amount owed from user answers / service / submitted payload
-      val vatOwed         = currencyFormat(1)
-      val returnReference = ReturnReference(request.vrn, period)
-      val email           = request.registration.contactDetails.emailAddress
+      vatReturnConnector.get(period).map {
+        case Right(vatReturn) =>
 
-      Ok(view(period, returnReference, vatOwed, email))
+          val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn)
+          val returnReference = ReturnReference(request.vrn, period)
+          val email = request.registration.contactDetails.emailAddress
+          Ok(view(period, returnReference, currencyFormat(vatOwed), email))
+        case _ =>
+          Redirect(routes.IndexController.onPageLoad())
+      }.recover {
+        case e: Exception =>
+          logger.error(s"Error occurred: ${e.getMessage}", e)
+          throw e
+      }
+
   }
 }
