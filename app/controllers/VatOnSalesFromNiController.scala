@@ -25,6 +25,7 @@ import pages.VatOnSalesFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CurrencyFormatter.currencyFormat
 import views.html.VatOnSalesFromNiView
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,34 +34,41 @@ class VatOnSalesFromNiController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: VatOnSalesFromNiFormProvider,
                                         view: VatOnSalesFromNiView
-                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                      )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+      getCountryVatRateAndNetSales(countryIndex, vatRateIndex) {
+        case (country, vatRate, netSales) =>
 
-      val preparedForm = request.userAnswers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+          val preparedForm = request.userAnswers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex, country, vatRate, netSales))
       }
-
-      Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex))
   }
 
   def onSubmit(mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
+      getCountryVatRateAndNetSalesAsync(countryIndex, vatRateIndex) {
+        case (country, vatRate, netSales) =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, countryIndex, vatRateIndex))),
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, mode, period, countryIndex, vatRateIndex, country, vatRate, netSales))),
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesFromNiPage(countryIndex, vatRateIndex), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(VatOnSalesFromNiPage(countryIndex, vatRateIndex).navigate(mode, updatedAnswers))
-      )
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesFromNiPage(countryIndex, vatRateIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(VatOnSalesFromNiPage(countryIndex, vatRateIndex).navigate(mode, updatedAnswers))
+          )
+      }
   }
 }
