@@ -17,19 +17,52 @@
 package controllers
 
 import base.SpecBase
+import connectors.VatReturnConnector
 import models.ReturnReference
+import models.domain.VatReturn
+import models.responses.NotFound
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
+import org.mockito.Mockito.when
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.VatReturnSalesService
 import utils.CurrencyFormatter._
 import views.html.ReturnSubmittedView
 
-class ReturnSubmittedControllerSpec extends SpecBase {
+import scala.concurrent.Future
+
+class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+
+  private val vatReturnConnector = mock[VatReturnConnector]
+  private val vatReturnSalesService = mock[VatReturnSalesService]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(vatReturnConnector)
+    Mockito.reset(vatReturnSalesService)
+    super.beforeEach()
+  }
+
+  private val vatReturn = arbitrary[VatReturn].sample.value
 
   "ReturnSubmitted controller" - {
 
     "must return OK and the correct view" in {
 
-      val app = applicationBuilder(Some(emptyUserAnswers)).build()
+      val app = applicationBuilder(Some(emptyUserAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService)
+        ).build()
+
+      val vatOnSales = arbitrary[BigDecimal].sample.value
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn vatOnSales
 
       running(app) {
         val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
@@ -38,10 +71,29 @@ class ReturnSubmittedControllerSpec extends SpecBase {
 
         val view = app.injector.instanceOf[ReturnSubmittedView]
         val returnReference = ReturnReference(vrn, period)
-        val vatOwed = currencyFormat(1)
+        val vatOwed = currencyFormat(vatOnSales)
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(period, returnReference, vatOwed, registration.contactDetails.emailAddress)(request, messages(app)).toString
+      }
+    }
+
+    "must return redirect and the correct view" in {
+
+      val app = applicationBuilder(Some(emptyUserAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService)
+        ).build()
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+      running(app) {
+        val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
       }
     }
   }
