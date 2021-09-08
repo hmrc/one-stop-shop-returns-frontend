@@ -10,7 +10,17 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index, country: Country, vatRate: VatRate, netSales: BigDecimal)(implicit request: Request[_], messages: Messages)
+@(
+    form: Form[_],
+    mode: Mode,
+    period: Period,
+    countryIndex: Index,
+    vatRateIndex: Index,
+    country: Country,
+    vatRate: VatRate,
+    netSales: BigDecimal,
+    standardVat: BigDecimal
+)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
@@ -30,7 +40,7 @@
                 legend = LegendViewModel(messages("vatOnSalesFromNi.heading")).asPageHeading(),
                 items = Seq(
                     RadioItem(
-                        content = Text("foo"),
+                        content = HtmlContent(Html(currencyFormat(standardVat))),
                         value   = Some(VatOnSalesChoice.Standard.toString),
                         id      = Some("value_0")
                     ),
@@ -39,8 +49,7 @@
                         value   = Some(VatOnSalesChoice.NonStandard.toString),
                         id      = Some("value_1"),
                         conditionalHtml = Some(Html(
-                            """<p class="govuk-body">""" + messages("vatOnSalesFromNi.other.guidance") + "</p>" +
-                            govukInput(
+                           govukInput(
                                 InputViewModel(
                                     field = form("amount"),
                                     label = LabelViewModel(messages("vatOnSalesFromNi.amount"))
@@ -49,7 +58,7 @@
                                 .withWidth(Fixed10)
                                 .withCssClass("govuk-currency-input__inner__input")
                                 .withPrefix(PrefixOrSuffix(content = Text("£")))
-                            )
+                            ).toString
                         ))
                     )
                 )

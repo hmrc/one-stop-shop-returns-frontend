@@ -24,6 +24,7 @@ import models.{Index, Mode, Period}
 import pages.VatOnSalesFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CurrencyFormatter.currencyFormat
 import views.html.VatOnSalesFromNiView
@@ -33,7 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class VatOnSalesFromNiController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: VatOnSalesFromNiFormProvider,
-                                        view: VatOnSalesFromNiView
+                                        view: VatOnSalesFromNiView,
+                                        vatRateService: VatRateService
                                       )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
@@ -45,13 +47,14 @@ class VatOnSalesFromNiController @Inject()(
         case (country, vatRate, netSales) =>
 
           val form = formProvider(vatRate, netSales)
+          val standardVat = vatRateService.standardVatOnSales(netSales, vatRate)
 
           val preparedForm = request.userAnswers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex, country, vatRate, netSales))
+          Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex, country, vatRate, netSales, standardVat))
       }
   }
 
@@ -61,10 +64,11 @@ class VatOnSalesFromNiController @Inject()(
         case (country, vatRate, netSales) =>
 
           val form = formProvider(vatRate, netSales)
+          val standardVat = vatRateService.standardVatOnSales(netSales, vatRate)
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, countryIndex, vatRateIndex, country, vatRate, netSales))),
+              Future.successful(BadRequest(view(formWithErrors, mode, period, countryIndex, vatRateIndex, country, vatRate, netSales, standardVat))),
 
             value =>
               for {
