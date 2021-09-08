@@ -16,16 +16,17 @@
 
 package pages
 
+import models.VatOnSales
 import pages.behaviours.PageBehaviours
 
 class VatOnSalesFromNiPageSpec extends PageBehaviours {
 
   "VatOnSalesFromNiPage" - {
 
-    beRetrievable[Int](VatOnSalesFromNiPage(index, index))
+    beRetrievable[VatOnSales](VatOnSalesFromNiPage(index, index))
 
-    beSettable[Int](VatOnSalesFromNiPage(index, index))
+    beSettable[VatOnSales](VatOnSalesFromNiPage(index, index))
 
-    beRemovable[Int](VatOnSalesFromNiPage(index, index))
+    beRemovable[VatOnSales](VatOnSalesFromNiPage(index, index))
   }
 }

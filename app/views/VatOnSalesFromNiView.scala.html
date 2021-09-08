@@ -5,6 +5,7 @@
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
+    govukRadios: GovukRadios,
     govukInput: GovukInput,
     govukButton: GovukButton
 )
@@ -23,13 +24,36 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukInput(
-            InputViewModel(
-                field = form("value"),
-                label = LabelViewModel(messages("vatOnSalesFromNi.heading")).asPageHeading()
+        @govukRadios(
+            RadiosViewModel(
+                field  = form("choice"),
+                legend = LegendViewModel(messages("vatOnSalesFromNi.heading")).asPageHeading(),
+                items = Seq(
+                    RadioItem(
+                        content = Text("foo"),
+                        value   = Some(VatOnSalesChoice.Standard.toString),
+                        id      = Some("value_0")
+                    ),
+                    RadioItem(
+                        content = Text(messages("vatOnSalesFromNi.other")),
+                        value   = Some(VatOnSalesChoice.NonStandard.toString),
+                        id      = Some("value_1"),
+                        conditionalHtml = Some(Html(
+                            """<p class="govuk-body">""" + messages("vatOnSalesFromNi.other.guidance") + "</p>" +
+                            govukInput(
+                                InputViewModel(
+                                    field = form("amount"),
+                                    label = LabelViewModel(messages("vatOnSalesFromNi.amount"))
+                                )
+                                .asNumeric()
+                                .withWidth(Fixed10)
+                                .withCssClass("govuk-currency-input__inner__input")
+                                .withPrefix(PrefixOrSuffix(content = Text("£")))
+                            )
+                        ))
+                    )
+                )
             )
-            .asNumeric()
-            .withWidth(Fixed10)
         )
 
         @govukButton(

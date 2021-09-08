@@ -27,6 +27,14 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 
 trait ModelGenerators {
 
+  implicit val arbitraryVatOnSales: Arbitrary[VatOnSales] =
+    Arbitrary {
+      for {
+        choice <- Gen.oneOf(VatOnSalesChoice.values)
+        amount <- arbitrary[BigDecimal]
+      } yield VatOnSales(choice, amount)
+    }
+
   implicit val arbitraryQuarter: Arbitrary[Quarter] =
     Arbitrary {
       Gen.oneOf(Quarter.values)

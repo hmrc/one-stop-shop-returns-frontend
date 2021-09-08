@@ -18,17 +18,19 @@ package controllers
 
 import base.SpecBase
 import forms.VatOnSalesFromNiFormProvider
-import models.{Country, NormalMode, UserAnswers, VatRate}
+import models.{Country, NormalMode, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.{CountryOfConsumptionFromNiPage, NetValueOfSalesFromNiPage, VatOnSalesFromNiPage, VatRatesFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.VatRateService
 import views.html.VatOnSalesFromNiView
 
 import scala.concurrent.Future
@@ -39,16 +41,21 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
   private val vatRate = arbitrary[VatRate].sample.value
   private val netSales = Gen.choose[BigDecimal](0, 100000).sample.value
 
+  private val standardVatOnSales = BigDecimal(1)
+
+  private val mockVatRateService = mock[VatRateService]
+  when(mockVatRateService.standardVatOnSales(any(), any())) thenReturn standardVatOnSales
+
   private val baseAnswers =
     emptyUserAnswers
       .set(CountryOfConsumptionFromNiPage(index), country).success.value
       .set(VatRatesFromNiPage(index), List(vatRate)).success.value
       .set(NetValueOfSalesFromNiPage(index, index), netSales).success.value
 
-  private val formProvider = new VatOnSalesFromNiFormProvider()
-  private val form = formProvider()
+  private val formProvider = new VatOnSalesFromNiFormProvider(mockVatRateService)
+  private val form = formProvider(vatRate, netSales)
 
-  private val validAnswer = 0
+  private val validAnswer = VatOnSales(VatOnSalesChoice.Standard, 1)
 
   private lazy val vatOnSalesFromNiRoute = routes.VatOnSalesFromNiController.onPageLoad(NormalMode, period, index, index).url
 
@@ -105,13 +112,16 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
       val application =
         applicationBuilder(userAnswers = Some(baseAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(
+            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[VatRateService].toInstance(mockVatRateService)
+          )
           .build()
 
       running(application) {
         val request =
           FakeRequest(POST, vatOnSalesFromNiRoute)
-            .withFormUrlEncodedBody(("value", validAnswer.toString))
+            .withFormUrlEncodedBody(("choice", VatOnSalesChoice.Standard.toString))
 
         val result = route(application, request).value
         val expectedAnswers = baseAnswers.set(VatOnSalesFromNiPage(index, index), validAnswer).success.value
@@ -129,9 +139,9 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, vatOnSalesFromNiRoute)
-            .withFormUrlEncodedBody(("value", "invalid value"))
+            .withFormUrlEncodedBody(("choice", "invalid value"))
 
-        val boundForm = form.bind(Map("value" -> "invalid value"))
+        val boundForm = form.bind(Map("choice" -> "invalid value"))
 
         val view = application.injector.instanceOf[VatOnSalesFromNiView]
 
@@ -172,7 +182,7 @@ class VatOnSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, vatOnSalesFromNiRoute)
-            .withFormUrlEncodedBody(("value", validAnswer.toString))
+            .withFormUrlEncodedBody(("choice", VatOnSalesChoice.Standard.toString))
 
         val result = route(application, request).value
 

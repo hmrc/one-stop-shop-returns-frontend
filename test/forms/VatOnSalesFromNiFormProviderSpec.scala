@@ -16,47 +16,111 @@
 
 package forms
 
-import forms.behaviours.IntFieldBehaviours
+import forms.behaviours.DecimalFieldBehaviours
+import models.VatOnSalesChoice._
+import models.{VatOnSales, VatRate, VatRateType}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.data.FormError
+import services.VatRateService
 
-class VatOnSalesFromNiFormProviderSpec extends IntFieldBehaviours {
+import java.time.LocalDate
 
-  val form = new VatOnSalesFromNiFormProvider()()
+class VatOnSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
 
-  ".value" - {
+  private val vatRate            = VatRate(1, VatRateType.Standard, LocalDate.now)
+  private val netSales           = BigDecimal(1)
+  private val standardVatOnSales = BigDecimal(1)
 
-    val fieldName = "value"
+  private val mockVatRateService = mock[VatRateService]
+  when(mockVatRateService.standardVatOnSales(any(), any())) thenReturn standardVatOnSales
 
-    val minimum = 0
-    val maximum = 10000000
+  private val form = new VatOnSalesFromNiFormProvider(mockVatRateService)(vatRate, netSales)
 
-    val validDataGenerator = intsInRangeWithCommas(minimum, maximum)
+  "form" - {
 
-    behave like fieldThatBindsValidData(
-      form,
-      fieldName,
-      validDataGenerator
-    )
+    "when Standard is selected" - {
 
-    behave like intField(
-      form,
-      fieldName,
-      nonNumericError  = FormError(fieldName, "vatOnSalesFromNi.error.nonNumeric"),
-      wholeNumberError = FormError(fieldName, "vatOnSalesFromNi.error.wholeNumber")
-    )
+      "must bind" in {
 
-    behave like intFieldWithRange(
-      form,
-      fieldName,
-      minimum       = minimum,
-      maximum       = maximum,
-      expectedError = FormError(fieldName, "vatOnSalesFromNi.error.outOfRange", Seq(minimum, maximum))
-    )
+        val result = form.bind(Map("choice" -> Standard.toString))
+        result.value.value mustEqual VatOnSales(Standard, standardVatOnSales)
+        result.errors mustBe empty
+      }
+    }
 
-    behave like mandatoryField(
-      form,
-      fieldName,
-      requiredError = FormError(fieldName, "vatOnSalesFromNi.error.required")
-    )
+    "when NonStandard is selected" - {
+
+      "must bind when a valid amount is supplied" in {
+
+        val result = form.bind(Map(
+          "choice" -> NonStandard.toString,
+          "amount" -> "1"
+        ))
+        result.value.value mustEqual VatOnSales(NonStandard, 1)
+        result.errors mustBe empty
+      }
+
+      "must not bind when a negative amount is supplied" in {
+
+        val result = form.bind(Map(
+          "choice" -> NonStandard.toString,
+          "amount" -> "-1"
+        ))
+        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.outOfRange", Seq(0.01, 10000000))
+      }
+
+      "must not bind when a zero amount is supplied" in {
+
+        val result = form.bind(Map(
+          "choice" -> NonStandard.toString,
+          "amount" -> "0"
+        ))
+        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.outOfRange", Seq(0.01, 10000000))
+      }
+
+      "must not bind when an amount greater than 10,000,000 is supplied" in {
+
+        val result = form.bind(Map(
+          "choice" -> NonStandard.toString,
+          "amount" -> "10000000.01"
+        ))
+        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.outOfRange", Seq(0.01, 10000000))
+      }
+
+      "must not bind when a non-numeric amount is supplied" in {
+
+        val result = form.bind(Map(
+          "choice" -> NonStandard.toString,
+          "amount" -> "foo"
+        ))
+        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.nonNumeric")
+      }
+
+      "must not bind when a number with too many decimal places is supplied" in {
+
+        val result = form.bind(Map(
+          "choice" -> NonStandard.toString,
+          "amount" -> "1.234"
+        ))
+        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.decimalFormat")
+      }
+
+      "must not bind when an amount is not supplied" in {
+
+        val result = form.bind(Map("choice" -> NonStandard.toString))
+        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.required")
+      }
+    }
+
+    "when no choice is selected" - {
+
+      "must not bind" in {
+
+        val result = form.bind(Map.empty[String, String])
+        result.errors must contain only FormError("choice", "vatOnSalesFromNi.choice.error.required")
+      }
+    }
   }
 }

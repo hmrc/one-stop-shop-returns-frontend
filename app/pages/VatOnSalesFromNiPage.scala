@@ -17,12 +17,12 @@
 package pages
 
 import controllers.routes
-import models.{Index, UserAnswers}
+import models.{Index, UserAnswers, VatOnSales}
 import pages.PageConstants.salesFromNi
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Int] {
+case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
   override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ toString \ vatRateIndex.position
 

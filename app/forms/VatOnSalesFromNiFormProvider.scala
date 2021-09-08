@@ -17,17 +17,43 @@
 package forms
 
 import forms.mappings.Mappings
-import javax.inject.Inject
+import models.VatOnSalesChoice.{NonStandard, Standard}
+import models.{VatOnSales, VatOnSalesChoice, VatRate}
 import play.api.data.Form
+import play.api.data.Forms.mapping
+import services.VatRateService
+import uk.gov.voa.play.form.ConditionalMappings.mandatoryIfEqual
 
-class VatOnSalesFromNiFormProvider @Inject() extends Mappings {
+import javax.inject.Inject
 
-  def apply(): Form[Int] =
+class VatOnSalesFromNiFormProvider @Inject()(vatRateService: VatRateService) extends Mappings {
+
+  def apply(vatRate: VatRate, netSales: BigDecimal): Form[VatOnSales] =
     Form(
-      "value" -> int(
-        "vatOnSalesFromNi.error.required",
-        "vatOnSalesFromNi.error.wholeNumber",
-        "vatOnSalesFromNi.error.nonNumeric")
-          .verifying(inRange(0, 10000000, "vatOnSalesFromNi.error.outOfRange"))
+      mapping(
+        "choice" -> enumerable[VatOnSalesChoice]("vatOnSalesFromNi.choice.error.required"),
+        "amount" -> mandatoryIfEqual("choice", VatOnSalesChoice.NonStandard.toString, numeric(
+          "vatOnSalesFromNi.amount.error.required",
+          "vatOnSalesFromNi.amount.error.decimalFormat",
+          "vatOnSalesFromNi.amount.error.nonNumeric"
+        )
+        .verifying(inRange[BigDecimal](0.01, 10000000, "vatOnSalesFromNi.amount.error.outOfRange"))
+        )
+      )(a(vatRate, netSales))(u)
     )
+
+  private def a( vatRate: VatRate, netSales: BigDecimal)
+               (choice: VatOnSalesChoice, amount: Option[BigDecimal])
+               : VatOnSales =
+    (choice, amount) match {
+      case (Standard, _)         => VatOnSales(Standard, vatRateService.standardVatOnSales(netSales, vatRate))
+      case (NonStandard, Some(amount)) => VatOnSales(NonStandard, amount)
+      case (NonStandard, None)         => throw new IllegalArgumentException("Tried to bind a form for an other amount, but no amount was supplied")
+    }
+
+  private def u(vatOnSales: VatOnSales): Option[(VatOnSalesChoice, Option[BigDecimal])] =
+    vatOnSales.choice match {
+      case Standard => Some((Standard, None))
+      case NonStandard    => Some((NonStandard, Some(vatOnSales.amount)))
+    }
 }
