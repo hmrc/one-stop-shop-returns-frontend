@@ -17,7 +17,10 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, NormalMode}
+import models.VatOnSalesChoice.Standard
+import models.{CheckMode, NormalMode, VatOnSales, VatRate}
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
 
 class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
