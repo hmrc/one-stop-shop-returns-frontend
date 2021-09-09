@@ -20,7 +20,7 @@ import controllers.routes
 import models.{CheckMode, Index, NormalMode, UserAnswers, VatRate}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.{NetValueOfSalesAllVatRatesQuery, VatOnSalesAllVatRatesQuery}
+import queries.AllSalesFromNiAtVatRateQuery
 
 import scala.util.Try
 
@@ -37,7 +37,5 @@ case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRate]] 
     routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, answers.period, index, Index(0))
 
   override def cleanup(value: Option[List[VatRate]], userAnswers: UserAnswers): Try[UserAnswers] =
-    userAnswers
-      .remove(NetValueOfSalesAllVatRatesQuery(index))
-      .flatMap(_.remove(VatOnSalesAllVatRatesQuery(index)))
+    userAnswers.remove(AllSalesFromNiAtVatRateQuery(index))
 }

@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, Index, NormalMode, VatOnSales, VatRate}
+import models.{CheckLoopMode, CheckMode, Index, NormalMode, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
@@ -25,12 +25,6 @@ import pages.behaviours.PageBehaviours
 class VatOnSalesFromNiPageSpec extends PageBehaviours {
 
   "VatOnSalesFromNiPage" - {
-
-    beRetrievable[VatOnSales](VatOnSalesFromNiPage(index, index))
-
-    beSettable[VatOnSales](VatOnSalesFromNiPage(index, index))
-
-    beRemovable[VatOnSales](VatOnSalesFromNiPage(index, index))
 
     "must navigate in Normal Mode" - {
 

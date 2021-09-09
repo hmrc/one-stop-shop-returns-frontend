@@ -16,11 +16,11 @@
 
 package queries
 
-import models.Index
-import pages.PageConstants.{netValueOfSales, salesFromNi}
+import models.{Index, SalesAtVatRate}
+import pages.PageConstants.{salesAtVatRate, salesFromNi}
 import play.api.libs.json.JsPath
 
-case class NetValueOfSalesAllVatRatesQuery(countryIndex: Index) extends Gettable[List[BigDecimal]] with Settable[List[BigDecimal]] {
+case class AllSalesFromNiAtVatRateQuery(countryIndex: Index) extends Gettable[List[SalesAtVatRate]] with Settable[List[SalesAtVatRate]] {
 
-  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ netValueOfSales
+  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ salesAtVatRate
 }

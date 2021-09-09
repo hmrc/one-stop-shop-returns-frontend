@@ -18,13 +18,15 @@ package pages
 
 import controllers.routes
 import models.{CheckMode, Index, NormalMode, UserAnswers}
-import pages.PageConstants.{netValueOfSales, salesFromNi}
+import pages.PageConstants.{netValueOfSales, salesAtVatRate, salesFromNi}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
+import scala.util.Try
+
 case class NetValueOfSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[BigDecimal] {
 
-  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ toString \ vatRateIndex.position
+  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ salesAtVatRate \ vatRateIndex.position \ netValueOfSales
 
   override def toString: String = netValueOfSales
 
@@ -33,4 +35,7 @@ case class NetValueOfSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) e
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     routes.VatOnSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex)
+
+  override def cleanup(value: Option[BigDecimal], userAnswers: UserAnswers): Try[UserAnswers] =
+    userAnswers.remove(VatOnSalesFromNiPage(countryIndex, vatRateIndex))
 }

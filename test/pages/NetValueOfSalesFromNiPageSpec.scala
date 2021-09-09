@@ -27,12 +27,6 @@ class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
 
   "NetValueOfSalesFromNiPage" - {
 
-    beRetrievable[BigDecimal](NetValueOfSalesFromNiPage(index, index))
-
-    beSettable[BigDecimal](NetValueOfSalesFromNiPage(index, index))
-
-    beRemovable[BigDecimal](NetValueOfSalesFromNiPage(index, index))
-
     "must navigate in Normal mode" - {
 
       "to VAT on sales" in {
@@ -49,6 +43,21 @@ class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
         NetValueOfSalesFromNiPage(index, index).navigate(CheckMode, emptyUserAnswers)
           .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(CheckMode, period, index, index))
       }
+    }
+
+    "must remove VAT on sales for the same index when set" in {
+
+      val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+      val answers =
+        emptyUserAnswers
+          .set(VatRatesFromNiPage(index), vatRates).success.value
+          .set(VatOnSalesFromNiPage(index, index), VatOnSales(Standard, BigDecimal(1))).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), VatOnSales(Standard, BigDecimal(2))).success.value
+
+      val result = answers.set(NetValueOfSalesFromNiPage(index, index), BigDecimal(1)).success.value
+
+      result.get(VatOnSalesFromNiPage(index, index)) must not be defined
+      result.get(VatOnSalesFromNiPage(index, index + 1)).value mustEqual VatOnSales(Standard, BigDecimal(2))
     }
   }
 }
