@@ -34,19 +34,19 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
 
     "must navigate in Normal mode" - {
 
-      "to Nat Value of Sales" in {
+      "to Net Value of Sales" in {
 
         VatRatesFromNiPage(index).navigate(NormalMode, emptyUserAnswers)
-          .mustEqual(routes.SalesAtVatRateFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, index, Index(0)))
+          .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, index, Index(0)))
       }
     }
 
     "must navigate in Check mode" - {
 
-      "to Nat Value of Sales" in {
+      "to Net Value of Sales" in {
 
         VatRatesFromNiPage(index).navigate(CheckMode, emptyUserAnswers)
-          .mustEqual(routes.SalesAtVatRateFromNiController.onPageLoad(CheckMode, emptyUserAnswers.period, index, Index(0)))
+          .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, emptyUserAnswers.period, index, Index(0)))
       }
     }
 

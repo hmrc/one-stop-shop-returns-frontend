@@ -16,7 +16,10 @@
 
 package pages
 
-import models.VatOnSales
+import controllers.routes
+import models.{CheckLoopMode, CheckMode, Index, NormalMode, VatOnSales, VatRate}
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
 
 class VatOnSalesFromNiPageSpec extends PageBehaviours {
@@ -28,5 +31,98 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
     beSettable[VatOnSales](VatOnSalesFromNiPage(index, index))
 
     beRemovable[VatOnSales](VatOnSalesFromNiPage(index, index))
+
+    "must navigate in Normal Mode" - {
+
+      "when there is another VAT rate to collect answers for" - {
+
+        "to Net Value of Sales for the next index" in {
+
+          val countryIndex = Index(0)
+
+          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
+
+          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, Index(1)))
+        }
+      }
+
+      "when there are no more VAT rates to collect answers for" - {
+
+        "to Check Sales From NI" in {
+
+          val countryIndex = Index(0)
+
+          val vatRate = arbitrary[VatRate].sample.value
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromNiPage(countryIndex), List(vatRate)).success.value
+
+          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex))
+        }
+      }
+    }
+
+    "must navigate in Check Mode" - {
+
+      "when there is another VAT rate to collect answers for" - {
+
+        "to Net Value of Sales for the next index" in {
+
+          val countryIndex = Index(0)
+
+          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
+
+          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(CheckMode, answers)
+            .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, Index(1)))
+        }
+      }
+
+      "when there are no more VAT rates to collect answers for" - {
+
+        "to Check Sales From NI" in {
+
+          val countryIndex = Index(0)
+
+          val vatRate = arbitrary[VatRate].sample.value
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromNiPage(countryIndex), List(vatRate)).success.value
+
+          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(CheckMode, answers)
+            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex))
+        }
+      }
+    }
+
+    "must navigate in Check Loop Mode" - {
+
+      "when there are other vat rates" - {
+
+        "it will navigate to the check sales from ni page" in {
+
+          val countryIndex = Index(0)
+
+          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
+
+          VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(CheckLoopMode, answers)
+            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex))
+
+        }
+      }
+    }
   }
 }

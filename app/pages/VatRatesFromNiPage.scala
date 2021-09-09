@@ -31,10 +31,10 @@ case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRate]] 
   override def toString: String = PageConstants.vatRates
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.SalesAtVatRateFromNiController.onPageLoad(NormalMode, answers.period, index, Index(0))
+    routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, answers.period, index, Index(0))
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.SalesAtVatRateFromNiController.onPageLoad(CheckMode, answers.period, index, Index(0))
+    routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, answers.period, index, Index(0))
 
   override def cleanup(value: Option[List[VatRate]], userAnswers: UserAnswers): Try[UserAnswers] = {
     value match {

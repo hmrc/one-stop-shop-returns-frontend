@@ -16,6 +16,8 @@
 
 package pages
 
+import controllers.routes
+import models.{CheckMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
@@ -27,5 +29,23 @@ class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
     beSettable[BigDecimal](NetValueOfSalesFromNiPage(index, index))
 
     beRemovable[BigDecimal](NetValueOfSalesFromNiPage(index, index))
+
+    "must navigate in Normal mode" - {
+
+      "to VAT on sales" in {
+
+        NetValueOfSalesFromNiPage(index, index).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(NormalMode, period, index, index))
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to VAT on sales" in {
+
+        NetValueOfSalesFromNiPage(index, index).navigate(CheckMode, emptyUserAnswers)
+          .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(CheckMode, period, index, index))
+      }
+    }
   }
 }
