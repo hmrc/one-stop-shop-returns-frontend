@@ -20,7 +20,8 @@ import controllers.actions._
 import generators.Generators
 import models.registration._
 import models.{Country, Index, Period, Quarter, ReturnReference, SalesAtVatRate, UserAnswers, VatRate, VatRateType}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType, VatReturn}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.requests.VatReturnRequest
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -145,6 +146,16 @@ trait SpecBase
       List.empty,
       Instant.ofEpochSecond(1630670836),
       Instant.ofEpochSecond(1630670836)
+    )
+
+  val vatReturnRequest: VatReturnRequest =
+    VatReturnRequest(
+      Vrn("063407423"),
+      Period("2086", "Q3").get,
+      Some(LocalDate.now()),
+      Some(LocalDate.now().plusDays(1)),
+      List.empty,
+      List.empty
     )
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
