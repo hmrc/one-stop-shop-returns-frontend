@@ -20,6 +20,7 @@ import controllers.routes
 import models.{CheckMode, Index, UserAnswers}
 import pages.VatOnSalesFromNiPage
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
@@ -33,7 +34,7 @@ object VatOnSalesFromNiSummary  {
 
         SummaryListRowViewModel(
           key     = "vatOnSalesFromNi.checkYourAnswersLabel",
-          value   = ValueViewModel(currencyFormat(answer.amount)),
+          value   = ValueViewModel(HtmlContent(currencyFormat(answer.amount))),
           actions = Seq(
             ActionItemViewModel("site.change", routes.VatOnSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex).url)
               .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden"))

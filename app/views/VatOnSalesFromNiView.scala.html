@@ -37,7 +37,11 @@
         @govukRadios(
             RadiosViewModel(
                 field  = form("choice"),
-                legend = LegendViewModel(messages("vatOnSalesFromNi.heading")).asPageHeading(),
+                legend = LegendViewModel(
+                    headingWithCaption(
+                        HtmlContent(messages("vatOnSalesFromNi.heading", currencyFormat(netSales), vatRate.rateForDisplay)).asHtml.toString,
+                        messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
+                    )).asPageHeading(),
                 items = Seq(
                     RadioItem(
                         content = HtmlContent(Html(currencyFormat(standardVat))),
@@ -45,7 +49,7 @@
                         id      = Some("value_0")
                     ),
                     RadioItem(
-                        content = Text(messages("vatOnSalesFromNi.other")),
+                        content = Text(messages("vatOnSalesFromNi.nonStandard")),
                         value   = Some(VatOnSalesChoice.NonStandard.toString),
                         id      = Some("value_1"),
                         conditionalHtml = Some(Html(
