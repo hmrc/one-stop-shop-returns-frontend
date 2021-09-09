@@ -75,6 +75,26 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "must redirect to previous returns when return for same period already exists" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      when()
+//      when(routes.StartReturnController.onPageLoad(any())) thenReturn Future.successful(completeVatReturn)
+
+      running(application) {
+
+        val request =
+          FakeRequest(POST, startReturnRoute)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.PreviousReturnController.onPageLoad(period).url
+      }
+    }
+
     "must clear useranswers when answer is no" in {
 
       val mockSessionRepository = mock[SessionRepository]

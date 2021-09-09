@@ -32,6 +32,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def sessionRepository: SessionRepository
   def identify: AuthenticatedIdentifierAction
   def getRegistration: GetRegistrationAction
+  def checkReturn: CheckReturnsFilter
   def getData: DataRetrievalActionProvider
   def requireData: DataRequiredAction
 
@@ -42,7 +43,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     auth andThen getRegistration
 
   def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
-    auth andThen getRegistration andThen getData(period)
+    auth andThen getRegistration andThen getData(period) andThen checkReturn
 
   def authAndGetData(period: Period): ActionBuilder[DataRequest, AnyContent] =
     authAndGetOptionalData(period) andThen requireData
@@ -59,6 +60,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                sessionRepository: SessionRepository,
                                                                identify: AuthenticatedIdentifierAction,
                                                                getRegistration: GetRegistrationAction,
+                                                               checkReturn: CheckReturnsFilter,
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction
                                                              ) extends AuthenticatedControllerComponents
