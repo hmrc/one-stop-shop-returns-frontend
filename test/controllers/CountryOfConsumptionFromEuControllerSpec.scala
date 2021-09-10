@@ -21,7 +21,6 @@ import forms.CountryOfConsumptionFromEuFormProvider
 import models.{Country, NormalMode}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage}
 import play.api.inject.bind

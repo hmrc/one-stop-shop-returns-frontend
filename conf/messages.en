@@ -37,9 +37,14 @@ error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
 
-index.title = one-stop-shop-returns-frontend
-index.heading = one-stop-shop-returns-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
+index.title = Your account
+index.heading = Your account
+index.vrn = VAT registration number: {0}
+index.yourReturns = Your returns
+index.yourReturns.returnDue = July to September 2021 is due by 31 October 2021
+index.yourReturns.startReturn = Start your return
+index.history = History
+index.history.previousReturns = View past returns
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
@@ -258,3 +263,30 @@ vatOnSalesFromNi.amount.error.required = Enter the amount of VAT charged
 vatOnSalesFromNi.amount.error.decimalFormat = Enter the amount of VAT charged up to two digits
 vatOnSalesFromNi.amount.error.outOfRange = The amount of VAT charged must be between {0} and {1}
 vatOnSalesFromNi.change.hidden = how much VAT you charged on sales
+
+submittedReturnsHistory.title = Submitted returns
+submittedReturnsHistory.heading = Submitted returns
+submittedReturnsHistory.no-returns = You have not submitted any returns for this year.
+
+previousReturn.title = Submitted return for
+previousReturn.summary.title = Summary
+previousReturn.details.title = Details
+previousReturn.vatOwed.label = VAT owed this period
+previousReturn.dateSubmitted.label = Date submitted
+previousReturn.dateDue.label = Date due
+previousReturn.returnReference.label = Return reference number
+previousReturn.paymentReference.label = Payment reference number
+previousReturn.payNow = Pay now
+
+previousReturn.salesAtVatRate.title = Sales from {0} to {1}
+previousReturn.salesAtVatRate.vatRate = {0} VAT rate
+previousReturn.saleAtVatRate.netValueOfSales.label = Sales excluding VAT
+previousReturn.saleAtVatRate.vatOnSales.label = VAT
+
+previousReturn.allSales.title = All sales
+previousReturn.netSalesFromNi.label = Sales excluding VAT from Northern Ireland
+previousReturn.netSalesFromEu.label = Sales excluding VAT from EU countries
+previousReturn.vatOnSalesFromNi.label = VAT on sales from Northern Ireland
+previousReturn.vatOnSalesFromEu.label = VAT on sales from EU countries
+previousReturn.totalVatOnSales.label = VAT owed this period
+

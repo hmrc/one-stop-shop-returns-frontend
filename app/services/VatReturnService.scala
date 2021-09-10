@@ -19,7 +19,7 @@ package services
 import cats.implicits._
 import models._
 import models.domain.EuTaxIdentifierType.Vat
-import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry}
+import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration.{EuVatRegistration, Registration, RegistrationWithFixedEstablishment}
 import models.requests.VatReturnRequest
 import pages._
@@ -86,7 +86,7 @@ class VatReturnService @Inject()() {
     answers.get(NiSalesAtVatRateQuery(countryIndex, vatRateIndex)) match {
       case Some(sales) =>
         SalesDetails(
-          vatRate         = vatRate,
+          vatRate         = toDomainVatRate(vatRate),
           netValueOfSales = sales.netValueOfSales,
           vatOnSales      = sales.vatOnSales.amount
         ).validNec
@@ -171,7 +171,7 @@ class VatReturnService @Inject()() {
     answers.get(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
       case Some(sales) =>
         SalesDetails(
-          vatRate         = vatRate,
+          vatRate         = toDomainVatRate(vatRate),
           netValueOfSales = sales.netValueOfSales,
           vatOnSales      = sales.vatOnSales
         ).validNec
@@ -179,4 +179,15 @@ class VatReturnService @Inject()() {
       case None =>
         DataMissingError(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
     }
+
+  private def toDomainVatRate(vatRate: VatRate): DomainVatRate = {
+    DomainVatRate(
+      vatRate.rate,
+      if(vatRate.rateType == VatRateType.Reduced) {
+        DomainVatRateType.Reduced
+      } else {
+        DomainVatRateType.Standard
+      }
+    )
+  }
 }

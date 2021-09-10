@@ -18,8 +18,10 @@ package base
 
 import controllers.actions._
 import generators.Generators
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
-import models.{Country, Index, Period, Quarter, SalesAtVatRate, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
+import models.requests.VatReturnRequest
+import models.{Country, Index, Period, Quarter, ReturnReference, SalesAtVatRate, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -84,6 +86,78 @@ trait SpecBase
     .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
     .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
     .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+
+  val completeVatReturn: VatReturn =
+      VatReturn(
+        Vrn("063407423"),
+        Period("2086",
+          "Q3").get,
+        ReturnReference("XI/XI063407423/Q3.2086"),
+        None,
+        None,
+        List(SalesToCountry(Country("LT",
+          "Lithuania"),
+          List(SalesDetails(DomainVatRate(45.54,
+            DomainVatRateType.Reduced),
+            306338.71,
+            230899.32),
+            SalesDetails(DomainVatRate(98.54,
+              DomainVatRateType.Reduced),
+              295985.50,
+              319051.84))),
+          SalesToCountry(Country("MT",
+            "Malta"),
+            List(SalesDetails(DomainVatRate(80.28,
+              DomainVatRateType.Standard),
+              357873.00,
+              191855.64)))),
+        List(SalesFromEuCountry(Country("DE", "Germany"),
+          Some(EuTaxIdentifier(EuTaxIdentifierType.Vat, "-1")),
+          List(SalesToCountry(Country("FI",
+            "Finland"),
+            List(SalesDetails(DomainVatRate(56.02,
+              DomainVatRateType.Standard),
+              543742.51,
+              801143.05))))),
+          SalesFromEuCountry(Country("IE",
+            "Ireland"),
+            Some(EuTaxIdentifier(EuTaxIdentifierType.Other, "-2147483648")),
+            List(SalesToCountry(Country("CY",
+              "Republic of Cyprus"),
+              List(SalesDetails(DomainVatRate(98.97,
+                DomainVatRateType.Reduced),
+                356270.07,
+                24080.60),
+                SalesDetails(DomainVatRate(98.92,
+                  DomainVatRateType.Reduced),
+                  122792.32,
+                  554583.78)))))),
+        Instant.ofEpochSecond(1630670836),
+        Instant.ofEpochSecond(1630670836))
+
+  val emptyVatReturn: VatReturn =
+    VatReturn(
+      Vrn("063407423"),
+      Period("2086",
+        "Q3").get,
+      ReturnReference("XI/XI063407423/Q3.2086"),
+      None,
+      None,
+      List.empty,
+      List.empty,
+      Instant.ofEpochSecond(1630670836),
+      Instant.ofEpochSecond(1630670836)
+    )
+
+  val vatReturnRequest: VatReturnRequest =
+    VatReturnRequest(
+      Vrn("063407423"),
+      Period("2086", "Q3").get,
+      Some(LocalDate.now()),
+      Some(LocalDate.now().plusDays(1)),
+      List.empty,
+      List.empty
+    )
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

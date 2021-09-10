@@ -21,13 +21,13 @@ import com.google.inject.Inject
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.responses.ConflictFound
 import models.{NormalMode, Period}
 import pages.CheckYourAnswersPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.SalesAtVatRateService
-import services.VatReturnService
+import services.{AuditService, SalesAtVatRateService, VatReturnService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
@@ -41,6 +41,7 @@ class CheckYourAnswersController @Inject()(
                                             service: SalesAtVatRateService,
                                             view: CheckYourAnswersView,
                                             vatReturnService: VatReturnService,
+                                            auditService: AuditService,
                                             vatReturnConnector: VatReturnConnector
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -105,13 +106,16 @@ class CheckYourAnswersController @Inject()(
         case Valid(returnRequest) =>
           vatReturnConnector.submit(returnRequest).flatMap {
             case Right(_) =>
+              auditService.audit(ReturnsAuditModel.build(returnRequest, SubmissionResult.Success, request))
               Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers)).toFuture
 
             case Left(ConflictFound) =>
+              auditService.audit(ReturnsAuditModel.build(returnRequest, SubmissionResult.Duplicate, request))
               Redirect(routes.IndexController.onPageLoad()).toFuture
 
             case Left(e) =>
               logger.error(s"Unexpected result on submit: ${e.toString}")
+              auditService.audit(ReturnsAuditModel.build(returnRequest, SubmissionResult.Failure, request))
               Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
           }
 

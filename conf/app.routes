@@ -120,3 +120,7 @@ GET        /:period/vatOnSalesFromNi/:countryIndex/:vatRateIndex                
 POST       /:period/vatOnSalesFromNi/:countryIndex/:vatRateIndex                  controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, countryIndex: Index, vatRateIndex: Index)
 GET        /:period/changeVatOnSalesFromNi/:countryIndex/:vatRateIndex                        controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, countryIndex: Index, vatRateIndex: Index)
 POST       /:period/changeVatOnSalesFromNi/:countryIndex/:vatRateIndex                        controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period, countryIndex: Index, vatRateIndex: Index)
+
+GET         /past-returns                           controllers.SubmittedReturnsHistoryController.onPageLoad()
+
+GET         /return/:period                             controllers.PreviousReturnController.onPageLoad(period: Period)

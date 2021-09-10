@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.CountryOfConsumptionFromNiFormProvider
-import models.{Country, NormalMode, UserAnswers}
+import models.{Country, NormalMode}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary

@@ -18,6 +18,8 @@ package controllers
 
 import base.SpecBase
 import generators.Generators
+import models.Period
+import models.Quarter.Q3
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -40,7 +42,11 @@ class IndexControllerSpec extends SpecBase with MockitoSugar with Generators {
 
         status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          registration.registeredCompanyName,
+          registration.vrn.vrn,
+          Period(2021, Q3)
+        )(request, messages(application)).toString
       }
     }
   }

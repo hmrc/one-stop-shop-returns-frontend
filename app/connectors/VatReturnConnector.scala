@@ -18,6 +18,7 @@ package connectors
 
 import config.Service
 import connectors.VatReturnHttpParser._
+import models.Period
 import models.requests.VatReturnRequest
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
@@ -30,9 +31,15 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
 
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
 
-  def submit(vatReturnRequest: VatReturnRequest)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
+  def submit(vatReturnRequest: VatReturnRequest)(implicit hc: HeaderCarrier): Future[SubmittedVatReturnResponse] = {
     val url = s"$baseUrl/vat-returns"
 
-    httpClient.POST[VatReturnRequest, VatReturnResponse](url, vatReturnRequest)
+    httpClient.POST[VatReturnRequest, SubmittedVatReturnResponse](url, vatReturnRequest)
+  }
+
+  def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
+    val url = s"$baseUrl/vat-returns/${period.toString}"
+
+    httpClient.GET[VatReturnResponse](url)
   }
 }

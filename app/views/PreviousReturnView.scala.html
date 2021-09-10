@@ -1,0 +1,70 @@
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
+@import viewmodels.LegendSize
+@import models.domain.VatReturn
+@import viewmodels.TitledSummaryList
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukSummaryList: GovukSummaryList,
+        govukButton: GovukButton
+)
+
+
+@(
+        vatReturn: VatReturn,
+        mainList: SummaryList,
+        niSalesList: Map[String, Seq[TitledSummaryList]],
+        euSalesList: Map[String, Seq[TitledSummaryList]],
+        totalSalesList: TitledSummaryList
+)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = titleNoForm(
+    messages("previousReturn.title"),
+    Some(vatReturn.period.displayText)
+)) {
+
+    <h1 class="govuk-heading-xl">
+    @headingWithCaption(
+        vatReturn.period.displayText,
+        messages("previousReturn.title")
+    ).asHtml
+    </h1>
+
+    <h2 class="govuk-heading-l">@messages("previousReturn.summary.title")</h2>
+
+    @govukSummaryList(mainList)
+
+    <p class="govuk-!-margin-bottom-9">
+        <button class="govuk-button">@messages("previousReturn.payNow")</button>
+    </p>
+
+    <h2 class="govuk-heading-l">@messages("previousReturn.details.title")</h2>
+
+    @for((mainTitle, list) <- niSalesList) {
+        <h2 class="govuk-heading-m">@mainTitle</h2>
+        @for(item <- list) {
+            <h2 class="govuk-heading-s">@{
+                item.title
+            }</h2>
+
+            @govukSummaryList(item.list)
+        }
+    }
+
+    @for((mainTitle, list) <- euSalesList) {
+        <h2 class="govuk-heading-m">@mainTitle</h2>
+        @for(item <- list) {
+            <h2 class="govuk-heading-s">@{
+                item.title
+            }</h2>
+
+            @govukSummaryList(item.list)
+        }
+    }
+    <h2 class="govuk-heading-m">@{
+        totalSalesList.title
+    }</h2>
+
+    @govukSummaryList(totalSalesList.list)
+}

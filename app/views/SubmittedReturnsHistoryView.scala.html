@@ -1,0 +1,53 @@
+@import models.domain.VatReturn
+
+@this(
+        layout: templates.Layout
+)
+
+@(vatReturn: Option[VatReturn])(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title")), showBackLink = false) {
+
+    <div class="govuk-breadcrumbs">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@routes.IndexController.onPageLoad()">Your account</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@routes.SubmittedReturnsHistoryController.onPageLoad()">Submitted returns</a>
+            </li>
+        </ol>
+    </div>
+
+    <h1 class="govuk-heading-xl">@messages("submittedReturnsHistory.heading")</h1>
+
+    <div class="govuk-tabs" data-module="govuk-tabs">
+        <h2 class="govuk-tabs__title">
+            Contents
+        </h2>
+        <ul class="govuk-tabs__list">
+            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                <a class="govuk-tabs__tab" href="#2021">
+                    2021
+                </a>
+            </li>
+        </ul>
+        <div class="govuk-tabs__panel" id="returns_year_2021">
+            <h2 class="govuk-heading-m">2021 returns</h2>
+            @vatReturn match {
+                case Some(vatReturn) => {
+                    <table class="govuk-table">
+                        <ul class="govuk-list govuk-list--bullet">
+                            <li>
+                                <a class="govuk-link" href="@routes.PreviousReturnController.onPageLoad(vatReturn.period)">@vatReturn.period.displayText</a>
+                            </li>
+                        </ul>
+                    </table>
+                }
+                case _ => {
+                    <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
+                }
+            }
+        </div>
+    </div>
+}

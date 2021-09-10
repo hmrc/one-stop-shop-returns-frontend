@@ -16,7 +16,7 @@
 
 package models.domain
 
-import models.{Country, VatRate}
+import models.Country
 import play.api.libs.json.{Json, OFormat}
 
 case class SalesFromEuCountry(
