@@ -24,7 +24,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.TitledSummaryList
-import viewmodels.checkAnswers.{NetValueOfSalesFromNiSummary, SalesAtVatRateFromNiSummary, VatOnSalesFromNiSummary, VatRatesFromNiSummary}
+import viewmodels.checkAnswers.{NetValueOfSalesFromNiSummary, VatOnSalesFromNiSummary, VatRatesFromNiSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckSalesFromNiView
 

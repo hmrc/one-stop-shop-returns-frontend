@@ -19,7 +19,7 @@ package base
 import controllers.actions._
 import generators.Generators
 import models.registration._
-import models.{Country, Index, Period, Quarter, SalesAtVatRate, UserAnswers, VatRate, VatRateType}
+import models.{Country, Index, Period, Quarter, SalesAtVatRate, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -75,7 +75,8 @@ trait SpecBase
     .set(SoldGoodsFromNiPage, true).success.value
     .set(CountryOfConsumptionFromNiPage(index), Country("ES", "Spain")).success.value
     .set(VatRatesFromNiPage(index), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
-    .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
+    .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
+    .set(VatOnSalesFromNiPage(index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(1000))).success.value
 
   def completeUserAnswers : UserAnswers = completeSalesFromNIUserAnswers
     .set(SoldGoodsFromEuPage,true).success.value

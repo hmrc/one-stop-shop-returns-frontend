@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package queries
+package models
 
-import models.SalesFromNi
-import pages.PageConstants
-import play.api.libs.json.JsPath
+import play.api.libs.json.{Json, OFormat}
 
-case object AllSalesFromNiQuery extends Gettable[List[SalesFromNi]] with Settable[List[SalesFromNi]] {
+case class NiSalesAtVatRate(
+                             netValueOfSales: BigDecimal,
+                             vatOnSales: VatOnSales
+                           )
 
-  override def path: JsPath = JsPath \ PageConstants.salesFromNi
+object NiSalesAtVatRate {
+
+  implicit val format: OFormat[NiSalesAtVatRate] = Json.format[NiSalesAtVatRate]
 }

@@ -17,9 +17,6 @@
 package viewmodels.checkAnswers
 
 import base.SpecBase
-import controllers.routes
-import models.{CheckMode, Country, SalesAtVatRate, VatRate, VatRateType}
-import pages.{CountryOfConsumptionFromNiPage, SalesAtVatRateFromNiPage, VatRatesFromNiPage}
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent

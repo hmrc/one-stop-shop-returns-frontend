@@ -35,7 +35,7 @@ class SalesAtVatRateService @Inject()() {
   def getNiTotalVatOnSales(userAnswers: UserAnswers): Option[BigDecimal] = {
     userAnswers.get(AllSalesFromNiQuery).map(allSales =>
       allSales.map(saleFromNi =>
-        saleFromNi.salesAtVatRate.map(_.vatOnSales).sum
+        saleFromNi.salesAtVatRate.map(_.vatOnSales.amount).sum
       ).sum
     )
   }
@@ -85,7 +85,7 @@ class SalesAtVatRateService @Inject()() {
         allSalesFromNi <- userAnswers.get(AllSalesFromNiQuery).toSeq
         saleFromNi     <- allSalesFromNi
         salesAtVatRate <- saleFromNi.salesAtVatRate
-      } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.vatOnSales)
+      } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.vatOnSales.amount)
 
     val vatOwedToEuCountries =
       vatOwedToEuCountriesFromEu ++ vatOwedToEuCountriesFromNI

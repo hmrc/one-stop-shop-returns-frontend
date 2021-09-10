@@ -17,7 +17,8 @@
 package services
 
 import base.SpecBase
-import models.{Country, Index, SalesAtVatRate, TotalVatToCountry, VatRate, VatRateType}
+import models.VatOnSalesChoice.Standard
+import models.{Country, Index, SalesAtVatRate, TotalVatToCountry, VatOnSales, VatRate, VatRateType}
 import pages._
 
 class SalesAtVatRateServiceSpec extends SpecBase {
@@ -44,8 +45,10 @@ class SalesAtVatRateServiceSpec extends SpecBase {
               VatRate(20, VatRateType.Reduced, arbitraryDate)
             )
           ).success.value
-          .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(200))).success.value
-          .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(100), BigDecimal(400))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
+          .set(VatOnSalesFromNiPage(index, index), VatOnSales(Standard, BigDecimal(200))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(300)).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), VatOnSales(Standard, BigDecimal(400))).success.value
 
         service.getNiTotalVatOnSales(answers) mustBe Some(BigDecimal(600))
       }
@@ -59,11 +62,14 @@ class SalesAtVatRateServiceSpec extends SpecBase {
               VatRate(20, VatRateType.Reduced, arbitraryDate)
             )
           ).success.value
-          .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(200))).success.value
-          .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(300), BigDecimal(400))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
+          .set(VatOnSalesFromNiPage(index, index), VatOnSales(Standard, BigDecimal(200))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(300)).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), VatOnSales(Standard, BigDecimal(400))).success.value
           .set(CountryOfConsumptionFromNiPage(index + 1), Country("OTH", "OtherCountry")).success.value
           .set(VatRatesFromNiPage(index + 1), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
-          .set(SalesAtVatRateFromNiPage(index + 1, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
+          .set(NetValueOfSalesFromNiPage(index + 1, index), BigDecimal(100)).success.value
+          .set(VatOnSalesFromNiPage(index + 1, index), VatOnSales(Standard, BigDecimal(1000))).success.value
 
         service.getNiTotalVatOnSales(answers) mustBe Some(BigDecimal(1600))
       }
@@ -84,8 +90,10 @@ class SalesAtVatRateServiceSpec extends SpecBase {
               VatRate(20, VatRateType.Reduced, arbitraryDate)
             )
           ).success.value
-          .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(200))).success.value
-          .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(300), BigDecimal(400))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
+          .set(VatOnSalesFromNiPage(index, index), VatOnSales(Standard, BigDecimal(200))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(300)).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), VatOnSales(Standard, BigDecimal(400))).success.value
 
         service.getNiTotalNetSales(answers) mustBe Some(BigDecimal(400))
       }
@@ -99,11 +107,14 @@ class SalesAtVatRateServiceSpec extends SpecBase {
               VatRate(20, VatRateType.Reduced, arbitraryDate)
             )
           ).success.value
-          .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(200))).success.value
-          .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(300), BigDecimal(400))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
+          .set(VatOnSalesFromNiPage(index, index), VatOnSales(Standard, BigDecimal(200))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(300)).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), VatOnSales(Standard, BigDecimal(400))).success.value
           .set(CountryOfConsumptionFromNiPage(index + 1), Country("OTH", "OtherCountry")).success.value
           .set(VatRatesFromNiPage(index + 1), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
-          .set(SalesAtVatRateFromNiPage(index + 1, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
+          .set(NetValueOfSalesFromNiPage(index + 1, index), BigDecimal(100)).success.value
+          .set(VatOnSalesFromNiPage(index + 1, index), VatOnSales(Standard, BigDecimal(1000))).success.value
 
         service.getNiTotalNetSales(answers) mustBe Some(BigDecimal(500))
       }
