@@ -24,6 +24,7 @@ import models.{Index, Mode, Period}
 import pages.VatOnSalesFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import views.html.VatOnSalesFromEuView
@@ -33,37 +34,43 @@ import scala.concurrent.{ExecutionContext, Future}
 class VatOnSalesFromEuController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: VatOnSalesFromEuFormProvider,
-                                        view: VatOnSalesFromEuView
+                                        view: VatOnSalesFromEuView,
+                                        vatRateService: VatRateService
                                       )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index): Action[AnyContent] =
     cc.authAndGetData(period) {
       implicit request =>
-        getCountriesAndVatRate(countryFromIndex, countryToIndex, vatRateIndex) {
-          case (countryFrom, countryTo, vatRate) =>
+        getCountriesVatRateAndNetSales(countryFromIndex, countryToIndex, vatRateIndex) {
+          case (countryFrom, countryTo, vatRate, netSales) =>
+
+            val form        = formProvider(vatRate, netSales)
+            val standardVat = vatRateService.standardVatOnSales(netSales, vatRate)
 
             val preparedForm = request.userAnswers.get(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
             }
 
-            Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate))
+            Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate, netSales, standardVat))
         }
     }
 
   def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index): Action[AnyContent] =
     cc.authAndGetData(period).async {
       implicit request =>
-        getCountriesAndVatRateAsync(countryFromIndex, countryToIndex, vatRateIndex) {
-          case (countryFrom, countryTo, vatRate) =>
+        getCountriesVatRateAndNetSalesAsync(countryFromIndex, countryToIndex, vatRateIndex) {
+          case (countryFrom, countryTo, vatRate, netSales) =>
+
+            val form        = formProvider(vatRate, netSales)
+            val standardVat = vatRateService.standardVatOnSales(netSales, vatRate)
 
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate)).toFuture,
+                BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate, netSales, standardVat)).toFuture,
 
               value =>
                 for {

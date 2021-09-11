@@ -16,21 +16,30 @@
 
 package forms
 
-import forms.behaviours.IntFieldBehaviours
+import forms.behaviours.DecimalFieldBehaviours
+import models.VatRate
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import play.api.data.FormError
 
-class NetValueOfSalesFromEuFormProviderSpec extends IntFieldBehaviours {
+import scala.math.BigDecimal.RoundingMode
 
-  val form = new NetValueOfSalesFromEuFormProvider()()
+class NetValueOfSalesFromEuFormProviderSpec extends DecimalFieldBehaviours {
+
+  private val vatRate = arbitrary[VatRate].sample.value
+  val form = new NetValueOfSalesFromEuFormProvider()(vatRate)
 
   ".value" - {
 
     val fieldName = "value"
 
-    val minimum = 0
-    val maximum = 1000000
+    val minimum = BigDecimal(0.01)
+    val maximum = BigDecimal(10000000)
 
-    val validDataGenerator = intsInRangeWithCommas(minimum, maximum)
+    val validDataGenerator =
+      Gen.choose[BigDecimal](minimum, maximum)
+        .map(_.setScale(2, RoundingMode.HALF_UP))
+        .map(_.toString)
 
     behave like fieldThatBindsValidData(
       form,
@@ -38,14 +47,14 @@ class NetValueOfSalesFromEuFormProviderSpec extends IntFieldBehaviours {
       validDataGenerator
     )
 
-    behave like intField(
+    behave like decimalField(
       form,
       fieldName,
-      nonNumericError  = FormError(fieldName, "netValueOfSalesFromEu.error.nonNumeric"),
-      wholeNumberError = FormError(fieldName, "netValueOfSalesFromEu.error.wholeNumber")
+      nonNumericError     = FormError(fieldName, "netValueOfSalesFromEu.error.nonNumeric", Seq(vatRate.rateForDisplay)),
+      invalidNumericError = FormError(fieldName, "netValueOfSalesFromEu.error.wholeNumber", Seq(vatRate.rateForDisplay))
     )
 
-    behave like intFieldWithRange(
+    behave like decimalFieldWithRange(
       form,
       fieldName,
       minimum       = minimum,
@@ -56,7 +65,7 @@ class NetValueOfSalesFromEuFormProviderSpec extends IntFieldBehaviours {
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, "netValueOfSalesFromEu.error.required")
+      requiredError = FormError(fieldName, "netValueOfSalesFromEu.error.required", Seq(vatRate.rateForDisplay))
     )
   }
 }

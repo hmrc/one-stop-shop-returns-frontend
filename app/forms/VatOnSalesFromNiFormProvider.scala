@@ -46,14 +46,14 @@ class VatOnSalesFromNiFormProvider @Inject()(vatRateService: VatRateService) ext
                (choice: VatOnSalesChoice, amount: Option[BigDecimal])
                : VatOnSales =
     (choice, amount) match {
-      case (Standard, _)         => VatOnSales(Standard, vatRateService.standardVatOnSales(netSales, vatRate))
+      case (Standard, _)               => VatOnSales(Standard, vatRateService.standardVatOnSales(netSales, vatRate))
       case (NonStandard, Some(amount)) => VatOnSales(NonStandard, amount)
       case (NonStandard, None)         => throw new IllegalArgumentException("Tried to bind a form for an other amount, but no amount was supplied")
     }
 
   private def u(vatOnSales: VatOnSales): Option[(VatOnSalesChoice, Option[BigDecimal])] =
     vatOnSales.choice match {
-      case Standard => Some((Standard, None))
-      case NonStandard    => Some((NonStandard, Some(vatOnSales.amount)))
+      case Standard    => Some((Standard, None))
+      case NonStandard => Some((NonStandard, Some(vatOnSales.amount)))
     }
 }

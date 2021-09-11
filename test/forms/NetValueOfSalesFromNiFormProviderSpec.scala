@@ -19,7 +19,10 @@ package forms
 import forms.behaviours.DecimalFieldBehaviours
 import models.VatRate
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import play.api.data.FormError
+
+import scala.math.BigDecimal.RoundingMode
 
 class NetValueOfSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
 
@@ -30,10 +33,13 @@ class NetValueOfSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
 
     val fieldName = "value"
 
-    val minimum = 0
-    val maximum = 10000000
+    val minimum = BigDecimal(0.01)
+    val maximum = BigDecimal(10000000)
 
-    val validDataGenerator = intsInRangeWithCommas(minimum, maximum)
+    val validDataGenerator =
+      Gen.choose[BigDecimal](minimum, maximum)
+        .map(_.setScale(2, RoundingMode.HALF_UP))
+        .map(_.toString)
 
     behave like fieldThatBindsValidData(
       form,

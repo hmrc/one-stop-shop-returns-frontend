@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.NetValueOfSalesFromNiFormProvider
-import models.{Country, NormalMode, UserAnswers, VatRate}
+import models.{Country, NormalMode, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
@@ -34,7 +34,7 @@ import scala.concurrent.Future
 
 class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
-  private val validAnswer: BigDecimal = 0
+  private val validAnswer: BigDecimal = 1
 
   private lazy val netValueOfSalesFromNiRoute = routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, period, index, index).url
 

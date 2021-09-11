@@ -45,9 +45,9 @@ class NetValueOfSalesFromEuControllerSpec extends SpecBase with MockitoSugar {
       .set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
 
   private val formProvider = new NetValueOfSalesFromEuFormProvider()
-  private val form = formProvider()
+  private val form = formProvider(vatRate)
 
-  private val validAnswer = 0
+  private val validAnswer: BigDecimal = 1
 
   private lazy val netValueOfSalesFromEuRoute =
     routes.NetValueOfSalesFromEuController.onPageLoad(NormalMode, period, index, index, index).url
