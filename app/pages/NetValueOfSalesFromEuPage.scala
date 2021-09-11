@@ -17,10 +17,12 @@
 package pages
 
 import controllers.routes
-import models.{Index, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import pages.PageConstants.{netValueOfSales, salesAtVatRate, salesFromCountry, salesFromEu}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+
+import scala.util.Try
 
 case class NetValueOfSalesFromEuPage(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index) extends QuestionPage[BigDecimal] {
 
@@ -30,5 +32,11 @@ case class NetValueOfSalesFromEuPage(countryFromIndex: Index, countryToIndex: In
   override def toString: String = netValueOfSales
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    routes.VatOnSalesFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex)
+
+  override def navigateInCheckMode(answers: UserAnswers): Call =
+    routes.VatOnSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex)
+
+  override def cleanup(value: Option[BigDecimal], userAnswers: UserAnswers): Try[UserAnswers] =
+    userAnswers.remove(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex))
 }

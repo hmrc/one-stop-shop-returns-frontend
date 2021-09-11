@@ -20,7 +20,9 @@ import controllers.routes
 import models.{CheckMode, Index, UserAnswers}
 import pages.VatOnSalesFromEuPage
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
@@ -32,7 +34,7 @@ object VatOnSalesFromEuSummary  {
 
         SummaryListRowViewModel(
           key     = "vatOnSalesFromEu.checkYourAnswersLabel",
-          value   = ValueViewModel(answer.toString),
+          value   = ValueViewModel(HtmlContent(currencyFormat(answer.amount))),
           actions = Seq(
             ActionItemViewModel(
               "site.change",

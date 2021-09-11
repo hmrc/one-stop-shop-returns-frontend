@@ -21,6 +21,7 @@ import models.{CheckMode, Index, UserAnswers}
 import pages.NetValueOfSalesFromEuPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
@@ -32,7 +33,7 @@ object NetValueOfSalesFromEuSummary  {
 
         SummaryListRowViewModel(
           key     = "netValueOfSalesFromEu.checkYourAnswersLabel",
-          value   = ValueViewModel(answer.toString),
+          value   = ValueViewModel(currencyFormat(answer)),
           actions = Seq(
             ActionItemViewModel(
               "site.change",
