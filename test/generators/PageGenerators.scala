@@ -22,6 +22,12 @@ import pages._
 
 trait PageGenerators {
 
+  implicit lazy val arbitraryVatOnSalesFromEuPage: Arbitrary[VatOnSalesFromEuPage.type] =
+    Arbitrary(VatOnSalesFromEuPage)
+
+  implicit lazy val arbitraryNetValueOfSalesFromEuPage: Arbitrary[NetValueOfSalesFromEuPage.type] =
+    Arbitrary(NetValueOfSalesFromEuPage)
+
   implicit lazy val arbitraryVatOnSalesFromNiPage: Arbitrary[VatOnSalesFromNiPage] =
     Arbitrary(VatOnSalesFromNiPage(Index(0), Index(0)))
 

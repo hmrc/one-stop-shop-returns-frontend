@@ -290,3 +290,21 @@ previousReturn.vatOnSalesFromNi.label = VAT on sales from Northern Ireland
 previousReturn.vatOnSalesFromEu.label = VAT on sales from EU countries
 previousReturn.totalVatOnSales.label = VAT owed this period
 
+
+netValueOfSalesFromEu.title = NetValueOfSalesFromEu
+netValueOfSalesFromEu.heading = NetValueOfSalesFromEu
+netValueOfSalesFromEu.checkYourAnswersLabel = NetValueOfSalesFromEu
+netValueOfSalesFromEu.error.nonNumeric = Enter your netValueOfSalesFromEu using numbers
+netValueOfSalesFromEu.error.required = Enter your netValueOfSalesFromEu
+netValueOfSalesFromEu.error.wholeNumber = Enter your netValueOfSalesFromEu using whole numbers
+netValueOfSalesFromEu.error.outOfRange = NetValueOfSalesFromEu must be between {0} and {1}
+netValueOfSalesFromEu.change.hidden = NetValueOfSalesFromEu
+
+vatOnSalesFromEu.title = VatOnSalesFromEu
+vatOnSalesFromEu.heading = VatOnSalesFromEu
+vatOnSalesFromEu.checkYourAnswersLabel = VatOnSalesFromEu
+vatOnSalesFromEu.error.nonNumeric = Enter your vatOnSalesFromEu using numbers
+vatOnSalesFromEu.error.required = Enter your vatOnSalesFromEu
+vatOnSalesFromEu.error.wholeNumber = Enter your vatOnSalesFromEu using whole numbers
+vatOnSalesFromEu.error.outOfRange = VatOnSalesFromEu must be between {0} and {1}
+vatOnSalesFromEu.change.hidden = VatOnSalesFromEu
