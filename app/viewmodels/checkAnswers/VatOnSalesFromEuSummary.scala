@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Index, UserAnswers}
 import pages.VatOnSalesFromEuPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,16 +26,19 @@ import viewmodels.implicits._
 
 object VatOnSalesFromEuSummary  {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesFromEuPage).map {
+  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).map {
       answer =>
 
         SummaryListRowViewModel(
           key     = "vatOnSalesFromEu.checkYourAnswersLabel",
           value   = ValueViewModel(answer.toString),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.VatOnSalesFromEuController.onPageLoad(CheckMode, answers.period).url)
-              .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden"))
+            ActionItemViewModel(
+              "site.change",
+              routes.VatOnSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
+            )
+            .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden"))
           )
         )
     }

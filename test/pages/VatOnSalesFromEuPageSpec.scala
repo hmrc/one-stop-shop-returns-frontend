@@ -22,10 +22,5 @@ class VatOnSalesFromEuPageSpec extends PageBehaviours {
 
   "VatOnSalesFromEuPage" - {
 
-    beRetrievable[Int](VatOnSalesFromEuPage)
-
-    beSettable[Int](VatOnSalesFromEuPage)
-
-    beRemovable[Int](VatOnSalesFromEuPage)
   }
 }

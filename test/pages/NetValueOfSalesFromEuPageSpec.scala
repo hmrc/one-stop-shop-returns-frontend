@@ -22,10 +22,5 @@ class NetValueOfSalesFromEuPageSpec extends PageBehaviours {
 
   "NetValueOfSalesFromEuPage" - {
 
-    beRetrievable[Int](NetValueOfSalesFromEuPage)
-
-    beSettable[Int](NetValueOfSalesFromEuPage)
-
-    beRemovable[Int](NetValueOfSalesFromEuPage)
   }
 }
