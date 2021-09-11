@@ -66,7 +66,17 @@ class NetValueOfSalesFromEuControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[NetValueOfSalesFromEuView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, index, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form,
+          NormalMode,
+          period,
+          index,
+          index,
+          index,
+          countryFrom,
+          countryTo,
+          vatRate
+        )(request, messages(application)).toString
       }
     }
 
@@ -84,7 +94,16 @@ class NetValueOfSalesFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(validAnswer), NormalMode, period, index, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form.fill(validAnswer),
+          NormalMode,
+          period,
+          index,
+          index,
+          index,
+          countryFrom,
+          countryTo,
+          vatRate)(request, messages(application)).toString
       }
     }
 
@@ -129,7 +148,17 @@ class NetValueOfSalesFromEuControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          boundForm,
+          NormalMode,
+          period,
+          index,
+          index,
+          index,
+          countryFrom,
+          countryTo,
+          vatRate
+        )(request, messages(application)).toString
       }
     }
 

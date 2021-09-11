@@ -25,6 +25,7 @@ import pages.VatOnSalesFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax._
 import views.html.VatOnSalesFromEuView
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,7 +51,7 @@ class VatOnSalesFromEuController @Inject()(
               case Some(value) => form.fill(value)
             }
 
-            Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, vatRateIndex))
+            Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate))
         }
     }
 
@@ -62,7 +63,7 @@ class VatOnSalesFromEuController @Inject()(
 
             form.bindFromRequest().fold(
               formWithErrors =>
-                Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex))),
+                BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate)).toFuture,
 
               value =>
                 for {
