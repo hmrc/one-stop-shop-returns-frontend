@@ -129,8 +129,10 @@ class SalesAtVatRateServiceSpec extends SpecBase {
       "must show correct total vat from one country, to one country with multiple vat rates" in {
         val answers = completeUserAnswers
           .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index0, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index0, index1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
         service.getEuTotalVatOnSales(answers) mustBe Some(BigDecimal(40))
       }
@@ -138,11 +140,14 @@ class SalesAtVatRateServiceSpec extends SpecBase {
       "must show correct total vat from one country, to multiple countries with multiple vat rates" in {
         val answers = completeUserAnswers
           .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index0, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index0, index1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
           .set(CountryOfConsumptionFromEuPage(index0, index1), Country("DK", "Denmark")).success.value
           .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index1, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
         service.getEuTotalVatOnSales(answers) mustBe Some(BigDecimal(60))
       }
@@ -167,12 +172,18 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
 
           //sales at vat rate
-          .set(SalesAtVatRateFromEuPage(index0, index0, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index1, index0), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index1, index1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index1, index0, index0), SalesAtVatRate(BigDecimal(300), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index1, index1, index0), SalesAtVatRate(BigDecimal(400), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index1, index1, index1), SalesAtVatRate(BigDecimal(400), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index0, index0), BigDecimal(300)).success.value
+          .set(VatOnSalesFromEuPage(index1, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index1, index0), BigDecimal(400)).success.value
+          .set(VatOnSalesFromEuPage(index1, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index1, index1), BigDecimal(400)).success.value
+          .set(VatOnSalesFromEuPage(index1, index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
         service.getEuTotalVatOnSales(answers) mustBe Some(BigDecimal(120))
       }
@@ -187,20 +198,25 @@ class SalesAtVatRateServiceSpec extends SpecBase {
       "must show correct net total sales for one country from, one country to with multiple vat rates" in {
         val answers = completeUserAnswers
           .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index + 1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
         service.getEuTotalNetSales(answers) mustBe Some(BigDecimal(300))
       }
 
       "must show correct net total sales for one country from, multiple countries to with multiple vat rates" in {
         val answers = completeUserAnswers
-          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index + 1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
-          .set(CountryOfConsumptionFromEuPage(index, index + 1), Country("DK", "Denmark")).success.value
-          .set(VatRatesFromEuPage(index, index + 1), List(twentyPercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index, index + 1, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(CountryOfConsumptionFromEuPage(index0, index1), Country("DK", "Denmark")).success.value
+          .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
         service.getEuTotalNetSales(answers) mustBe Some(BigDecimal(400))
       }
@@ -225,12 +241,20 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
 
           //sales at vat rate
-          .set(SalesAtVatRateFromEuPage(index0, index0, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index1, index0), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index1, index0, index0), SalesAtVatRate(BigDecimal(300), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index1, index1, index0), SalesAtVatRate(BigDecimal(400), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index0, index0), BigDecimal(300)).success.value
+          .set(VatOnSalesFromEuPage(index1, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index1, index0), BigDecimal(400)).success.value
+          .set(VatOnSalesFromEuPage(index1, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index1, index1), BigDecimal(400)).success.value
+          .set(VatOnSalesFromEuPage(index1, index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
-        service.getEuTotalNetSales(answers) mustBe Some(BigDecimal(1000))
+        service.getEuTotalNetSales(answers) mustBe Some(BigDecimal(1600))
       }
     }
 
@@ -257,7 +281,8 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
           .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
           .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
         service.getTotalNetSales(answers) mustBe BigDecimal(100)
       }
@@ -286,7 +311,8 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
           .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
           .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
         service.getTotalVatOnSales(answers) mustBe BigDecimal(20)
       }
@@ -304,7 +330,8 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
           .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
           .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
         val expected = List(TotalVatToCountry(belgium, BigDecimal(20)))
 
@@ -316,8 +343,10 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(SoldGoodsFromEuPage,true).success.value
           .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
           .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index + 1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
         val expected = List(TotalVatToCountry(belgium, BigDecimal(40)))
 
@@ -330,13 +359,16 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
           .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
           .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index, index, index + 1), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index1), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
           .set(CountryOfConsumptionFromEuPage(index, index + 1), denmark).success.value
           .set(VatRatesFromEuPage(index, index + 1), List(twentyPercentVatRate)).success.value
-          .set(SalesAtVatRateFromEuPage(index, index + 1, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
-        service.getVatOwedToEuCountries(answers) must contain allOf(
+        service.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
           TotalVatToCountry(belgium, BigDecimal(40)),
           TotalVatToCountry(denmark, BigDecimal(20))
         )
@@ -362,14 +394,22 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
 
           //sales at vat rate
-          .set(SalesAtVatRateFromEuPage(index0, index0, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index1, index0), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index1, index0, index0), SalesAtVatRate(BigDecimal(300), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index1, index1, index0), SalesAtVatRate(BigDecimal(400), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(10))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index1), VatOnSales(Standard, BigDecimal(30))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index0, index0), BigDecimal(300)).success.value
+          .set(VatOnSalesFromEuPage(index1, index0, index0), VatOnSales(Standard, BigDecimal(40))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index1, index0), BigDecimal(400)).success.value
+          .set(VatOnSalesFromEuPage(index1, index1, index0), VatOnSales(Standard, BigDecimal(50))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index1, index1), BigDecimal(400)).success.value
+          .set(VatOnSalesFromEuPage(index1, index1, index1), VatOnSales(Standard, BigDecimal(60))).success.value
 
-        service.getVatOwedToEuCountries(answers) must contain allOf(
-          TotalVatToCountry(belgium, BigDecimal(40)),
-          TotalVatToCountry(denmark, BigDecimal(40))
+        service.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
+          TotalVatToCountry(belgium, BigDecimal(50)),
+          TotalVatToCountry(denmark, BigDecimal(160))
         )
       }
 
@@ -393,14 +433,22 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
 
           //sales at vat rate
-          .set(SalesAtVatRateFromEuPage(index0, index0, index0), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index0, index1, index0), SalesAtVatRate(BigDecimal(200), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index1, index0, index0), SalesAtVatRate(BigDecimal(300), BigDecimal(20))).success.value
-          .set(SalesAtVatRateFromEuPage(index1, index1, index0), SalesAtVatRate(BigDecimal(400), BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(10))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index1, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesFromEuPage(index0, index1, index1), VatOnSales(Standard, BigDecimal(30))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index0, index0), BigDecimal(300)).success.value
+          .set(VatOnSalesFromEuPage(index1, index0, index0), VatOnSales(Standard, BigDecimal(40))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index1, index0), BigDecimal(400)).success.value
+          .set(VatOnSalesFromEuPage(index1, index1, index0), VatOnSales(Standard, BigDecimal(50))).success.value
+          .set(NetValueOfSalesFromEuPage(index1, index1, index1), BigDecimal(400)).success.value
+          .set(VatOnSalesFromEuPage(index1, index1, index1), VatOnSales(Standard, BigDecimal(60))).success.value
 
-        service.getVatOwedToEuCountries(answers) must contain allOf(
-          TotalVatToCountry(belgium, BigDecimal(40)),
-          TotalVatToCountry(denmark, BigDecimal(40)),
+        service.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
+          TotalVatToCountry(belgium, BigDecimal(50)),
+          TotalVatToCountry(denmark, BigDecimal(160)),
           TotalVatToCountry(spain, BigDecimal(1000))
         )
       }

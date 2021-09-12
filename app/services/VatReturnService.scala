@@ -23,7 +23,7 @@ import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesTo
 import models.registration.{EuVatRegistration, Registration, RegistrationWithFixedEstablishment}
 import models.requests.VatReturnRequest
 import pages._
-import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery, NiSalesAtVatRateQuery}
+import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery, EuSalesAtVatRateQuery, NiSalesAtVatRateQuery}
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
@@ -168,12 +168,12 @@ class VatReturnService @Inject()() {
                                            vatRateIndex: Index,
                                            vatRate: VatRate
                                          ): ValidationResult[SalesDetails] =
-    answers.get(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
+    answers.get(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)) match {
       case Some(sales) =>
         SalesDetails(
           vatRate         = toDomainVatRate(vatRate),
           netValueOfSales = sales.netValueOfSales,
-          vatOnSales      = sales.vatOnSales
+          vatOnSales      = sales.vatOnSales.amount
         ).validNec
 
       case None =>

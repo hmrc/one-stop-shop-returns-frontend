@@ -19,11 +19,11 @@ package services
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
-import models.domain.EuTaxIdentifierType.{Other, Vat}
+import models.domain.EuTaxIdentifierType.Other
 import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
-import models.{Country, DataMissingError, Index, SalesAtVatRate, VatOnSales, VatRate, VatRateType}
 import models.requests.VatReturnRequest
+import models.{Country, DataMissingError, Index, VatOnSales, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -55,13 +55,13 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(SoldGoodsFromNiPage, true).success.value
             .set(CountryOfConsumptionFromNiPage(Index(0)), country1).success.value
             .set(VatRatesFromNiPage(Index(0)), List(vatRate1)).success.value
-            .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), netValueOfSales1).success.value
+            .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), netSales1).success.value
             .set(VatOnSalesFromNiPage(Index(0), Index(0)), vatOnSales1).success.value
             .set(CountryOfConsumptionFromNiPage(Index(1)), country2).success.value
             .set(VatRatesFromNiPage(Index(1)), List(vatRate2, vatRate3)).success.value
-            .set(NetValueOfSalesFromNiPage(Index(1), Index(0)), netValueOfSales2).success.value
+            .set(NetValueOfSalesFromNiPage(Index(1), Index(0)), netSales2).success.value
             .set(VatOnSalesFromNiPage(Index(1), Index(0)), vatOnSales2).success.value
-            .set(NetValueOfSalesFromNiPage(Index(1), Index(1)), netValueOfSales3).success.value
+            .set(NetValueOfSalesFromNiPage(Index(1), Index(1)), netSales3).success.value
             .set(VatOnSalesFromNiPage(Index(1), Index(1)), vatOnSales3).success.value
             .set(SoldGoodsFromEuPage, false).success.value
 
@@ -74,13 +74,13 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             List(
               SalesToCountry(
                 country1,
-                List(SalesDetails(domainVatRate1, netValueOfSales1, vatOnSales1.amount))
+                List(SalesDetails(domainVatRate1, netSales1, vatOnSales1.amount))
               ),
               SalesToCountry(
                 country2,
                 List(
-                  SalesDetails(domainVatRate2, netValueOfSales2, vatOnSales2.amount),
-                  SalesDetails(domainVatRate3, netValueOfSales3, vatOnSales3.amount)
+                  SalesDetails(domainVatRate2, netSales2, vatOnSales2.amount),
+                  SalesDetails(domainVatRate3, netSales3, vatOnSales3.amount)
                 )
               )
             ),
@@ -90,126 +90,71 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails) mustEqual Valid(expectedResult)
       }
 
-      "when the user has sold goods from the EU" - {
+      "when the user has sold goods from the EU" in new Fixture {
 
-        "with no EU registrations" in new Fixture {
+        private val answers =
+          emptyUserAnswers
+            .set(SoldGoodsFromNiPage, false).success.value
+            .set(SoldGoodsFromEuPage, true).success.value
+            .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
+            .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
+            .set(VatRatesFromEuPage(Index(0), Index(0)), List(vatRate1)).success.value
+            .set(NetValueOfSalesFromEuPage(Index(0), Index(0), Index(0)), netSales1).success.value
+            .set(VatOnSalesFromEuPage(Index(0), Index(0), Index(0)), vatOnSales1).success.value
+            .set(CountryOfConsumptionFromEuPage(Index(0), Index(1)), country3).success.value
+            .set(VatRatesFromEuPage(Index(0), Index(1)), List(vatRate2, vatRate3)).success.value
+            .set(NetValueOfSalesFromEuPage(Index(0), Index(1), Index(0)), netSales2).success.value
+            .set(VatOnSalesFromEuPage(Index(0), Index(1), Index(0)), vatOnSales2).success.value
+            .set(NetValueOfSalesFromEuPage(Index(0), Index(1), Index(1)), netSales3).success.value
+            .set(VatOnSalesFromEuPage(Index(0), Index(1), Index(1)), vatOnSales3).success.value
+            .set(CountryOfSaleFromEuPage(Index(1)), country3).success.value
+            .set(CountryOfConsumptionFromEuPage(Index(1), Index(0)), country2).success.value
+            .set(VatRatesFromEuPage(Index(1), Index(0)), List(vatRate2)).success.value
+            .set(NetValueOfSalesFromEuPage(Index(1), Index(0), Index(0)), netSales2).success.value
+            .set(VatOnSalesFromEuPage(Index(1), Index(0), Index(0)), vatOnSales2).success.value
 
-          private val answers =
-            emptyUserAnswers
-              .set(SoldGoodsFromNiPage, false).success.value
-              .set(SoldGoodsFromEuPage, true).success.value
-              .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
-              .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
-              .set(VatRatesFromEuPage(Index(0), Index(0)), List(vatRate1)).success.value
-              .set(SalesAtVatRateFromEuPage(Index(0), Index(0), Index(0)), salesDetails1).success.value
-              .set(CountryOfConsumptionFromEuPage(Index(0), Index(1)), country3).success.value
-              .set(VatRatesFromEuPage(Index(0), Index(1)), List(vatRate2, vatRate3)).success.value
-              .set(SalesAtVatRateFromEuPage(Index(0), Index(1), Index(0)), salesDetails2).success.value
-              .set(SalesAtVatRateFromEuPage(Index(0), Index(1), Index(1)), salesDetails3).success.value
-
-          private val expectedResult =
-            VatReturnRequest(
-              vrn,
-              period,
-              None,
-              None,
-              List.empty,
-              List(
-                SalesFromEuCountry(
-                  country1,
-                  None,
-                  List(
-                    SalesToCountry(
-                      country2,
-                      List(SalesDetails(domainVatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
-                    ),
-                    SalesToCountry(
-                      country3,
-                      List(
-                        SalesDetails(domainVatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales),
-                        SalesDetails(domainVatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales)
-                      )
+        private val expectedResult =
+          VatReturnRequest(
+            vrn,
+            period,
+            None,
+            None,
+            List.empty,
+            List(
+              SalesFromEuCountry(
+                country1,
+                None,
+                List(
+                  SalesToCountry(
+                    country2,
+                    List(SalesDetails(domainVatRate1, netSales1, vatOnSales1.amount))
+                  ),
+                  SalesToCountry(
+                    country3,
+                    List(
+                      SalesDetails(domainVatRate2, netSales2, vatOnSales2.amount),
+                      SalesDetails(domainVatRate3, netSales3, vatOnSales3.amount)
                     )
                   )
                 )
+              ),
+              SalesFromEuCountry(
+                country3,
+                None,
+                List(
+                  SalesToCountry(
+                    country2,
+                    List(SalesDetails(domainVatRate2, netSales2, vatOnSales2.amount))
+                  )
+                )
               )
-            )
-
-          service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails) mustEqual Valid(expectedResult)
-        }
-
-        "with EU registrations" in new Fixture {
-
-          private val registration = registrationWithoutEuDetails.copy (
-            euRegistrations = Seq(
-              EuVatRegistration(country1, "VAT number"),
-              RegistrationWithFixedEstablishment(country3, EuTaxIdentifier(Other, "Tax identifier"), arbitrary[FixedEstablishment].sample.value),
-              RegistrationWithoutFixedEstablishment(country4)
             )
           )
 
-          private val answers =
-            emptyUserAnswers
-              .set(SoldGoodsFromNiPage, false).success.value
-              .set(SoldGoodsFromEuPage, true).success.value
-              .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
-              .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
-              .set(VatRatesFromEuPage(Index(0), Index(0)), List(vatRate1)).success.value
-              .set(SalesAtVatRateFromEuPage(Index(0), Index(0), Index(0)), salesDetails1).success.value
-              .set(CountryOfSaleFromEuPage(Index(1)), country3).success.value
-              .set(CountryOfConsumptionFromEuPage(Index(1), Index(0)), country2).success.value
-              .set(VatRatesFromEuPage(Index(1), Index(0)), List(vatRate2)).success.value
-              .set(SalesAtVatRateFromEuPage(Index(1), Index(0), Index(0)), salesDetails2).success.value
-              .set(CountryOfSaleFromEuPage(Index(2)), country4).success.value
-              .set(CountryOfConsumptionFromEuPage(Index(2), Index(0)), country2).success.value
-              .set(VatRatesFromEuPage(Index(2), Index(0)), List(vatRate3)).success.value
-              .set(SalesAtVatRateFromEuPage(Index(2), Index(0), Index(0)), salesDetails3).success.value
-
-          private val expectedResult =
-            VatReturnRequest(
-              vrn,
-              period,
-              None,
-              None,
-              List.empty,
-              List(
-                SalesFromEuCountry(
-                  country1,
-                  Some(EuTaxIdentifier(Vat, "VAT number")),
-                  List(
-                    SalesToCountry(
-                      country2,
-                      List(SalesDetails(domainVatRate1, salesDetails1.netValueOfSales, salesDetails1.vatOnSales))
-                    )
-                  )
-                ),
-                SalesFromEuCountry(
-                  country3,
-                  Some(EuTaxIdentifier(Other, "Tax identifier")),
-                  List(
-                    SalesToCountry(
-                      country2,
-                      List(SalesDetails(domainVatRate2, salesDetails2.netValueOfSales, salesDetails2.vatOnSales))
-                    )
-                  )
-                ),
-                SalesFromEuCountry(
-                  country4,
-                  None,
-                  List(
-                    SalesToCountry(
-                      country2,
-                      List(SalesDetails(domainVatRate3, salesDetails3.netValueOfSales, salesDetails3.vatOnSales))
-                    )
-                  )
-                )
-              )
-            )
-
-          service.fromUserAnswers(answers, vrn, period, registration) mustEqual Valid(expectedResult)
-        }
+        service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails) mustEqual Valid(expectedResult)
       }
     }
+
 
     "must return Invalid" - {
 
@@ -253,7 +198,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(SoldGoodsFromNiPage, true).success.value
             .set(CountryOfConsumptionFromNiPage(Index(0)), country1).success.value
             .set(VatRatesFromNiPage(Index(0)), List(vatRate1, vatRate2)).success.value
-            .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), netValueOfSales1).success.value
+            .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), netSales1).success.value
             .set(VatOnSalesFromNiPage(Index(0), Index(0)), vatOnSales1).success.value
             .set(VatOnSalesFromNiPage(Index(0), Index(1)), vatOnSales2).success.value
             .set(SoldGoodsFromEuPage, false).success.value
@@ -269,9 +214,9 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(SoldGoodsFromNiPage, true).success.value
             .set(CountryOfConsumptionFromNiPage(Index(0)), country1).success.value
             .set(VatRatesFromNiPage(Index(0)), List(vatRate1, vatRate2)).success.value
-            .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), netValueOfSales1).success.value
+            .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), netSales1).success.value
             .set(VatOnSalesFromNiPage(Index(0), Index(0)), vatOnSales1).success.value
-            .set(NetValueOfSalesFromNiPage(Index(0), Index(1)), netValueOfSales2).success.value
+            .set(NetValueOfSalesFromNiPage(Index(0), Index(1)), netSales2).success.value
             .set(SoldGoodsFromEuPage, false).success.value
 
         private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
@@ -314,7 +259,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
       }
 
-      "when there is a VAT rate from the EU with no corresponding sales details" in new Fixture {
+      "when there is a VAT rate from the EU with no corresponding net value of sales" in new Fixture {
 
         private val answers =
           emptyUserAnswers
@@ -323,6 +268,22 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
             .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
             .set(VatRatesFromEuPage(Index(0), Index(0)), List(vatRate1)).success.value
+            .set(VatOnSalesFromEuPage(Index(0), Index(0), Index(0)), vatOnSales1).success.value
+
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
+      }
+
+      "when there is a VAT rate from the EU with no corresponding VAT on sales" in new Fixture {
+
+        private val answers =
+          emptyUserAnswers
+            .set(SoldGoodsFromNiPage, false).success.value
+            .set(SoldGoodsFromEuPage, true).success.value
+            .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
+            .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
+            .set(VatRatesFromEuPage(Index(0), Index(0)), List(vatRate1)).success.value
+            .set(NetValueOfSalesFromEuPage(Index(0), Index(0), Index(0)), netSales1).success.value
 
         private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
@@ -344,15 +305,12 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     protected val domainVatRate1: DomainVatRate = toDomainVatRate(vatRate1)
     protected val domainVatRate2: DomainVatRate = toDomainVatRate(vatRate2)
     protected val domainVatRate3: DomainVatRate = toDomainVatRate(vatRate3)
-    protected val salesDetails1: SalesAtVatRate = arbitrary[SalesAtVatRate].sample.value
-    protected val salesDetails2: SalesAtVatRate = arbitrary[SalesAtVatRate].sample.value
-    protected val salesDetails3: SalesAtVatRate = arbitrary[SalesAtVatRate].sample.value
     protected val vatOnSales1: VatOnSales       = arbitrary[VatOnSales].sample.value
     protected val vatOnSales2: VatOnSales       = arbitrary[VatOnSales].sample.value
     protected val vatOnSales3: VatOnSales       = arbitrary[VatOnSales].sample.value
-    protected val netValueOfSales1: BigDecimal  = arbitrary[BigDecimal].sample.value
-    protected val netValueOfSales2: BigDecimal  = arbitrary[BigDecimal].sample.value
-    protected val netValueOfSales3: BigDecimal  = arbitrary[BigDecimal].sample.value
+    protected val netSales1: BigDecimal         = arbitrary[BigDecimal].sample.value
+    protected val netSales2: BigDecimal         = arbitrary[BigDecimal].sample.value
+    protected val netSales3: BigDecimal         = arbitrary[BigDecimal].sample.value
 
     protected val registrationWithoutEuDetails: Registration = registration
 

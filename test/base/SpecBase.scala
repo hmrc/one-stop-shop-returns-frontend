@@ -18,6 +18,7 @@ package base
 
 import controllers.actions._
 import generators.Generators
+import models.VatOnSalesChoice.Standard
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
@@ -85,7 +86,8 @@ trait SpecBase
     .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
     .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
     .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
-    .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+    .set(NetValueOfSalesFromEuPage(index, index, index), BigDecimal(100)).success.value
+    .set(VatOnSalesFromEuPage(index, index, index), VatOnSales(Standard, BigDecimal(20))).success.value
 
   val completeVatReturn: VatReturn =
       VatReturn(
