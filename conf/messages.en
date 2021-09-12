@@ -115,9 +115,6 @@ vatOnSalesFromNi.error.wholeNumber = Enter the total VAT charged at {0} rate usi
 vatOnSalesFromNi.error.outOfRange = Total VAT must be between {0} and {1}
 vatOnSalesFromNi.change.hidden = the total VAT
 
-salesAtVatRateFromNi.title = Sales at {0} VAT rate
-salesAtVatRateFromNi.heading = Sales at {0} VAT rate
-
 vatRatesFromNi.title = Which VAT rates did you charge on sales?
 vatRatesFromNi.heading = Which VAT rates did you charge on sales?
 vatRatesFromNi.checkYourAnswersLabel = VAT rates on sales
@@ -163,21 +160,6 @@ deleteSalesFromEu.error.required = Select yes if you want to remove the sales fr
 deleteSalesToEu.title = Are you sure you want to remove the sales from {0} to {1}?
 deleteSalesToEu.heading = Are you sure you want to remove the sales from {0} to {1}?
 deleteSalesToEu.error.required = Select yes if you want to remove the sales from {0} to {1}
-
-salesAtVatRateFromEu.title = Sales at {0} VAT rate
-salesAtVatRateFromEu.heading = Sales at {0} VAT rate
-salesAtVatRateFromEu.netValueOfSales = Sales excluding VAT
-salesAtVatRateFromEu.vatOnSales = VAT charged
-salesAtVatRateFromEu.netValueOfSales.checkYourAnswersLabel = Sales excluding VAT
-salesAtVatRateFromEu.vatOnSales.checkYourAnswersLabel = VAT charged
-salesAtVatRateFromEu.error.netValueOfSales.required = Enter your sales excluding VAT
-salesAtVatRateFromEu.error.netValueOfSales.nonNumeric = Enter your sales excluding VAT using numbers
-salesAtVatRateFromEu.error.netValueOfSales.invalidNumeric = Enter your sales excluding VAT using numbers up to two decimal places
-salesAtVatRateFromEu.error.vatOnSales.required = Enter the VAT charged
-salesAtVatRateFromEu.error.vatOnSales.nonNumeric = Enter the VAT charged using numbers
-salesAtVatRateFromEu.error.vatOnSales.invalidNumeric = Enter the VAT charged using numbers up to two decimal places
-salesAtVatRateFromEu.netValueOfSales.change.hidden = your sales excluding VAT
-salesAtVatRateFromEu.vatOnSales.change.hidden = the VAT charged
 
 soldGoodsFromEu.title = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
 soldGoodsFromEu.heading = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?

@@ -22,7 +22,7 @@ import models.VatOnSalesChoice.Standard
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
-import models.{Country, Index, Period, Quarter, ReturnReference, SalesAtVatRate, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
+import models.{Country, Index, Period, Quarter, ReturnReference, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec

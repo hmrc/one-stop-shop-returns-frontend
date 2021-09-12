@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.VatOnSalesChoice.Standard
-import models.{CheckMode, Index, NormalMode, SalesAtVatRate, UserAnswers, VatOnSales, VatRate}
+import models.{CheckMode, Index, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours

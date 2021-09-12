@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 case class SalesFromNi(
                         countryOfConsumption: Country,
-                        salesAtVatRate: List[NiSalesAtVatRate]
+                        salesAtVatRate: List[SalesAtVatRate]
                       )
 
 object SalesFromNi {

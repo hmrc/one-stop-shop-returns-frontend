@@ -41,14 +41,6 @@ trait ModelGenerators {
       Gen.oneOf(Quarter.values)
     }
 
-  implicit lazy val arbitrarySalesAtVatRate: Arbitrary[SalesAtVatRate] =
-    Arbitrary {
-      for {
-        netValueOfSales <- arbitrary[BigDecimal]
-        vatOnSales <- arbitrary[BigDecimal]
-      } yield SalesAtVatRate(netValueOfSales, vatOnSales)
-    }
-
   private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
 
     def toMillis(date: LocalDate): Long =

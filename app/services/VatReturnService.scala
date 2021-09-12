@@ -177,7 +177,7 @@ class VatReturnService @Inject()() {
         ).validNec
 
       case None =>
-        DataMissingError(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
+        DataMissingError(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
     }
 
   private def toDomainVatRate(vatRate: VatRate): DomainVatRate = {

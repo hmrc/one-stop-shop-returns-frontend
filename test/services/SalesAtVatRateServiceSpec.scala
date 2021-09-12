@@ -18,7 +18,7 @@ package services
 
 import base.SpecBase
 import models.VatOnSalesChoice.Standard
-import models.{Country, Index, SalesAtVatRate, TotalVatToCountry, VatOnSales, VatRate, VatRateType}
+import models.{Country, Index, TotalVatToCountry, VatOnSales, VatRate, VatRateType}
 import pages._
 
 class SalesAtVatRateServiceSpec extends SpecBase {
