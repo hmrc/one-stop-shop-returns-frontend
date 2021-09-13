@@ -170,6 +170,7 @@ trait SpecBase
         bind[AuthenticatedIdentifierAction].to[FakeIdentifierAction],
         bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
         bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration)),
+        bind[CheckReturnsFilter].toInstance(new FakeCheckReturnsFilter()),
         bind[Clock].toInstance(clockToBind)
       )
   }

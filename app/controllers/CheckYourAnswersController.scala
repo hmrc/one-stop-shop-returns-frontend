@@ -97,7 +97,7 @@ class CheckYourAnswersController @Inject()(
       ))
   }
 
-  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetDataNoReturnCheck(period).async {
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
       val vatReturnRequest =
         vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)

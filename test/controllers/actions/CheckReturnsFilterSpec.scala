@@ -42,7 +42,6 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
   }
 
   private val mockConnector = mock[VatReturnConnector]
-  private val mockAction = mock[CheckReturnsFilter]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockConnector)
@@ -56,7 +55,6 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
       val app = applicationBuilder(None)
         .overrides(bind[VatReturnConnector].toInstance(mockConnector))
-        .overrides(bind[CheckReturnsFilter].toInstance(mockAction))
         .build()
 
       running(app) {
@@ -75,7 +73,6 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
       val app = applicationBuilder(None)
         .overrides(bind[VatReturnConnector].toInstance(mockConnector))
-        .overrides(bind[CheckReturnsFilter].toInstance(mockAction))
         .build()
 
       running(app) {

@@ -18,7 +18,6 @@ package controllers
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import controllers.actions.CheckReturnsFilter
 import forms.StartReturnFormProvider
 import models.Country
 import models.domain.VatReturn
@@ -81,28 +80,6 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = true).url
-      }
-    }
-
-    "must redirect to previous returns when return for same period already exists" in {
-
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-
-      val application = applicationBuilder(Some(emptyUserAnswers))
-        .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector))
-        .build()
-
-      running(application) {
-
-        val request =
-          FakeRequest(GET, startReturnRoute)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.PreviousReturnController.onPageLoad(period).url
       }
     }
 
