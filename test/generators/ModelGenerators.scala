@@ -16,8 +16,9 @@
 
 package generators
 
+import models.VatOnSalesChoice.Standard
 import models.{domain, _}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType, VatReturn}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
@@ -193,7 +194,7 @@ trait ModelGenerators {
       } yield SalesDetails(
         vatRate,
         taxableAmount.setScale(2, RoundingMode.HALF_EVEN),
-        vatAmount.setScale(2, RoundingMode.HALF_EVEN)
+        VatOnSales(Standard, vatAmount.setScale(2, RoundingMode.HALF_EVEN))
       )
     }
 

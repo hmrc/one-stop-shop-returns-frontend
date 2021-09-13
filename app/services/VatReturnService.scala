@@ -88,7 +88,7 @@ class VatReturnService @Inject()() {
         SalesDetails(
           vatRate         = toDomainVatRate(vatRate),
           netValueOfSales = sales.netValueOfSales,
-          vatOnSales      = sales.vatOnSales.amount
+          vatOnSales      = sales.vatOnSales
         ).validNec
 
       case None =>
@@ -173,7 +173,7 @@ class VatReturnService @Inject()() {
         SalesDetails(
           vatRate         = toDomainVatRate(vatRate),
           netValueOfSales = sales.netValueOfSales,
-          vatOnSales      = sales.vatOnSales.amount
+          vatOnSales      = sales.vatOnSales
         ).validNec
 
       case None =>

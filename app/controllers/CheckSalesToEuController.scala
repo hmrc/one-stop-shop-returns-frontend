@@ -23,7 +23,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.TitledSummaryList
-import viewmodels.checkAnswers.{NetValueOfSalesFromEuSummary, VatRatesFromEuSummary}
+import viewmodels.checkAnswers.{NetValueOfSalesFromEuSummary, VatOnSalesFromEuSummary, VatRatesFromEuSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckSalesToEuView
 
@@ -57,7 +57,7 @@ class CheckSalesToEuController @Inject()(
                   list = SummaryListViewModel(
                     rows = Seq(
                       NetValueOfSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i)),
-                      NetValueOfSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i))
+                      VatOnSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i))
                     ).flatten
                   )
                 )

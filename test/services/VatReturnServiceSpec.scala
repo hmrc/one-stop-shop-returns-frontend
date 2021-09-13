@@ -19,8 +19,7 @@ package services
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
-import models.domain.EuTaxIdentifierType.Other
-import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
 import models.{Country, DataMissingError, Index, VatOnSales, VatRate, VatRateType}
@@ -74,13 +73,13 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             List(
               SalesToCountry(
                 country1,
-                List(SalesDetails(domainVatRate1, netSales1, vatOnSales1.amount))
+                List(SalesDetails(domainVatRate1, netSales1, vatOnSales1))
               ),
               SalesToCountry(
                 country2,
                 List(
-                  SalesDetails(domainVatRate2, netSales2, vatOnSales2.amount),
-                  SalesDetails(domainVatRate3, netSales3, vatOnSales3.amount)
+                  SalesDetails(domainVatRate2, netSales2, vatOnSales2),
+                  SalesDetails(domainVatRate3, netSales3, vatOnSales3)
                 )
               )
             ),
@@ -127,13 +126,13 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
                 List(
                   SalesToCountry(
                     country2,
-                    List(SalesDetails(domainVatRate1, netSales1, vatOnSales1.amount))
+                    List(SalesDetails(domainVatRate1, netSales1, vatOnSales1))
                   ),
                   SalesToCountry(
                     country3,
                     List(
-                      SalesDetails(domainVatRate2, netSales2, vatOnSales2.amount),
-                      SalesDetails(domainVatRate3, netSales3, vatOnSales3.amount)
+                      SalesDetails(domainVatRate2, netSales2, vatOnSales2),
+                      SalesDetails(domainVatRate3, netSales3, vatOnSales3)
                     )
                   )
                 )
@@ -144,7 +143,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
                 List(
                   SalesToCountry(
                     country2,
-                    List(SalesDetails(domainVatRate2, netSales2, vatOnSales2.amount))
+                    List(SalesDetails(domainVatRate2, netSales2, vatOnSales2))
                   )
                 )
               )
