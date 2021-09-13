@@ -43,8 +43,6 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new StartReturnFormProvider()
 
   private val vatReturnConnector = mock[VatReturnConnector]
-  private val mockAction = mock[CheckReturnsFilter]
-
 
   private val vatReturn = arbitrary[VatReturn].sample.value
 
@@ -53,7 +51,6 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[CheckReturnsFilter].toInstance(mockAction))
         .build()
 
       running(application) {
@@ -72,7 +69,6 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to the next page when valid data is submitted" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[CheckReturnsFilter].toInstance(mockAction))
         .build()
 
       running(application) {
@@ -90,18 +86,17 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to previous returns when return for same period already exists" in {
 
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+
       val application = applicationBuilder(Some(emptyUserAnswers))
         .overrides(
           bind[VatReturnConnector].toInstance(vatReturnConnector))
-        .overrides(bind[CheckReturnsFilter].toInstance(mockAction))
         .build()
-
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
       running(application) {
 
         val request =
-          FakeRequest(POST, startReturnRoute)
+          FakeRequest(GET, startReturnRoute)
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
@@ -112,7 +107,6 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must clear useranswers when answer is no" in {
-
       val mockSessionRepository = mock[SessionRepository]
 
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
@@ -123,7 +117,6 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-        .overrides(bind[CheckReturnsFilter].toInstance(mockAction))
         .build()
 
       running(application) {
@@ -143,7 +136,6 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[CheckReturnsFilter].toInstance(mockAction))
         .build()
 
       running(application) {

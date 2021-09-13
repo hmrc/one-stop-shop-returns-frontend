@@ -47,6 +47,12 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def authAndGetData(period: Period): ActionBuilder[DataRequest, AnyContent] =
     authAndGetOptionalData(period) andThen requireData
+
+  def authAndGetOptionalDataNoReturnCheck(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
+    auth andThen getRegistration andThen getData(period)
+
+  def authAndGetDataNoReturnCheck(period: Period): ActionBuilder[DataRequest, AnyContent] =
+    auth andThen getRegistration andThen getData(period) andThen requireData
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(

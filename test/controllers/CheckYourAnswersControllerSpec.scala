@@ -88,7 +88,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
   "on submit" - {
 
-    "when the user answered all necessary data and submission of the registration succeeds" - {
+    "when the user answered all necessary data and submission of the return succeeds" - {
 
       "must redirect to the next page" in {
 
