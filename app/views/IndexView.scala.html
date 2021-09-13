@@ -19,7 +19,7 @@
     govukButton: GovukButton
 )
 
-@(businessName: String, vrn: String, period: Period)(implicit request: Request[_], messages: Messages)
+@(businessName: String, vrn: String, period: Period, submissionStatus: SubmissionStatus)(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle    = titleNoForm(messages("index.title")),
@@ -37,14 +37,31 @@
             <div id="next-return" class="tile-body">
                 <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
 
-                <p class="govuk-body">@messages("index.yourReturns.returnDue")</p>
+                @submissionStatus match {
+                    case SubmissionStatus.Complete => {
+                        <p class="govuk-body">@messages("index.yourReturns.nothingDue")</p>
+                    }
+                    case SubmissionStatus.Due => {
+                        <p class="govuk-body">@messages("index.yourReturns.returnDue")</p>
 
-                <p class="govuk-body">
-                    <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url">
-                        <span aria-hidden="true">@messages("index.yourReturns.startReturn")</span>
-                        <span class="govuk-visually-hidden">@messages("index.yourReturns.startReturn")</span>
-                    </a>
-                </p>
+                        <p class="govuk-body">
+                            <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url">
+                                <span aria-hidden="true">@messages("index.yourReturns.startReturn")</span>
+                                <span class="govuk-visually-hidden">@messages("index.yourReturns.startReturn")</span>
+                            </a>
+                        </p>
+                    }
+                    case SubmissionStatus.Overdue => {
+                        <p class="govuk-body">@messages("index.yourReturns.returnOverdue")</p>
+
+                        <p class="govuk-body">
+                            <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url">
+                                <span aria-hidden="true">@messages("index.yourReturns.startReturn")</span>
+                                <span class="govuk-visually-hidden">@messages("index.yourReturns.startReturn")</span>
+                            </a>
+                        </p>
+                    }
+                }
             </div>
         </div>
 
