@@ -37,13 +37,9 @@ class CheckReturnsFilterImpl @Inject()(connector: VatReturnConnector)(implicit v
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-//    connector.get(Period(2021, Q3)) map {
-//      case Right(_) => Some(Redirect(routes.PreviousReturnController.onPageLoad(Period(2021, Q3))))
-//      case _    => None
-//    }
-
-    if(connector.get(Period(2021, Q3)).isInstanceOf[VatReturn]) {
-      Future.successful(Some(Redirect(routes.PreviousReturnController.onPageLoad(Period(2021, Q3)))))
+    connector.get(Period(2021, Q3)) map {
+      case Right(_) => Some(Redirect(routes.PreviousReturnController.onPageLoad(Period(2021, Q3))))
+      case _    => None
     }
   }
 }
