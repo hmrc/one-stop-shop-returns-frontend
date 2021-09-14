@@ -24,7 +24,7 @@ import models.Quarter.Q3
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.requests.DataRequest
 import models.{Country, NormalMode, Period, TotalVatToCountry}
-import models.responses.{ConflictFound, UnexpectedResponseStatus}
+import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -88,7 +88,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
   "on submit" - {
 
-    "when the user answered all necessary data and submission of the registration succeeds" - {
+    "when the user answered all necessary data and submission of the return succeeds" - {
 
       "must redirect to the next page" in {
 

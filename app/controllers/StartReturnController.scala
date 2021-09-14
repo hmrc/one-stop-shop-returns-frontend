@@ -35,7 +35,7 @@ class StartReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.auth {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period) {
     implicit request =>
       val form = formProvider(period)
       Ok(view(form, period))
