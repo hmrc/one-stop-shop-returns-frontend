@@ -32,7 +32,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def sessionRepository: SessionRepository
   def identify: AuthenticatedIdentifierAction
   def getRegistration: GetRegistrationAction
-  def checkReturn: CheckReturnsFilter
+  def checkReturn: CheckReturnsFilterProvider
   def getData: DataRetrievalActionProvider
   def requireData: DataRequiredAction
 
@@ -43,13 +43,10 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     auth andThen getRegistration
 
   def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
-    auth andThen getRegistration andThen getData(period) andThen checkReturn
+    auth andThen getRegistration andThen getData(period) andThen checkReturn(period)
 
   def authAndGetData(period: Period): ActionBuilder[DataRequest, AnyContent] =
     authAndGetOptionalData(period) andThen requireData
-
-  def authAndGetOptionalDataNoReturnCheck(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
-    authAndGetRegistration andThen getData(period)
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
@@ -63,7 +60,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                sessionRepository: SessionRepository,
                                                                identify: AuthenticatedIdentifierAction,
                                                                getRegistration: GetRegistrationAction,
-                                                               checkReturn: CheckReturnsFilter,
+                                                               checkReturn: CheckReturnsFilterProvider,
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction
                                                              ) extends AuthenticatedControllerComponents

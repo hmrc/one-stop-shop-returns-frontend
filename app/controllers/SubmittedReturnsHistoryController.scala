@@ -42,7 +42,7 @@ class SubmittedReturnsHistoryController @Inject()(
 
   val period = new Period(2021, Q3)
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetOptionalDataNoReturnCheck(period).async {
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       vatReturnConnector.get(period).map {
         case Right(vatReturn) =>

@@ -37,7 +37,7 @@ import scala.concurrent.Future
 
 class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  class Harness(connector: VatReturnConnector) extends CheckReturnsFilterImpl(connector) {
+  class Harness(connector: VatReturnConnector) extends CheckReturnsFilterImpl(period, connector) {
     def callFilter(request: OptionalDataRequest[_]): Future[Option[Result]] = filter(request)
   }
 

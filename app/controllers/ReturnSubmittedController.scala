@@ -40,7 +40,7 @@ class ReturnSubmittedController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetOptionalDataNoReturnCheck(period).async {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
       vatReturnConnector.get(period).map {

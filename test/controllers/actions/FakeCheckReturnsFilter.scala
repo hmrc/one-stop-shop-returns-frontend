@@ -16,17 +16,28 @@
 
 package controllers.actions
 
+import connectors.VatReturnConnector
+import models.Period
 import models.requests.OptionalDataRequest
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeCheckReturnsFilter() extends CheckReturnsFilter {
+class FakeCheckReturnsFilter() extends CheckReturnsFilterImpl(
+  mock[Period],
+  mock[VatReturnConnector]
+)(ExecutionContext.Implicits.global) {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     Future.successful(None)
   }
 
-  override protected def executionContext: ExecutionContext =
-    scala.concurrent.ExecutionContext.Implicits.global
+}
+
+class FakeCheckReturnsFilterProvider()
+  extends CheckReturnsFilterProvider(mock[VatReturnConnector])(ExecutionContext.Implicits.global) {
+
+  override def apply(period: Period): CheckReturnsFilterImpl = new FakeCheckReturnsFilter()
+
 }

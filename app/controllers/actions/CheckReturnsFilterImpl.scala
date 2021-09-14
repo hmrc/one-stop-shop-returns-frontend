@@ -19,8 +19,6 @@ package controllers.actions
 import connectors.VatReturnConnector
 import controllers.routes
 import models.Period
-import models.Quarter.Q3
-import models.domain.VatReturn
 import models.requests.OptionalDataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
@@ -30,18 +28,23 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckReturnsFilterImpl @Inject()(connector: VatReturnConnector)(implicit val executionContext: ExecutionContext)
-
-  extends CheckReturnsFilter {
+class CheckReturnsFilterImpl(period: Period, connector: VatReturnConnector)
+                            (implicit val executionContext: ExecutionContext)
+  extends ActionFilter[OptionalDataRequest] {
   
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    connector.get(Period(2021, Q3)) map {
-      case Right(_) => Some(Redirect(routes.PreviousReturnController.onPageLoad(Period(2021, Q3))))
+    connector.get(period) map {
+      case Right(_) => Some(Redirect(routes.PreviousReturnController.onPageLoad(period)))
       case _    => None
     }
   }
 }
 
-trait CheckReturnsFilter extends ActionFilter[OptionalDataRequest]
+class CheckReturnsFilterProvider @Inject()(connector: VatReturnConnector)
+                                          (implicit ec: ExecutionContext) {
+
+ def apply(period: Period): CheckReturnsFilterImpl =
+   new CheckReturnsFilterImpl(period, connector)
+}
