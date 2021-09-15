@@ -19,23 +19,23 @@ GET         /account/signed-out                          controllers.auth.Signed
 
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
-GET         /notRegistered                       controllers.NotRegisteredController.onPageLoad()
+GET         /notRegistered                               controllers.NotRegisteredController.onPageLoad()
 
-GET         /:period/check-your-answers                          controllers.CheckYourAnswersController.onPageLoad(period: Period)
-POST        /:period/check-your-answers                          controllers.CheckYourAnswersController.onSubmit(period: Period)
+GET         /:period/check-your-answers                        controllers.CheckYourAnswersController.onPageLoad(period: Period)
+POST        /:period/check-your-answers                        controllers.CheckYourAnswersController.onSubmit(period: Period)
 
 GET         /:period/check-sales-from-ni/:index                controllers.CheckSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
 POST        /:period/check-sales-from-ni/:index                controllers.CheckSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
 GET         /:period/change-check-sales-from-ni/:index         controllers.CheckSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
 POST        /:period/change-check-sales-from-ni/:index         controllers.CheckSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
 
-GET         /:period/add-sales-from-ni                  controllers.SalesFromNiListController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST        /:period/add-sales-from-ni                  controllers.SalesFromNiListController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET         /:period/add-sales-from-ni                   controllers.SalesFromNiListController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST        /:period/add-sales-from-ni                   controllers.SalesFromNiListController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET         /:period/check-add-sales-from-ni             controllers.SalesFromNiListController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST        /:period/check-add-sales-from-ni             controllers.SalesFromNiListController.onSubmit(mode: Mode = CheckMode, period: Period)
 
-GET         /:period/startReturn                        controllers.StartReturnController.onPageLoad(period: Period)
-POST        /:period/startReturn                        controllers.StartReturnController.onSubmit(period: Period)
+GET         /:period/startReturn                         controllers.StartReturnController.onPageLoad(period: Period)
+POST        /:period/startReturn                         controllers.StartReturnController.onSubmit(period: Period)
 
 GET         /:period/countryOfConsumptionFromNi/:index                        controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
 POST        /:period/countryOfConsumptionFromNi/:index                        controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
@@ -108,16 +108,16 @@ POST        /:period/change-check-sales-to-eu/:countryFromIndex/:countryToIndex 
 
 GET         /:period/add-sales-from-eu                  controllers.SalesFromEuListController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST        /:period/add-sales-from-eu                  controllers.SalesFromEuListController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET         /:period/check-add-sales-from-eu             controllers.SalesFromEuListController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST        /:period/check-add-sales-from-eu             controllers.SalesFromEuListController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET         /:period/check-add-sales-from-eu            controllers.SalesFromEuListController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST        /:period/check-add-sales-from-eu            controllers.SalesFromEuListController.onSubmit(mode: Mode = CheckMode, period: Period)
 
-GET         /:period/add-sales-to-eu/:index                  controllers.SalesToEuListController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
-POST        /:period/add-sales-to-eu/:index                  controllers.SalesToEuListController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
-GET         /:period/check-add-sales-to-eu/:index             controllers.SalesToEuListController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
-POST        /:period/check-add-sales-to-eu/:index             controllers.SalesToEuListController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
+GET         /:period/add-sales-to-eu/:index             controllers.SalesToEuListController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
+POST        /:period/add-sales-to-eu/:index             controllers.SalesToEuListController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
+GET         /:period/check-add-sales-to-eu/:index       controllers.SalesToEuListController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
+POST        /:period/check-add-sales-to-eu/:index       controllers.SalesToEuListController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
 
-GET         /:period/successful                             controllers.ReturnSubmittedController.onPageLoad(period: Period)
+GET         /:period/successful                         controllers.ReturnSubmittedController.onPageLoad(period: Period)
 
-GET         /past-returns                           controllers.SubmittedReturnsHistoryController.onPageLoad()
+GET         /past-returns                               controllers.SubmittedReturnsHistoryController.onPageLoad()
 
 GET         /return/:period                             controllers.PreviousReturnController.onPageLoad(period: Period)

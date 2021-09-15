@@ -30,13 +30,13 @@ import views.html.SalesToEuListView
 
 class SalesToEuListControllerSpec extends SpecBase with MockitoSugar {
 
-  private val formProvider = new SalesToEuListFormProvider()
-  private val form         = formProvider()
-
   private lazy val salesToEuListRoute = routes.SalesToEuListController.onPageLoad(NormalMode, period, index).url
 
   private val countryFrom = arbitrary[Country].sample.value
   private val countryTo   = arbitrary[Country].sample.value
+
+  private val formProvider = new SalesToEuListFormProvider()
+  private val form         = formProvider(countryFrom)
 
   private val baseAnswers =
     emptyUserAnswers
