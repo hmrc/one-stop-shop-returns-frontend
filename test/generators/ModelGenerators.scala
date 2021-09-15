@@ -226,6 +226,6 @@ trait ModelGenerators {
         salesFromNi <- Gen.listOfN(niSales, arbitrary[SalesToCountry])
         salesFromEu <- Gen.listOfN(euSales, arbitrary[SalesFromEuCountry])
         now         = Instant.now
-      } yield VatReturn(vrn, period, ReturnReference(vrn, period), None, None, salesFromNi, salesFromEu, now, now)
+      } yield VatReturn(vrn, period, ReturnReference(vrn, period), PaymentReference(vrn, period), None, None, salesFromNi, salesFromEu, now, now)
     }
 }

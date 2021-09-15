@@ -19,7 +19,7 @@ package base
 import controllers.actions._
 import generators.Generators
 import models.registration._
-import models.{Country, Index, Period, Quarter, ReturnReference, SalesAtVatRate, UserAnswers, VatRate, VatRateType}
+import models.{Country, Index, PaymentReference, Period, Quarter, ReturnReference, SalesAtVatRate, UserAnswers, VatRate, VatRateType}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.requests.VatReturnRequest
 import org.scalacheck.Arbitrary.arbitrary
@@ -89,9 +89,9 @@ trait SpecBase
   val completeVatReturn: VatReturn =
       VatReturn(
         Vrn("063407423"),
-        Period("2086",
-          "Q3").get,
+        Period("2086", "Q3").get,
         ReturnReference("XI/XI063407423/Q3.2086"),
+        PaymentReference("XI063407423Q386"),
         None,
         None,
         List(SalesToCountry(Country("LT",
@@ -137,9 +137,9 @@ trait SpecBase
   val emptyVatReturn: VatReturn =
     VatReturn(
       Vrn("063407423"),
-      Period("2086",
-        "Q3").get,
+      Period("2086", "Q3").get,
       ReturnReference("XI/XI063407423/Q3.2086"),
+      PaymentReference("XI063407423Q386"),
       None,
       None,
       List.empty,
