@@ -122,4 +122,4 @@ GET         /past-returns                               controllers.SubmittedRet
 
 GET         /return/:period                             controllers.PreviousReturnController.onPageLoad(period: Period)
 
-GET        /:period/noOtherPeriodsAvailable                       controllers.NoOtherPeriodsAvailableController.onPageLoad(period: Period)
+GET         /no-other-periods-available                 controllers.NoOtherPeriodsAvailableController.onPageLoad()

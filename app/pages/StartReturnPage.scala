@@ -31,6 +31,6 @@ case object StartReturnPage extends QuestionPage[Boolean] {
     if (startReturn) {
       routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period)
     } else {
-      routes.IndexController.onPageLoad()
+      routes.NoOtherPeriodsAvailableController.onPageLoad()
     }
 }

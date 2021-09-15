@@ -271,5 +271,7 @@ previousReturn.vatOnSalesFromNi.label = VAT on sales from Northern Ireland
 previousReturn.vatOnSalesFromEu.label = VAT on sales from EU countries
 previousReturn.totalVatOnSales.label = VAT owed this period
 
-noOtherPeriodsAvailable.title = noOtherPeriodsAvailable
-noOtherPeriodsAvailable.heading = noOtherPeriodsAvailable
+noOtherPeriodsAvailable.title = You cannot start returns for other periods yet
+noOtherPeriodsAvailable.heading = You cannot start returns for other periods yet
+noOtherPeriodsAvailable.label = You can only start returns for periods that have ended.
+noOtherPeriodsAvailable.submit = Back to your account

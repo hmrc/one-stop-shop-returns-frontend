@@ -39,7 +39,7 @@ class StartReturnPageSpec extends PageBehaviours {
         forAll(arbitrary[Period]) {
           period =>
             StartReturnPage.navigate(period, startReturn = false)
-              .mustEqual(routes.IndexController.onPageLoad())
+              .mustEqual(routes.NoOtherPeriodsAvailableController.onPageLoad())
         }
       }
     }

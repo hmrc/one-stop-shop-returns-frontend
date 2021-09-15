@@ -31,7 +31,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.StartReturnView
+import views.html.{NoOtherPeriodsAvailableView, StartReturnView}
 
 import scala.concurrent.Future
 
@@ -40,10 +40,6 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
   private lazy val startReturnRoute = routes.StartReturnController.onPageLoad(period).url
 
   private val formProvider = new StartReturnFormProvider()
-
-  private val vatReturnConnector = mock[VatReturnConnector]
-
-  private val vatReturn = arbitrary[VatReturn].sample.value
 
   "StartReturn Controller" - {
 
@@ -80,6 +76,24 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = true).url
+      }
+    }
+
+    "must redirect to the No Other Periods Available page when answer is no" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
+
+      running(application) {
+
+        val request =
+          FakeRequest(POST, startReturnRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = false).url
       }
     }
 

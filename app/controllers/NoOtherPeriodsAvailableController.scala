@@ -31,8 +31,8 @@ class NoOtherPeriodsAvailableController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(): Action[AnyContent] = cc.auth {
     implicit request =>
-      Ok(view(period))
+      Ok(view())
   }
 }
