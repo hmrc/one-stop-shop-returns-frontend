@@ -20,16 +20,12 @@ import formats.Format
 import models.domain.VatReturn
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.govukfrontend.views.Aliases.Key
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import uk.gov.hmrc.govukfrontend.views.Aliases.Key
 import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
-
-import java.time.format.{DateTimeFormatter, FormatStyle}
-import java.time.ZoneId
-import java.util.Locale
 
 object PreviousReturnSummary extends CurrencyFormatter {
 
