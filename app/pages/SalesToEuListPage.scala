@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, Mode, NormalMode, UserAnswers}
+import models.{Index, Mode, UserAnswers}
 import play.api.mvc.Call
 import queries.DeriveNumberOfSalesToEu
 

@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, Index, Mode, NormalMode, SalesAtVatRate, UserAnswers}
+import models.{CheckMode, Index, Mode, NormalMode, SalesAtVatRate, UserAnswers}
 import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call

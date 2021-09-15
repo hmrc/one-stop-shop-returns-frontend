@@ -19,9 +19,9 @@ package controllers
 import base.SpecBase
 import connectors.VatReturnConnector
 import generators.Generators
-import models.{Period, SubmissionStatus}
 import models.Quarter.Q3
 import models.responses.NotFound
+import models.{Period, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -30,7 +30,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.VatReturnSalesService
 import views.html.IndexView
 
 import scala.concurrent.Future

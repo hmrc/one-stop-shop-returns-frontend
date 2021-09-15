@@ -17,7 +17,6 @@
 package viewmodels.checkAnswers
 
 import models.registration.Registration
-import models.UserAnswers
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow

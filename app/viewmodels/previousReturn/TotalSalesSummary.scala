@@ -16,14 +16,12 @@
 
 package viewmodels.previousReturn
 
-import models.domain.VatReturn
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
 import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
-import viewmodels.TitledSummaryList
 
 object TotalSalesSummary extends CurrencyFormatter {
 

@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, Index, UserAnswers}
+import models.{CheckLoopMode, Index, UserAnswers}
 import pages.SalesAtVatRateFromEuPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
