@@ -25,24 +25,12 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object VatReturnHttpParser extends Logging {
 
-  type SubmittedVatReturnResponse = Either[ErrorResponse, Unit]
-
-  implicit object SubmittedVatReturnReads extends HttpReads[SubmittedVatReturnResponse] {
-    override def read(method: String, url: String, response: HttpResponse): SubmittedVatReturnResponse = {
-      response.status match {
-        case CREATED  => Right(())
-        case CONFLICT => Left(ConflictFound)
-        case status   => Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
-      }
-    }
-  }
-
   type VatReturnResponse = Either[ErrorResponse, VatReturn]
 
   implicit object VatReturnReads extends HttpReads[VatReturnResponse] {
     override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {
       response.status match {
-        case OK =>
+        case OK | CREATED =>
           response.json.validate[VatReturn] match {
             case JsSuccess(vatReturn, _) => Right(vatReturn)
             case JsError(errors) =>
@@ -50,9 +38,14 @@ object VatReturnHttpParser extends Logging {
               Left(InvalidJson)
           }
         case NOT_FOUND =>
-          logger.warn("Received not found from vat return")
+          logger.warn("Received NotFound from vat return")
           Left(NotFound)
-        case status   => Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
+        case CONFLICT =>
+          logger.warn("Received NotFound from vat return")
+          Left(ConflictFound)
+        case status   =>
+          logger.warn("Received unexpected error from vat return")
+          Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }
     }
   }

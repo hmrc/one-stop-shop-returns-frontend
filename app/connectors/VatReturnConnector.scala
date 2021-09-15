@@ -31,10 +31,10 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
 
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
 
-  def submit(vatReturnRequest: VatReturnRequest)(implicit hc: HeaderCarrier): Future[SubmittedVatReturnResponse] = {
+  def submit(vatReturnRequest: VatReturnRequest)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
     val url = s"$baseUrl/vat-returns"
 
-    httpClient.POST[VatReturnRequest, SubmittedVatReturnResponse](url, vatReturnRequest)
+    httpClient.POST[VatReturnRequest, VatReturnResponse](url, vatReturnRequest)
   }
 
   def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
