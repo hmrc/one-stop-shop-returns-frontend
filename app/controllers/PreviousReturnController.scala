@@ -45,7 +45,7 @@ class PreviousReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
       vatReturnConnector.get(period).map {

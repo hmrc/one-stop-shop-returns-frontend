@@ -17,8 +17,10 @@
 package controllers
 
 import base.SpecBase
+import connectors.VatReturnConnector
 import forms.StartReturnFormProvider
 import models.Country
+import models.domain.VatReturn
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -39,11 +41,16 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new StartReturnFormProvider()
 
+  private val vatReturnConnector = mock[VatReturnConnector]
+
+  private val vatReturn = arbitrary[VatReturn].sample.value
+
   "StartReturn Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
 
       running(application) {
         val form = formProvider(period)(messages(application))
@@ -60,7 +67,8 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to the next page when valid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
 
       running(application) {
 
@@ -76,7 +84,6 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must clear useranswers when answer is no" in {
-
       val mockSessionRepository = mock[SessionRepository]
 
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
@@ -105,7 +112,8 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
 
       running(application) {
         val form = formProvider(period)(messages(application))

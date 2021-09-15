@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package config
+package models
 
-import com.google.inject.AbstractModule
-import controllers.actions._
+sealed trait SubmissionStatus
 
-import java.time.{Clock, ZoneOffset}
+object SubmissionStatus extends Enumerable.Implicits {
 
-class Module extends AbstractModule {
+  case object Due extends WithName("DUE") with SubmissionStatus
+  case object Overdue extends WithName("OVERDUE") with SubmissionStatus
+  case object Complete extends WithName("COMPLETE") with SubmissionStatus
 
-  override def configure(): Unit = {
-    bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-    bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
-  }
+  val values: Seq[SubmissionStatus] = Seq(Due, Overdue, Complete)
+
 }
