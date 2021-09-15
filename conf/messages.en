@@ -270,3 +270,6 @@ previousReturn.netSalesFromEu.label = Sales excluding VAT from EU countries
 previousReturn.vatOnSalesFromNi.label = VAT on sales from Northern Ireland
 previousReturn.vatOnSalesFromEu.label = VAT on sales from EU countries
 previousReturn.totalVatOnSales.label = VAT owed this period
+
+noOtherPeriodsAvailable.title = noOtherPeriodsAvailable
+noOtherPeriodsAvailable.heading = noOtherPeriodsAvailable

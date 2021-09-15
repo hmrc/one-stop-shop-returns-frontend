@@ -121,3 +121,5 @@ GET         /:period/successful                         controllers.ReturnSubmit
 GET         /past-returns                               controllers.SubmittedReturnsHistoryController.onPageLoad()
 
 GET         /return/:period                             controllers.PreviousReturnController.onPageLoad(period: Period)
+
+GET        /:period/noOtherPeriodsAvailable                       controllers.NoOtherPeriodsAvailableController.onPageLoad(period: Period)
