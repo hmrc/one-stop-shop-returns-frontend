@@ -294,3 +294,8 @@ vatOnSalesFromEu.amount.error.required = Enter the amount of VAT charged
 vatOnSalesFromEu.amount.error.decimalFormat = Enter the amount of VAT charged up to two digits
 vatOnSalesFromEu.amount.error.outOfRange = The amount of VAT charged must be between {0} and {1}
 vatOnSalesFromEu.change.hidden = how much VAT you charged on sales
+
+noOtherPeriodsAvailable.title = You cannot start returns for other periods yet
+noOtherPeriodsAvailable.heading = You cannot start returns for other periods yet
+noOtherPeriodsAvailable.label = You can only start returns for periods that have ended.
+noOtherPeriodsAvailable.submit = Back to your account

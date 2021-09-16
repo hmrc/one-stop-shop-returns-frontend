@@ -17,14 +17,15 @@
 package forms
 
 import forms.mappings.Mappings
+import models.Country
 import play.api.data.Form
 
 import javax.inject.Inject
 
 class SalesToEuListFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(countryFrom: Country): Form[Boolean] =
     Form(
-      "value" -> boolean("salesToEuList.error.required")
-    )
+      "value" -> boolean("salesToEuList.error.required", args = Seq(countryFrom.name)
+    ))
 }
