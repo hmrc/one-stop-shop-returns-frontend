@@ -39,8 +39,10 @@
                     RadiosViewModel.yesNo(
                         field = form("value"),
                         legend = LegendViewModel(
-                            HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("salesToEuList.addAnother", countryFrom.name) + "</h2>"))
+                            HtmlContent(Html(messages("salesToEuList.addAnother", countryFrom.name)))
                         ).withSize(LegendSize.Medium)
+                    ).withHint(
+                        HintViewModel(messages("salesToEuList.hint"))
                     )
                 )
             } else {
