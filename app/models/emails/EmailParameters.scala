@@ -34,7 +34,8 @@ case class ReturnsConfirmationEmailParameters(
    businessName:String,
    period: String,
    lastDayOfMonthAfterCalendarQuarter: String,
-   VATOwed: String
+   VATOwed: String,
+   reference: String
 ) extends EmailParameters
 
 object ReturnsConfirmationEmailParameters {
