@@ -34,8 +34,8 @@ POST        /:period/add-sales-from-northern-ireland                            
 GET         /:period/check-add-sales-from-northern-ireland                                             controllers.SalesFromNiListController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST        /:period/check-add-sales-from-northern-ireland                                             controllers.SalesFromNiListController.onSubmit(mode: Mode = CheckMode, period: Period)
 
-GET         /:period                                                                                   controllers.StartReturnController.onPageLoad(period: Period)
-POST        /:period                                                                                   controllers.StartReturnController.onSubmit(period: Period)
+GET         /$period<[0-9]{4}-Q[0-4]>                                                                  controllers.StartReturnController.onPageLoad(period: Period)
+POST        /$period<[0-9]{4}-Q[0-4]>                                                                  controllers.StartReturnController.onSubmit(period: Period)
 
 GET         /:period/eu-country-from-northern-ireland/:index                                           controllers.CountryOfConsumptionFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
 POST        /:period/eu-country-from-northern-ireland/:index                                           controllers.CountryOfConsumptionFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
