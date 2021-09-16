@@ -18,9 +18,11 @@ package pages
 
 object PageConstants {
 
-  val salesFromNi: String = "salesFromNi"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val salesFromEu: String = "salesFromEu"
+  val salesFromNi: String      = "salesFromNi"
+  val salesAtVatRate: String   = "salesAtVatRate"
+  val salesFromEu: String      = "salesFromEu"
   val salesFromCountry: String = "salesFromCountry"
-  val vatRates: String = "vatRates"
+  val vatRates: String         = "vatRates"
+  val netValueOfSales: String  = "netValueOfSales"
+  val vatOnSales: String       = "vatOnSales"
 }

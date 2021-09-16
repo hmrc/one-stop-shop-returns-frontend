@@ -19,7 +19,7 @@ package controllers
 import controllers.JourneyRecoverySyntax._
 import models.requests.DataRequest
 import models.{Country, Index, VatRate}
-import pages.CountryOfConsumptionFromNiPage
+import pages.{CountryOfConsumptionFromNiPage, NetValueOfSalesFromNiPage}
 import play.api.mvc.{AnyContent, Result}
 import queries.{DeriveNumberOfSalesFromNi, VatRateFromNiQuery}
 
@@ -60,6 +60,25 @@ trait SalesFromNiBaseController {
       country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))
       vatRate  <- request.userAnswers.get(VatRateFromNiQuery(countryIndex, vatRateIndex))
     } yield block(country, vatRate))
+      .orRecoverJourney
+
+  protected def getCountryVatRateAndNetSales(countryIndex: Index, vatRateIndex: Index)
+                                            (block: (Country, VatRate, BigDecimal) => Result)
+                                            (implicit request: DataRequest[AnyContent]): Result =
+    (for {
+      country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))
+      vatRate  <- request.userAnswers.get(VatRateFromNiQuery(countryIndex, vatRateIndex))
+      netSales <- request.userAnswers.get(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex))
+    } yield block(country, vatRate, netSales))
+      .orRecoverJourney
+  protected def getCountryVatRateAndNetSalesAsync(countryIndex: Index, vatRateIndex: Index)
+                                                 (block: (Country, VatRate, BigDecimal) => Future[Result])
+                                                 (implicit request: DataRequest[AnyContent]): Future[Result] =
+    (for {
+      country  <- request.userAnswers.get(CountryOfConsumptionFromNiPage(countryIndex))
+      vatRate  <- request.userAnswers.get(VatRateFromNiQuery(countryIndex, vatRateIndex))
+      netSales <- request.userAnswers.get(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex))
+    } yield block(country, vatRate, netSales))
       .orRecoverJourney
 
   protected def getNumberOfSalesFromNi(block: Int => Result)

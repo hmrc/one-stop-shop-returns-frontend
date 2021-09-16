@@ -19,7 +19,7 @@ package controllers
 import controllers.JourneyRecoverySyntax._
 import models.requests.DataRequest
 import models.{Country, Index, VatRate}
-import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage}
+import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage, NetValueOfSalesFromEuPage}
 import play.api.mvc.{AnyContent, Result}
 import queries.{DeriveNumberOfSalesFromEu, DeriveNumberOfSalesToEu, VatRateFromEuQuery}
 
@@ -81,6 +81,28 @@ trait SalesFromEuBaseController {
       countryTo   <- request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex))
       vatRate     <- request.userAnswers.get(VatRateFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex))
     } yield block(countryFrom, countryTo, vatRate))
+      .orRecoverJourney
+
+  protected def getCountriesVatRateAndNetSales(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+                                              (block: (Country, Country, VatRate, BigDecimal) => Result)
+                                              (implicit request: DataRequest[AnyContent]): Result =
+    (for {
+      countryFrom <- request.userAnswers.get(CountryOfSaleFromEuPage(countryFromIndex))
+      countryTo   <- request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex))
+      vatRate     <- request.userAnswers.get(VatRateFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex))
+      netSales    <- request.userAnswers.get(NetValueOfSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex))
+    } yield block(countryFrom, countryTo, vatRate, netSales))
+      .orRecoverJourney
+
+  protected def getCountriesVatRateAndNetSalesAsync(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
+                                                   (block: (Country, Country, VatRate, BigDecimal) => Future[Result])
+                                                   (implicit request: DataRequest[AnyContent]): Future[Result] =
+    (for {
+      countryFrom <- request.userAnswers.get(CountryOfSaleFromEuPage(countryFromIndex))
+      countryTo   <- request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex))
+      vatRate     <- request.userAnswers.get(VatRateFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex))
+      netSales    <- request.userAnswers.get(NetValueOfSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex))
+    } yield block(countryFrom, countryTo, vatRate, netSales))
       .orRecoverJourney
 
   protected def getNumberOfSalesFromEu(block: Int => Result)

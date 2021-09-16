@@ -17,7 +17,8 @@
 package services
 
 import base.SpecBase
-import models.Country
+import models.VatOnSalesChoice.Standard
+import models.{Country, VatOnSales}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate, VatRateType}
 
 class VatReturnSalesServiceSpec extends SpecBase {
@@ -77,17 +78,17 @@ class VatReturnSalesServiceSpec extends SpecBase {
           List(SalesDetails(VatRate(45.54,
             VatRateType.Reduced),
             306338.71,
-            230899.32),
+            VatOnSales(Standard, 230899.32)),
             SalesDetails(VatRate(98.54,
               VatRateType.Reduced),
               295985.50,
-              319051.84))),
+              VatOnSales(Standard, 319051.84)))),
           SalesToCountry(Country("MT",
             "Malta"),
             List(SalesDetails(VatRate(80.28,
               VatRateType.Standard),
               357873.00,
-              191855.64))))
+              VatOnSales(Standard, 191855.64)))))
 
         service.getTotalVatOnSales(emptyVatReturn.copy(salesFromNi = salesFromNi)) mustBe BigDecimal(741806.80)
       }
@@ -101,7 +102,7 @@ class VatReturnSalesServiceSpec extends SpecBase {
             List(SalesDetails(VatRate(56.02,
               VatRateType.Standard),
               543742.51,
-              801143.05))))),
+              VatOnSales(Standard, 801143.05)))))),
           SalesFromEuCountry(Country("IE",
             "Ireland"),
             Some(EuTaxIdentifier(EuTaxIdentifierType.Other, "-2147483648")),
@@ -110,11 +111,11 @@ class VatReturnSalesServiceSpec extends SpecBase {
               List(SalesDetails(VatRate(98.97,
                 VatRateType.Reduced),
                 356270.07,
-                24080.60),
+                VatOnSales(Standard, 24080.60)),
                 SalesDetails(VatRate(98.92,
                   VatRateType.Reduced),
                   122792.32,
-                  554583.78))))))
+                  VatOnSales(Standard, 554583.78)))))))
 
         service.getTotalVatOnSales(emptyVatReturn.copy(salesFromEu = salesFromEu)) mustBe BigDecimal(1379807.43)
       }

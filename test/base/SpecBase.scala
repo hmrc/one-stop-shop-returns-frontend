@@ -18,10 +18,11 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.registration._
-import models.{Country, Index, Period, Quarter, ReturnReference, SalesAtVatRate, UserAnswers, VatRate, VatRateType}
+import models.VatOnSalesChoice.Standard
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.registration._
 import models.requests.VatReturnRequest
+import models.{Country, Index, Period, Quarter, ReturnReference, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -77,14 +78,16 @@ trait SpecBase
     .set(SoldGoodsFromNiPage, true).success.value
     .set(CountryOfConsumptionFromNiPage(index), Country("ES", "Spain")).success.value
     .set(VatRatesFromNiPage(index), List(VatRate(10, VatRateType.Reduced, arbitraryDate))).success.value
-    .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(1000))).success.value
+    .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(100)).success.value
+    .set(VatOnSalesFromNiPage(index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(1000))).success.value
 
   def completeUserAnswers : UserAnswers = completeSalesFromNIUserAnswers
     .set(SoldGoodsFromEuPage,true).success.value
     .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
     .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
     .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
-    .set(SalesAtVatRateFromEuPage(index, index, index), SalesAtVatRate(BigDecimal(100), BigDecimal(20))).success.value
+    .set(NetValueOfSalesFromEuPage(index, index, index), BigDecimal(100)).success.value
+    .set(VatOnSalesFromEuPage(index, index, index), VatOnSales(Standard, BigDecimal(20))).success.value
 
   val completeVatReturn: VatReturn =
       VatReturn(
@@ -99,17 +102,17 @@ trait SpecBase
           List(SalesDetails(DomainVatRate(45.54,
             DomainVatRateType.Reduced),
             306338.71,
-            230899.32),
+            VatOnSales(Standard, 230899.32)),
             SalesDetails(DomainVatRate(98.54,
               DomainVatRateType.Reduced),
               295985.50,
-              319051.84))),
+              VatOnSales(Standard, 319051.84)))),
           SalesToCountry(Country("MT",
             "Malta"),
             List(SalesDetails(DomainVatRate(80.28,
               DomainVatRateType.Standard),
               357873.00,
-              191855.64)))),
+              VatOnSales(Standard, 191855.64))))),
         List(SalesFromEuCountry(Country("DE", "Germany"),
           Some(EuTaxIdentifier(EuTaxIdentifierType.Vat, "-1")),
           List(SalesToCountry(Country("FI",
@@ -117,7 +120,7 @@ trait SpecBase
             List(SalesDetails(DomainVatRate(56.02,
               DomainVatRateType.Standard),
               543742.51,
-              801143.05))))),
+              VatOnSales(Standard, 801143.05)))))),
           SalesFromEuCountry(Country("IE",
             "Ireland"),
             Some(EuTaxIdentifier(EuTaxIdentifierType.Other, "-2147483648")),
@@ -126,11 +129,11 @@ trait SpecBase
               List(SalesDetails(DomainVatRate(98.97,
                 DomainVatRateType.Reduced),
                 356270.07,
-                24080.60),
+                VatOnSales(Standard, 24080.60)),
                 SalesDetails(DomainVatRate(98.92,
                   DomainVatRateType.Reduced),
                   122792.32,
-                  554583.78)))))),
+                  VatOnSales(Standard, 554583.78))))))),
         Instant.ofEpochSecond(1630670836),
         Instant.ofEpochSecond(1630670836))
 
