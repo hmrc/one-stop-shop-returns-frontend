@@ -35,7 +35,7 @@ class EmailConnectorSpec extends SpecBase with WireMockHelper {
     to = List("name@example.com"),
     templateId = "oss_returns_confirmation_email_parameters",
     parameters = ReturnsConfirmationEmailParameters(
-        "Joe Bloggs", "Test Business", "1 July to 30 September 2021", "31 October 2021", "£1250"
+        "Joe Bloggs", "Test Business", "1 July to 30 September 2021", "31 October 2021", "£1250", "XI/XI100000002/Q3.2021"
     )
   )
 
