@@ -16,6 +16,7 @@
 
 package models.audit
 
+import models.{PaymentReference, ReturnReference}
 import models.requests.{DataRequest, VatReturnRequest}
 import play.api.libs.json.{JsObject, JsValue, Json}
 
@@ -23,6 +24,8 @@ case class ReturnsAuditModel(
                               credId: String,
                               userAgent: String,
                               vatReturnRequest: VatReturnRequest,
+                              reference: Option[ReturnReference],
+                              paymentReference: Option[PaymentReference],
                               result: SubmissionResult
                             ) extends JsonAuditModel {
 
@@ -30,17 +33,41 @@ case class ReturnsAuditModel(
   override val transactionName: String = "return-submitted"
 
   private val startDate: JsObject =
-    if (vatReturnRequest.startDate.nonEmpty) Json.obj("startDate" -> vatReturnRequest.startDate) else Json.obj()
+    if (vatReturnRequest.startDate.isDefined) {
+      Json.obj("startDate" -> vatReturnRequest.startDate)
+    } else {
+      Json.obj()
+    }
 
   private val endDate: JsObject =
-    if (vatReturnRequest.endDate.nonEmpty) Json.obj("endDate" -> vatReturnRequest.endDate) else Json.obj()
+    if (vatReturnRequest.endDate.isDefined) {
+      Json.obj("endDate" -> vatReturnRequest.endDate)
+    } else {
+      Json.obj()
+    }
+
+  private val referenceObj: JsObject =
+    if (reference.isDefined) {
+      Json.obj("returnReference" -> reference)
+    } else {
+      Json.obj()
+    }
+
+  private val paymentReferenceObj: JsObject =
+    if (paymentReference.isDefined) {
+      Json.obj("paymentReference" -> paymentReference)
+    } else {
+      Json.obj()
+    }
 
   private val returnDetail: JsValue = Json.obj(
     "vatRegistrationNumber" -> vatReturnRequest.vrn,
     "period" -> Json.toJson(vatReturnRequest.period),
     "salesFromNi" -> Json.toJson(vatReturnRequest.salesFromNi),
     "salesFromEu" -> Json.toJson(vatReturnRequest.salesFromEu),
-  ) ++ startDate ++
+  ) ++ referenceObj ++
+    paymentReferenceObj ++
+    startDate ++
     endDate
 
   override val detail: JsValue = Json.obj(
@@ -53,11 +80,20 @@ case class ReturnsAuditModel(
 
 object ReturnsAuditModel {
 
-  def build(vatReturnRequest: VatReturnRequest, result: SubmissionResult, request: DataRequest[_]): ReturnsAuditModel =
+  def build(
+    vatReturnRequest: VatReturnRequest,
+    result: SubmissionResult,
+    reference: Option[ReturnReference],
+    paymentReference: Option[PaymentReference],
+    request: DataRequest[_]
+  ): ReturnsAuditModel = {
     ReturnsAuditModel(
       credId           = request.credentials.providerId,
       userAgent        = request.headers.get("user-agent").getOrElse(""),
       vatReturnRequest = vatReturnRequest,
+      reference        = reference,
+      paymentReference = paymentReference,
       result           = result
     )
+  }
 }

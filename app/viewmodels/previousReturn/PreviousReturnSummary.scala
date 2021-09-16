@@ -39,7 +39,7 @@ object PreviousReturnSummary extends CurrencyFormatter {
       dateSubmittedRow(vatReturn),
       dateDueRow(vatReturn),
       returnReferenceNumber(vatReturn),
-      paymentReferenceNumber()
+      paymentReferenceNumber(vatReturn)
     ).flatten
   }
 
@@ -79,9 +79,11 @@ object PreviousReturnSummary extends CurrencyFormatter {
     ))
   }
 
-  private[this] def paymentReferenceNumber()(implicit messages: Messages): Option[SummaryListRow] = {
-    None
+  private[this] def paymentReferenceNumber(vatReturn: VatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
+    Some(SummaryListRowViewModel(
+      key = "previousReturn.paymentReference.label",
+      value = ValueViewModel(HtmlFormat.escape(vatReturn.paymentReference.value).toString),
+      actions = Seq.empty
+    ))
   }
-
-
 }
