@@ -45,26 +45,27 @@ class PreviousReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
       vatReturnConnector.get(period).map {
         case Right(vatReturn) =>
 
           val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn)
-          val mainList = SummaryListViewModel(
-            rows = PreviousReturnSummary.rows(vatReturn, vatOwed))
+          val mainList =
+            SummaryListViewModel(rows = PreviousReturnSummary.rows(vatReturn, vatOwed))
 
           Ok(view(
             vatReturn,
             mainList,
             SaleAtVatRateSummary.getAllNiSales(vatReturn),
             SaleAtVatRateSummary.getAllEuSales(vatReturn),
-            getAllSales(vatReturn, vatOwed)))
+            getAllSales(vatReturn, vatOwed)
+          ))
         case Left(NotFoundResponse) =>
           Redirect(routes.IndexController.onPageLoad())
         case Left(e) =>
-          logger.error(s"Unexpected result from api while getting return: ${e}")
+          logger.error(s"Unexpected result from api while getting return: $e")
           Redirect(routes.JourneyRecoveryController.onPageLoad())
       }.recover {
         case e: Exception =>
@@ -87,5 +88,4 @@ class PreviousReturnController @Inject()(
       )
     )
   }
-
 }

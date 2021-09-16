@@ -17,27 +17,26 @@
 package controllers
 
 import controllers.actions._
-import forms.SalesAtVatRateFromEuFormProvider
+import forms.NetValueOfSalesFromEuFormProvider
 
 import javax.inject.Inject
 import models.{Index, Mode, Period}
-import pages.SalesAtVatRateFromEuPage
+import pages.NetValueOfSalesFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
-import views.html.SalesAtVatRateFromEuView
+import views.html.NetValueOfSalesFromEuView
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SalesAtVatRateFromEuController @Inject()(
-                                              cc: AuthenticatedControllerComponents,
-                                              formProvider: SalesAtVatRateFromEuFormProvider,
-                                              view: SalesAtVatRateFromEuView
-                                     )(implicit ec: ExecutionContext)
+class NetValueOfSalesFromEuController @Inject()(
+                                        cc: AuthenticatedControllerComponents,
+                                        formProvider: NetValueOfSalesFromEuFormProvider,
+                                        view: NetValueOfSalesFromEuView
+                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index): Action[AnyContent] =
@@ -46,7 +45,9 @@ class SalesAtVatRateFromEuController @Inject()(
         getCountriesAndVatRate(countryFromIndex, countryToIndex, vatRateIndex) {
           case (countryFrom, countryTo, vatRate) =>
 
-            val preparedForm = request.userAnswers.get(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
+            val form = formProvider(vatRate)
+
+            val preparedForm = request.userAnswers.get(NetValueOfSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
             }
@@ -61,15 +62,17 @@ class SalesAtVatRateFromEuController @Inject()(
         getCountriesAndVatRateAsync(countryFromIndex, countryToIndex, vatRateIndex) {
           case (countryFrom, countryTo, vatRate) =>
 
+            val form = formProvider(vatRate)
+
             form.bindFromRequest().fold(
               formWithErrors =>
                 BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate)).toFuture,
 
               value =>
                 for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex), value))
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(NetValueOfSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex), value))
                   _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex).navigate(mode, updatedAnswers))
+                } yield Redirect(NetValueOfSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex).navigate(mode, updatedAnswers))
             )
         }
     }

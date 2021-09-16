@@ -6,11 +6,11 @@ echo "Applying migration VatOnSalesFromNi"
 echo "Adding routes to conf/app.routes"
 
 echo "" >> ../conf/app.routes
-echo "GET        /vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = NormalMode)" >> ../conf/app.routes
-echo "POST       /vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = NormalMode)" >> ../conf/app.routes
+echo "GET        /:period/vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)" >> ../conf/app.routes
+echo "POST       /:period/vatOnSalesFromNi                  controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)" >> ../conf/app.routes
 
-echo "GET        /changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = CheckMode)" >> ../conf/app.routes
-echo "POST       /changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = CheckMode)" >> ../conf/app.routes
+echo "GET        /:period/changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period)" >> ../conf/app.routes
+echo "POST       /:period/changeVatOnSalesFromNi                        controllers.VatOnSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period)" >> ../conf/app.routes
 
 echo "Adding messages to conf.messages"
 echo "" >> ../conf/messages.en

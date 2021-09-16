@@ -105,17 +105,23 @@ class CheckYourAnswersController @Inject()(
       vatReturnRequest match {
         case Valid(returnRequest) =>
           vatReturnConnector.submit(returnRequest).flatMap {
-            case Right(_) =>
-              auditService.audit(ReturnsAuditModel.build(returnRequest, SubmissionResult.Success, request))
+            case Right(vatReturn) =>
+              auditService.audit(ReturnsAuditModel.build(
+                returnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), request
+              ))
               Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers)).toFuture
 
             case Left(ConflictFound) =>
-              auditService.audit(ReturnsAuditModel.build(returnRequest, SubmissionResult.Duplicate, request))
+              auditService.audit(ReturnsAuditModel.build(
+                returnRequest, SubmissionResult.Duplicate, None, None, request
+              ))
               Redirect(routes.IndexController.onPageLoad()).toFuture
 
             case Left(e) =>
               logger.error(s"Unexpected result on submit: ${e.toString}")
-              auditService.audit(ReturnsAuditModel.build(returnRequest, SubmissionResult.Failure, request))
+              auditService.audit(ReturnsAuditModel.build(
+                returnRequest, SubmissionResult.Failure, None, None, request
+              ))
               Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
           }
 

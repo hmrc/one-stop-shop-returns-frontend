@@ -22,38 +22,25 @@
 
 @layout(pageTitle = title(
     form,
-    messages("salesAtVatRateFromEu.title", vatRate.rateForDisplay),
+    messages("netValueOfSalesFromEu.title", vatRate.rateForDisplay),
     Some(messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name))
 )) {
 
-    @formHelper(action = routes.SalesAtVatRateFromEuController.onSubmit(mode, period, countryFromIndex, countryToIndex, vatRateIndex), 'autoComplete -> "off") {
+    @formHelper(action = routes.NetValueOfSalesFromEuController.onSubmit(mode, period, countryFromIndex, countryToIndex, vatRateIndex), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <h1 class="govuk-heading-xl">
-            @headingWithCaption(
-                messages("salesAtVatRateFromEu.heading", vatRate.rateForDisplay),
-                messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
-            ).asHtml
-        </h1>
-
         @govukInput(
             InputViewModel(
-                field = form("netValueOfSales"),
-                label = LabelViewModel(messages("salesAtVatRateFromEu.netValueOfSales"))
-            )
-            .asNumeric()
-            .withWidth(Fixed10)
-            .withCssClass("govuk-currency-input__inner__input")
-            .withPrefix(PrefixOrSuffix(content = Text("£")))
-        )
-
-        @govukInput(
-            InputViewModel(
-                field = form("vatOnSales"),
-                label = LabelViewModel(messages("salesAtVatRateFromEu.vatOnSales"))
+                field = form("value"),
+                label = LabelViewModel(
+                    headingWithCaption(
+                        messages("netValueOfSalesFromEu.heading", vatRate.rateForDisplay),
+                        messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
+                    )
+                ).asPageHeading()
             )
             .asNumeric()
             .withWidth(Fixed10)

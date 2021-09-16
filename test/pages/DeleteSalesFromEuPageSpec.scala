@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Country, NormalMode, SalesAtVatRate, VatRate}
+import models.{CheckMode, Country, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -40,26 +40,62 @@ class DeleteSalesFromEuPageSpec extends PageBehaviours {
           val countryFrom  = arbitrary[Country].sample.value
           val countryTo    = arbitrary[Country].sample.value
           val vatRate      = arbitrary[VatRate].sample.value
-          val salesDetails = arbitrary[SalesAtVatRate].sample.value
+          val netSales     = arbitrary[BigDecimal].sample.value
+          val vatOnSales   = arbitrary[VatOnSales].sample.value
 
           val answers =
             emptyUserAnswers
               .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
               .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
               .set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
-              .set(SalesAtVatRateFromEuPage(index, index, index), salesDetails).success.value
+              .set(NetValueOfSalesFromEuPage(index, index, index), netSales).success.value
+              .set(VatOnSalesFromEuPage(index ,index, index), vatOnSales).success.value
 
           DeleteSalesFromEuPage(index).navigate(NormalMode, answers)
             .mustEqual(routes.SalesFromEuListController.onPageLoad(NormalMode, answers.period))
         }
       }
 
-      "when there aer no sales from EU in user answers" - {
+      "when there are no sales from EU in user answers" - {
 
         "to Sold Goods from EU" in {
 
           DeleteSalesFromEuPage(index).navigate(NormalMode, emptyUserAnswers)
             .mustEqual(routes.SoldGoodsFromEuController.onPageLoad(NormalMode, emptyUserAnswers.period))
+        }
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "when there are sales from at least one EU country in user answers" - {
+
+        "to Sales from EU list" in {
+
+          val countryFrom  = arbitrary[Country].sample.value
+          val countryTo    = arbitrary[Country].sample.value
+          val vatRate      = arbitrary[VatRate].sample.value
+          val salesDetails = arbitrary[VatOnSales].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+              .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+              .set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
+              .set(VatOnSalesFromEuPage(index, index, index), salesDetails).success.value
+
+          DeleteSalesFromEuPage(index).navigate(CheckMode, answers)
+            .mustEqual(routes.SalesFromEuListController.onPageLoad(CheckMode, answers.period))
+
+        }
+      }
+
+      "when there are no sales from EU in user answers" - {
+
+        "to Sold Goods from EU" in {
+
+          DeleteSalesFromEuPage(index).navigate(CheckMode, emptyUserAnswers)
+            .mustEqual(routes.SoldGoodsFromEuController.onPageLoad(CheckMode, emptyUserAnswers.period))
         }
       }
     }

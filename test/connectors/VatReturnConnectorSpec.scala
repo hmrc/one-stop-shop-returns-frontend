@@ -18,8 +18,9 @@ package connectors
 
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
+import models.{PaymentReference, ReturnReference}
 import models.requests.VatReturnRequest
-import models.responses.{ConflictFound, UnexpectedResponseStatus}
+import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
 import models.domain.VatReturn
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
@@ -28,6 +29,8 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
+
+import java.time.Instant
 
 class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 
@@ -41,18 +44,29 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
   ".submit" - {
 
-    "must return Right when the server responds with CREATED" in {
+    "must return Right(VatReturn) when the server responds with CREATED" in {
 
       running(application) {
         val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
-
+        val ref = ReturnReference(vrn, period)
+        val payRef = PaymentReference(vrn, period)
+        val expectedVatReturn =
+          VatReturn(
+            vrn, period, ref, payRef, None,
+            None, List.empty, List.empty,
+            Instant.now(stubClockAtArbitraryDate), Instant.now(stubClockAtArbitraryDate)
+          )
+        val responseJson = Json.toJson(expectedVatReturn)
         val connector = application.injector.instanceOf[VatReturnConnector]
 
-        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(CREATED)))
+        server.stubFor(
+          post(urlEqualTo(url))
+            .willReturn(aResponse().withStatus(CREATED).withBody(responseJson.toString()))
+        )
 
         val result = connector.submit(vatReturnRequest).futureValue
 
-        result.value mustEqual()
+        result.value mustEqual expectedVatReturn
       }
     }
 
@@ -90,10 +104,9 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
   ".get" - {
 
     val vatReturn = arbitrary[VatReturn].sample.value
-
     val responseJson = Json.toJson(vatReturn)
 
-    "must return Right when the server responds with OK" in {
+    "must return Right(VatReturn) when the server responds with OK" in {
 
       running(application) {
         val connector = application.injector.instanceOf[VatReturnConnector]
@@ -104,13 +117,23 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
             aResponse().withStatus(OK).withBody(responseJson.toString())
           ))
 
-        val result = connector.get(period).futureValue
-
-        val expectedResult = vatReturn
-
-        result.value mustEqual expectedResult
+        connector.get(period).futureValue mustBe Right(vatReturn)
       }
     }
 
+    "must return Left(NotFound) when the server responds with NOT_FOUND" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(NOT_FOUND)
+            ))
+
+        connector.get(period).futureValue mustBe Left(NotFound)
+      }
+    }
   }
 }

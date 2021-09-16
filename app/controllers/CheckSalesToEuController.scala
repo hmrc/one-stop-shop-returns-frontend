@@ -22,9 +22,9 @@ import pages.{CheckSalesToEuPage, VatRatesFromEuPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import viewmodels.govuk.summarylist._
 import viewmodels.TitledSummaryList
-import viewmodels.checkAnswers.{SalesAtVatRateFromEuSummary, VatRatesFromEuSummary}
+import viewmodels.checkAnswers.{NetValueOfSalesFromEuSummary, VatOnSalesFromEuSummary, VatRatesFromEuSummary}
+import viewmodels.govuk.summarylist._
 import views.html.CheckSalesToEuView
 
 import javax.inject.Inject
@@ -55,7 +55,10 @@ class CheckSalesToEuController @Inject()(
                 TitledSummaryList(
                   title = messages("checkSalesToEu.vatRateTitle", vatRate.rateForDisplay),
                   list = SummaryListViewModel(
-                    rows = SalesAtVatRateFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i))
+                    rows = Seq(
+                      NetValueOfSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i)),
+                      VatOnSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i))
+                    ).flatten
                   )
                 )
             }).getOrElse(Seq.empty)

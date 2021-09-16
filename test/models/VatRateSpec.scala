@@ -16,14 +16,17 @@
 
 package models
 
+import generators.Generators
+import org.scalacheck.Arbitrary.arbitrary
 import models.VatRateType.Standard
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsSuccess, Json}
 
 import java.time.LocalDate
 
-class VatRateSpec extends AnyFreeSpec with Matchers {
+class VatRateSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with Generators {
 
   "VAT Rate" - {
 
@@ -69,6 +72,17 @@ class VatRateSpec extends AnyFreeSpec with Matchers {
       val vatRate =  VatRate(BigDecimal(1.0), Standard, LocalDate.of(2021, 7, 1), Some(LocalDate.of(2022, 1, 1)))
 
       Json.toJson(vatRate).validate[VatRate] mustEqual JsSuccess(vatRate)
+    }
+  }
+
+  ".asPercentage" - {
+
+    "must return the rate divided by 100" in {
+
+      forAll(arbitrary[VatRate]) {
+        vatRate =>
+          vatRate.asPercentage mustEqual vatRate.rate / 100
+      }
     }
   }
 }

@@ -24,6 +24,38 @@ import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
 
+  implicit lazy val arbitraryVatOnSalesFromEuUserAnswersEntry: Arbitrary[(VatOnSalesFromEuPage, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[VatOnSalesFromEuPage]
+        value <- arbitrary[Int].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryNetValueOfSalesFromEuUserAnswersEntry: Arbitrary[(NetValueOfSalesFromEuPage, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[NetValueOfSalesFromEuPage]
+        value <- arbitrary[Int].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryVatOnSalesFromNiUserAnswersEntry: Arbitrary[(VatOnSalesFromNiPage, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[VatOnSalesFromNiPage]
+        value <- arbitrary[Int].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryNetValueOfSalesFromNiUserAnswersEntry: Arbitrary[(NetValueOfSalesFromNiPage, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[NetValueOfSalesFromNiPage]
+        value <- arbitrary[Int].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
   implicit lazy val arbitraryVatRatesFromEuUserAnswersEntry: Arbitrary[(VatRatesFromEuPage, JsValue)] =
     Arbitrary {
       for {
@@ -37,14 +69,6 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
       for {
         page  <- arbitrary[SoldGoodsFromEuPage.type]
         value <- arbitrary[Boolean].map(Json.toJson(_))
-      } yield (page, value)
-    }
-
-  implicit lazy val arbitrarySalesAtVatRateFromEuUserAnswersEntry: Arbitrary[(SalesAtVatRateFromEuPage, JsValue)] =
-    Arbitrary {
-      for {
-        page  <- arbitrary[SalesAtVatRateFromEuPage]
-        value <- arbitrary[SalesAtVatRate].map(Json.toJson(_))
       } yield (page, value)
     }
 
@@ -77,14 +101,6 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
       for {
         page  <- arbitrary[SoldGoodsFromNiPage.type]
         value <- arbitrary[Boolean].map(Json.toJson(_))
-      } yield (page, value)
-    }
-
-  implicit lazy val arbitraryNetValueOfSalesFromNiUserAnswersEntry: Arbitrary[(SalesAtVatRateFromNiPage, JsValue)] =
-    Arbitrary {
-      for {
-        page  <- arbitrary[SalesAtVatRateFromNiPage]
-        value <- arbitrary[Int].map(Json.toJson(_))
       } yield (page, value)
     }
 

@@ -17,16 +17,16 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, NormalMode, SalesAtVatRate, UserAnswers}
-import pages.PageConstants._
+import models.{CheckMode, Index, Mode, NormalMode, UserAnswers, VatOnSales}
+import pages.PageConstants.{salesAtVatRate, salesFromNi, vatOnSales}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class SalesAtVatRateFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[SalesAtVatRate] {
+case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
-  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ toString \ vatRateIndex.position
+  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ salesAtVatRate \ vatRateIndex.position \ vatOnSales
 
-  override def toString: String = salesAtVatRate
+  override def toString: String = vatOnSales
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     commonNavigate(NormalMode, answers)
@@ -40,11 +40,11 @@ case class SalesAtVatRateFromNiPage(countryIndex: Index, vatRateIndex: Index) ex
         routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex)
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 
-  private def commonNavigate(mode: Mode, answers: UserAnswers) = {
+  private def commonNavigate(mode: Mode, answers: UserAnswers): Call = {
     answers.get(VatRatesFromNiPage(countryIndex)).map {
       rates =>
         if (rates.size > vatRateIndex.position + 1) {
-          routes.SalesAtVatRateFromNiController.onPageLoad(mode, answers.period, countryIndex, vatRateIndex + 1)
+          routes.NetValueOfSalesFromNiController.onPageLoad(mode, answers.period, countryIndex, vatRateIndex + 1)
         } else {
           routes.CheckSalesFromNiController.onPageLoad(mode, answers.period, countryIndex)
         }

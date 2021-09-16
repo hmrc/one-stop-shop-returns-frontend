@@ -16,8 +16,9 @@
 
 package generators
 
+import models.VatOnSalesChoice.Standard
 import models.{domain, _}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType, VatReturn}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
@@ -28,17 +29,17 @@ import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
 
+  implicit val arbitraryVatOnSales: Arbitrary[VatOnSales] =
+    Arbitrary {
+      for {
+        choice <- Gen.oneOf(VatOnSalesChoice.values)
+        amount <- arbitrary[BigDecimal]
+      } yield VatOnSales(choice, amount)
+    }
+
   implicit val arbitraryQuarter: Arbitrary[Quarter] =
     Arbitrary {
       Gen.oneOf(Quarter.values)
-    }
-
-  implicit lazy val arbitrarySalesAtVatRate: Arbitrary[SalesAtVatRate] =
-    Arbitrary {
-      for {
-        netValueOfSales <- arbitrary[BigDecimal]
-        vatOnSales <- arbitrary[BigDecimal]
-      } yield SalesAtVatRate(netValueOfSales, vatOnSales)
     }
 
   private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
@@ -193,7 +194,7 @@ trait ModelGenerators {
       } yield SalesDetails(
         vatRate,
         taxableAmount.setScale(2, RoundingMode.HALF_EVEN),
-        vatAmount.setScale(2, RoundingMode.HALF_EVEN)
+        VatOnSales(Standard, vatAmount.setScale(2, RoundingMode.HALF_EVEN))
       )
     }
 
@@ -226,6 +227,6 @@ trait ModelGenerators {
         salesFromNi <- Gen.listOfN(niSales, arbitrary[SalesToCountry])
         salesFromEu <- Gen.listOfN(euSales, arbitrary[SalesFromEuCountry])
         now         = Instant.now
-      } yield VatReturn(vrn, period, ReturnReference(vrn, period), None, None, salesFromNi, salesFromEu, now, now)
+      } yield VatReturn(vrn, period, ReturnReference(vrn, period), PaymentReference(vrn, period), None, None, salesFromNi, salesFromEu, now, now)
     }
 }

@@ -17,20 +17,17 @@
 package pages
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, Index, NormalMode, SalesAtVatRate, VatRate}
+import models.{CheckLoopMode, CheckMode, Index, NormalMode, VatRate}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
-import org.scalacheck.Arbitrary.arbitrary
 
-class SalesAtVatRateFromNiPageSpec extends PageBehaviours {
+class VatOnSalesFromEuPageSpec extends PageBehaviours {
 
-  "SalesAtVatRateFromNiPage" - {
+  private val countryFromIndex = Index(0)
+  private val countryToIndex = Index(0)
 
-    beRetrievable[SalesAtVatRate](SalesAtVatRateFromNiPage(index, index))
-
-    beSettable[SalesAtVatRate](SalesAtVatRateFromNiPage(index, index))
-
-    beRemovable[SalesAtVatRate](SalesAtVatRateFromNiPage(index, index))
+  "VatOnSalesFromEuPage" - {
 
     "must navigate in Normal Mode" - {
 
@@ -38,16 +35,14 @@ class SalesAtVatRateFromNiPageSpec extends PageBehaviours {
 
         "to Net Value of Sales for the next index" in {
 
-          val countryIndex = Index(0)
-
           val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
 
           val answers =
             emptyUserAnswers
-              .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
+              .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), vatRates).success.value
 
-          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
-            .mustEqual(routes.SalesAtVatRateFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, Index(1)))
+          VatOnSalesFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, Index(1)))
         }
       }
 
@@ -55,15 +50,13 @@ class SalesAtVatRateFromNiPageSpec extends PageBehaviours {
 
         "to Check Sales From NI" in {
 
-          val countryIndex = Index(0)
-
           val vatRate = arbitrary[VatRate].sample.value
           val answers =
             emptyUserAnswers
-              .set(VatRatesFromNiPage(countryIndex), List(vatRate)).success.value
+              .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), List(vatRate)).success.value
 
-          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(NormalMode, answers)
-            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex))
+          VatOnSalesFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(NormalMode, answers)
+            .mustEqual(routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex))
         }
       }
     }
@@ -74,16 +67,14 @@ class SalesAtVatRateFromNiPageSpec extends PageBehaviours {
 
         "to Net Value of Sales for the next index" in {
 
-          val countryIndex = Index(0)
-
           val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
 
           val answers =
             emptyUserAnswers
-              .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
+              .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), vatRates).success.value
 
-          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(CheckMode, answers)
-            .mustEqual(routes.SalesAtVatRateFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, Index(1)))
+          VatOnSalesFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(CheckMode, answers)
+            .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, Index(1)))
         }
       }
 
@@ -91,15 +82,13 @@ class SalesAtVatRateFromNiPageSpec extends PageBehaviours {
 
         "to Check Sales From NI" in {
 
-          val countryIndex = Index(0)
-
           val vatRate = arbitrary[VatRate].sample.value
           val answers =
             emptyUserAnswers
-              .set(VatRatesFromNiPage(countryIndex), List(vatRate)).success.value
+              .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), List(vatRate)).success.value
 
-          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(CheckMode, answers)
-            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex))
+          VatOnSalesFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(CheckMode, answers)
+            .mustEqual(routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex))
         }
       }
     }
@@ -110,20 +99,17 @@ class SalesAtVatRateFromNiPageSpec extends PageBehaviours {
 
         "it will navigate to the check sales from ni page" in {
 
-          val countryIndex = Index(0)
-
           val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
 
           val answers =
             emptyUserAnswers
-              .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
+              .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), vatRates).success.value
 
-          SalesAtVatRateFromNiPage(countryIndex, Index(0)).navigate(CheckLoopMode, answers)
-            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex))
+          VatOnSalesFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(CheckLoopMode, answers)
+            .mustEqual(routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex))
 
         }
       }
-
     }
   }
 }

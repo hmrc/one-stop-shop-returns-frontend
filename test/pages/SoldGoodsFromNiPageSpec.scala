@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Country, Index, NormalMode, SalesAtVatRate, VatRate}
+import models.{CheckMode, Country, Index, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -86,10 +86,12 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
           .set(SoldGoodsFromNiPage, false).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-          .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(0), BigDecimal(0))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), arbitrary[BigDecimal].sample.value).success.value
+          .set(VatOnSalesFromNiPage(index, index), arbitrary[VatOnSales].sample.value).success.value
 
         val expected = emptyUserAnswers
           .set(SoldGoodsFromNiPage, false).success.value
+
         val result = SoldGoodsFromNiPage.cleanup(Some(false), answers).success.value
 
         result mustBe expected
@@ -101,14 +103,18 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
           .set(SoldGoodsFromNiPage, false).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-          .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(0), BigDecimal(0))).success.value
-          .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(0), BigDecimal(0))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), arbitrary[BigDecimal].sample.value).success.value
+          .set(VatOnSalesFromNiPage(index, index), arbitrary[VatOnSales].sample.value).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), arbitrary[BigDecimal].sample.value).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), arbitrary[VatOnSales].sample.value).success.value
           .set(CountryOfConsumptionFromNiPage(index + 1), country).success.value
           .set(VatRatesFromNiPage(index + 1), List(vatRate)).success.value
-          .set(SalesAtVatRateFromNiPage(index + 1, index), SalesAtVatRate(BigDecimal(0), BigDecimal(0))).success.value
+          .set(NetValueOfSalesFromNiPage(index + 1, index), arbitrary[BigDecimal].sample.value).success.value
+          .set(VatOnSalesFromNiPage(index + 1, index), arbitrary[VatOnSales].sample.value).success.value
 
         val expected = emptyUserAnswers
           .set(SoldGoodsFromNiPage, false).success.value
+
         val result = SoldGoodsFromNiPage.cleanup(Some(false), answers).success.value
 
         result mustBe expected
@@ -120,7 +126,8 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
           .set(SoldGoodsFromNiPage, true).success.value
           .set(CountryOfConsumptionFromNiPage(index), country).success.value
           .set(VatRatesFromNiPage(index), List(vatRate)).success.value
-          .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(0), BigDecimal(0))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index), arbitrary[BigDecimal].sample.value).success.value
+          .set(VatOnSalesFromNiPage(index, index), arbitrary[VatOnSales].sample.value).success.value
 
         val result = SoldGoodsFromNiPage.cleanup(Some(true), answers).success.value
 

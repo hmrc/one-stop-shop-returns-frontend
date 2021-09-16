@@ -1,0 +1,76 @@
+@import utils.CurrencyFormatter.currencyFormat
+@import viewmodels.InputWidth._
+
+@this(
+    layout: templates.Layout,
+    formHelper: FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    govukRadios: GovukRadios,
+    govukInput: GovukInput,
+    govukButton: GovukButton
+)
+
+@(
+    form: Form[_],
+    mode: Mode,
+    period: Period,
+    countryIndex: Index,
+    vatRateIndex: Index,
+    country: Country,
+    vatRate: VatRate,
+    netSales: BigDecimal,
+    standardVat: BigDecimal
+)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = title(
+    form,
+    messages("vatOnSalesFromNi.title", currencyFormat(netSales), vatRate.rateForDisplay),
+    Some(messages("caption.fromNi.periodAndCountry", period.displayText, country.name))
+)) {
+
+    @formHelper(action = routes.VatOnSalesFromNiController.onSubmit(mode, period, countryIndex, vatRateIndex), 'autoComplete -> "off") {
+
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
+        }
+
+        @govukRadios(
+            RadiosViewModel(
+                field  = form("choice"),
+                legend = LegendViewModel(
+                    headingWithCaption(
+                        HtmlContent(messages("vatOnSalesFromNi.heading", currencyFormat(netSales), vatRate.rateForDisplay)).asHtml.toString,
+                        messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
+                    )).asPageHeading(),
+                items = Seq(
+                    RadioItem(
+                        content = HtmlContent(Html(currencyFormat(standardVat))),
+                        value   = Some(VatOnSalesChoice.Standard.toString),
+                        id      = Some("value_0")
+                    ),
+                    RadioItem(
+                        content = Text(messages("vatOnSalesFromNi.nonStandard")),
+                        value   = Some(VatOnSalesChoice.NonStandard.toString),
+                        id      = Some("value_1"),
+                        conditionalHtml = Some(Html(
+                           govukInput(
+                                InputViewModel(
+                                    field = form("amount"),
+                                    label = LabelViewModel(messages("vatOnSalesFromNi.amount"))
+                                )
+                                .asNumeric()
+                                .withWidth(Fixed10)
+                                .withCssClass("govuk-currency-input__inner__input")
+                                .withPrefix(PrefixOrSuffix(content = Text("£")))
+                            ).toString
+                        ))
+                    )
+                )
+            )
+        )
+
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
+        )
+    }
+}

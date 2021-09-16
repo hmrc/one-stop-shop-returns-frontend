@@ -16,7 +16,7 @@
 
 package models.domain
 
-import models.{Period, ReturnReference}
+import models.{PaymentReference, Period, ReturnReference}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -26,6 +26,7 @@ case class VatReturn(
                       vrn: Vrn,
                       period: Period,
                       reference: ReturnReference,
+                      paymentReference: PaymentReference,
                       startDate: Option[LocalDate],
                       endDate: Option[LocalDate],
                       salesFromNi: List[SalesToCountry],

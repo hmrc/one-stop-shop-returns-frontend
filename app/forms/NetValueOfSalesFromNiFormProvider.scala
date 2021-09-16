@@ -17,29 +17,20 @@
 package forms
 
 import forms.mappings.Mappings
-import models.{SalesAtVatRate, VatRate}
-import play.api.data.Form
-import play.api.data.Forms._
+import models.VatRate
 
 import javax.inject.Inject
+import play.api.data.Form
 
-class SalesAtVatRateFromNiFormProvider @Inject() extends Mappings {
+class NetValueOfSalesFromNiFormProvider @Inject() extends Mappings {
 
-  def apply(vatRate: VatRate): Form[SalesAtVatRate] =
+  def apply(vatRate: VatRate): Form[BigDecimal] =
     Form(
-      mapping(
-      "netValueOfSales" -> numeric(
+      "value" -> numeric(
         "netValueOfSalesFromNi.error.required",
         "netValueOfSalesFromNi.error.wholeNumber",
         "netValueOfSalesFromNi.error.nonNumeric",
         args = Seq(vatRate.rateForDisplay))
-          .verifying(inRange[BigDecimal](0, 1000000, "netValueOfSalesFromNi.error.outOfRange")),
-        "vatOnSales" -> numeric(
-          "vatOnSalesFromNi.error.required",
-          "vatOnSalesFromNi.error.wholeNumber",
-          "vatOnSalesFromNi.error.nonNumeric",
-          args = Seq(vatRate.rateForDisplay))
-          .verifying(inRange[BigDecimal](0, 1000000, "vatOnSalesFromNi.error.outOfRange"))
-      )(SalesAtVatRate.apply)(SalesAtVatRate.unapply)
+          .verifying(inRange[BigDecimal](0.01, 10000000, "netValueOfSalesFromNi.error.outOfRange"))
     )
 }

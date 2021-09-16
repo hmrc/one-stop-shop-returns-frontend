@@ -37,12 +37,13 @@ class SalesToEuListController @Inject()(
   extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
-  private val form = formProvider()
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
       getNumberOfSalesToEuAndCountry(index) {
         case (number, country) =>
+
+          val form = formProvider(country)
 
           val canAddCountries = number < Country.euCountries.size
           val list            = SalesToEuSummary.addToListRows(request.userAnswers, mode, index)
@@ -56,6 +57,7 @@ class SalesToEuListController @Inject()(
       getNumberOfSalesToEuAndCountry(index) {
         case (number, country) =>
 
+          val form = formProvider(country)
           val canAddCountries = number < Country.euCountries.size
 
           form.bindFromRequest().fold(
