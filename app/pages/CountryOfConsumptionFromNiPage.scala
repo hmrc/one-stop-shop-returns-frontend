@@ -20,7 +20,7 @@ import controllers.routes
 import models.{CheckMode, Country, Index, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.AllSalesAtVatRateQuery
+import queries.AllSalesFromNiAtVatRateQuery
 
 import scala.util.Try
 
@@ -40,7 +40,7 @@ case class CountryOfConsumptionFromNiPage(index: Index) extends QuestionPage[Cou
     value match {
       case Some(_) => userAnswers
         .remove(VatRatesFromNiPage(index))
-        .flatMap(_.remove(AllSalesAtVatRateQuery(index)))
+        .flatMap(_.remove(AllSalesFromNiAtVatRateQuery(index)))
       case _ => super.cleanup(value, userAnswers)
     }
   }

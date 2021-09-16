@@ -120,7 +120,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       "must audit the event and redirect to the next page and successfully send email confirmation" in {
 
         when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right((vatReturn)))
+        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
         doNothing().when(auditService).audit(any())(any(), any())
 
         val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
@@ -134,7 +134,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(Period(2021, Q3)).url)
           val result = route(application, request).value
           val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
-          val expectedAuditEvent = ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Success, dataRequest)
+          val expectedAuditEvent = ReturnsAuditModel.build(
+            vatReturnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
+          )
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, completeUserAnswers).url
@@ -169,7 +171,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
           val result = route(app, request).value
           val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
-          val expectedAuditEvent = ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Duplicate, dataRequest)
+          val expectedAuditEvent =
+            ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Duplicate, None, None, dataRequest)
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
@@ -203,7 +206,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
           val result = route(app, request).value
           val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
-          val expectedAuditEvent = ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Failure, dataRequest)
+          val expectedAuditEvent =
+            ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Failure, None, None, dataRequest)
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url

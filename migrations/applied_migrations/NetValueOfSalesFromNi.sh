@@ -6,11 +6,11 @@ echo "Applying migration NetValueOfSalesFromNi"
 echo "Adding routes to conf/app.routes"
 
 echo "" >> ../conf/app.routes
-echo "GET        /netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = NormalMode)" >> ../conf/app.routes
-echo "POST       /netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = NormalMode)" >> ../conf/app.routes
+echo "GET        /:period/netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period)" >> ../conf/app.routes
+echo "POST       /:period/netValueOfSalesFromNi                  controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period)" >> ../conf/app.routes
 
-echo "GET        /changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = CheckMode)" >> ../conf/app.routes
-echo "POST       /changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = CheckMode)" >> ../conf/app.routes
+echo "GET        /:period/changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period)" >> ../conf/app.routes
+echo "POST       /:period/changeNetValueOfSalesFromNi                        controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period)" >> ../conf/app.routes
 
 echo "Adding messages to conf.messages"
 echo "" >> ../conf/messages.en

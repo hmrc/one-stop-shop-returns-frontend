@@ -17,7 +17,8 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, SalesAtVatRate, VatRate}
+import models.VatOnSalesChoice.Standard
+import models.{CheckMode, Index, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
@@ -34,39 +35,39 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
 
     "must navigate in Normal mode" - {
 
-      "to Nat Value of Sales" in {
+      "to Net Value of Sales" in {
 
         VatRatesFromNiPage(index).navigate(NormalMode, emptyUserAnswers)
-          .mustEqual(routes.SalesAtVatRateFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, index, Index(0)))
+          .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, index, Index(0)))
       }
     }
 
     "must navigate in Check mode" - {
 
-      "to Nat Value of Sales" in {
+      "to Net Value of Sales" in {
 
         VatRatesFromNiPage(index).navigate(CheckMode, emptyUserAnswers)
-          .mustEqual(routes.SalesAtVatRateFromNiController.onPageLoad(CheckMode, emptyUserAnswers.period, index, Index(0)))
+          .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, emptyUserAnswers.period, index, Index(0)))
       }
     }
 
     "cleanup" - {
       val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
 
-      "must remove values when answer changes" in {
+      "must remove all Net Value of Sales and VAT on Sales answers for this country" in {
         val newVatRates = Gen.listOfN(1, arbitrary[VatRate]).sample.value
 
         val answers = emptyUserAnswers
           .set(VatRatesFromNiPage(index), vatRates).success.value
-          .set(SalesAtVatRateFromNiPage(index, index), SalesAtVatRate(BigDecimal(0), BigDecimal(0))).success.value
-          .set(SalesAtVatRateFromNiPage(index, index + 1), SalesAtVatRate(BigDecimal(0), BigDecimal(0))).success.value
-          .set(VatRatesFromNiPage(index), newVatRates).success.value
-
+          .set(NetValueOfSalesFromNiPage(index, index), BigDecimal(1)).success.value
+          .set(VatOnSalesFromNiPage(index, index), VatOnSales(Standard, BigDecimal(1))).success.value
+          .set(NetValueOfSalesFromNiPage(index, index + 1), BigDecimal(1)).success.value
+          .set(VatOnSalesFromNiPage(index, index + 1), VatOnSales(Standard, BigDecimal(1))).success.value
 
         val expected = emptyUserAnswers
           .set(VatRatesFromNiPage(index), newVatRates).success.value
 
-        val actual = VatRatesFromNiPage(index).cleanup(Some(newVatRates), answers).success.value
+        val actual = answers.set(VatRatesFromNiPage(index), newVatRates).success.value
 
         actual mustEqual expected
       }

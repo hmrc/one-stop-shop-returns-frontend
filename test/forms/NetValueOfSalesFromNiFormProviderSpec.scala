@@ -19,21 +19,27 @@ package forms
 import forms.behaviours.DecimalFieldBehaviours
 import models.VatRate
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import play.api.data.FormError
 
-class SalesAtVatRateFromNiFormProviderSpec extends DecimalFieldBehaviours {
+import scala.math.BigDecimal.RoundingMode
+
+class NetValueOfSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
 
   private val vatRate = arbitrary[VatRate].sample.value
-  private val form = new SalesAtVatRateFromNiFormProvider()(vatRate)
+  val form = new NetValueOfSalesFromNiFormProvider()(vatRate)
 
-  ".netValueOfSales" - {
+  ".value" - {
 
-    val fieldName = "netValueOfSales"
+    val fieldName = "value"
 
-    val minimum = 0
-    val maximum = 1000000
+    val minimum = BigDecimal(0.01)
+    val maximum = BigDecimal(10000000)
 
-    val validDataGenerator = intsInRangeWithCommas(minimum, maximum)
+    val validDataGenerator =
+      Gen.choose[BigDecimal](minimum, maximum)
+        .map(_.setScale(2, RoundingMode.HALF_UP))
+        .map(_.toString)
 
     behave like fieldThatBindsValidData(
       form,
@@ -44,7 +50,7 @@ class SalesAtVatRateFromNiFormProviderSpec extends DecimalFieldBehaviours {
     behave like decimalField(
       form,
       fieldName,
-      nonNumericError  = FormError(fieldName, "netValueOfSalesFromNi.error.nonNumeric", Seq(vatRate.rateForDisplay)),
+      nonNumericError     = FormError(fieldName, "netValueOfSalesFromNi.error.nonNumeric", Seq(vatRate.rateForDisplay)),
       invalidNumericError = FormError(fieldName, "netValueOfSalesFromNi.error.wholeNumber", Seq(vatRate.rateForDisplay))
     )
 
@@ -60,44 +66,6 @@ class SalesAtVatRateFromNiFormProviderSpec extends DecimalFieldBehaviours {
       form,
       fieldName,
       requiredError = FormError(fieldName, "netValueOfSalesFromNi.error.required", Seq(vatRate.rateForDisplay))
-    )
-  }
-
-
-  ".vatOnSales" - {
-
-    val fieldName = "vatOnSales"
-
-    val minimum: BigDecimal = 0
-    val maximum: BigDecimal = 1000000
-
-    val validDataGenerator = decimalInRangeWithCommas(minimum, maximum)
-
-    behave like fieldThatBindsValidData(
-      form,
-      fieldName,
-      validDataGenerator
-    )
-
-    behave like decimalField(
-      form,
-      fieldName,
-      nonNumericError  = FormError(fieldName, "vatOnSalesFromNi.error.nonNumeric", Seq(vatRate.rateForDisplay)),
-      invalidNumericError  = FormError(fieldName, "vatOnSalesFromNi.error.wholeNumber", Seq(vatRate.rateForDisplay))
-    )
-
-    behave like decimalFieldWithRange(
-      form,
-      fieldName,
-      minimum       = minimum,
-      maximum       = maximum,
-      expectedError = FormError(fieldName, "vatOnSalesFromNi.error.outOfRange", Seq(minimum, maximum))
-    )
-
-    behave like mandatoryField(
-      form,
-      fieldName,
-      requiredError = FormError(fieldName, "vatOnSalesFromNi.error.required", Seq(vatRate.rateForDisplay))
     )
   }
 }

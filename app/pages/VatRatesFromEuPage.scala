@@ -29,8 +29,8 @@ case class VatRatesFromEuPage(countryFromIndex: Index, countryToIndex: Index) ex
   override def toString: String = PageConstants.vatRates
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.SalesAtVatRateFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, Index(0))
+    routes.NetValueOfSalesFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, Index(0))
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.SalesAtVatRateFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, Index(0))
+    routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, Index(0))
 }

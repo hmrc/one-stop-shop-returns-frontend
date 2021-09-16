@@ -23,7 +23,7 @@ import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesTo
 import models.registration.{EuVatRegistration, Registration, RegistrationWithFixedEstablishment}
 import models.requests.VatReturnRequest
 import pages._
-import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery}
+import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery, EuSalesAtVatRateQuery, NiSalesAtVatRateQuery}
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
@@ -83,7 +83,7 @@ class VatReturnService @Inject()() {
     }
 
   private def processSalesFromNiAtVatRate(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index, vatRate: VatRate): ValidationResult[SalesDetails] =
-    answers.get(SalesAtVatRateFromNiPage(countryIndex, vatRateIndex)) match {
+    answers.get(NiSalesAtVatRateQuery(countryIndex, vatRateIndex)) match {
       case Some(sales) =>
         SalesDetails(
           vatRate         = toDomainVatRate(vatRate),
@@ -92,7 +92,7 @@ class VatReturnService @Inject()() {
         ).validNec
 
       case None =>
-        DataMissingError(SalesAtVatRateFromNiPage(countryIndex, vatRateIndex)).invalidNec
+        DataMissingError(NiSalesAtVatRateQuery(countryIndex, vatRateIndex)).invalidNec
     }
 
 
@@ -168,7 +168,7 @@ class VatReturnService @Inject()() {
                                            vatRateIndex: Index,
                                            vatRate: VatRate
                                          ): ValidationResult[SalesDetails] =
-    answers.get(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)) match {
+    answers.get(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)) match {
       case Some(sales) =>
         SalesDetails(
           vatRate         = toDomainVatRate(vatRate),
@@ -177,7 +177,7 @@ class VatReturnService @Inject()() {
         ).validNec
 
       case None =>
-        DataMissingError(SalesAtVatRateFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
+        DataMissingError(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
     }
 
   private def toDomainVatRate(vatRate: VatRate): DomainVatRate = {

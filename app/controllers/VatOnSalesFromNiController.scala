@@ -17,22 +17,25 @@
 package controllers
 
 import controllers.actions._
-import forms.SalesAtVatRateFromNiFormProvider
+import forms.VatOnSalesFromNiFormProvider
 
 import javax.inject.Inject
 import models.{Index, Mode, Period}
-import pages.SalesAtVatRateFromNiPage
+import pages.VatOnSalesFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.SalesAtVatRateFromNiView
+import utils.CurrencyFormatter.currencyFormat
+import views.html.VatOnSalesFromNiView
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SalesAtVatRateFromNiController @Inject()(
-                                                cc: AuthenticatedControllerComponents,
-                                                formProvider: SalesAtVatRateFromNiFormProvider,
-                                                view: SalesAtVatRateFromNiView
+class VatOnSalesFromNiController @Inject()(
+                                        cc: AuthenticatedControllerComponents,
+                                        formProvider: VatOnSalesFromNiFormProvider,
+                                        view: VatOnSalesFromNiView,
+                                        vatRateService: VatRateService
                                       )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
@@ -40,35 +43,38 @@ class SalesAtVatRateFromNiController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      getCountryAndVatRate(countryIndex, vatRateIndex) {
-        case (country, vatRate) =>
+      getCountryVatRateAndNetSales(countryIndex, vatRateIndex) {
+        case (country, vatRate, netSales) =>
 
-          val form         = formProvider(vatRate)
-          val preparedForm = request.userAnswers.get(SalesAtVatRateFromNiPage(countryIndex, vatRateIndex)) match {
+          val form = formProvider(vatRate, netSales)
+          val standardVat = vatRateService.standardVatOnSales(netSales, vatRate)
+
+          val preparedForm = request.userAnswers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex, country, vatRate))
+          Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex, country, vatRate, netSales, standardVat))
       }
   }
 
   def onSubmit(mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
-      getCountryAndVatRateAsync(countryIndex, vatRateIndex) {
-        case (country, vatRate) =>
+      getCountryVatRateAndNetSalesAsync(countryIndex, vatRateIndex) {
+        case (country, vatRate, netSales) =>
 
-          val form = formProvider(vatRate)
+          val form = formProvider(vatRate, netSales)
+          val standardVat = vatRateService.standardVatOnSales(netSales, vatRate)
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, countryIndex, vatRateIndex, country, vatRate))),
+              Future.successful(BadRequest(view(formWithErrors, mode, period, countryIndex, vatRateIndex, country, vatRate, netSales, standardVat))),
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesAtVatRateFromNiPage(countryIndex, vatRateIndex), value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesFromNiPage(countryIndex, vatRateIndex), value))
                 _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(SalesAtVatRateFromNiPage(countryIndex, vatRateIndex).navigate(mode, updatedAnswers))
+              } yield Redirect(VatOnSalesFromNiPage(countryIndex, vatRateIndex).navigate(mode, updatedAnswers))
           )
       }
   }

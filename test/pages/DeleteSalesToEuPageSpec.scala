@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Country, Index, NormalMode, SalesAtVatRate, VatRate}
+import models.{CheckMode, Country, Index, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -40,14 +40,16 @@ class DeleteSalesToEuPageSpec extends PageBehaviours {
           val countryFrom  = arbitrary[Country].sample.value
           val countryTo    = arbitrary[Country].sample.value
           val vatRate      = arbitrary[VatRate].sample.value
-          val salesDetails = arbitrary[SalesAtVatRate].sample.value
+          val netSales     = arbitrary[BigDecimal].sample.value
+          val vatOnSales   = arbitrary[VatOnSales].sample.value
 
           val answers =
             emptyUserAnswers
               .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
               .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
               .set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
-              .set(SalesAtVatRateFromEuPage(index, index, index), salesDetails).success.value
+              .set(NetValueOfSalesFromEuPage(index, index, index), netSales).success.value
+              .set(VatOnSalesFromEuPage(index ,index, index), vatOnSales).success.value
 
           DeleteSalesToEuPage(index, index).navigate(NormalMode, answers)
             .mustEqual(routes.SalesToEuListController.onPageLoad(NormalMode, answers.period, index))
@@ -79,14 +81,16 @@ class DeleteSalesToEuPageSpec extends PageBehaviours {
           val countryFrom  = arbitrary[Country].sample.value
           val countryTo    = arbitrary[Country].sample.value
           val vatRate      = arbitrary[VatRate].sample.value
-          val salesDetails = arbitrary[SalesAtVatRate].sample.value
+          val netSales     = arbitrary[BigDecimal].sample.value
+          val vatOnSales   = arbitrary[VatOnSales].sample.value
 
           val answers =
             emptyUserAnswers
               .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
               .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
               .set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
-              .set(SalesAtVatRateFromEuPage(index, index, index), salesDetails).success.value
+              .set(NetValueOfSalesFromEuPage(index, index, index), netSales).success.value
+              .set(VatOnSalesFromEuPage(index ,index, index), vatOnSales).success.value
 
           DeleteSalesToEuPage(index, index).navigate(CheckMode, answers)
             .mustEqual(routes.SalesToEuListController.onPageLoad(CheckMode, answers.period, index))
