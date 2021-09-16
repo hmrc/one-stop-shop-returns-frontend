@@ -37,7 +37,7 @@ class VatReturnSalesService @Inject()() {
 
   def getTotalVatOnSalesToCountry(allSales: List[SalesToCountry]): BigDecimal = {
     allSales.map(salesToCountry =>
-      salesToCountry.amounts.map(_.vatOnSales).sum
+      salesToCountry.amounts.map(_.vatOnSales.amount).sum
     ).sum
   }
 

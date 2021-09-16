@@ -17,41 +17,38 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, SalesAtVatRate, UserAnswers}
-import pages.PageConstants._
+import models.{CheckMode, Index, NormalMode, UserAnswers, VatOnSales}
+import pages.PageConstants.{salesAtVatRate, salesFromCountry, salesFromEu, vatOnSales}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class SalesAtVatRateFromEuPage(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index) extends QuestionPage[SalesAtVatRate] {
+case class VatOnSalesFromEuPage(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
   override def path: JsPath =
-    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ toString \ vatRateIndex.position
+    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ salesAtVatRate \ vatRateIndex.position \ toString
 
-  override def toString: String = salesAtVatRate
+  override def toString: String = vatOnSales
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map {
       rates =>
         if (rates.size > vatRateIndex.position + 1) {
-          routes.SalesAtVatRateFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex + 1)
+          routes.NetValueOfSalesFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex + 1)
         } else {
           routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
         }
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 
-  override protected def navigateInCheckMode(answers: UserAnswers): Call =
+  override def navigateInCheckMode(answers: UserAnswers): Call =
     answers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map {
       rates =>
         if (rates.size > vatRateIndex.position + 1) {
-          routes.SalesAtVatRateFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex + 1)
+          routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex + 1)
         } else {
           routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex)
         }
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 
-  override protected def navigateInCheckLoopMode(answers: UserAnswers): Call =
-    answers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map {
-      _ =>
-        routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
-    }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
+  override def navigateInCheckLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
 }

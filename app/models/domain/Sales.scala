@@ -16,7 +16,7 @@
 
 package models.domain
 
-import models.Country
+import models.{Country, VatOnSales}
 import play.api.libs.json.{Json, OFormat}
 
 case class SalesFromEuCountry(
@@ -43,7 +43,7 @@ object SalesToCountry {
 case class SalesDetails(
                          vatRate: VatRate,
                          netValueOfSales: BigDecimal,
-                         vatOnSales: BigDecimal
+                         vatOnSales: VatOnSales
                        )
 
 object SalesDetails {

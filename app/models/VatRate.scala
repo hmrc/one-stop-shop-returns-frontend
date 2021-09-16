@@ -33,6 +33,9 @@ case class VatRate(
   } else {
     rate.toString + "%"
   }
+
+  lazy val asPercentage: BigDecimal =
+    rate / 100
 }
 
 object VatRate {

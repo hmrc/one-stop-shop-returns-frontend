@@ -35,7 +35,7 @@ class SalesAtVatRateService @Inject()() {
   def getNiTotalVatOnSales(userAnswers: UserAnswers): Option[BigDecimal] = {
     userAnswers.get(AllSalesFromNiQuery).map(allSales =>
       allSales.map(saleFromNi =>
-        saleFromNi.salesAtVatRate.map(_.vatOnSales).sum
+        saleFromNi.salesAtVatRate.map(_.vatOnSales.amount).sum
       ).sum
     )
   }
@@ -51,7 +51,7 @@ class SalesAtVatRateService @Inject()() {
   def getEuTotalVatOnSales(userAnswers: UserAnswers): Option[BigDecimal] = {
     userAnswers.get(AllSalesFromEuQuery).map(allSalesFromEu =>
       allSalesFromEu.map (
-        _.salesFromCountry.map (_.salesAtVatRate.map(_.vatOnSales).sum).sum
+        _.salesFromCountry.map (_.salesAtVatRate.map(_.vatOnSales.amount).sum).sum
       ).sum
     )
   }
@@ -78,14 +78,14 @@ class SalesAtVatRateService @Inject()() {
         saleFromEu       <- allSalesFromEu
         salesFromCountry <- saleFromEu.salesFromCountry
         salesAtVatRate   <- salesFromCountry.salesAtVatRate
-      } yield TotalVatToCountry(salesFromCountry.countryOfConsumption, salesAtVatRate.vatOnSales)
+      } yield TotalVatToCountry(salesFromCountry.countryOfConsumption, salesAtVatRate.vatOnSales.amount)
 
     val vatOwedToEuCountriesFromNI =
       for {
         allSalesFromNi <- userAnswers.get(AllSalesFromNiQuery).toSeq
         saleFromNi     <- allSalesFromNi
         salesAtVatRate <- saleFromNi.salesAtVatRate
-      } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.vatOnSales)
+      } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.vatOnSales.amount)
 
     val vatOwedToEuCountries =
       vatOwedToEuCountriesFromEu ++ vatOwedToEuCountriesFromNI

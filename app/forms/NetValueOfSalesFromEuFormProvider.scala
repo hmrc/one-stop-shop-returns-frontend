@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-package queries
+package forms
 
-import models.{Index, SalesAtVatRate}
-import pages.PageConstants.{salesAtVatRate, salesFromNi}
-import play.api.libs.json.JsPath
+import forms.mappings.Mappings
+import models.VatRate
 
-case class AllSalesAtVatRateQuery(countryIndex: Index) extends Gettable[List[SalesAtVatRate]] with Settable[List[SalesAtVatRate]] {
+import javax.inject.Inject
+import play.api.data.Form
 
-  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ salesAtVatRate
+class NetValueOfSalesFromEuFormProvider @Inject() extends Mappings {
+
+  def apply(vatRate: VatRate): Form[BigDecimal] =
+    Form(
+      "value" -> numeric(
+        "netValueOfSalesFromEu.error.required",
+        "netValueOfSalesFromEu.error.wholeNumber",
+        "netValueOfSalesFromEu.error.nonNumeric",
+        args = Seq(vatRate.rateForDisplay))
+          .verifying(inRange[BigDecimal](0.01, 10000000, "netValueOfSalesFromEu.error.outOfRange"))
+    )
 }
