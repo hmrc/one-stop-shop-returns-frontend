@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import controllers.actions.{FakeGetRegistrationAction, GetRegistrationAction}
 import forms.CountryOfConsumptionFromEuFormProvider
 import models.{Country, NormalMode}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
@@ -36,19 +37,51 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
 
   val countryFrom: Country = Country("LV", "Latvia")
   val countryTo: Country   = Country("NL", "Netherlands")
-  val selectItems: Seq[SelectItem] = Country.selectItems(Country.euCountries.filterNot(_ == countryFrom))
+  val selectItems: Seq[SelectItem] = Country.selectItems(Country.euCountriesWithNI.filterNot(_ == countryFrom))
 
   private val formProvider = new CountryOfConsumptionFromEuFormProvider()
-  private val form         = formProvider(index, Seq.empty, countryFrom)
+  private val form         = formProvider(index, Seq.empty, countryFrom, false)
   private val baseAnswers  = emptyUserAnswers.set(CountryOfSaleFromEuPage(index), countryFrom).success.value
 
   private lazy val countryOfConsumptionFromEuRoute = routes.CountryOfConsumptionFromEuController.onPageLoad(NormalMode, period, index, index).url
 
   "CountryOfConsumptionFromEu Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET and isOnlineMarketplace false" in {
 
-      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
+      val form         = formProvider(index, Seq.empty, countryFrom, false)
+      val selectItems  = Country.selectItems(Country.euCountriesWithNI.filterNot(_ == countryFrom))
+      val reg = registration.copy(isOnlineMarketplace = false)
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(baseAnswers),
+          registration = reg
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(GET, countryOfConsumptionFromEuRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[CountryOfConsumptionFromEuView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index, countryFrom, selectItems)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET and isOnlineMarketplace true" in {
+
+      val form        = formProvider(index, Seq.empty, countryFrom, false)
+      val selectItems = Country.selectItems(Country.euCountriesWithNI)
+      val reg = registration.copy(isOnlineMarketplace = true)
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(baseAnswers),
+          registration = reg
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, countryOfConsumptionFromEuRoute)

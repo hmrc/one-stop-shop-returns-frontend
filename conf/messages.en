@@ -143,8 +143,8 @@ salesFromNiList.change.hidden = sales from Northern Ireland to {0}
 salesFromNiList.remove.hidden = sales from Northern Ireland to {0}
 salesFromNiList.addAnother = Add sales from Northern Ireland to another EU country?
 
-countryOfConsumptionFromEu.title = Which EU country did you sell to from {0}?
-countryOfConsumptionFromEu.heading = Which EU country did you sell to from {0}?
+countryOfConsumptionFromEu.title = Where did you sell to from {0}?
+countryOfConsumptionFromEu.heading = Where did you sell to from {0}?
 countryOfConsumptionFromEu.checkYourAnswersLabel = Which EU country did you sell to from {0}?
 countryOfConsumptionFromEu.error.required = Enter the EU country you sold goods to from {0}
 countryOfConsumptionFromEu.change.hidden = which country you sold to
