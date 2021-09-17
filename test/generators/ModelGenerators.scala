@@ -65,7 +65,7 @@ trait ModelGenerators {
   implicit val arbitraryPeriod: Arbitrary[Period] =
     Arbitrary {
       for {
-        year <- Gen.choose(2022, 2100)
+        year <- Gen.choose(2022, 2099)
         quarter <- Gen.oneOf(Quarter.values)
       } yield Period(year, quarter)
   }

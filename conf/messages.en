@@ -77,14 +77,14 @@ countryOfConsumptionFromNi.title = Which EU country did you sell to from Norther
 countryOfConsumptionFromNi.heading = Which EU country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.heading.not.eu = Which country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.checkYourAnswersLabel = Which EU country did you sell to from Northern Ireland?
-countryOfConsumptionFromNi.error.required = Select the country you sold to from Northern Ireland
+countryOfConsumptionFromNi.error.required = Enter the EU country you sold to from Northern Ireland
 countryOfConsumptionFromNi.error.length = Country must be 100 characters or less
 countryOfConsumptionFromNi.change.hidden = the country you sold to from Northern Ireland
 countryOfConsumptionFromNi.error.duplicate = You selected this country already. Select a different one.
 
-deleteSalesFromNi.title = Are you sure you need to remove the sales from Northern Ireland to {0}?
-deleteSalesFromNi.heading = Are you sure you need to remove the sales from Northern Ireland to {0}?
-deleteSalesFromNi.error.required = Select yes if you need to remove the sales from Northern Ireland to {0}
+deleteSalesFromNi.title = Are you sure you want to remove the sales from Northern Ireland to {0}?
+deleteSalesFromNi.heading = Are you sure you want to remove the sales from Northern Ireland to {0}?
+deleteSalesFromNi.error.required = Select yes if you are sure you want to remove the sales from Northern Ireland to {0}
 
 netValueOfSalesFromNi.title = What was your total sales at {0} rate excluding VAT?
 netValueOfSalesFromNi.heading = What was your total sales at {0} rate excluding VAT?
@@ -104,7 +104,7 @@ checkYourAnswersLabel.amount = Amount
 soldGoodsFromNi.title = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
 soldGoodsFromNi.heading = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
 soldGoodsFromNi.checkYourAnswersLabel = Sales made from Northern Ireland
-soldGoodsFromNi.error.required = Select yes if you made taxable sales from Northern Ireland during this period
+soldGoodsFromNi.error.required = Select yes if you made taxable sales of goods to consumers from Northern Ireland during this period
 soldGoodsFromNi.change.hidden = if you made taxable sales from Northern Ireland during this period
 
 vatOnSalesFromNi.title = What was the total VAT charged at {0} rate?
@@ -117,12 +117,13 @@ vatOnSalesFromNi.error.wholeNumber = Enter the total VAT charged at {0} rate usi
 vatOnSalesFromNi.error.outOfRange = Total VAT must be between {0} and {1}
 vatOnSalesFromNi.change.hidden = the total VAT
 
-vatRatesFromNi.title = Which VAT rates did you charge on sales?
-vatRatesFromNi.heading = Which VAT rates did you charge on sales?
-vatRatesFromNi.checkYourAnswersLabel = VAT rates on sales
-vatRatesFromNi.error.required = Select which VAT rates you charged on sales
-vatRatesFromNi.error.invalid = Select which VAT rates you charged on sales
-vatRatesFromNi.change.hidden = the VAT rates you charged on sales
+vatRatesFromNi.title = Which VAT rates did you charge?
+vatRatesFromNi.heading = Which VAT rates did you charge?
+vatRatesFromNi.hint = Select all that apply.
+vatRatesFromNi.checkYourAnswersLabel = VAT rates
+vatRatesFromNi.error.required = Select the VAT you charged on sales
+vatRatesFromNi.error.invalid = Select which VAT rates you charged
+vatRatesFromNi.change.hidden = the VAT rates you charged
 
 contactHmrc.title = contactHmrc
 contactHmrc.heading = contactHmrc
@@ -135,23 +136,24 @@ salesFromNiList.title.singular = You added sales from Northern Ireland to one EU
 salesFromNiList.heading.singular = You added sales from Northern Ireland to one EU country
 salesFromNiList.title = You added sales from Northern Ireland to {0} EU countries
 salesFromNiList.heading = You added sales from Northern Ireland to {0} EU countries
+salesFromNiList.hint = You must tell us about all of your eligible sales.
 salesFromNiList.maximumReached = You have added sales from Northern Ireland to every EU country
 salesFromNiList.error.required = Select yes if you need to add sales from Northern Ireland to another EU country
 salesFromNiList.change.hidden = sales from Northern Ireland to {0}
 salesFromNiList.remove.hidden = sales from Northern Ireland to {0}
 salesFromNiList.addAnother = Add sales from Northern Ireland to another EU country?
 
-countryOfConsumptionFromEu.title = Which EU country did you sell to from {0}?
-countryOfConsumptionFromEu.heading = Which EU country did you sell to from {0}?
+countryOfConsumptionFromEu.title = Where did you sell to from {0}?
+countryOfConsumptionFromEu.heading = Where did you sell to from {0}?
 countryOfConsumptionFromEu.checkYourAnswersLabel = Which EU country did you sell to from {0}?
-countryOfConsumptionFromEu.error.required = Select which EU country you sold to from {0}
+countryOfConsumptionFromEu.error.required = Enter the EU country you sold goods to from {0}
 countryOfConsumptionFromEu.change.hidden = which country you sold to
 countryOfConsumptionFromEu.error.duplicate = You selected this country already. Select a different one.
 
 countryOfSaleFromEu.title = Which EU country did you sell goods from?
 countryOfSaleFromEu.heading = Which EU country did you sell goods from?
 countryOfSaleFromEu.checkYourAnswersLabel = Which EU country did you sell goods from?
-countryOfSaleFromEu.error.required = Select which EU country you sold goods from
+countryOfSaleFromEu.error.required = Enter the EU country you sold goods from
 countryOfSaleFromEu.change.hidden = which EU country you sold goods from
 countryOfSaleFromEu.error.duplicate = You selected this country already. Select a different one.
 
@@ -161,18 +163,19 @@ deleteSalesFromEu.error.required = Select yes if you want to remove the sales fr
 
 deleteSalesToEu.title = Are you sure you want to remove the sales from {0} to {1}?
 deleteSalesToEu.heading = Are you sure you want to remove the sales from {0} to {1}?
-deleteSalesToEu.error.required = Select yes if you want to remove the sales from {0} to {1}
+deleteSalesToEu.error.required = Select yes if you are sure you want to remove the sales from {0} to {1}
 
 soldGoodsFromEu.title = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
 soldGoodsFromEu.heading = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
 soldGoodsFromEu.checkYourAnswersLabel = Sales made from EU countries
-soldGoodsFromEu.error.required = Select yes if you made taxable sales from EU countries to consumers in other EU countries
+soldGoodsFromEu.error.required = Select yes if you made taxable sales of goods from EU countries to consumers in other EU countries during this period
 soldGoodsFromEu.change.hidden = if you made taxable sales from EU countries to consumers in other EU countries
 
-vatRatesFromEu.title = Which VAT rates did you charge on sales?
-vatRatesFromEu.heading = Which VAT rates did you charge on sales?
+vatRatesFromEu.title = Which VAT rates did you charge?
+vatRatesFromEu.heading = Which VAT rates did you charge?
+vatRatesFromEu.hint = Select all that apply.
 vatRatesFromEu.checkYourAnswersLabel = VAT rates on sales
-vatRatesFromEu.error.required = Select which VAT rates you charged on sales
+vatRatesFromEu.error.required = Select the VAT you charged on sales
 vatRatesFromEu.change.hidden = which VAT rates you charged on sales
 
 checkSalesToEu.title = Check your answers
@@ -187,6 +190,7 @@ salesToEuList.title.singular = You added sales from {0} to one EU country
 salesToEuList.heading.singular = You added sales from {0} to one EU country
 salesToEuList.title = You added sales from {0} to {1} EU countries
 salesToEuList.heading = You added sales from {0} to {1} EU countries
+salesToEuList.hint = You must tell us about all of your eligible sales.
 salesToEuList.maximumReached = You have added sales from {0} to every other EU country
 salesToEuList.error.required = Select yes if you need to add sales from {0} to another EU country
 salesToEuList.change.hidden = sales from {0} to {1}
@@ -209,6 +213,7 @@ salesFromEuList.title.singular = You added sales from one EU country
 salesFromEuList.heading.singular = You added sales from one EU country
 salesFromEuList.title = You added sales from  {0} EU countries
 salesFromEuList.heading = You added sales from {0} EU countries
+salesFromEuList.hint = You must tell us about all of your eligible sales.
 salesFromEuList.maximumReached = You have added sales from every EU country
 salesFromEuList.error.required = Select yes if you need to add sales from another EU country
 salesFromEuList.change.hidden = sales from {0}

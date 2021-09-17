@@ -16,6 +16,7 @@
 
 package forms
 
+import config.Constants.maxCurrencyAmount
 import forms.mappings.Mappings
 import models.VatRate
 
@@ -31,6 +32,6 @@ class NetValueOfSalesFromEuFormProvider @Inject() extends Mappings {
         "netValueOfSalesFromEu.error.wholeNumber",
         "netValueOfSalesFromEu.error.nonNumeric",
         args = Seq(vatRate.rateForDisplay))
-          .verifying(inRange[BigDecimal](0.01, 10000000, "netValueOfSalesFromEu.error.outOfRange"))
+          .verifying(inRange[BigDecimal](0.01, maxCurrencyAmount, "netValueOfSalesFromEu.error.outOfRange"))
     )
 }

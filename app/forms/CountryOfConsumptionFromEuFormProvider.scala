@@ -18,25 +18,35 @@ package forms
 
 import javax.inject.Inject
 import forms.mappings.Mappings
+import models.Country.{euCountries, euCountriesWithNI}
 import models.{Country, Index}
 import play.api.data.Form
 import play.api.data.validation.{Constraint, Invalid, Valid}
 
 class CountryOfConsumptionFromEuFormProvider @Inject() extends Mappings {
 
-  def apply(index: Index, existingAnswers: Seq[Country], countryFrom: Country): Form[Country] =
+  def apply(
+    index: Index,
+    existingAnswers: Seq[Country],
+    countryFrom: Country,
+    isOnlineMarketplace: Boolean
+  ): Form[Country] =
     Form(
       "value" -> text("countryOfConsumptionFromEu.error.required", args = Seq(countryFrom.name))
-        .verifying(validCountry(countryFrom))
-        .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
+        .verifying(validIfEqualToCountryFrom(countryFrom, isOnlineMarketplace))
+        .transform[Country](value => euCountriesWithNI.find(_.code == value).get, _.code)
         .verifying(notADuplicate(index, existingAnswers, "countryOfConsumptionFromEu.error.duplicate"))
     )
 
-  private def validCountry(countryFrom: Country): Constraint[String] =
+  private def validIfEqualToCountryFrom(countryFrom: Country, isOnlineMarketplace: Boolean): Constraint[String] =
     Constraint {
-      case value if Country.euCountries.filterNot(_ == countryFrom).exists(_.code == value) =>
+      case value if euCountriesWithNI.filterNot(_ == countryFrom).exists(_.code == value) =>
         Valid
       case _ =>
-        Invalid("countryOfConsumptionFromEu.error.required", countryFrom.name)
+        if (isOnlineMarketplace) {
+          Valid
+        } else {
+          Invalid("countryOfConsumptionFromEu.error.required", countryFrom.name)
+        }
     }
 }

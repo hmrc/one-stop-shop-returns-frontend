@@ -28,7 +28,7 @@ class CountryOfConsumptionFromEuFormProviderSpec extends StringFieldBehaviours {
   val index = Index(0)
   val emptyExistingAnswers = Seq.empty[Country]
 
-  val form = new CountryOfConsumptionFromEuFormProvider()(index, emptyExistingAnswers, countryFrom)
+  val form = new CountryOfConsumptionFromEuFormProvider()(index, emptyExistingAnswers, countryFrom, false)
 
   ".value" - {
 
@@ -46,7 +46,15 @@ class CountryOfConsumptionFromEuFormProviderSpec extends StringFieldBehaviours {
       requiredError = FormError(fieldName, requiredKey, Seq(countryFrom.name))
     )
 
-    "must not bind the country of sale" in {
+    "bind country that is the same as countryFrom when onlineMarketplace is true" in {
+      val form = new CountryOfConsumptionFromEuFormProvider()(index, emptyExistingAnswers, countryFrom, true)
+      val result = form.bind(Map(fieldName -> countryFrom.code)).apply(fieldName)
+      result.value.value mustBe countryFrom.code
+      result.errors mustBe empty
+    }
+
+    "not bind country that is the same as countryFrom when onlineMarketplace is false" in {
+      val form = new CountryOfConsumptionFromEuFormProvider()(index, emptyExistingAnswers, countryFrom, false)
       val result = form.bind(Map("value" -> countryFrom.code)).apply(fieldName)
       result.errors must contain only FormError(fieldName, requiredKey, Seq(countryFrom.name))
     }
@@ -66,7 +74,8 @@ class CountryOfConsumptionFromEuFormProviderSpec extends StringFieldBehaviours {
       val answer = Country.euCountries.tail.head
       val existingAnswers = Seq(Country.euCountries.head, Country.euCountries.tail.head)
 
-      val duplicateForm = new CountryOfConsumptionFromEuFormProvider()(index, existingAnswers, Country.euCountries.reverse.head)
+      val duplicateForm =
+        new CountryOfConsumptionFromEuFormProvider()(index, existingAnswers, Country.euCountries.reverse.head, false)
 
       val result = duplicateForm.bind(Map(fieldName ->  answer.code)).apply(fieldName)
       result.errors must contain only FormError(fieldName, "countryOfConsumptionFromEu.error.duplicate")
