@@ -63,7 +63,7 @@ class PreviousReturnController @Inject()(
             getAllSales(vatReturn, vatOwed)
           ))
         case Left(NotFoundResponse) =>
-          Redirect(routes.IndexController.onPageLoad())
+          Redirect(routes.YourAccountController.onPageLoad())
         case Left(e) =>
           logger.error(s"Unexpected result from api while getting return: $e")
           Redirect(routes.JourneyRecoveryController.onPageLoad())

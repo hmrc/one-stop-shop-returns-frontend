@@ -35,7 +35,7 @@ import views.html.IndexView
 
 import scala.concurrent.Future
 
-class IndexControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
+class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
 
   private val vatReturnConnector = mock[VatReturnConnector]
 
@@ -56,7 +56,7 @@ class IndexControllerSpec extends SpecBase with MockitoSugar with Generators wit
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
       running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
         val result = route(application, request).value
 

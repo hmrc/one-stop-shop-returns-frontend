@@ -29,7 +29,7 @@ import java.time.{LocalDate, ZoneOffset}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class IndexController @Inject()(
+class YourAccountController @Inject()(
                                  cc: AuthenticatedControllerComponents,
                                  vatReturnConnector: VatReturnConnector,
                                  view: IndexView
