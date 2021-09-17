@@ -25,10 +25,10 @@ case class PaymentReference private(value: String)
 
 object PaymentReference {
 
-  private val pattern: Regex = """XI(\d{9})(Q[1-4])(\d{2})""".r.anchored
+  private val pattern: Regex = """NI(\d{9})(Q[1-4])(\d{2})""".r.anchored
 
   def apply(vrn: Vrn, period: Period): PaymentReference =
-    PaymentReference(s"XI${vrn.vrn}${period.quarter.toString}${twoDigitYear(period.year)}")
+    PaymentReference(s"NI${vrn.vrn}${period.quarter.toString}${twoDigitYear(period.year)}")
 
   private[models] def fromString(string: String): Option[PaymentReference] =
     string match {
@@ -40,7 +40,7 @@ object PaymentReference {
         None
     }
 
-  private def twoDigitYear(year: Int) = year % 100
+  private def twoDigitYear(year: Int): Int = year % 100
 
   implicit def writes: Writes[PaymentReference] = new Writes[PaymentReference] {
     override def writes(o: PaymentReference): JsValue =
