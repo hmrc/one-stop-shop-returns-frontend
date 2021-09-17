@@ -145,11 +145,6 @@
     },
     {
       "validFrom": "2021-07-01",
-      "rate": 7.0,
-      "rateType": "STANDARD"
-    },
-    {
-      "validFrom": "2021-07-01",
       "rate": 10.0,
       "rateType": "REDUCED"
     },
