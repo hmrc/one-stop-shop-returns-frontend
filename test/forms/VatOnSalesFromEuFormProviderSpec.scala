@@ -16,6 +16,7 @@
 
 package forms
 
+import config.Constants.maxCurrencyAmount
 import forms.behaviours.DecimalFieldBehaviours
 import models.VatOnSalesChoice._
 import models.{VatOnSales, VatRate, VatRateType}
@@ -68,7 +69,7 @@ class VatOnSalesFromEuFormProviderSpec extends DecimalFieldBehaviours {
           "choice" -> NonStandard.toString,
           "amount" -> "-1"
         ))
-        result.errors must contain only FormError("amount", "vatOnSalesFromEu.amount.error.outOfRange", Seq(0.01, 10000000))
+        result.errors must contain only FormError("amount", "vatOnSalesFromEu.amount.error.outOfRange", Seq(0.01, maxCurrencyAmount))
       }
 
       "must not bind when a zero amount is supplied" in {
@@ -77,16 +78,16 @@ class VatOnSalesFromEuFormProviderSpec extends DecimalFieldBehaviours {
           "choice" -> NonStandard.toString,
           "amount" -> "0"
         ))
-        result.errors must contain only FormError("amount", "vatOnSalesFromEu.amount.error.outOfRange", Seq(0.01, 10000000))
+        result.errors must contain only FormError("amount", "vatOnSalesFromEu.amount.error.outOfRange", Seq(0.01, maxCurrencyAmount))
       }
 
-      "must not bind when an amount greater than 10,000,000 is supplied" in {
+      "must not bind when an amount greater than 1,000,000,000 is supplied" in {
 
         val result = form.bind(Map(
           "choice" -> NonStandard.toString,
-          "amount" -> "10000000.01"
+          "amount" -> (maxCurrencyAmount + 0.01).toString
         ))
-        result.errors must contain only FormError("amount", "vatOnSalesFromEu.amount.error.outOfRange", Seq(0.01, 10000000))
+        result.errors must contain only FormError("amount", "vatOnSalesFromEu.amount.error.outOfRange", Seq(0.01, maxCurrencyAmount))
       }
 
       "must not bind when a non-numeric amount is supplied" in {
