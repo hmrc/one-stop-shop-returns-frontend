@@ -53,9 +53,25 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request = FakeRequest(GET, vatRatesFromNiRoute)
 
+        val vatRateService = application.injector.instanceOf[VatRateService]
+        val view           = application.injector.instanceOf[VatRatesFromNiView]
+        val formProvider   = application.injector.instanceOf[VatRatesFromNiFormProvider]
+        val controller     = application.injector.instanceOf[VatRatesFromNiController]
+        val vatRates       = vatRateService.vatRates(period, country)
+        val form           = formProvider(vatRates)
+        val checkboxItems  = controller.checkboxItems(vatRates)
+
         val result = route(application, request).value
 
         status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          form,
+          NormalMode,
+          period,
+          index,
+          country,
+          checkboxItems
+        )(request, messages(application)).toString
       }
     }
 
@@ -112,10 +128,6 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
         val request =
           FakeRequest(POST, vatRatesFromNiRoute)
             .withFormUrlEncodedBody(("value", "invalid value"))
-
-        val boundForm = form.bind(Map("value" -> "invalid value"))
-
-        val view = application.injector.instanceOf[VatRatesFromNiView]
 
         val result = route(application, request).value
 
