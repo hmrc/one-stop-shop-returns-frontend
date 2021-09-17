@@ -17,58 +17,25 @@
 package controllers
 
 import base.SpecBase
-import connectors.VatReturnConnector
-import generators.Generators
-import models.Quarter.Q3
-import models.responses.NotFound
-import models.{Period, SubmissionStatus}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
-import org.mockito.Mockito.when
-import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.IndexView
 
-import scala.concurrent.Future
-
-class IndexControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
-
-  private val vatReturnConnector = mock[VatReturnConnector]
-
-  override def beforeEach(): Unit = {
-    Mockito.reset(vatReturnConnector)
-    super.beforeEach()
-  }
+class IndexControllerSpec extends SpecBase with MockitoSugar {
 
   "Index Controller" - {
 
     "must return OK and the correct view" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
-        ).build()
-
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[IndexView]
-
-        status(result) mustEqual OK
-
-        contentAsString(result) mustEqual view(
-          registration.registeredCompanyName,
-          registration.vrn.vrn,
-          Period(2021, Q3),
-          SubmissionStatus.Due
-        )(request, messages(application)).toString
+        status(result) mustEqual SEE_OTHER
       }
     }
   }

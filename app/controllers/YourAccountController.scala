@@ -16,24 +16,53 @@
 
 package controllers
 
+import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
+import models.{Period, SubmissionStatus}
+import models.Quarter.Q3
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.IndexView
 
+import java.time.{LocalDate, ZoneOffset}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class IndexController @Inject()(
+class YourAccountController @Inject()(
                                  cc: AuthenticatedControllerComponents,
+                                 vatReturnConnector: VatReturnConnector,
+                                 view: IndexView
                                )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
-      Redirect(routes.YourAccountController.onPageLoad())
+      val year = 2021
+      val period = Period(year, Q3)
+
+      vatReturnConnector.get(period).map {
+        case Right(_) =>
+          SubmissionStatus.Complete
+        case _ =>
+
+          if(LocalDate.now(ZoneOffset.UTC).isAfter(period.paymentDeadline)) {
+            SubmissionStatus.Overdue
+          } else {
+            SubmissionStatus.Due
+          }
+      }.map { submissionStatus =>
+        Ok(view(
+          request.registration.registeredCompanyName,
+          request.vrn.vrn,
+          period,
+          submissionStatus
+        ))
+      }
+
+
   }
 }

@@ -133,7 +133,7 @@ class CheckYourAnswersController @Inject()(
               auditService.audit(ReturnsAuditModel.build(
                 returnRequest, SubmissionResult.Duplicate, None, None, request
               ))
-              Redirect(routes.IndexController.onPageLoad()).toFuture
+              Redirect(routes.YourAccountController.onPageLoad()).toFuture
 
             case Left(e) =>
               logger.error(s"Unexpected result on submit: ${e.toString}")
