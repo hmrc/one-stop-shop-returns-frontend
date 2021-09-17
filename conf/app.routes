@@ -3,6 +3,8 @@
 ->          /govuk-frontend                                                                            govuk.Routes
 ->          /hmrc-frontend                                                                             hmrcfrontend.Routes
 
+GET         /                                                                                          controllers.IndexController.onPageLoad
+
 GET         /your-account                                                                              controllers.YourAccountController.onPageLoad
 
 GET         /assets/*file                                                                              controllers.Assets.versioned(path="/public", file: Asset)

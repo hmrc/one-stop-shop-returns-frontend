@@ -44,7 +44,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     super.beforeEach()
   }
 
-  "Index Controller" - {
+  "Your Account Controller" - {
 
     "must return OK and the correct view" in {
 
