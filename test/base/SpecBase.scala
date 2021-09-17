@@ -164,7 +164,11 @@ trait SpecBase
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
-  protected def applicationBuilder(userAnswers: Option[UserAnswers] = None, clock: Option[Clock] = None): GuiceApplicationBuilder = {
+  protected def applicationBuilder(
+                                    userAnswers: Option[UserAnswers] = None,
+                                    clock: Option[Clock] = None,
+                                    registration: Registration = registration
+                                  ): GuiceApplicationBuilder = {
 
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 

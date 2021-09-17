@@ -18,6 +18,7 @@ package controllers
 
 import controllers.actions._
 import forms.CountryOfConsumptionFromEuFormProvider
+import models.Country.{euCountriesWithNI}
 import models.{Country, Index, Mode, Period}
 import pages.CountryOfConsumptionFromEuPage
 import play.api.i18n.I18nSupport
@@ -38,10 +39,17 @@ class CountryOfConsumptionFromEuController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(
+    mode: Mode,
+    period: Period,
+    countryFromIndex: Index,
+    countryToIndex: Index
+  ): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
       getCountryFrom(countryFromIndex) {
         countryFrom =>
+
+          val isOnlineMarketplace = request.registration.isOnlineMarketplace
 
           val form =
             formProvider(
@@ -50,17 +58,22 @@ class CountryOfConsumptionFromEuController @Inject()(
                 .get(AllSalesToEuQuery(countryFromIndex))
                 .getOrElse(Seq.empty)
                 .map(_.countryOfConsumption),
-              countryFrom
+              countryFrom,
+              isOnlineMarketplace
             )
-          val countries = Country.euCountries.filterNot(_ == countryFrom)
+
+          val countries = if(isOnlineMarketplace) euCountriesWithNI else euCountriesWithNI.filterNot(_ == countryFrom)
           val selectItems = Country.selectItems(countries)
 
-          val preparedForm = request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex)) match {
-            case None => form
-            case Some(value) => form.fill(value)
-          }
+          val preparedForm =
+            request.userAnswers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex)) match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
 
-          Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom, selectItems))
+          Ok(view(
+            preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom, selectItems
+          ))
       }
   }
 
@@ -69,19 +82,25 @@ class CountryOfConsumptionFromEuController @Inject()(
       getCountryFromAsync(countryFromIndex) {
         countryFrom =>
 
+          val isOnlineMarketplace = request.registration.isOnlineMarketplace
           val form = formProvider(
             countryToIndex,
             request.userAnswers
               .get(AllSalesToEuQuery(countryFromIndex))
               .getOrElse(Seq.empty)
               .map(_.countryOfConsumption),
-            countryFrom)
-          val countries = Country.euCountries.filterNot(_ == countryFrom)
+            countryFrom,
+            isOnlineMarketplace
+          )
+
+          val countries = if(isOnlineMarketplace) euCountriesWithNI else euCountriesWithNI.filterNot(_ == countryFrom)
           val selectItems = Country.selectItems(countries)
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom, selectItems))),
+              Future.successful(BadRequest(view(
+                formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom, selectItems
+              ))),
 
             value =>
               for {
