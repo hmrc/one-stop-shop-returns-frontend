@@ -16,6 +16,7 @@
 
 package forms
 
+import config.Constants.maxCurrencyAmount
 import forms.behaviours.DecimalFieldBehaviours
 import models.VatRate
 import org.scalacheck.Arbitrary.arbitrary
@@ -34,7 +35,7 @@ class NetValueOfSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
     val fieldName = "value"
 
     val minimum = BigDecimal(0.01)
-    val maximum = BigDecimal(10000000)
+    val maximum = maxCurrencyAmount
 
     val validDataGenerator =
       Gen.choose[BigDecimal](minimum, maximum)

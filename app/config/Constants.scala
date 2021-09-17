@@ -18,5 +18,5 @@ package config
 
 object Constants {
 
-  val maxCurrencyAmount: BigDecimal = 100000000
+  val maxCurrencyAmount: BigDecimal = 1000000000
 }

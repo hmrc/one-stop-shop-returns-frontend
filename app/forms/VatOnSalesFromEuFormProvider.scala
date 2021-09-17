@@ -16,6 +16,7 @@
 
 package forms
 
+import config.Constants.maxCurrencyAmount
 import forms.mappings.Mappings
 import models.{VatOnSales, VatOnSalesChoice, VatRate}
 import models.VatOnSalesChoice.{NonStandard, Standard}
@@ -37,7 +38,7 @@ class VatOnSalesFromEuFormProvider @Inject()(vatRateService: VatRateService) ext
           "vatOnSalesFromEu.amount.error.decimalFormat",
           "vatOnSalesFromEu.amount.error.nonNumeric"
         )
-          .verifying(inRange[BigDecimal](0.01, 10000000, "vatOnSalesFromEu.amount.error.outOfRange"))
+          .verifying(inRange[BigDecimal](0.01, maxCurrencyAmount, "vatOnSalesFromEu.amount.error.outOfRange"))
         )
       )(a(vatRate, netSales))(u)
     )
