@@ -23,7 +23,7 @@ import viewmodels.govuk.checkbox._
 
 trait VatRateBaseController {
 
-  protected def checkboxItems(vatRates: Seq[VatRate]): Seq[CheckboxItem] =
+  protected[controllers] def checkboxItems(vatRates: Seq[VatRate]): Seq[CheckboxItem] =
     vatRates.zipWithIndex.map {
       case (vatRate, index) =>
         CheckboxItemViewModel(

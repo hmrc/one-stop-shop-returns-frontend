@@ -45,7 +45,7 @@ class VatRatesFromEuController @Inject()(
       getCountries(countryFromIndex, countryToIndex) {
         case (countryFrom, countryTo) =>
 
-          val vatRates = vatRateService.vatRates(period, countryFrom)
+          val vatRates = vatRateService.vatRates(period, countryTo)
           val form     = formProvider(vatRates)
 
           val preparedForm = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)) match {
@@ -62,7 +62,7 @@ class VatRatesFromEuController @Inject()(
       getCountriesAsync(countryFromIndex, countryToIndex) {
         case (countryFrom, countryTo) =>
 
-          val vatRates = vatRateService.vatRates(period, countryFrom)
+          val vatRates = vatRateService.vatRates(period, countryTo)
           val form     = formProvider(vatRates)
           
           form.bindFromRequest().fold(
