@@ -51,7 +51,7 @@ class ReturnSubmittedController @Inject()(
           val email = request.registration.contactDetails.emailAddress
           Ok(view(period, returnReference, currencyFormat(vatOwed), email))
         case _ =>
-          Redirect(routes.IndexController.onPageLoad())
+          Redirect(routes.YourAccountController.onPageLoad())
       }.recover {
         case e: Exception =>
           logger.error(s"Error occurred: ${e.getMessage}", e)
