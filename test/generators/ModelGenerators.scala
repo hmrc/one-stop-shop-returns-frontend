@@ -229,4 +229,12 @@ trait ModelGenerators {
         now         = Instant.now
       } yield VatReturn(vrn, period, ReturnReference(vrn, period), PaymentReference(vrn, period), None, None, salesFromNi, salesFromEu, now, now)
     }
+
+  implicit val arbitraryReturnReference: Arbitrary[ReturnReference] =
+    Arbitrary {
+      for {
+        vrn <- arbitrary[Vrn]
+        period <- arbitrary[Period]
+      } yield ReturnReference(vrn, period)
+    }
 }
