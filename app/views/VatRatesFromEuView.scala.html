@@ -31,7 +31,7 @@
                         messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
                     )
                 ).asPageHeading()
-            )
+            ).withHint(HintViewModel(messages("vatRatesFromEu.hint")))
         )
 
         @govukButton(
