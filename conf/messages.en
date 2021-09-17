@@ -86,16 +86,6 @@ deleteSalesFromNi.title = Are you sure you want to remove the sales from Norther
 deleteSalesFromNi.heading = Are you sure you want to remove the sales from Northern Ireland to {0}?
 deleteSalesFromNi.error.required = Select yes if you are sure you want to remove the sales from Northern Ireland to {0}
 
-netValueOfSalesFromNi.title = What was your total sales at {0} rate excluding VAT?
-netValueOfSalesFromNi.heading = What was your total sales at {0} rate excluding VAT?
-netValueOfSalesFromNi.label = Sales excluding VAT
-netValueOfSalesFromNi.checkYourAnswersLabel = Sales excluding VAT
-netValueOfSalesFromNi.error.nonNumeric = Enter your total sales at {0} using numbers
-netValueOfSalesFromNi.error.required = Enter your total sales at {0}
-netValueOfSalesFromNi.error.wholeNumber = Enter your total sales at {0} using whole numbers
-netValueOfSalesFromNi.error.outOfRange = Total sales must be between {0} and {1}
-netValueOfSalesFromNi.change.hidden = your total sales excluding VAT
-
 netValueOfSalesFromEu.checkYourAnswersLabel = Sales excluding VAT
 vatFromEu.checkYourAnswersLabel = VAT charged
 checkYourAnswersLabel.country = Country
@@ -106,16 +96,6 @@ soldGoodsFromNi.heading = Did you make taxable sales of goods to consumers from 
 soldGoodsFromNi.checkYourAnswersLabel = Sales made from Northern Ireland
 soldGoodsFromNi.error.required = Select yes if you made taxable sales of goods to consumers from Northern Ireland during this period
 soldGoodsFromNi.change.hidden = if you made taxable sales from Northern Ireland during this period
-
-vatOnSalesFromNi.title = What was the total VAT charged at {0} rate?
-vatOnSalesFromNi.heading = What was the total VAT charged at {0} rate?
-vatOnSalesFromNi.label = VAT charged
-vatOnSalesFromNi.checkYourAnswersLabel = VAT charged
-vatOnSalesFromNi.error.nonNumeric = Enter the total VAT charged at {0} rate using numbers
-vatOnSalesFromNi.error.required = Enter the total VAT charged at {0} rate
-vatOnSalesFromNi.error.wholeNumber = Enter the total VAT charged at {0} rate using whole numbers
-vatOnSalesFromNi.error.outOfRange = Total VAT must be between {0} and {1}
-vatOnSalesFromNi.change.hidden = the total VAT
 
 vatRatesFromNi.title = Which VAT rates did you charge?
 vatRatesFromNi.heading = Which VAT rates did you charge?
@@ -258,14 +238,14 @@ previousReturn.vatOnSalesFromNi.label = VAT on sales from Northern Ireland
 previousReturn.vatOnSalesFromEu.label = VAT on sales from EU countries
 previousReturn.totalVatOnSales.label = VAT owed this period
 
-netValueOfSalesFromNi.title = What was your total sales at {0} rate excluding VAT?
-netValueOfSalesFromNi.heading = What was your total sales at {0} rate excluding VAT?
-netValueOfSalesFromNi.checkYourAnswersLabel = Total sales excluding VAT
-netValueOfSalesFromNi.error.nonNumeric = Enter your total sales excluding VAT using numbers
-netValueOfSalesFromNi.error.required = Enter your total sales excluding VAT
-netValueOfSalesFromNi.error.wholeNumber = Enter your total sales excluding VAT using whole numbers
-netValueOfSalesFromNi.error.outOfRange = Total sales excluding VAT must be between {0} and {1}
-netValueOfSalesFromNi.change.hidden = your total sales excluding VAT
+netValueOfSalesFromNi.title = What were your sales at {0} rate excluding VAT?
+netValueOfSalesFromNi.heading = What were your sales at {0} rate excluding VAT?
+netValueOfSalesFromNi.checkYourAnswersLabel = Sales excluding VAT
+netValueOfSalesFromNi.error.nonNumeric = Enter your sales excluding VAT using numbers
+netValueOfSalesFromNi.error.required = Enter your sales excluding VAT
+netValueOfSalesFromNi.error.wholeNumber = Enter your sales excluding VAT using whole numbers
+netValueOfSalesFromNi.error.outOfRange = Sales excluding VAT must be between {0} and {1}
+netValueOfSalesFromNi.change.hidden = your sales excluding VAT
 
 vatOnSalesFromNi.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSalesFromNi.heading = How much VAT did you charge on sales of {0} at {1} VAT rate?
@@ -279,14 +259,14 @@ vatOnSalesFromNi.amount.error.decimalFormat = Enter the amount of VAT charged up
 vatOnSalesFromNi.amount.error.outOfRange = The amount of VAT charged must be between {0} and {1}
 vatOnSalesFromNi.change.hidden = how much VAT you charged on sales
 
-netValueOfSalesFromEu.title = What was your total sales at {0} rate excluding VAT?
-netValueOfSalesFromEu.heading = What was your total sales at {0} rate excluding VAT?
-netValueOfSalesFromEu.checkYourAnswersLabel = Total sales excluding VAT
-netValueOfSalesFromEu.error.nonNumeric = Enter your total sales excluding VAT using numbers
-netValueOfSalesFromEu.error.required = Enter your total sales excluding VAT
-netValueOfSalesFromEu.error.wholeNumber = Enter your total sales excluding VAT using whole numbers
-netValueOfSalesFromEu.error.outOfRange = Total sales excluding VAT must be between {0} and {1}
-netValueOfSalesFromEu.change.hidden = your total sales excluding VAT
+netValueOfSalesFromEu.title = What were your sales at {0} rate excluding VAT?
+netValueOfSalesFromEu.heading = What were your sales at {0} rate excluding VAT?
+netValueOfSalesFromEu.checkYourAnswersLabel = Sales excluding VAT
+netValueOfSalesFromEu.error.nonNumeric = Enter your sales excluding VAT using numbers
+netValueOfSalesFromEu.error.required = Enter your sales excluding VAT
+netValueOfSalesFromEu.error.wholeNumber = Enter your sales excluding VAT using whole numbers
+netValueOfSalesFromEu.error.outOfRange = Sales excluding VAT must be between {0} and {1}
+netValueOfSalesFromEu.change.hidden = your sales excluding VAT
 
 vatOnSalesFromEu.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSalesFromEu.heading = How much VAT did you charge on sales of {0} at {1} VAT rate?
