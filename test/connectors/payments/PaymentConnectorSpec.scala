@@ -19,9 +19,8 @@ package connectors.payments
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.{PaymentConnector, WireMockHelper}
-import models.requests.{PaymentRequest, PaymentResponse}
 import models.responses.UnexpectedResponseStatus
-import models.PaymentReference
+import models.requests.{PaymentRequest, PaymentResponse}
 import org.scalatest.EitherValues
 import play.api.Application
 import play.api.http.Status._
@@ -39,13 +38,11 @@ class PaymentConnectorSpec extends SpecBase with WireMockHelper with EitherValue
       .configure("microservice.services.pay-api.port" -> server.port)
       .build()
 
-  private val paymentReference = PaymentReference(vrn, period)
   private val paymentRequest =
     PaymentRequest(
-      paymentReference,
-      10000000,
-      "",
-      ""
+      vrn,
+      period,
+      10000000
     )
 
   ".submit" - {

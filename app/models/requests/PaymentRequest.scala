@@ -16,14 +16,14 @@
 
 package models.requests
 
-import models.PaymentReference
+import models.Period
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.domain.Vrn
 
 case class PaymentRequest(
-                           paymentReference: PaymentReference,
-                           amountInPence: Long,
-                           returnUrl: String,
-                           backUrl: String
+                           vrn: Vrn,
+                           period: Period,
+                           amountInPence: Long
                          )
 
 object PaymentRequest {
