@@ -19,7 +19,13 @@
         govukButton: GovukButton
 )
 
-@(period: Period, returnReference: ReturnReference, vatOwed: String, email: String)(implicit request: Request[_], messages: Messages)
+@(
+    period: Period,
+    returnReference: ReturnReference,
+    vatOwed: String,
+    email: String,
+    showPayNow: Boolean
+)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {
     <div class="grid-row column-two-thirds" id="submitted">
@@ -37,7 +43,9 @@
         <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p1", period.displayText) <strong>@Html(vatOwed)</strong>.</p>
         <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p2")</p>
 
-        <button class="govuk-button">@messages("returnSubmitted.payNow")</button>
+        @if(showPayNow) {
+            <a class="govuk-button">@messages("returnSubmitted.payNow")</a>
+        }
 
         <p class="govuk-body">@messages("returnSubmitted.payBy.p1", period.paymentDeadlineDisplay)</p>
 

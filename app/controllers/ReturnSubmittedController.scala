@@ -49,7 +49,9 @@ class ReturnSubmittedController @Inject()(
           val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn)
           val returnReference = ReturnReference(request.vrn, period)
           val email = request.registration.contactDetails.emailAddress
-          Ok(view(period, returnReference, currencyFormat(vatOwed), email))
+          val showPayNow = vatOwed > 0
+
+          Ok(view(period, returnReference, currencyFormat(vatOwed), email, showPayNow))
         case _ =>
           Redirect(routes.IndexController.onPageLoad())
       }.recover {
