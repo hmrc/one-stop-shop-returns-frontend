@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import forms.VatRatesFromEuFormProvider
 import models.{Country, NormalMode, VatRate}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
@@ -28,6 +29,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.VatRateService
+import views.html.VatRatesFromEuView
 
 import scala.concurrent.Future
 
@@ -54,9 +56,27 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar with VatRa
       running(application) {
         val request = FakeRequest(GET, vatRatesFromEuRoute)
 
+        val vatRateService = application.injector.instanceOf[VatRateService]
+        val view           = application.injector.instanceOf[VatRatesFromEuView]
+        val formProvider   = application.injector.instanceOf[VatRatesFromEuFormProvider]
+        val controller     = application.injector.instanceOf[VatRatesFromEuController]
+        val vatRates       = vatRateService.vatRates(period, countryTo)
+        val form           = formProvider(vatRates)
+        val checkboxItems  = controller.checkboxItems(vatRates)
+
         val result = route(application, request).value
 
         status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          form,
+          NormalMode,
+          period,
+          index,
+          index,
+          countryFrom,
+          countryTo,
+          checkboxItems
+        )(request, messages(application)).toString
       }
     }
 
