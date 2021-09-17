@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package config
+package queries
 
-object Constants {
+import play.api.libs.json.JsPath
 
-  val maxCurrencyAmount: BigDecimal = 1000000000
+case object EmailConfirmationQuery extends Gettable[Boolean] with Settable[Boolean] {
 
-  val returnsConfirmationTemplateId = "oss_returns_email_confirmation"
-
+  override def path: JsPath = JsPath \ "emailConfirmation"
 }

@@ -33,7 +33,7 @@ case class ReturnsConfirmationEmailParameters(
    recipientName_line1: String,
    businessName:String,
    period: String,
-   lastDayOfMonthAfterCalendarQuarter: String,
+   paymentDeadline: String,
    VATOwed: String,
    reference: String
 ) extends EmailParameters
