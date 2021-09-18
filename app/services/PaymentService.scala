@@ -16,22 +16,21 @@
 
 package services
 
-import models.UserAnswers
+import models.Period
 import models.requests.PaymentRequest
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
 
-class PaymentService @Inject()(salesAtVatRateService: SalesAtVatRateService) {
+class PaymentService @Inject()() {
 
-  def buildPaymentRequest(vrn: Vrn, userAnswers: UserAnswers): PaymentRequest = {
+  def buildPaymentRequest(vrn: Vrn, period: Period, amount: Long): PaymentRequest = {
 
-    val amount = salesAtVatRateService.getTotalVatOnSales(userAnswers).toLong
     val amountInPence: Long = amount * 100
 
     PaymentRequest(
       vrn,
-      userAnswers.period,
+      period,
       amountInPence
     )
   }

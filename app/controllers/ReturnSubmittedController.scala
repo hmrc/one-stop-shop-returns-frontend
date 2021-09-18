@@ -59,6 +59,5 @@ class ReturnSubmittedController @Inject()(
           logger.error(s"Error occurred: ${e.getMessage}", e)
           throw e
       }
-
   }
 }

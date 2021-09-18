@@ -80,7 +80,7 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
 
   def intsOutsideRange(min: Int, max: Int): Gen[Int] =
     arbitrary[Int] suchThat(x => x < min || x > max)
-    
+
   def nonBooleans: Gen[String] =
     arbitrary[String]
       .suchThat (_.nonEmpty)
