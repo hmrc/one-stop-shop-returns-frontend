@@ -24,7 +24,8 @@
     returnReference: ReturnReference,
     vatOwed: String,
     email: String,
-    showPayNow: Boolean
+    showPayNow: Boolean,
+    amount: Long
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {
@@ -44,7 +45,7 @@
         <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p2")</p>
 
         @if(showPayNow) {
-            <a class="govuk-button">@messages("returnSubmitted.payNow")</a>
+            <a class="govuk-button" href="@routes.PaymentController.onPageLoad(period, amount)">@messages("returnSubmitted.payNow")</a>
         }
 
         <p class="govuk-body">@messages("returnSubmitted.payBy.p1", period.paymentDeadlineDisplay)</p>

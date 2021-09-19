@@ -51,7 +51,9 @@ class ReturnSubmittedController @Inject()(
           val email = request.registration.contactDetails.emailAddress
           val showPayNow = vatOwed > 0
 
-          Ok(view(period, returnReference, currencyFormat(vatOwed), email, showPayNow))
+          Ok(view(
+            period, returnReference, currencyFormat(vatOwed), email, showPayNow, vatOwed.toLong
+          ))
         case _ =>
           Redirect(routes.YourAccountController.onPageLoad())
       }.recover {

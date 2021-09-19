@@ -43,7 +43,9 @@ class PaymentController @Inject()(
       paymentConnector.submit(paymentRequest)
         .map {
           case Right(value) => Redirect(value.nextUrl)
-          case _ => ???
+          case _ => {
+            ???
+          }
         }
   }
 }
