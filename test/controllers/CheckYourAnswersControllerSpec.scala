@@ -129,6 +129,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(EMAIL_ACCEPTED))
+
         val totalVatOnSales = BigDecimal(100)
         when(salesAtVatRateService.getTotalVatOnSales(any())) thenReturn totalVatOnSales
         doNothing().when(auditService).audit(any())(any(), any())
@@ -144,30 +147,27 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           ).build()
 
         running(application) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(Period(2021, Q3)).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period).url)
           val result = route(application, request).value
           val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
           val expectedAuditEvent = ReturnsAuditModel.build(
             vatReturnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
           )
-          val returnReference = arbitrary[ReturnReference].sample.value
+
           val userAnswersWithEmailConfirmation = completeUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
-
-          when(emailService.sendConfirmationEmail(
-            eqTo(registration.contactDetails.fullName),
-            eqTo(registration.registeredCompanyName),
-            eqTo(registration.contactDetails.emailAddress),
-            eqTo(returnReference.value),
-            eqTo(totalVatOnSales),
-            eqTo(vatReturnRequest.period)
-          )(any())) thenReturn Future.successful(EMAIL_ACCEPTED)
-
+          
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswersWithEmailConfirmation).url
 
           verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
           verify(emailService, times(1))
-            .sendConfirmationEmail(any(), any(), any(), any(), any(), any())(any())
+            .sendConfirmationEmail(eqTo(registration.contactDetails.fullName),
+              eqTo(registration.registeredCompanyName),
+              eqTo(registration.contactDetails.emailAddress),
+              eqTo(vatReturn.reference.value),
+              eqTo(totalVatOnSales),
+              eqTo(vatReturnRequest.period)
+            )(any())
           verify(mockSessionRepository, times(1)).set(eqTo(userAnswersWithEmailConfirmation))
         }
       }
