@@ -34,7 +34,4 @@ object ViewUtils {
   def errorPrefix(form: Form[_])(implicit messages: Messages): String = {
     if (form.hasErrors || form.hasGlobalErrors) messages("error.browser.title.prefix") else ""
   }
-
-  def headingWithCaption(heading: String, caption: String): HtmlContent =
-    HtmlContent(s"""<span class="govuk-caption-xl">$caption</span> $heading""")
 }

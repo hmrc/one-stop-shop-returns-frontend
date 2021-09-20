@@ -25,12 +25,10 @@
                 form   = form,
                 name   = "value",
                 items  = checkboxItems,
-                legend = LegendViewModel(
-                    headingWithCaption(
-                        messages("vatRatesFromEu.heading"),
-                        messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
-                    )
-                ).asPageHeading()
+                legend = HmrcPageHeadingLegend(
+                    content = messages("vatRatesFromEu.heading"),
+                    caption = messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
+                )
             ).withHint(HintViewModel(messages("vatRatesFromEu.hint")))
         )
 

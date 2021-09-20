@@ -35,12 +35,10 @@
         @govukInput(
             InputViewModel(
                 field = form("value"),
-                label = LabelViewModel(
-                    headingWithCaption(
-                        messages("netValueOfSalesFromEu.heading", vatRate.rateForDisplay),
-                        messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
-                    )
-                ).asPageHeading()
+                label = HmrcPageHeadingLabel(
+                    content = messages("netValueOfSalesFromEu.heading", vatRate.rateForDisplay),
+                    caption = messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
+                )
             )
             .asNumeric()
             .withWidth(Fixed10)
