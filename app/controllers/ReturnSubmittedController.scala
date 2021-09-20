@@ -22,6 +22,7 @@ import logging.Logging
 import models.{Period, ReturnReference}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.EmailConfirmationQuery
 import services.VatReturnSalesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CurrencyFormatter._
@@ -40,16 +41,17 @@ class ReturnSubmittedController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetRegistration.async {
+  def onPageLoad(period: Period): Action[AnyContent] = {
+    (cc.actionBuilder andThen cc.identify andThen cc.getRegistration andThen cc.getData(period) andThen cc.requireData).async {
     implicit request =>
 
       vatReturnConnector.get(period).map {
         case Right(vatReturn) =>
-
           val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn)
           val returnReference = ReturnReference(request.vrn, period)
           val email = request.registration.contactDetails.emailAddress
-          Ok(view(period, returnReference, currencyFormat(vatOwed), email))
+          val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)
+          Ok(view(period, returnReference, currencyFormat(vatOwed), showEmailConfirmation.get, email))
         case _ =>
           Redirect(routes.YourAccountController.onPageLoad())
       }.recover {
@@ -58,5 +60,6 @@ class ReturnSubmittedController @Inject()(
           throw e
       }
 
+  }
   }
 }
