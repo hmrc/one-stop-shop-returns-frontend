@@ -112,7 +112,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .overrides(bind[VatReturnConnector].toInstance(vatReturnConnector))
             .build()
 
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right((vatReturn)))
+        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         running(app) {
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
