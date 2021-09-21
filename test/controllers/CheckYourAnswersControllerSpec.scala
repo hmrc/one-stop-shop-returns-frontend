@@ -107,17 +107,17 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .set(SoldGoodsFromNiPage, false).success.value
             .set(SoldGoodsFromEuPage, false).success.value
 
-        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+//        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
-//        when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any(), any())(any()))
-//          .thenReturn(Future.successful(EMAIL_ACCEPTED))
+        when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(EMAIL_ACCEPTED))
 
         val app =
           applicationBuilder(Some(answers))
             .overrides(
-              bind[VatReturnService].toInstance(vatReturnService),
+//              bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
-//              bind[EmailService].toInstance(emailService)
+              bind[EmailService].toInstance(emailService)
             ).build()
 
         running(app) {
