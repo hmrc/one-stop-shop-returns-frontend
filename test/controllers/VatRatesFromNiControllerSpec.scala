@@ -39,8 +39,8 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new VatRatesFromNiFormProvider()
   private val vatRate = arbitrary[VatRate].sample.value
-  private val vatRates = List(vatRate)
-  private val form = formProvider(vatRates)
+  private val vatRate2 = arbitrary[VatRate].sample.value
+  private val vatRates = List(vatRate, vatRate2)
   private val country = arbitrary[Country].sample.value
   private val answersWithCountry = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), country).success.value
 
@@ -72,6 +72,35 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
           country,
           checkboxItems
         )(request, messages(application)).toString
+      }
+    }
+
+    "must skip this page (303 SEE_OTHER) if there is only 1 selection and update user answers" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+      val mockVatRateService    = mock[VatRateService]
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockVatRateService.vatRates(any(), any())) thenReturn List(vatRate)
+
+      val application =
+        applicationBuilder(userAnswers = Some(answersWithCountry))
+          .overrides(
+            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[VatRateService].toInstance(mockVatRateService)
+          )
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(GET, vatRatesFromNiRoute)
+
+        val result = route(application, request).value
+        val expectedAnswers = answersWithCountry.set(VatRatesFromNiPage(index), List(vatRate)).success.value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual VatRatesFromNiPage(index).navigate(NormalMode, expectedAnswers).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 
@@ -109,7 +138,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, vatRatesFromNiRoute)
-            .withFormUrlEncodedBody(("value[0]", vatRate.rate.toString))
+            .withFormUrlEncodedBody(("value[0]", vatRate.rate.toString), ("value[1]", vatRate2.rate.toString))
 
         val result = route(application, request).value
         val expectedAnswers = answersWithCountry.set(VatRatesFromNiPage(index), vatRates).success.value
