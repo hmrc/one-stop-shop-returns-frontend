@@ -51,7 +51,8 @@ class ReturnSubmittedController @Inject()(
           val returnReference = ReturnReference(request.vrn, period)
           val email = request.registration.contactDetails.emailAddress
           val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)
-          Ok(view(period, returnReference, currencyFormat(vatOwed), showEmailConfirmation.get, email))
+          val displayPayNow = vatOwed > 0
+          Ok(view(period, returnReference, currencyFormat(vatOwed), showEmailConfirmation.get, email, displayPayNow))
         case _ =>
           Redirect(routes.YourAccountController.onPageLoad())
       }.recover {
@@ -60,6 +61,6 @@ class ReturnSubmittedController @Inject()(
           throw e
       }
 
-  }
+    }
   }
 }
