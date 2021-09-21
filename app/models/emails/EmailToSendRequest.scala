@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-package config
+package models.emails
 
-object Constants {
+import play.api.libs.json.{Json, Reads, Writes}
 
-  val maxCurrencyAmount: BigDecimal = 1000000000
+case class EmailToSendRequest(
+   to: List[String],
+   templateId: String,
+   parameters: EmailParameters,
+   force: Boolean = false
+)
 
-  val returnsConfirmationTemplateId = "oss_returns_email_confirmation"
-
+object EmailToSendRequest {
+  implicit val reads: Reads[EmailToSendRequest] = Json.reads[EmailToSendRequest]
+  implicit val writes: Writes[EmailToSendRequest] = Json.writes[EmailToSendRequest]
 }

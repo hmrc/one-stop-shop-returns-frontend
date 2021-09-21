@@ -30,7 +30,8 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.VatReturnSalesService
+import queries.EmailConfirmationQuery
+import services.{EmailService, VatReturnSalesService}
 import utils.CurrencyFormatter._
 import views.html.ReturnSubmittedView
 
@@ -51,12 +52,14 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
 
   "ReturnSubmitted controller" - {
 
-    "must return OK and the correct view" in {
+    "must return OK and the correct view for a GET with email confirmation" in {
+      val userAnswersWithEmail =
+        emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
 
-      val app = applicationBuilder(Some(emptyUserAnswers))
+      val app = applicationBuilder(Some(userAnswersWithEmail))
         .overrides(
           bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[VatReturnSalesService].toInstance(vatReturnSalesService)
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
         ).build()
 
       val vatOnSales = arbitrary[BigDecimal].sample.value
@@ -74,7 +77,52 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val vatOwed = currencyFormat(vatOnSales)
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(period, returnReference, vatOwed, registration.contactDetails.emailAddress)(request, messages(app)).toString
+
+        contentAsString(result) mustEqual
+          view(
+            period,
+            returnReference,
+            vatOwed,
+            true,
+            registration.contactDetails.emailAddress
+          )(request, messages(app)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET without email confirmation" in {
+      val userAnswersWithoutEmail =
+        emptyUserAnswers.copy().set(EmailConfirmationQuery, false).success.value
+
+      val app = applicationBuilder(Some(userAnswersWithoutEmail))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+        ).build()
+
+      val vatOnSales = arbitrary[BigDecimal].sample.value
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn vatOnSales
+
+      running(app) {
+        val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+
+        val result = route(app, request).value
+
+        val view = app.injector.instanceOf[ReturnSubmittedView]
+        val returnReference = ReturnReference(vrn, period)
+        val vatOwed = currencyFormat(vatOnSales)
+
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual
+          view(
+            period,
+            returnReference,
+            vatOwed,
+            false,
+            registration.contactDetails.emailAddress
+          )(request, messages(app)).toString
       }
     }
 

@@ -15,11 +15,16 @@
 *@
 
 @this(
-        layout: templates.Layout,
-        govukButton: GovukButton
+    layout: templates.Layout,
+    govukButton: GovukButton
 )
 
-@(period: Period, returnReference: ReturnReference, vatOwed: String, email: String)(implicit request: Request[_], messages: Messages)
+@(period: Period,
+  returnReference: ReturnReference,
+  vatOwed: String,
+  showEmailConfirmation: Boolean,
+  email: String
+)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {
     <div class="grid-row column-two-thirds" id="submitted">
@@ -30,7 +35,9 @@
             </div>
         </div>
 
-        <p class="govuk-body">@messages("returnSubmitted.sentConfirmation", HtmlFormat.escape(email))</p>
+        @if(showEmailConfirmation) {
+            <p class="govuk-body">@Html(messages("returnSubmitted.sentConfirmation", email))</p>
+        }
 
         <h2 class="govuk-heading-m">@messages("returnSubmitted.payVatOwed")</h2>
 

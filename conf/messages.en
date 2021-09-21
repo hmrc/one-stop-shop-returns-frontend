@@ -184,7 +184,7 @@ checkYourAnswers.businessVrn.checkYourAnswersLabel = UK VAT registration number
 checkYourAnswers.returnPeriod.checkYourAnswersLabel = Return period
 checkYourAnswers.salesFromNi.heading = Sales from Northern Ireland to EU countries
 checkYourAnswers.salesFromEU.heading = Sales from EU countries to other EU countries
-checkYourAnswers.vatOwedToEuCountries.heading = Vat owed to EU countries
+checkYourAnswers.vatOwedToEuCountries.heading = VAT owed to EU countries
 checkYourAnswers.allSales.heading = All sales
 checkYourAnswers.netValueOfSales.checkYourAnswersLabel = Total sales excluding VAT
 checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT owed
@@ -203,7 +203,7 @@ salesFromEuList.addAnother = Add sales from another EU country?
 returnSubmitted.title = Return submitted
 returnSubmitted.heading = Return submitted
 returnSubmitted.reference = Your return reference is
-returnSubmitted.sentConfirmation = We have sent a confirmation of your return to {0}
+returnSubmitted.sentConfirmation = We have sent a confirmation of your return to <br><span class="govuk-body govuk-!-font-weight-bold">{0}</span>.
 returnSubmitted.payVatOwed = Pay VAT owed
 returnSubmitted.payVatOwed.p1 = For {0}, you owe
 returnSubmitted.payVatOwed.p2 = You can pay by corporate card or bank transfer.
