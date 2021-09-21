@@ -114,6 +114,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val view = app.injector.instanceOf[ReturnSubmittedView]
         val returnReference = ReturnReference(vrn, period)
         val vatOwed = currencyFormat(vatOnSales)
+        val displayPayNow = vatOnSales > 0
 
         status(result) mustEqual OK
 
@@ -123,7 +124,8 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             returnReference,
             vatOwed,
             false,
-            registration.contactDetails.emailAddress
+            registration.contactDetails.emailAddress,
+            displayPayNow
           )(request, messages(app)).toString
       }
     }
