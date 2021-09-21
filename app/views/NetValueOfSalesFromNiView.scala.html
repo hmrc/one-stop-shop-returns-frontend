@@ -31,10 +31,10 @@
                     caption = messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
                 )
             )
-            .asNumeric()
             .withWidth(Fixed10)
             .withCssClass("govuk-currency-input__inner__input")
             .withPrefix(PrefixOrSuffix(content = Text("£")))
+            .withHint(HintViewModel(messages("netValueOfSalesFromNi.hint")))
         )
 
         @govukButton(

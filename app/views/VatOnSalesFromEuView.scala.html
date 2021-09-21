@@ -40,7 +40,7 @@
             RadiosViewModel(
                 field  = form("choice"),
                 legend = HmrcPageHeadingLegend(
-                    content = HtmlContent(messages("vatOnSalesFromEu.heading", currencyFormat(netSales), vatRate.rateForDisplay)).asHtml.toString,
+                    content = HtmlContent(messages("vatOnSalesFromEu.heading", currencyFormat(netSales), vatRate.rateForDisplay)),
                     caption = messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
                     ),
                 items = Seq(
@@ -59,10 +59,10 @@
                                     field = form("amount"),
                                     label = LabelViewModel(messages("vatOnSalesFromEu.amount"))
                                 )
-                                .asNumeric()
                                 .withWidth(Fixed10)
                                 .withCssClass("govuk-currency-input__inner__input")
                                 .withPrefix(PrefixOrSuffix(content = Text("£")))
+                                .withHint(HintViewModel(messages("vatOnSalesFromNi.hint")))
                             ).toString
                         ))
                     )
