@@ -107,7 +107,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .set(SoldGoodsFromNiPage, false).success.value
             .set(SoldGoodsFromEuPage, false).success.value
 
-//        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(EMAIL_ACCEPTED))
@@ -115,13 +114,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         val app =
           applicationBuilder(Some(answers))
             .overrides(
-//              bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[EmailService].toInstance(emailService)
             ).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period).url)
           val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
