@@ -27,7 +27,7 @@ class NetValueOfSalesFromEuFormProvider @Inject() extends Mappings {
 
   def apply(vatRate: VatRate): Form[BigDecimal] =
     Form(
-      "value" -> numeric(
+      "value" -> currency(
         "netValueOfSalesFromEu.error.required",
         "netValueOfSalesFromEu.error.wholeNumber",
         "netValueOfSalesFromEu.error.nonNumeric",

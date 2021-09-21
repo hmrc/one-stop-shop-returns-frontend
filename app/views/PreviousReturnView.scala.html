@@ -24,12 +24,10 @@
     Some(vatReturn.period.displayText)
 )) {
 
-    <h1 class="govuk-heading-xl">
-    @headingWithCaption(
-        vatReturn.period.displayText,
-        messages("previousReturn.title")
-    ).asHtml
-    </h1>
+    <header class="hmrc-page-heading">
+        <h1 class="govuk-heading-xl">@vatReturn.period.displayText</h1>
+        <p class="govuk-caption-xl hmrc-caption-xl">@messages("previousReturn.title")</p>
+    </header>
 
     <h2 class="govuk-heading-l">@messages("previousReturn.summary.title")</h2>
 

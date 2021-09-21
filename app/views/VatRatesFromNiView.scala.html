@@ -1,3 +1,5 @@
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
+
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
@@ -24,12 +26,10 @@
             CheckboxesViewModel(
                 form   = form,
                 name   = "value",
-                legend = LegendViewModel(
-                    headingWithCaption(
-                        messages("vatRatesFromNi.heading"),
-                        messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
-                    )
-                ).asPageHeading(),
+                legend = HmrcPageHeadingLegend(
+                    content = messages("vatRatesFromNi.heading"),
+                    caption = messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
+                ),
                 items  = checkboxItems
             ).withHint(HintViewModel(messages("vatRatesFromNi.hint")))
         )

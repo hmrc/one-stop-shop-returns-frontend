@@ -1,4 +1,4 @@
-@import viewmodels.InputWidth._
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLabel
 @import viewmodels.InputWidth
 
 @this(
@@ -24,12 +24,10 @@
             SelectViewModel(
                 field = form("value"),
                 items = if(isOnlineMarketPlace) Country.euCountryWithNISelectItems else Country.euCountrySelectItems,
-                label = LabelViewModel(
-                    headingWithCaption(
-                        messages(if(isOnlineMarketPlace) { "countryOfConsumptionFromNi.heading.not.eu" } else { "countryOfConsumptionFromNi.heading"}),
-                        period.displayText
-                    )
-                ).asPageHeading()
+                label = HmrcPageHeadingLabel(
+                    content = messages(if(isOnlineMarketPlace) { "countryOfConsumptionFromNi.heading.not.eu" } else { "countryOfConsumptionFromNi.heading"}),
+                    caption = period.displayText
+                )
             )
             .withCssClass(InputWidth.Fixed20.toString)
             .withCssClass("autocomplete")

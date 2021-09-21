@@ -22,9 +22,10 @@
             SelectViewModel(
                 field = form("value"),
                 items = Country.euCountrySelectItems,
-                label = LabelViewModel(
-                    headingWithCaption(messages("countryOfSaleFromEu.heading"), period.displayText)
-                ).asPageHeading()
+                label = HmrcPageHeadingLabel(
+                    content = messages("countryOfSaleFromEu.heading"),
+                    caption = period.displayText
+                )
             )
             .withCssClass(Fixed20.toString)
             .withCssClass("autocomplete")

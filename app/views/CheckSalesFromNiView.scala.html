@@ -32,12 +32,10 @@
 
     @formHelper(action = routes.CheckSalesFromNiController.onSubmit(mode, period, index)) {
 
-        <h1 class="govuk-heading-xl">
-            @headingWithCaption(
-                messages("checkSalesFromNi.heading"),
-                messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
-            ).asHtml
-        </h1>
+        <header class="hmrc-page-heading">
+            <h1 class="govuk-heading-xl">@messages("checkSalesFromNi.heading")</h1>
+            <p class="govuk-caption-xl hmrc-caption-xl">@messages("caption.fromNi.periodAndCountry", period.displayText, country.name)</p>
+        </header>
 
         @govukSummaryList(mainList)
 

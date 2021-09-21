@@ -33,7 +33,7 @@ class VatOnSalesFromNiFormProvider @Inject()(vatRateService: VatRateService) ext
     Form(
       mapping(
         "choice" -> enumerable[VatOnSalesChoice]("vatOnSalesFromNi.choice.error.required"),
-        "amount" -> mandatoryIfEqual("choice", VatOnSalesChoice.NonStandard.toString, numeric(
+        "amount" -> mandatoryIfEqual("choice", VatOnSalesChoice.NonStandard.toString, currency(
           "vatOnSalesFromNi.amount.error.required",
           "vatOnSalesFromNi.amount.error.decimalFormat",
           "vatOnSalesFromNi.amount.error.nonNumeric"
