@@ -207,6 +207,7 @@ returnSubmitted.title = Return submitted
 returnSubmitted.heading = Return submitted
 returnSubmitted.reference = Your return reference is
 returnSubmitted.sentConfirmation = We have sent a confirmation of your return to <br><span class="govuk-body govuk-!-font-weight-bold">{0}</span>.
+returnSubmitted.noVatOwed = You do not owe any VAT for the {0} period.
 returnSubmitted.payVatOwed = Pay VAT owed
 returnSubmitted.payVatOwed.p1 = For {0}, you owe
 returnSubmitted.payVatOwed.p2 = You can pay by corporate card or bank transfer.
