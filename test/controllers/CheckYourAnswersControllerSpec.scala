@@ -19,13 +19,12 @@ package controllers
 import base.SpecBase
 import cats.data.Validated.Valid
 import connectors.VatReturnConnector
-import models.Quarter.Q3
-import models.audit.{ReturnsAuditModel, SubmissionResult}
+import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.DataRequest
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
-import models.{Country, NormalMode, Period, ReturnReference, TotalVatToCountry}
+import models.{Country, NormalMode, TotalVatToCountry}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -51,7 +50,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val auditService = mock[AuditService]
   private val salesAtVatRateService = mock[SalesAtVatRateService]
   private val emailService =  mock[EmailService]
-
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector, vatReturnService, auditService, salesAtVatRateService, emailService)
@@ -157,6 +155,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val expectedAuditEvent = ReturnsAuditModel.build(
             vatReturnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
           )
+          val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, vatReturn.reference, vatReturn.paymentReference)
 
           val userAnswersWithEmailConfirmation = completeUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
           
@@ -164,6 +163,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswersWithEmailConfirmation).url
 
           verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+          verify(auditService, times(1)).audit(eqTo(expectedAuditEventForDataEntry))(any(), any())
           verify(emailService, times(1))
             .sendConfirmationEmail(eqTo(registration.contactDetails.fullName),
               eqTo(registration.registeredCompanyName),
