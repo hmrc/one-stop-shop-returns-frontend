@@ -1,3 +1,4 @@
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLabel
 @import viewmodels.InputWidth._
 
 @this(
@@ -25,17 +26,15 @@
         @govukInput(
             InputViewModel(
                 field = form("value"),
-                label = LabelViewModel(
-                    headingWithCaption(
-                        messages("netValueOfSalesFromNi.heading", vatRate.rateForDisplay),
-                        messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
-                    )
-                ).asPageHeading()
+                label = HmrcPageHeadingLabel(
+                    content = messages("netValueOfSalesFromNi.heading", vatRate.rateForDisplay),
+                    caption = messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
+                )
             )
-            .asNumeric()
             .withWidth(Fixed10)
             .withCssClass("govuk-currency-input__inner__input")
             .withPrefix(PrefixOrSuffix(content = Text("£")))
+            .withHint(HintViewModel(messages("netValueOfSalesFromNi.hint")))
         )
 
         @govukButton(

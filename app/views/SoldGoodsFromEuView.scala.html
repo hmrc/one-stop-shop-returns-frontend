@@ -19,9 +19,10 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(
-                    headingWithCaption(messages("soldGoodsFromEu.heading"), period.displayText)
-                ).asPageHeading()
+                legend = HmrcPageHeadingLegend(
+                    content = messages("soldGoodsFromEu.heading"),
+                    caption = period.displayText
+                )
             )
         )
 

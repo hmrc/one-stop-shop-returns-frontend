@@ -1,5 +1,3 @@
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
-@import viewmodels.LegendSize
 @import models.domain.VatReturn
 @import viewmodels.TitledSummaryList
 
@@ -16,7 +14,8 @@
         mainList: SummaryList,
         niSalesList: Map[String, Seq[TitledSummaryList]],
         euSalesList: Map[String, Seq[TitledSummaryList]],
-        totalSalesList: TitledSummaryList
+        totalSalesList: TitledSummaryList,
+        displayPayNow: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(
@@ -24,20 +23,20 @@
     Some(vatReturn.period.displayText)
 )) {
 
-    <h1 class="govuk-heading-xl">
-    @headingWithCaption(
-        vatReturn.period.displayText,
-        messages("previousReturn.title")
-    ).asHtml
-    </h1>
+    <header class="hmrc-page-heading">
+        <h1 class="govuk-heading-xl">@vatReturn.period.displayText</h1>
+        <p class="govuk-caption-xl hmrc-caption-xl">@messages("previousReturn.title")</p>
+    </header>
 
     <h2 class="govuk-heading-l">@messages("previousReturn.summary.title")</h2>
 
     @govukSummaryList(mainList)
 
-    <p class="govuk-!-margin-bottom-9">
-        <button class="govuk-button">@messages("previousReturn.payNow")</button>
-    </p>
+    @if(displayPayNow) {
+        <p class="govuk-!-margin-bottom-9">
+            <button class="govuk-button">@messages("previousReturn.payNow")</button>
+        </p>
+    }
 
     <h2 class="govuk-heading-l">@messages("previousReturn.details.title")</h2>
 

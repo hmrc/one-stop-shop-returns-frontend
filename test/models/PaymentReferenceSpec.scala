@@ -29,20 +29,20 @@ class PaymentReferenceSpec extends AnyFreeSpec with Matchers with ScalaCheckProp
 
   ".fromString" - {
 
-    "must read from a string in the format XI<vrn><quarter><two-digit-year>" in {
+    "must read from a string in the format NI<vrn><quarter><two-digit-year>" in {
 
       val genYear = Gen.choose(10, 99)
       forAll(arbitrary[Vrn], genYear, arbitrary[Quarter]) {
         case (vrn, year, quarter) =>
 
-          val string = s"XI$vrn${quarter.toString}$year"
+          val string = s"NI$vrn${quarter.toString}$year"
           PaymentReference.fromString(string) mustBe defined
       }
     }
 
-    "must not read from a string that isn't in the format XI<vrn><quarter><two-digit-year>" in {
+    "must not read from a string that isn't in the format NI<vrn><quarter><two-digit-year>" in {
 
-      val pattern = """XI\d{9}Q[1-4]\d{2}""".r.anchored
+      val pattern = """NI\d{9}Q[1-4]\d{2}""".r.anchored
 
       forAll(arbitrary[String]) {
         string =>

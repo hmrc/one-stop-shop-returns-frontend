@@ -23,12 +23,10 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(
-                    headingWithCaption(
-                        messages("deleteSalesFromEu.heading", country.name),
-                        period.displayText
-                    )
-                ).asPageHeading()
+                legend = HmrcPageHeadingLegend(
+                    content = messages("deleteSalesFromEu.heading", country.name),
+                    caption = period.displayText
+                )
             )
         )
 

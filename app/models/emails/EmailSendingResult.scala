@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package config
+package models.emails
 
-object Constants {
+sealed trait EmailSendingResult
 
-  val maxCurrencyAmount: BigDecimal = 1000000000
-
-  val returnsConfirmationTemplateId = "oss_returns_email_confirmation"
-
+object EmailSendingResult {
+  case object EMAIL_ACCEPTED   extends EmailSendingResult
+  case object EMAIL_NOT_SENT   extends EmailSendingResult
+  case object EMAIL_UNSENDABLE extends EmailSendingResult
 }

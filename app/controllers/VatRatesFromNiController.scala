@@ -18,10 +18,11 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromNiFormProvider
-import models.{Index, Mode, Period}
+import models.{Index, Mode, Period, VatRate}
+import models.requests.DataRequest
 import pages.VatRatesFromNiPage
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
@@ -31,30 +32,41 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class VatRatesFromNiController @Inject()(
-                                        cc: AuthenticatedControllerComponents,
-                                        formProvider: VatRatesFromNiFormProvider,
-                                        view: VatRatesFromNiView,
-                                        vatRateService: VatRateService
-                                      )(implicit ec: ExecutionContext)
+                                          cc: AuthenticatedControllerComponents,
+                                          formProvider: VatRatesFromNiFormProvider,
+                                          view: VatRatesFromNiView,
+                                          vatRateService: VatRateService
+                                        )(implicit ec: ExecutionContext)
   extends FrontendBaseController with SalesFromNiBaseController with VatRateBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
-      getCountry(index) {
+      getCountryAsync(index) {
         country =>
 
           val vatRates = vatRateService.vatRates(period, country)
-          val form     = formProvider(vatRates)
+          val form = formProvider(vatRates)
+          val currentValue = request.userAnswers.get(VatRatesFromNiPage(index))
 
-          val preparedForm = request.userAnswers.get(VatRatesFromNiPage(index)) match {
+          val preparedForm = currentValue match {
             case None => form
             case Some(value) =>
               form.fill(value)
           }
 
-          Ok(view(preparedForm, mode, period, index, country, checkboxItems(vatRates)))
+          vatRates.size match {
+            case 1 =>
+              currentValue match {
+                case Some(_) =>
+                  Redirect(VatRatesFromNiPage(index).navigate(mode, request.userAnswers)).toFuture
+                case _ =>
+                  updateAndContinue(mode, index, request, vatRates.toList)
+              }
+            case _ =>
+              Ok(view(preparedForm, mode, period, index, country, checkboxItems(vatRates))).toFuture
+          }
       }
   }
 
@@ -64,18 +76,22 @@ class VatRatesFromNiController @Inject()(
         country =>
 
           val vatRates = vatRateService.vatRates(period, country)
-          val form     = formProvider(vatRates)
+          val form = formProvider(vatRates)
 
           form.bindFromRequest().fold(
             formWithErrors =>
               BadRequest(view(formWithErrors, mode, period, index, country, checkboxItems(vatRates))).toFuture,
 
             value =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromNiPage(index), value))
-                _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(VatRatesFromNiPage(index).navigate(mode, updatedAnswers))
+              updateAndContinue(mode, index, request, value)
           )
       }
+  }
+
+  private def updateAndContinue(mode: Mode, index: Index, request: DataRequest[AnyContent], value: List[VatRate]): Future[Result] = {
+    for {
+      updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromNiPage(index), value))
+      _ <- cc.sessionRepository.set(updatedAnswers)
+    } yield Redirect(VatRatesFromNiPage(index).navigate(mode, updatedAnswers))
   }
 }

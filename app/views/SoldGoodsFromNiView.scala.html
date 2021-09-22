@@ -1,3 +1,5 @@
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
+
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
@@ -19,9 +21,10 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(
-                    headingWithCaption(messages("soldGoodsFromNi.heading"), period.displayText)
-                ).asPageHeading()
+                legend = HmrcPageHeadingLegend(
+                    content = messages("soldGoodsFromNi.heading"),
+                    caption = period.displayText
+                )
             )
         )
 

@@ -116,9 +116,17 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           list = SummaryListViewModel(
             TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales)
           ))
+        val displayPayNow = true
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(vatReturn, summaryList, niSalesList, euSalesList, totalSalesList)(request, implicitly).toString
+        contentAsString(result) mustEqual view(
+          vatReturn,
+          summaryList,
+          niSalesList,
+          euSalesList,
+          totalSalesList,
+          displayPayNow
+        )(request, implicitly).toString
       }
     }
 

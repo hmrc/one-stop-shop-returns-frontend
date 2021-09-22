@@ -16,10 +16,13 @@
 
 package generators
 
+import models.ReturnReference
+
 import java.time.{Instant, LocalDate, ZoneOffset}
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
+import uk.gov.hmrc.domain.Vrn
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -123,4 +126,37 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
         Instant.ofEpochMilli(millis).atOffset(ZoneOffset.UTC).toLocalDate
     }
   }
+
+  def safeInputs: Gen[Char] = Gen.oneOf(
+    Gen.alphaNumChar,
+    Gen.const('"'),
+    Gen.const('\''),
+    Gen.const('.'),
+    Gen.const(','),
+    Gen.const('/'),
+    Gen.const('-'),
+    Gen.const('_'),
+    Gen.const(' '),
+    Gen.const('&'),
+    Gen.const('’'),
+    Gen.const('('),
+    Gen.const(')'),
+    Gen.const('!'),
+    Gen.oneOf('À' to 'ÿ')
+  )
+
+  def validEmails: Gen[String] = {
+    for {
+      length  <- choose(5, 12)
+      user    <- listOfN(length, Gen.alphaNumChar)
+      domain  <- listOfN(length, Gen.alphaNumChar)
+      suffix  <- Gen.oneOf(Seq(".com", ".co.uk", ".gov.uk"))
+    } yield s"${user.mkString}@${domain.mkString}${suffix.mkString}"
+  }
+
+  def safeInputsWithMaxLength(maxLength: Int): Gen[String] = (for {
+    length <- choose(1, maxLength)
+    chars  <- listOfN(length, safeInputs)
+  } yield chars.mkString).suchThat(_.trim.nonEmpty)
+
 }

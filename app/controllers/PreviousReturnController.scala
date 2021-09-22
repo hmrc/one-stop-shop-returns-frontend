@@ -54,13 +54,15 @@ class PreviousReturnController @Inject()(
           val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn)
           val mainList =
             SummaryListViewModel(rows = PreviousReturnSummary.rows(vatReturn, vatOwed))
+          val displayPayNow = vatOwed > 0
 
           Ok(view(
             vatReturn,
             mainList,
             SaleAtVatRateSummary.getAllNiSales(vatReturn),
             SaleAtVatRateSummary.getAllEuSales(vatReturn),
-            getAllSales(vatReturn, vatOwed)
+            getAllSales(vatReturn, vatOwed),
+            displayPayNow
           ))
         case Left(NotFoundResponse) =>
           Redirect(routes.YourAccountController.onPageLoad())

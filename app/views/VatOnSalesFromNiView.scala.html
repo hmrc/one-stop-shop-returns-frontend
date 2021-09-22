@@ -1,3 +1,4 @@
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
 @import utils.CurrencyFormatter.currencyFormat
 @import viewmodels.InputWidth._
 
@@ -37,11 +38,10 @@
         @govukRadios(
             RadiosViewModel(
                 field  = form("choice"),
-                legend = LegendViewModel(
-                    headingWithCaption(
-                        HtmlContent(messages("vatOnSalesFromNi.heading", currencyFormat(netSales), vatRate.rateForDisplay)).asHtml.toString,
-                        messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
-                    )).asPageHeading(),
+                legend = HmrcPageHeadingLegend(
+                       content = HtmlContent(messages("vatOnSalesFromNi.heading", currencyFormat(netSales), vatRate.rateForDisplay)),
+                       caption = messages("caption.fromNi.periodAndCountry", period.displayText, country.name)
+                    ),
                 items = Seq(
                     RadioItem(
                         content = HtmlContent(Html(currencyFormat(standardVat))),
@@ -58,10 +58,10 @@
                                     field = form("amount"),
                                     label = LabelViewModel(messages("vatOnSalesFromNi.amount"))
                                 )
-                                .asNumeric()
                                 .withWidth(Fixed10)
                                 .withCssClass("govuk-currency-input__inner__input")
                                 .withPrefix(PrefixOrSuffix(content = Text("£")))
+                                .withHint(HintViewModel(messages("vatOnSalesFromEu.hint")))
                             ).toString
                         ))
                     )

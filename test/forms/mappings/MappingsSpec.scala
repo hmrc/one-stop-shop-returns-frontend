@@ -130,6 +130,16 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
       result.get mustEqual 1
     }
 
+    "must not bind a decimal number" in {
+      val result = testForm.bind(Map("value" -> "1.1"))
+      result.errors must contain only FormError("value", "error.wholeNumber")
+    }
+
+    "must not bind a non-numeric number" in {
+      val result = testForm.bind(Map("value" -> "abc"))
+      result.errors must contain only FormError("value", "error.nonNumeric")
+    }
+
     "must not bind an empty value" in {
       val result = testForm.bind(Map("value" -> ""))
       result.errors must contain(FormError("value", "error.required"))
@@ -165,6 +175,54 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
     "must not bind an empty map" in {
       val result = testForm.bind(Map.empty[String, String])
       result.errors must contain(FormError("value", "error.required"))
+    }
+  }
+
+  "currency" - {
+
+    val testForm: Form[BigDecimal] =
+      Form(
+        "value" -> currency(decimalCount = 2)
+      )
+
+    "must bind a valid integer" in {
+      val result = testForm.bind(Map("value" -> "1"))
+      result.get mustEqual 1
+    }
+
+    "must bind a valid decimal with up to the specified number of decimal places" in {
+      val result = testForm.bind(Map("value" -> "1.23"))
+      result.get mustEqual 1.23
+    }
+
+    "must bind a valid number with spaces, commas and `£` characters" in {
+      val result = testForm.bind(Map("value" -> "£ 1,234 . 01"))
+      result.get mustEqual 1234.01
+    }
+
+    "must not bind values with non-numeric characters except commas, spaces and `£`s" in {
+      val result = testForm.bind(Map("value" -> "abc"))
+      result.errors must contain only FormError("value", "error.nonNumeric")
+    }
+
+    "must not bind an empty value" in {
+      val result = testForm.bind(Map("value" -> ""))
+      result.errors must contain(FormError("value", "error.required"))
+    }
+
+    "must not bind an empty map" in {
+      val result = testForm.bind(Map.empty[String, String])
+      result.errors must contain(FormError("value", "error.required"))
+    }
+
+    "must not bind a number with more than the specified number of decimal places" in {
+      val result = testForm.bind(Map("value" -> "1.234"))
+      result.errors must contain only FormError("value", "error.invalidNumeric")
+    }
+
+    "must unbind a valid value" in {
+      val result = testForm.fill(1)
+      result.apply("value").value.value mustEqual "1"
     }
   }
 }
