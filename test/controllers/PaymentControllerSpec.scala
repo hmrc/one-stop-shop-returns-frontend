@@ -18,7 +18,8 @@ package controllers
 
 import base.SpecBase
 import connectors.PaymentConnector
-import models.requests.{PaymentRequest, PaymentResponse}
+import models.requests.{PaymentPeriod, PaymentRequest, PaymentResponse}
+import models.responses.InvalidJson
 import org.mockito.ArgumentMatchers.{any, anyLong}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -40,7 +41,7 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
       val amount = 20000000
       val paymentRequest = PaymentRequest(
         registration.vrn,
-        completeUserAnswers.period,
+        PaymentPeriod(completeUserAnswers.period),
         amount
       )
 
@@ -60,6 +61,35 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value must endWith("nextUrl")
+      }
+    }
+
+    "should handle a failed request to pay-api" in {
+      val amount = 20000000
+      val paymentRequest = PaymentRequest(
+        registration.vrn,
+        PaymentPeriod(completeUserAnswers.period),
+        amount
+      )
+
+      when(paymentService.buildPaymentRequest(any(), any(), anyLong()))
+        .thenReturn(paymentRequest)
+      when(paymentConnector.submit(any())(any()))
+        .thenReturn(Future.successful(Left(InvalidJson)))
+
+      val application =
+        applicationBuilder(userAnswers = Some(completeUserAnswers))
+          .overrides(bind[PaymentConnector].toInstance(paymentConnector))
+          .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.PaymentController.onPageLoad(period, amount).url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value must endWith("/pay/service-unavailable")
       }
     }
   }

@@ -16,17 +16,39 @@
 
 package models.requests
 
-import models.Period
+import models.{Period, Quarter}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 case class PaymentRequest(
                            vrn: Vrn,
-                           period: Period,
+                           period: PaymentPeriod,
                            amountInPence: Long
                          )
 
 object PaymentRequest {
 
   implicit val format: OFormat[PaymentRequest] = Json.format[PaymentRequest]
+}
+
+case class PaymentPeriod(
+                          year: Int,
+                          quarter: String
+                        )
+
+object PaymentPeriod {
+
+  def apply(period: Period): PaymentPeriod = {
+    val year    = period.year
+    val quarter = period.quarter match {
+      case Quarter.Q1 => "JanuaryToMarch"
+      case Quarter.Q2 => "AprilToJune"
+      case Quarter.Q3 => "JulyToSeptember"
+      case Quarter.Q4 => "OctoberToDecember"
+    }
+
+    PaymentPeriod(year, quarter)
+  }
+
+  implicit val format: OFormat[PaymentPeriod] = Json.format[PaymentPeriod]
 }

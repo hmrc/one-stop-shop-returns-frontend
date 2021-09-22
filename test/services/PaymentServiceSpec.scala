@@ -19,7 +19,7 @@ package services
 import base.SpecBase
 import generators.ModelGenerators
 import org.scalacheck.Arbitrary.arbitrary
-import models.requests.PaymentRequest
+import models.requests.{PaymentPeriod, PaymentRequest}
 import uk.gov.hmrc.domain.Vrn
 
 class PaymentServiceSpec extends SpecBase with ModelGenerators {
@@ -33,7 +33,7 @@ class PaymentServiceSpec extends SpecBase with ModelGenerators {
 
     "should return correct PaymentRequest with correct VRN and Period and amount" in {
       val vrn = arbitrary[Vrn].sample.value
-      val expected = PaymentRequest(vrn, completeUserAnswers.period, amountInPence)
+      val expected = PaymentRequest(vrn, PaymentPeriod(completeUserAnswers.period), amountInPence)
 
       service.buildPaymentRequest(vrn, completeUserAnswers.period, amount) mustBe expected
     }

@@ -17,7 +17,7 @@
 package services
 
 import models.Period
-import models.requests.PaymentRequest
+import models.requests.{PaymentPeriod, PaymentRequest}
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
@@ -30,7 +30,7 @@ class PaymentService @Inject()() {
 
     PaymentRequest(
       vrn,
-      period,
+      PaymentPeriod(period),
       amountInPence
     )
   }
