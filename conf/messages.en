@@ -65,8 +65,11 @@ caption.fromEu.periodAndCountries = {0}: {1} to {2}
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
-notRegistered.title = notRegistered
-notRegistered.heading = notRegistered
+notRegistered.title = You cannot use this service
+notRegistered.heading = You cannot use this service
+notRegistered.label = To submit a return, you must sign in with the same Government Gateway user ID you used when you registered for the VAT One Stop Shop.
+notRegistered.subHeading = If you have not registered
+notRegistered.registerLink = You can <a href="https://www.gov.uk/guidance/register-to-report-and-pay-vat-on-distance-sales-of-goods-from-northern-ireland-to-the-eu">register for the VAT One Stop Shop.</a>
 
 startReturn.title = Do you want to start your return for {0}?
 startReturn.heading = Do you want to start your return for {0}?
@@ -82,9 +85,9 @@ countryOfConsumptionFromNi.error.length = Country must be 100 characters or less
 countryOfConsumptionFromNi.change.hidden = the country you sold to from Northern Ireland
 countryOfConsumptionFromNi.error.duplicate = You selected this country already. Select a different one.
 
-deleteSalesFromNi.title = Are you sure you want to remove the sales from Northern Ireland to {0}?
-deleteSalesFromNi.heading = Are you sure you want to remove the sales from Northern Ireland to {0}?
-deleteSalesFromNi.error.required = Select yes if you are sure you want to remove the sales from Northern Ireland to {0}
+deleteSalesFromNi.title = Are you sure you want to remove all the sales information from Northern Ireland to {0}?
+deleteSalesFromNi.heading = Are you sure you want to remove all the sales information from Northern Ireland to {0}?
+deleteSalesFromNi.error.required = Select yes if you are sure you want to remove all the sales information from Northern Ireland to {0}
 
 netValueOfSalesFromEu.checkYourAnswersLabel = Sales excluding VAT
 vatFromEu.checkYourAnswersLabel = VAT charged
@@ -137,13 +140,13 @@ countryOfSaleFromEu.error.required = Enter the EU country you sold goods from
 countryOfSaleFromEu.change.hidden = which EU country you sold goods from
 countryOfSaleFromEu.error.duplicate = You selected this country already. Select a different one.
 
-deleteSalesFromEu.title = Are you sure you want to remove the sales from {0}?
-deleteSalesFromEu.heading = Are you sure you want to remove the sales from {0}?
-deleteSalesFromEu.error.required = Select yes if you want to remove the sales from {0}
+deleteSalesFromEu.title = Are you sure you want to remove all the sales information for {0}?
+deleteSalesFromEu.heading = Are you sure you want to remove all the sales information for {0}?
+deleteSalesFromEu.error.required = Select yes if you want to remove all the sales information from {0}
 
-deleteSalesToEu.title = Are you sure you want to remove the sales from {0} to {1}?
-deleteSalesToEu.heading = Are you sure you want to remove the sales from {0} to {1}?
-deleteSalesToEu.error.required = Select yes if you are sure you want to remove the sales from {0} to {1}
+deleteSalesToEu.title = Are you sure you want to remove all the sales information from {0} to {1}?
+deleteSalesToEu.heading = Are you sure you want to remove all the sales information from {0} to {1}?
+deleteSalesToEu.error.required = Select yes if you are sure you want to remove all the sales information from {0} to {1}
 
 soldGoodsFromEu.title = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
 soldGoodsFromEu.heading = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
@@ -204,6 +207,7 @@ returnSubmitted.title = Return submitted
 returnSubmitted.heading = Return submitted
 returnSubmitted.reference = Your return reference is
 returnSubmitted.sentConfirmation = We have sent a confirmation of your return to <br><span class="govuk-body govuk-!-font-weight-bold">{0}</span>.
+returnSubmitted.noVatOwed = You do not owe any VAT for the {0} period.
 returnSubmitted.payVatOwed = Pay VAT owed
 returnSubmitted.payVatOwed.p1 = For {0}, you owe
 returnSubmitted.payVatOwed.p2 = You can pay by corporate card or bank transfer.
@@ -284,7 +288,7 @@ vatOnSalesFromEu.amount.error.outOfRange = The amount of VAT charged must be bet
 vatOnSalesFromEu.change.hidden = how much VAT you charged on sales
 vatOnSalesFromEu.hint = For example, £600 or £193.54.
 
-noOtherPeriodsAvailable.title = You cannot start returns for other periods yet
-noOtherPeriodsAvailable.heading = You cannot start returns for other periods yet
-noOtherPeriodsAvailable.label = You can only start returns for periods that have ended.
+noOtherPeriodsAvailable.title = You cannot pay for other VAT One Stop Shop periods
+noOtherPeriodsAvailable.heading = You cannot pay for other VAT One Stop Shop periods
+noOtherPeriodsAvailable.label = You can only pay for periods that have ended.
 noOtherPeriodsAvailable.submit = Back to your account
