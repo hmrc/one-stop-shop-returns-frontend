@@ -8,4 +8,10 @@
 @layout(pageTitle = titleNoForm(messages("notRegistered.title"))) {
 
     <h1 class="govuk-heading-xl">@messages("notRegistered.heading")</h1>
+
+    <p class="govuk-body">@messages("notRegistered.label")</p>
+
+    <h2 class="govuk-heading-m">@messages("notRegistered.subHeading")</h2>
+
+    <p class="govuk-body">@Html(messages("notRegistered.registerLink"))</p>
 }
