@@ -258,7 +258,7 @@ vatOnSalesFromNi.amount.error.nonNumeric = Enter the amount of VAT charged using
 vatOnSalesFromNi.amount.error.required = Enter the amount of VAT charged
 vatOnSalesFromNi.amount.error.decimalFormat = Enter the amount of VAT charged up to two decimal places
 vatOnSalesFromNi.amount.error.outOfRange = The amount of VAT charged must be between {0} and {1}
-vatOnSalesFromNi.change.hidden = how much VAT you charged on sales
+vatOnSalesFromNi.change.hidden = how much VAT you charged on sales for {0} VAT rate
 vatOnSalesFromNi.hint = For example, £600 or £193.54.
 
 netValueOfSalesFromEu.title = What were your sales at {0} rate excluding VAT?
@@ -281,7 +281,7 @@ vatOnSalesFromEu.amount.error.nonNumeric = Enter the amount of VAT charged using
 vatOnSalesFromEu.amount.error.required = Enter the amount of VAT charged
 vatOnSalesFromEu.amount.error.decimalFormat = Enter the amount of VAT charged up to two decimal places
 vatOnSalesFromEu.amount.error.outOfRange = The amount of VAT charged must be between {0} and {1}
-vatOnSalesFromEu.change.hidden = how much VAT you charged on sales
+vatOnSalesFromEu.change.hidden = how much VAT you charged on sales for {0} VAT rate
 vatOnSalesFromEu.hint = For example, £600 or £193.54.
 
 noOtherPeriodsAvailable.title = You cannot start returns for other periods yet

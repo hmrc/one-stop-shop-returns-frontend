@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, Index, UserAnswers}
+import models.{CheckMode, Index, UserAnswers, VatRate}
 import pages.VatOnSalesFromEuPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
@@ -28,7 +28,7 @@ import viewmodels.implicits._
 
 object VatOnSalesFromEuSummary  {
 
-  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index, vatRate: VatRate)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).map {
       answer =>
 
@@ -40,7 +40,7 @@ object VatOnSalesFromEuSummary  {
               "site.change",
               routes.VatOnSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
             )
-            .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden"))
+            .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden", vatRate.rateForDisplay))
           )
         )
     }
