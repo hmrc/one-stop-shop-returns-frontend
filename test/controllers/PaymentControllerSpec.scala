@@ -56,7 +56,7 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
           .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.PaymentController.onPageLoad(period, amount).url)
+        val request = FakeRequest(GET, routes.PaymentController.makePayment(period, amount).url)
 
         val result = route(application, request).value
 
@@ -84,7 +84,7 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
           .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.PaymentController.onPageLoad(period, amount).url)
+        val request = FakeRequest(GET, routes.PaymentController.makePayment(period, amount).url)
 
         val result = route(application, request).value
 
