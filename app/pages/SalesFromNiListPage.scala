@@ -34,7 +34,12 @@ case object SalesFromNiListPage extends Page {
         case NormalMode =>
           routes.SoldGoodsFromEuController.onPageLoad(mode, answers.period)
         case CheckMode =>
-          routes.CheckYourAnswersController.onPageLoad(answers.period)
+          answers.get(SoldGoodsFromEuPage) match {
+            case Some(_) =>
+              routes.CheckYourAnswersController.onPageLoad(answers.period)
+            case _ =>
+              routes.SoldGoodsFromEuController.onPageLoad(NormalMode, answers.period)
+          }
       }
     }
 }
