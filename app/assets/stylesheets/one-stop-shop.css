@@ -57,3 +57,10 @@ html[data-useragent*='MSIE 10.0'] .flex-container .tile {
 .tile .tile-body *:last-child {
     margin-bottom: 0;
 }
+
+.govuk-back-link {
+    display: none;
+}
+.js-enabled .govuk-back-link {
+    display: inline-block;
+}
