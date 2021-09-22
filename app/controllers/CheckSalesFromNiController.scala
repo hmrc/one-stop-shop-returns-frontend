@@ -56,7 +56,7 @@ class CheckSalesFromNiController @Inject()(
                   list = SummaryListViewModel(
                     rows = Seq(
                       NetValueOfSalesFromNiSummary.row(request.userAnswers, index, Index(i)),
-                      VatOnSalesFromNiSummary.row(request.userAnswers, index, Index(i))
+                      VatOnSalesFromNiSummary.row(request.userAnswers, index, Index(i), vatRate)
                     ).flatten
                   )
                 )
