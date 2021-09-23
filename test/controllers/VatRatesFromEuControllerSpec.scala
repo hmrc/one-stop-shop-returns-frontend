@@ -38,7 +38,8 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar with VatRa
   private lazy val vatRatesFromEuRoute = routes.VatRatesFromEuController.onPageLoad(NormalMode, period, index, index).url
 
   private val vatRate      = arbitrary[VatRate].sample.value
-  private val vatRates     = List(vatRate)
+  private val vatRate2     = arbitrary[VatRate].sample.value
+  private val vatRates     = List(vatRate, vatRate2)
   private val countryFrom  = arbitrary[Country].sample.value
   private val countryTo    = arbitrary[Country].sample.value
 
@@ -80,6 +81,35 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar with VatRa
       }
     }
 
+    "must skip this page (303 SEE_OTHER) if there is only 1 selection and update user answers" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+      val mockVatRateService    = mock[VatRateService]
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockVatRateService.vatRates(any(), any())) thenReturn List(vatRate)
+
+      val application =
+        applicationBuilder(userAnswers = Some(baseAnswers))
+          .overrides(
+            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[VatRateService].toInstance(mockVatRateService)
+          )
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(GET, vatRatesFromEuRoute)
+
+        val result = route(application, request).value
+        val expectedAnswers = baseAnswers.set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual VatRatesFromEuPage(index, index).navigate(NormalMode, expectedAnswers).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+      }
+    }
+
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswers = baseAnswers.set(VatRatesFromEuPage(index, index), vatRates).success.value
@@ -114,7 +144,7 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar with VatRa
       running(application) {
         val request =
           FakeRequest(POST, vatRatesFromEuRoute)
-            .withFormUrlEncodedBody(("value[0]", vatRate.rate.toString))
+            .withFormUrlEncodedBody(("value[0]", vatRate.rate.toString), ("value[1]", vatRate2.rate.toString))
 
         val result = route(application, request).value
         val expectedAnswers = baseAnswers.set(VatRatesFromEuPage(index, index), vatRates).success.value
