@@ -37,7 +37,7 @@ case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extend
   override def navigateInCheckLoopMode(answers: UserAnswers): Call =
     answers.get(VatRatesFromNiPage(countryIndex)).map {
       _ =>
-        routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex)
+        routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex)
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 
   private def commonNavigate(mode: Mode, answers: UserAnswers): Call = {
