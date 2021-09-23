@@ -125,7 +125,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           niSalesList,
           euSalesList,
           totalSalesList,
-          displayPayNow
+          displayPayNow,
+          (totalVatOnSales * 100).toLong
         )(request, implicitly).toString
       }
     }
