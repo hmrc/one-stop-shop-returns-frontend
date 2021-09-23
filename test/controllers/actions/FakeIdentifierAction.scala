@@ -27,7 +27,7 @@ import utils.FutureSyntax._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeIdentifierAction extends AuthenticatedIdentifierAction(
+class FakeIdentifierAction extends IdentifierAction(
   mock[AuthConnector],
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {

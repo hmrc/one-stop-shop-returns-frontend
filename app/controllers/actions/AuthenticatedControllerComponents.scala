@@ -30,7 +30,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def actionBuilder: DefaultActionBuilder
   def sessionRepository: SessionRepository
-  def identify: AuthenticatedIdentifierAction
+  def identify: IdentifierAction
   def getRegistration: GetRegistrationAction
   def checkReturn: CheckReturnsFilterProvider
   def getData: DataRetrievalActionProvider
@@ -58,7 +58,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                fileMimeTypes: FileMimeTypes,
                                                                executionContext: ExecutionContext,
                                                                sessionRepository: SessionRepository,
-                                                               identify: AuthenticatedIdentifierAction,
+                                                               identify: IdentifierAction,
                                                                getRegistration: GetRegistrationAction,
                                                                checkReturn: CheckReturnsFilterProvider,
                                                                getData: DataRetrievalActionProvider,
