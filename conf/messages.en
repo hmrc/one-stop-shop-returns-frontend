@@ -249,7 +249,7 @@ netValueOfSalesFromNi.error.nonNumeric = Enter your sales excluding VAT using nu
 netValueOfSalesFromNi.error.required = Enter your sales excluding VAT
 netValueOfSalesFromNi.error.wholeNumber = Enter your sales excluding VAT up to two decimal places
 netValueOfSalesFromNi.error.outOfRange = Sales excluding VAT must be between {0} and {1}
-netValueOfSalesFromNi.change.hidden = your sales excluding VAT
+netValueOfSalesFromNi.change.hidden = your sales excluding VAT for {0} VAT rate
 netValueOfSalesFromNi.hint = For example, £600 or £193.54.
 
 vatOnSalesFromNi.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
@@ -272,7 +272,7 @@ netValueOfSalesFromEu.error.nonNumeric = Enter your sales excluding VAT using nu
 netValueOfSalesFromEu.error.required = Enter your sales excluding VAT
 netValueOfSalesFromEu.error.wholeNumber = Enter your sales excluding VAT up to two decimal places
 netValueOfSalesFromEu.error.outOfRange = Sales excluding VAT must be between {0} and {1}
-netValueOfSalesFromEu.change.hidden = your sales excluding VAT
+netValueOfSalesFromEu.change.hidden = your sales excluding VAT for {0} VAT rate
 netValueOfSalesFromEu.hint = For example, £600 or £193.54.
 
 vatOnSalesFromEu.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
