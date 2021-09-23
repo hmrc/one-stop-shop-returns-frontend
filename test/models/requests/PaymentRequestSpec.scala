@@ -25,40 +25,6 @@ class PaymentRequestSpec extends SpecBase {
 
   private val year = 2021
 
-  "PaymentRequest" - {
-    "should return correct PaymentPeriod object" - {
-      "for whole numbers" in {
-        val paymentPeriod = PaymentPeriod(year, "JanuaryToMarch")
-        val amountBigDecimal: BigDecimal = BigDecimal(100)
-        val amountLong: Long = 10000
-
-        val expected = PaymentRequest(vrn, paymentPeriod, amountLong)
-
-        PaymentRequest(vrn, paymentPeriod, amountBigDecimal) mustBe expected
-      }
-
-      "for decimal places" in {
-        val paymentPeriod = PaymentPeriod(year, "JanuaryToMarch")
-        val amountBigDecimal: BigDecimal = BigDecimal(100.12)
-        val amountLong: Long = 10012
-
-        val expected = PaymentRequest(vrn, paymentPeriod, amountLong)
-
-        PaymentRequest(vrn, paymentPeriod, amountBigDecimal) mustBe expected
-      }
-
-      "for all BigDecimals" in {
-        val paymentPeriod = PaymentPeriod(year, "JanuaryToMarch")
-        val amountBigDecimal: BigDecimal = Arbitrary.arbitrary[BigDecimal].sample.value
-        val amountLong: Long = (amountBigDecimal * 100).toLong
-
-        val expected = PaymentRequest(vrn, paymentPeriod, amountLong)
-
-        PaymentRequest(vrn, paymentPeriod, amountBigDecimal) mustBe expected
-      }
-    }
-  }
-
   "PaymentPeriod" - {
     "should return correct PaymentPeriod object" - {
       "for Q1" in {

@@ -39,14 +39,14 @@ class PaymentController @Inject()(
   private val baseUrl = config.get[Service]("microservice.services.pay-api")
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def makePayment(period: Period, amount: Long): Action[AnyContent] =
+  def makePayment(period: Period, amountInPence: Long): Action[AnyContent] =
     cc.authAndGetRegistration.async {
       implicit request => {
         val paymentRequest =
           PaymentRequest(
             request.vrn,
             PaymentPeriod(period),
-            amount
+            amountInPence
           )
 
         paymentConnector.submit(paymentRequest)

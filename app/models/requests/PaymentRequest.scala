@@ -24,12 +24,6 @@ case class PaymentRequest(vrn: Vrn, period: PaymentPeriod, amountInPence: Long)
 
 object PaymentRequest {
 
-  def apply(vrn: Vrn, period: PaymentPeriod, amount: BigDecimal): PaymentRequest = {
-    val amountInPence = (amount * 100).toLong
-
-    PaymentRequest(vrn, period, amountInPence)
-  }
-
   implicit val format: OFormat[PaymentRequest] = Json.format[PaymentRequest]
 }
 
@@ -50,10 +44,4 @@ object PaymentPeriod {
   }
 
   implicit val format: OFormat[PaymentPeriod] = Json.format[PaymentPeriod]
-}
-
-case class Amount(value: BigDecimal)
-
-object Amount {
-
 }

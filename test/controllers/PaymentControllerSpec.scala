@@ -37,12 +37,6 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
 
     "should make request to pay-api successfully" in {
       val amount = 20000000
-      val paymentRequest = PaymentRequest(
-        registration.vrn,
-        PaymentPeriod(completeUserAnswers.period),
-        amount
-      )
-
       when(paymentConnector.submit(any())(any()))
         .thenReturn(Future.successful(Right(PaymentResponse("journeyId", "nextUrl"))))
 
@@ -63,14 +57,7 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
 
     "should handle a failed request to pay-api" in {
       val amount = 20000000
-      val paymentRequest = PaymentRequest(
-        registration.vrn,
-        PaymentPeriod(completeUserAnswers.period),
-        amount
-      )
-
-      when(paymentConnector.submit(any())(any()))
-        .thenReturn(Future.successful(Left(InvalidJson)))
+      when(paymentConnector.submit(any())(any())).thenReturn(Future.successful(Left(InvalidJson)))
 
       val application =
         applicationBuilder(userAnswers = Some(completeUserAnswers))

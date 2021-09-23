@@ -52,6 +52,8 @@ class ReturnSubmittedController @Inject()(
           val email = request.registration.contactDetails.emailAddress
           val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)
           val displayPayNow = vatOwed > 0
+          val amountToPayInPence: Long = (vatOwed * 100).toLong
+
           Ok(view(
             period,
             returnReference,
@@ -59,7 +61,7 @@ class ReturnSubmittedController @Inject()(
             showEmailConfirmation.get,
             email,
             displayPayNow,
-            vatOwed
+            amountToPayInPence
           ))
         case _ =>
           Redirect(routes.YourAccountController.onPageLoad())

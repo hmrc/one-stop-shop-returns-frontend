@@ -87,7 +87,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             true,
             registration.contactDetails.emailAddress,
             false,
-            vatOnSales
+            (vatOnSales * 100).toLong
           )(request, messages(app)).toString
       }
     }
@@ -127,7 +127,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             false,
             registration.contactDetails.emailAddress,
             displayPayNow,
-            vatOnSales
+            (vatOnSales * 100).toLong
           )(request, messages(app)).toString
       }
     }
