@@ -20,21 +20,20 @@ import models.{Period, Quarter}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
-case class PaymentRequest(
-                           vrn: Vrn,
-                           period: PaymentPeriod,
-                           amountInPence: Long
-                         )
+case class PaymentRequest(vrn: Vrn, period: PaymentPeriod, amountInPence: Long)
 
 object PaymentRequest {
+
+  def apply(vrn: Vrn, period: PaymentPeriod, amount: BigDecimal): PaymentRequest = {
+    val amountInPence = (amount * 100).toLong
+
+    PaymentRequest(vrn, period, amountInPence)
+  }
 
   implicit val format: OFormat[PaymentRequest] = Json.format[PaymentRequest]
 }
 
-case class PaymentPeriod(
-                          year: Int,
-                          quarter: String
-                        )
+case class PaymentPeriod(year: Int, quarter: String)
 
 object PaymentPeriod {
 
@@ -51,4 +50,10 @@ object PaymentPeriod {
   }
 
   implicit val format: OFormat[PaymentPeriod] = Json.format[PaymentPeriod]
+}
+
+case class Amount(value: BigDecimal)
+
+object Amount {
+
 }

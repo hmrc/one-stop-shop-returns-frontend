@@ -35,11 +35,11 @@ object PaymentHttpParser extends Logging {
           response.json.validate[PaymentResponse] match {
             case JsSuccess(r, _) => Right(r)
             case JsError(errors) =>
-              logger.warn(s"PaymentResponse failed trying to parse JSON $errors. Json was ${response.json}", errors)
+              logger.error(s"PaymentResponse: ${response.json}, failed to parse with errors: $errors.")
               Left(InvalidJson)
           }
         case status =>
-          logger.warn("PaymentResponse received unexpected error")
+          logger.error(s"PaymentResponse received unexpected error with status: ${response.status}")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }
     }

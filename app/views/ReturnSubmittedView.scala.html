@@ -25,7 +25,7 @@
     showEmailConfirmation: Boolean,
     email: String,
     displayPayNow: Boolean,
-    amount: Long
+    amount: BigDecimal
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {

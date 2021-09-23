@@ -59,7 +59,7 @@ class ReturnSubmittedController @Inject()(
             showEmailConfirmation.get,
             email,
             displayPayNow,
-            vatOwed.toLong
+            vatOwed
           ))
         case _ =>
           Redirect(routes.YourAccountController.onPageLoad())

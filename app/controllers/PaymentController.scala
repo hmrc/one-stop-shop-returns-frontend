@@ -20,10 +20,10 @@ import config.Service
 import connectors.PaymentConnector
 import controllers.actions.AuthenticatedControllerComponents
 import models.Period
+import models.requests.{PaymentPeriod, PaymentRequest}
 import play.api.Configuration
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.PaymentService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
@@ -31,7 +31,6 @@ import scala.concurrent.ExecutionContext
 
 class PaymentController @Inject()(
                                  cc: AuthenticatedControllerComponents,
-                                 paymentService: PaymentService,
                                  paymentConnector: PaymentConnector,
                                  config: Configuration
                                )(implicit ec: ExecutionContext)
@@ -44,7 +43,11 @@ class PaymentController @Inject()(
     cc.authAndGetRegistration.async {
       implicit request => {
         val paymentRequest =
-          paymentService.buildPaymentRequest(request.vrn, period, amount)
+          PaymentRequest(
+            request.vrn,
+            PaymentPeriod(period),
+            amount
+          )
 
         paymentConnector.submit(paymentRequest)
           .map {

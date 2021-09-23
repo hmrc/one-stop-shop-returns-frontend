@@ -26,13 +26,11 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.PaymentService
 
 import scala.concurrent.Future
 
 class PaymentControllerSpec extends SpecBase with MockitoSugar {
 
-  val paymentService: PaymentService     = mock[PaymentService]
   val paymentConnector: PaymentConnector = mock[PaymentConnector]
 
   "Payment Controller" - {
@@ -45,8 +43,6 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
         amount
       )
 
-      when(paymentService.buildPaymentRequest(any(), any(), anyLong()))
-        .thenReturn(paymentRequest)
       when(paymentConnector.submit(any())(any()))
         .thenReturn(Future.successful(Right(PaymentResponse("journeyId", "nextUrl"))))
 
@@ -73,8 +69,6 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
         amount
       )
 
-      when(paymentService.buildPaymentRequest(any(), any(), anyLong()))
-        .thenReturn(paymentRequest)
       when(paymentConnector.submit(any())(any()))
         .thenReturn(Future.successful(Left(InvalidJson)))
 

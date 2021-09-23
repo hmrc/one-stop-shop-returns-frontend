@@ -25,7 +25,6 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -33,7 +32,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.EmailConfirmationQuery
-import services.{EmailService, VatReturnSalesService}
+import services.VatReturnSalesService
 import utils.CurrencyFormatter._
 import views.html.ReturnSubmittedView
 
@@ -64,7 +63,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
           bind[VatReturnSalesService].toInstance(vatReturnSalesService),
         ).build()
 
-      val vatOnSales = 0
+      val vatOnSales = BigDecimal(0)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
       when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn vatOnSales
@@ -77,7 +76,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val view = app.injector.instanceOf[ReturnSubmittedView]
         val returnReference = ReturnReference(vrn, period)
         val vatOwed = currencyFormat(vatOnSales)
-        val displayPayNow = vatOnSales > 0
 
         status(result) mustEqual OK
 
@@ -88,8 +86,8 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             vatOwed,
             true,
             registration.contactDetails.emailAddress,
-            displayPayNow,
-            vatOnSales.toLong
+            false,
+            vatOnSales
           )(request, messages(app)).toString
       }
     }
@@ -129,7 +127,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             false,
             registration.contactDetails.emailAddress,
             displayPayNow,
-            vatOnSales.toLong
+            vatOnSales
           )(request, messages(app)).toString
       }
     }
