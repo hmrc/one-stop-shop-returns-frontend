@@ -15,7 +15,8 @@
         niSalesList: Map[String, Seq[TitledSummaryList]],
         euSalesList: Map[String, Seq[TitledSummaryList]],
         totalSalesList: TitledSummaryList,
-        displayPayNow: Boolean
+        displayPayNow: Boolean,
+        vatOwedInPence: Long
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(
@@ -34,7 +35,7 @@
 
     @if(displayPayNow) {
         <p class="govuk-!-margin-bottom-9">
-            <button class="govuk-button">@messages("previousReturn.payNow")</button>
+            <a class="govuk-button" href="@routes.PaymentController.makePayment(vatReturn.period, vatOwedInPence)">@messages("previousReturn.payNow")</a>
         </p>
     }
 

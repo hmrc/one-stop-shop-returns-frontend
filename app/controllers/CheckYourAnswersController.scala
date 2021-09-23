@@ -109,6 +109,7 @@ class CheckYourAnswersController @Inject()(
         case Valid(returnRequest) =>
           vatReturnConnector.submit(returnRequest).flatMap {
             case Right(vatReturn) =>
+
               auditService.audit(ReturnsAuditModel.build(
                 returnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), request
               ))
@@ -125,6 +126,7 @@ class CheckYourAnswersController @Inject()(
               ) flatMap {
                 emailConfirmationResult =>
                   val emailSent = EMAIL_ACCEPTED == emailConfirmationResult
+
                   for {
                     updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
                     _              <- cc.sessionRepository.set(updatedAnswers)

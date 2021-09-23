@@ -19,12 +19,13 @@
 )
 
 @(
-        period: Period,
-        returnReference: ReturnReference,
-        vatOwed: String,
-        showEmailConfirmation: Boolean,
-        email: String,
-        displayPayNow: Boolean
+    period: Period,
+    returnReference: ReturnReference,
+    vatOwed: String,
+    showEmailConfirmation: Boolean,
+    email: String,
+    displayPayNow: Boolean,
+    amountInPence: Long
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {
@@ -49,7 +50,7 @@
             </p>
             <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p2")</p>
 
-            <button class="govuk-button">@messages("returnSubmitted.payNow")</button>
+            <a class="govuk-button" href="@routes.PaymentController.makePayment(period, amountInPence)">@messages("returnSubmitted.payNow")</a>
 
             <p class="govuk-body">@messages("returnSubmitted.payBy.p1", period.paymentDeadlineDisplay)</p>
 

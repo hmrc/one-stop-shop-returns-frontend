@@ -52,7 +52,17 @@ class ReturnSubmittedController @Inject()(
           val email = request.registration.contactDetails.emailAddress
           val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)
           val displayPayNow = vatOwed > 0
-          Ok(view(period, returnReference, currencyFormat(vatOwed), showEmailConfirmation.get, email, displayPayNow))
+          val amountToPayInPence: Long = (vatOwed * 100).toLong
+
+          Ok(view(
+            period,
+            returnReference,
+            currencyFormat(vatOwed),
+            showEmailConfirmation.get,
+            email,
+            displayPayNow,
+            amountToPayInPence
+          ))
         case _ =>
           Redirect(routes.YourAccountController.onPageLoad())
       }.recover {
@@ -60,7 +70,6 @@ class ReturnSubmittedController @Inject()(
           logger.error(s"Error occurred: ${e.getMessage}", e)
           throw e
       }
-
     }
   }
 }
