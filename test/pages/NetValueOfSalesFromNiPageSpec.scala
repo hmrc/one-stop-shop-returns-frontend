@@ -45,7 +45,7 @@ class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
       }
     }
 
-    "must navigate in Check mode" - {
+    "must navigate in Check Loop mode" - {
 
       "to VAT on sales" in {
 
