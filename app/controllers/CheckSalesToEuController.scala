@@ -57,7 +57,7 @@ class CheckSalesToEuController @Inject()(
                   list = SummaryListViewModel(
                     rows = Seq(
                       NetValueOfSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i)),
-                      VatOnSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i))
+                      VatOnSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i), vatRate)
                     ).flatten
                   )
                 )

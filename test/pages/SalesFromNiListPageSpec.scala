@@ -69,10 +69,22 @@ class SalesFromNiListPageSpec extends SpecBase {
 
       "when the answer is no" - {
 
-        "to Sold Goods from EU" in {
+        "and next question isn't answered" - {
 
-          SalesFromNiListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false)
-            .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+          "to Sold Goods from EU" in {
+
+            SalesFromNiListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false)
+              .mustEqual(routes.SoldGoodsFromEuController.onPageLoad(NormalMode, emptyUserAnswers.period))
+          }
+        }
+        "and next question is answered" - {
+
+          "to Check your answers from EU" in {
+
+            val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, true).success.value
+            SalesFromNiListPage.navigate(answers, CheckMode, addAnother = false)
+              .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+          }
         }
       }
     }

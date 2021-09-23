@@ -55,6 +55,8 @@
             <p class="govuk-body">@messages("returnSubmitted.payBy.p1", period.paymentDeadlineDisplay)</p>
 
             <p class="govuk-body">@messages("returnSubmitted.payBy.p2")
+        } else {
+            <p class="govuk-body">@messages("returnSubmitted.noVatOwed", period.displayText)</p>
         }
 
         <p class="govuk-body">

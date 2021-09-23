@@ -21,7 +21,7 @@ import com.google.inject.Inject
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.audit.{ReturnsAuditModel, SubmissionResult}
+import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.responses.ConflictFound
 import models.{NormalMode, Period}
@@ -113,6 +113,8 @@ class CheckYourAnswersController @Inject()(
               auditService.audit(ReturnsAuditModel.build(
                 returnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), request
               ))
+
+              auditService.audit(ReturnForDataEntryAuditModel(returnRequest, vatReturn.reference, vatReturn.paymentReference))
 
               emailService.sendConfirmationEmail(
                 request.registration.contactDetails.fullName,

@@ -175,7 +175,7 @@ trait SpecBase
     new GuiceApplicationBuilder()
       .overrides(
         bind[DataRequiredAction].to[DataRequiredActionImpl],
-        bind[AuthenticatedIdentifierAction].to[FakeIdentifierAction],
+        bind[IdentifierAction].to[FakeIdentifierAction],
         bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
         bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration)),
         bind[CheckReturnsFilterProvider].toInstance(new FakeCheckReturnsFilterProvider()),
