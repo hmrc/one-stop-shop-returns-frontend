@@ -55,7 +55,7 @@ class CheckSalesFromNiController @Inject()(
                   title = messages("checkSalesFromNi.vatRateTitle", vatRate.rateForDisplay),
                   list = SummaryListViewModel(
                     rows = Seq(
-                      NetValueOfSalesFromNiSummary.row(request.userAnswers, index, Index(i)),
+                      NetValueOfSalesFromNiSummary.row(request.userAnswers, index, Index(i), vatRate),
                       VatOnSalesFromNiSummary.row(request.userAnswers, index, Index(i), vatRate)
                     ).flatten
                   )

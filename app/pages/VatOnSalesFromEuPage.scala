@@ -50,5 +50,5 @@ case class VatOnSalesFromEuPage(countryFromIndex: Index, countryToIndex: Index, 
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 
   override def navigateInCheckLoopMode(answers: UserAnswers): Call =
-    routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
+    routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex)
 }
