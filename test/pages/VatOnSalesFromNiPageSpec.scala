@@ -113,7 +113,7 @@ class VatOnSalesFromNiPageSpec extends PageBehaviours {
               .set(VatRatesFromNiPage(countryIndex), vatRates).success.value
 
           VatOnSalesFromNiPage(countryIndex, Index(0)).navigate(CheckLoopMode, answers)
-            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex))
+            .mustEqual(routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex))
 
         }
       }
