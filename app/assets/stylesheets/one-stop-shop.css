@@ -64,3 +64,8 @@ html[data-useragent*='MSIE 10.0'] .flex-container .tile {
 .js-enabled .govuk-back-link {
     display: inline-block;
 }
+
+.text-overflow {
+    word-wrap: break-word; /* old version of overflow-wrap for IE and Edge and FF < 49*/
+    overflow-wrap: anywhere; /* modern, tries to fit word on a new line rather than fitting on remnants of the current line */
+}

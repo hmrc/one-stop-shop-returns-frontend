@@ -30,7 +30,7 @@
 
 @layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {
     <div class="grid-row column-two-thirds" id="submitted">
-        <div class="govuk-panel govuk-panel--confirmation">
+        <div class="govuk-panel govuk-panel--confirmation text-overflow">
             <h1 class="govuk-panel__title">@messages("returnSubmitted.heading")</h1>
             <div class="govuk-panel__body">
                 @messages("returnSubmitted.reference")<br>
@@ -48,6 +48,7 @@
             <p class="govuk-body">
                 @messages("returnSubmitted.payVatOwed.p1", period.displayText) <strong>@Html(vatOwed)</strong>.
             </p>
+
             <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p2")</p>
 
             <a class="govuk-button" href="@routes.PaymentController.makePayment(period, amountInPence)">@messages("returnSubmitted.payNow")</a>
