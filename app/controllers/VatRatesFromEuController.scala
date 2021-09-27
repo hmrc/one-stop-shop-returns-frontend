@@ -18,7 +18,8 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromEuFormProvider
-import models.{Index, Mode, Period}
+import models.{Index, Mode, Period, VatRate}
+import models.requests.DataRequest
 import pages.VatRatesFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -31,29 +32,40 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class VatRatesFromEuController @Inject()(
-                                        cc: AuthenticatedControllerComponents,
-                                        formProvider: VatRatesFromEuFormProvider,
-                                        vatRateService: VatRateService,
-                                        view: VatRatesFromEuView
-                                      )(implicit ec: ExecutionContext)
+                                          cc: AuthenticatedControllerComponents,
+                                          formProvider: VatRatesFromEuFormProvider,
+                                          vatRateService: VatRateService,
+                                          view: VatRatesFromEuView
+                                        )(implicit ec: ExecutionContext)
   extends FrontendBaseController with VatRateBaseController with SalesFromEuBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
-      getCountries(countryFromIndex, countryToIndex) {
+      getCountriesAsync(countryFromIndex, countryToIndex) {
         case (countryFrom, countryTo) =>
 
           val vatRates = vatRateService.vatRates(period, countryTo)
-          val form     = formProvider(vatRates)
+          val form = formProvider(vatRates)
+          val currentValue = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex))
 
-          val preparedForm = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)) match {
+          val preparedForm = currentValue match {
             case None => form
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo, checkboxItems(vatRates)))
+          vatRates.size match {
+            case 1 =>
+              currentValue match {
+                case Some(_) =>
+                  Redirect(VatRatesFromEuPage(countryFromIndex, countryToIndex).navigate(mode, request.userAnswers)).toFuture
+                case _ =>
+                  updateAndContinue(mode, countryFromIndex, countryToIndex, request, vatRates.toList)
+              }
+            case _ =>
+              Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo, checkboxItems(vatRates))).toFuture
+          }
       }
   }
 
@@ -63,18 +75,22 @@ class VatRatesFromEuController @Inject()(
         case (countryFrom, countryTo) =>
 
           val vatRates = vatRateService.vatRates(period, countryTo)
-          val form     = formProvider(vatRates)
-          
+          val form = formProvider(vatRates)
+
           form.bindFromRequest().fold(
             formWithErrors =>
               BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo, checkboxItems(vatRates))).toFuture,
 
             value =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromEuPage(countryFromIndex, countryToIndex), value))
-                _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(VatRatesFromEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
+              updateAndContinue(mode, countryFromIndex, countryToIndex, request, value)
           )
       }
+  }
+
+  private def updateAndContinue(mode: Mode, countryFromIndex: Index, countryToIndex: Index, request: DataRequest[AnyContent], value: List[VatRate]) = {
+    for {
+      updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromEuPage(countryFromIndex, countryToIndex), value))
+      _ <- cc.sessionRepository.set(updatedAnswers)
+    } yield Redirect(VatRatesFromEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
   }
 }

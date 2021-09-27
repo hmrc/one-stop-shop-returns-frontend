@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.VatOnSalesChoice.Standard
-import models.{CheckMode, NormalMode, VatOnSales, VatRate}
+import models.{CheckLoopMode, CheckMode, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
@@ -42,6 +42,15 @@ class NetValueOfSalesFromEuPageSpec extends PageBehaviours {
 
         NetValueOfSalesFromEuPage(index, index, index).navigate(CheckMode, emptyUserAnswers)
           .mustEqual(routes.VatOnSalesFromEuController.onPageLoad(CheckMode, period, index, index, index))
+      }
+    }
+
+    "must navigate in Check Loop mode" - {
+
+      "to VAT on sales from EU" in {
+
+        NetValueOfSalesFromEuPage(index, index, index).navigate(CheckLoopMode, emptyUserAnswers)
+          .mustEqual(routes.VatOnSalesFromEuController.onPageLoad(CheckLoopMode, period, index, index, index))
       }
     }
 

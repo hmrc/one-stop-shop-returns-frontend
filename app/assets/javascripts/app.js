@@ -4,12 +4,14 @@ if (window.history && window.history.replaceState && typeof window.history.repla
 }
 
 // handle back click
-document.querySelector('.govuk-back-link').addEventListener('click', function(e){
-  e.preventDefault();
-  e.stopPropagation();
-  window.history.back();
-});
-
+var backLink = document.querySelector('.govuk-back-link');
+if (backLink) {
+  backLink.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.history.back();
+  });
+}
 // Find first ancestor of el with tagName
 // or undefined if not found
 function upTo(el, tagName) {
