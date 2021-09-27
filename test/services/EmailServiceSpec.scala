@@ -20,15 +20,15 @@ import base.SpecBase
 import connectors.EmailConnector
 import models.ReturnReference
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.emails.{EmailToSendRequest, ReturnsConfirmationEmailParameters}
+import models.emails.{EmailToSendRequest, ReturnsConfirmationEmailNoVatOwedParameters, ReturnsConfirmationEmailParameters}
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
 import uk.gov.hmrc.http.HeaderCarrier
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class EmailServiceSpec extends SpecBase {
@@ -68,6 +68,47 @@ class EmailServiceSpec extends SpecBase {
               paymentDeadlineString,
               vatOwed,
               returnReferenceString)
+          )
+
+          when(connector.send(any())(any(), any())).thenReturn(Future.successful(EMAIL_ACCEPTED))
+
+          emailService.sendConfirmationEmail(
+            contactName,
+            businessName,
+            email,
+            returnReferenceString,
+            totalVatOnSales,
+            period
+          ).futureValue mustBe EMAIL_ACCEPTED
+
+          verify(connector, times(1)).send(refEq(expectedEmailToSendRequest))(any(), any())
+      }
+    }
+
+    "Call sendConfirmationEmail with oss_returns_email_confirmation_no_vat_owed with the correct parameters" in {
+
+      val maxLengthContactName = 105
+      val maxLengthBusiness = 160
+      val totalVatOnSales = BigDecimal(0)
+
+      forAll(
+        validEmails,
+        safeInputsWithMaxLength(maxLengthContactName),
+        safeInputsWithMaxLength(maxLengthBusiness)
+      ) {
+        (email: String, contactName: String, businessName: String) =>
+          val stringPeriod = period.toString
+          val returnReference = arbitrary[ReturnReference].sample.value
+          val returnReferenceString = returnReference.value
+
+          val expectedEmailToSendRequest = EmailToSendRequest(
+            List(email),
+            "oss_returns_email_confirmation_no_vat_owed",
+            ReturnsConfirmationEmailNoVatOwedParameters(
+              contactName,
+              stringPeriod,
+              returnReferenceString
+            )
           )
 
           when(connector.send(any())(any(), any())).thenReturn(Future.successful(EMAIL_ACCEPTED))

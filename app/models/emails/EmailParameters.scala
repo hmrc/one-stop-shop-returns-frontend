@@ -44,3 +44,16 @@ object ReturnsConfirmationEmailParameters {
   implicit val reads: Reads[ReturnsConfirmationEmailParameters] =
     Json.reads[ReturnsConfirmationEmailParameters]
 }
+
+case class ReturnsConfirmationEmailNoVatOwedParameters(
+                                               recipientName_line1: String,
+                                               period: String,
+                                               reference: String
+                                             ) extends EmailParameters
+
+object ReturnsConfirmationEmailNoVatOwedParameters {
+  implicit val writes: Writes[ReturnsConfirmationEmailNoVatOwedParameters] =
+    Json.writes[ReturnsConfirmationEmailNoVatOwedParameters]
+  implicit val reads: Reads[ReturnsConfirmationEmailNoVatOwedParameters] =
+    Json.reads[ReturnsConfirmationEmailNoVatOwedParameters]
+}
