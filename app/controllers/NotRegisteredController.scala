@@ -16,7 +16,6 @@
 
 package controllers
 
-import controllers.actions._
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -24,13 +23,11 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.NotRegisteredView
 
 class NotRegisteredController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
+                                       val controllerComponents: MessagesControllerComponents,
                                        view: NotRegisteredView
                                      ) extends FrontendBaseController with I18nSupport {
 
-  protected val controllerComponents: MessagesControllerComponents = cc
-
-  def onPageLoad: Action[AnyContent] = cc.auth {
+  def onPageLoad: Action[AnyContent] = Action {
     implicit request =>
       Ok(view())
   }

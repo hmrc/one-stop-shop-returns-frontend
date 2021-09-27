@@ -100,7 +100,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
     "when the user has logged in as an Organisation Assistant with a VAT enrolment and strong credentials" - {
 
-      "must be redirected to the Unauthorised page" in {
+      "must be redirected to the Not Registered page" in {
 
         val application = applicationBuilder(None).build()
 
@@ -116,14 +116,14 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
         }
       }
     }
 
     "when the user has logged in as an Organisation Admin with strong credentials but no vat enrolment" - {
 
-      "must be redirected to the Unauthorised page" in {
+      "must be redirected to the Not Registered page" in {
 
         val application = applicationBuilder(None).build()
 
@@ -139,14 +139,14 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
         }
       }
     }
 
     "when the user has logged in as an Individual with a VAT enrolment and strong credentials, but confidence level less then 200" - {
 
-      "must be redirected to the Unauthorised page" in {
+      "must be redirected to the Not Registered page" in {
 
         val application = applicationBuilder(None).build()
 
@@ -162,14 +162,14 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
         }
       }
     }
 
     "when the user has logged in as an Individual without a VAT enrolment" - {
 
-      "must be redirected to the Unauthorised page" in {
+      "must be redirected to the Not Registered page" in {
 
         val application = applicationBuilder(None).build()
 
@@ -185,7 +185,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustBe routes.NotRegisteredController.onPageLoad().url
         }
       }
     }
@@ -232,7 +232,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
     "the user used an unsupported auth provider" - {
 
-      "must redirect the user to the Unauthorised page" in {
+      "must redirect the user to the Not Registered page" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -245,14 +245,14 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
         }
       }
     }
 
     "the user has an unsupported affinity group" - {
 
-      "must redirect the user to the Unauthorised page" in {
+      "must redirect the user to the Not Registered page" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -265,14 +265,14 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
         }
       }
     }
 
     "the user has weak credentials" - {
 
-      "must redirect the user to the Unauthorised page" in {
+      "must redirect the user to the Not Registered page" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -286,7 +286,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
           status(result) mustBe SEE_OTHER
 
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
         }
       }
     }

@@ -88,7 +88,7 @@ class IdentifierAction @Inject()(
       case _: NoActiveSession =>
         Left(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))).toFuture
       case _: AuthorisationException =>
-        Left(Redirect(routes.UnauthorisedController.onPageLoad())).toFuture
+        Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture
     }
   }
 
