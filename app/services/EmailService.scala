@@ -44,31 +44,27 @@ class EmailService @Inject()(
    val vatOwed = totalVatOnSales > 0
 
    val emailParameters = {
-    if(vatOwed) {
-     ReturnsConfirmationEmailParameters(
-      contactName,
-      businessName,
-      period.toString,
-      format(period.paymentDeadline),
-      totalVatOnSales.toString(),
-      returnReference
-     )
+     if(vatOwed) {
+       ReturnsConfirmationEmailParameters(
+         contactName,
+         businessName,
+         period.toString,
+         format(period.paymentDeadline),
+         totalVatOnSales.toString(),
+         returnReference
+      )
     } else {
-     ReturnsConfirmationEmailNoVatOwedParameters(
-      contactName,
-      period.toString,
-      returnReference
-     )
+       ReturnsConfirmationEmailNoVatOwedParameters(
+         contactName,
+         period.toString,
+         returnReference
+      )
     }
    }
    emailConnector.send(
      EmailToSendRequest(
       List(emailAddress),
-      if (vatOwed) {
-       returnsConfirmationTemplateId
-      } else {
-       returnsConfirmationNoVatOwedTemplateId
-      },
+      if(vatOwed) returnsConfirmationTemplateId else returnsConfirmationNoVatOwedTemplateId,
       emailParameters
      )
    )

@@ -46,10 +46,10 @@ object ReturnsConfirmationEmailParameters {
 }
 
 case class ReturnsConfirmationEmailNoVatOwedParameters(
-                                               recipientName_line1: String,
-                                               period: String,
-                                               reference: String
-                                             ) extends EmailParameters
+  recipientName_line1: String,
+  period: String,
+  reference: String
+) extends EmailParameters
 
 object ReturnsConfirmationEmailNoVatOwedParameters {
   implicit val writes: Writes[ReturnsConfirmationEmailNoVatOwedParameters] =
