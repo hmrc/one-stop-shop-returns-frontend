@@ -19,10 +19,27 @@
         vatOwedInPence: Long
 )(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(
-    messages("previousReturn.title"),
-    Some(vatReturn.period.displayText)
-)) {
+@layout(
+    pageTitle = titleNoForm(
+        messages("previousReturn.title"),
+        Some(vatReturn.period.displayText)
+    ),
+    showBackLink = false
+) {
+
+    <div class="govuk-breadcrumbs">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad()">Your account</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@routes.SubmittedReturnsHistoryController.onPageLoad()">Submitted returns</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                @vatReturn.period.displayText
+            </li>
+        </ol>
+    </div>
 
     <header class="hmrc-page-heading">
         <h1 class="govuk-heading-xl">@vatReturn.period.displayText</h1>
