@@ -30,7 +30,7 @@
                 <p class="govuk-caption-xl hmrc-caption-xl">@period.displayText</p>
             </header>
 
-            @addToList(list, Long, "salesFromEuList.change.hidden", "salesFromEuList.remove.hidden")
+            @addToList(list, Long, "salesFromEuList.change.hidden", "salesFromEuList.remove.hidden", None)
 
             @if(canAddCountries) {
                 @govukRadios(

@@ -62,9 +62,6 @@ signedOut.guidance = We did not save your answers.
 caption.fromNi.periodAndCountry = {0}: Northern Ireland to {1}
 caption.fromEu.periodAndCountries = {0}: {1} to {2}
 
-unauthorised.title = You can’t access this service with this account
-unauthorised.heading = You can’t access this service with this account
-
 notRegistered.title = You cannot use this service
 notRegistered.heading = You cannot use this service
 notRegistered.label = To submit a return, you must sign in with the same Government Gateway user ID you used when you registered for the VAT One Stop Shop.
