@@ -20,7 +20,7 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
 import models.emails.EmailSendingResult.{EMAIL_ACCEPTED, EMAIL_NOT_SENT, EMAIL_UNSENDABLE}
-import models.emails.{EmailToSendRequest, ReturnsConfirmationEmailParameters}
+import models.emails.{EmailToSendRequest, ReturnsConfirmationEmailNoVatOwedParameters, ReturnsConfirmationEmailParameters}
 import play.api.Application
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
@@ -56,6 +56,28 @@ class EmailConnectorSpec extends SpecBase with WireMockHelper {
         )
 
         connector.send(request).futureValue mustBe EMAIL_ACCEPTED
+      }
+    }
+
+    "should return EMAIL_ACCEPTED when nil return request params sent" in {
+      running(application) {
+
+        val nilReturnRequest = EmailToSendRequest(
+          to = List("name@example.com"),
+          templateId = "oss_returns_confirmation_email_parameters",
+          parameters = ReturnsConfirmationEmailNoVatOwedParameters(
+            "Joe Bloggs", "2021-Q3", "XI/XI100000002/Q3.2021"
+          )
+        )
+
+        val connector = application.injector.instanceOf[EmailConnector]
+
+        server.stubFor(
+          post(urlEqualTo("/hmrc/email"))
+            .willReturn(aResponse.withStatus(200))
+        )
+
+        connector.send(nilReturnRequest).futureValue mustBe EMAIL_ACCEPTED
       }
     }
 

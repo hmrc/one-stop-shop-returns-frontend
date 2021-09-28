@@ -16,10 +16,10 @@
 
 package services
 
-import config.Constants.returnsConfirmationTemplateId
+import config.Constants.{returnsConfirmationNoVatOwedTemplateId, returnsConfirmationTemplateId}
 import connectors.EmailConnector
 import models.Period
-import models.emails.{EmailSendingResult, EmailToSendRequest, ReturnsConfirmationEmailParameters}
+import models.emails.{EmailSendingResult, EmailToSendRequest, ReturnsConfirmationEmailNoVatOwedParameters, ReturnsConfirmationEmailParameters}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDate
@@ -30,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EmailService @Inject()(
   emailConnector: EmailConnector
- )(implicit executionContext: ExecutionContext) {
+)(implicit executionContext: ExecutionContext) {
 
   def sendConfirmationEmail(
    contactName: String,
@@ -41,19 +41,30 @@ class EmailService @Inject()(
    period: Period
   )(implicit hc: HeaderCarrier): Future[EmailSendingResult] = {
 
-   val emailParameters =
-    ReturnsConfirmationEmailParameters(
-     contactName,
-     businessName,
-     period.toString,
-     format(period.paymentDeadline),
-     totalVatOnSales.toString(),
-     returnReference
-    )
-    emailConnector.send(
+   val vatOwed = totalVatOnSales > 0
+
+   val emailParameters = {
+     if(vatOwed) {
+       ReturnsConfirmationEmailParameters(
+         contactName,
+         businessName,
+         period.toString,
+         format(period.paymentDeadline),
+         totalVatOnSales.toString(),
+         returnReference
+      )
+    } else {
+       ReturnsConfirmationEmailNoVatOwedParameters(
+         contactName,
+         period.toString,
+         returnReference
+      )
+    }
+   }
+   emailConnector.send(
      EmailToSendRequest(
       List(emailAddress),
-      returnsConfirmationTemplateId,
+      if(vatOwed) returnsConfirmationTemplateId else returnsConfirmationNoVatOwedTemplateId,
       emailParameters
      )
    )
