@@ -1,4 +1,4 @@
-service.name = Submit a One Stop Shop VAT return and pay VAT
+service.name = Submit a One Stop Shop return and pay VAT
 
 site.back = Back
 site.remove = Remove
@@ -254,7 +254,7 @@ netValueOfSalesFromNi.hint = For example, £600 or £193.54.
 
 vatOnSalesFromNi.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSalesFromNi.heading = How much VAT did you charge on sales of {0} at {1} VAT rate?
-vatOnSalesFromNi.checkYourAnswersLabel = VAT on sales
+vatOnSalesFromNi.checkYourAnswersLabel = VAT charged
 vatOnSalesFromNi.nonStandard = A different amount
 vatOnSalesFromNi.amount = Enter the amount of VAT charged
 vatOnSalesFromNi.choice.error.required = Select how much VAT you charged
@@ -288,7 +288,7 @@ vatOnSalesFromEu.amount.error.outOfRange = The amount of VAT charged must be bet
 vatOnSalesFromEu.change.hidden = how much VAT you charged on sales for {0} VAT rate
 vatOnSalesFromEu.hint = For example, £600 or £193.54.
 
-noOtherPeriodsAvailable.title = You cannot pay for other VAT One Stop Shop periods
-noOtherPeriodsAvailable.heading = You cannot pay for other VAT One Stop Shop periods
-noOtherPeriodsAvailable.label = You can only pay for periods that have ended.
+noOtherPeriodsAvailable.title = You cannot start returns for other periods yet
+noOtherPeriodsAvailable.heading = You cannot start returns for other periods yet
+noOtherPeriodsAvailable.label = You can only start returns for periods that have ended.
 noOtherPeriodsAvailable.submit = Back to your account
