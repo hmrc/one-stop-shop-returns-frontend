@@ -24,6 +24,8 @@ object EmailParameters {
   implicit val writes: Writes[EmailParameters] = Writes[EmailParameters] {
     case returnsEmailConfirmation: ReturnsConfirmationEmailParameters =>
       Json.toJson(returnsEmailConfirmation)(ReturnsConfirmationEmailParameters.writes)
+    case nilReturnEmailConfirmation : ReturnsConfirmationEmailNoVatOwedParameters =>
+      Json.toJson(nilReturnEmailConfirmation)(ReturnsConfirmationEmailNoVatOwedParameters.writes)
   }
 
   implicit val reads: Reads[EmailParameters] = Json.reads[EmailParameters]
