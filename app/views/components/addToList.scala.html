@@ -17,7 +17,6 @@
                     <span aria-hidden="true">@messages("site.change")</span>
                     @if(countryFromName.isDefined) {
                         <span class="govuk-visually-hidden">@messages(changePrefix, countryFromName.get, item.name)</span>
-
                     } else {
                         <span class="govuk-visually-hidden">@messages(changePrefix, item.name)</span>
                     }
