@@ -30,10 +30,10 @@
     <div class="govuk-breadcrumbs">
         <ol class="govuk-breadcrumbs__list">
             <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad()" id="your-account">Your account</a>
+                <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad()" id="your-account">@messages("breadcrumbs.yourAccount")</a>
             </li>
             <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@routes.SubmittedReturnsHistoryController.onPageLoad()" id="submitted-returns">Submitted returns</a>
+                <a class="govuk-breadcrumbs__link" href="@routes.SubmittedReturnsHistoryController.onPageLoad()" id="submitted-returns">@messages("breadcrumbs.submittedReturns")</a>
             </li>
             <li class="govuk-breadcrumbs__list-item">
                 @vatReturn.period.displayText
