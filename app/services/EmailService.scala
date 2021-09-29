@@ -36,7 +36,6 @@ class EmailService @Inject()(
    contactName: String,
    businessName: String,
    emailAddress: String,
-   returnReference: String,
    totalVatOnSales: BigDecimal,
    period: Period
   )(implicit hc: HeaderCarrier): Future[EmailSendingResult] = {
@@ -49,15 +48,12 @@ class EmailService @Inject()(
          contactName,
          businessName,
          period.toString,
-         format(period.paymentDeadline),
-         totalVatOnSales.toString(),
-         returnReference
+         format(period.paymentDeadline)
       )
     } else {
        ReturnsConfirmationEmailNoVatOwedParameters(
          contactName,
-         period.toString,
-         returnReference
+         period.toString
       )
     }
    }

@@ -35,9 +35,7 @@ case class ReturnsConfirmationEmailParameters(
    recipientName_line1: String,
    businessName:String,
    period: String,
-   paymentDeadline: String,
-   VATOwed: String,
-   reference: String
+   paymentDeadline: String
 ) extends EmailParameters
 
 object ReturnsConfirmationEmailParameters {
@@ -49,8 +47,7 @@ object ReturnsConfirmationEmailParameters {
 
 case class ReturnsConfirmationEmailNoVatOwedParameters(
   recipientName_line1: String,
-  period: String,
-  reference: String
+  period: String
 ) extends EmailParameters
 
 object ReturnsConfirmationEmailNoVatOwedParameters {

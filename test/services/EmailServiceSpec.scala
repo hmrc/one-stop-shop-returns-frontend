@@ -65,9 +65,8 @@ class EmailServiceSpec extends SpecBase {
               contactName,
               businessName,
               stringPeriod,
-              paymentDeadlineString,
-              vatOwed,
-              returnReferenceString)
+              paymentDeadlineString
+            )
           )
 
           when(connector.send(any())(any(), any())).thenReturn(Future.successful(EMAIL_ACCEPTED))
@@ -76,7 +75,6 @@ class EmailServiceSpec extends SpecBase {
             contactName,
             businessName,
             email,
-            returnReferenceString,
             totalVatOnSales,
             period
           ).futureValue mustBe EMAIL_ACCEPTED
@@ -106,8 +104,7 @@ class EmailServiceSpec extends SpecBase {
             "oss_returns_email_confirmation_no_vat_owed",
             ReturnsConfirmationEmailNoVatOwedParameters(
               contactName,
-              stringPeriod,
-              returnReferenceString
+              stringPeriod
             )
           )
 
@@ -117,7 +114,6 @@ class EmailServiceSpec extends SpecBase {
             contactName,
             businessName,
             email,
-            returnReferenceString,
             totalVatOnSales,
             period
           ).futureValue mustBe EMAIL_ACCEPTED
