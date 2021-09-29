@@ -69,7 +69,7 @@ notRegistered.title = You cannot use this service
 notRegistered.heading = You cannot use this service
 notRegistered.label = To submit a return, you must sign in with the same Government Gateway user ID you used when you registered for the VAT One Stop Shop.
 notRegistered.subHeading = If you have not registered
-notRegistered.registerLink = You can <a href="https://www.gov.uk/guidance/register-to-report-and-pay-vat-on-distance-sales-of-goods-from-northern-ireland-to-the-eu">register for the VAT One Stop Shop.</a>
+notRegistered.registerLink = You can <a class="govuk-link" href="https://www.gov.uk/guidance/register-to-report-and-pay-vat-on-distance-sales-of-goods-from-northern-ireland-to-the-eu">register for the VAT One Stop Shop.</a>
 
 startReturn.title = Do you want to start your return for {0}?
 startReturn.heading = Do you want to start your return for {0}?
