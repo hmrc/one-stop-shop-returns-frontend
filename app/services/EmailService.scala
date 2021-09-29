@@ -20,6 +20,7 @@ import config.Constants.{returnsConfirmationNoVatOwedTemplateId, returnsConfirma
 import connectors.EmailConnector
 import models.Period
 import models.emails.{EmailSendingResult, EmailToSendRequest, ReturnsConfirmationEmailNoVatOwedParameters, ReturnsConfirmationEmailParameters}
+import play.api.i18n.Messages
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDate
@@ -38,25 +39,22 @@ class EmailService @Inject()(
    emailAddress: String,
    totalVatOnSales: BigDecimal,
    period: Period
-  )(implicit hc: HeaderCarrier): Future[EmailSendingResult] = {
+  )(implicit hc: HeaderCarrier, messages: Messages): Future[EmailSendingResult] = {
 
    val vatOwed = totalVatOnSales > 0
 
-   val emailParameters = {
+   val emailParameters =
      if(vatOwed) {
        ReturnsConfirmationEmailParameters(
          contactName,
          businessName,
-         period.toString,
+         period.displayText,
          format(period.paymentDeadline)
       )
     } else {
-       ReturnsConfirmationEmailNoVatOwedParameters(
-         contactName,
-         period.toString
-      )
+       ReturnsConfirmationEmailNoVatOwedParameters(contactName, period.displayText)
     }
-   }
+
    emailConnector.send(
      EmailToSendRequest(
       List(emailAddress),

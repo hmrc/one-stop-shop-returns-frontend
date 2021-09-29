@@ -18,14 +18,14 @@ package services
 
 import base.SpecBase
 import connectors.EmailConnector
-import models.ReturnReference
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.emails.{EmailToSendRequest, ReturnsConfirmationEmailNoVatOwedParameters, ReturnsConfirmationEmailParameters}
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito.{times, verify, when}
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
+import play.api.i18n.Messages
+import play.api.test.Helpers.stubMessages
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,36 +35,29 @@ class EmailServiceSpec extends SpecBase {
 
   private val connector = mock[EmailConnector]
   private val emailService = new EmailService(connector)
+  private val maxLengthBusiness = 160
+  private val maxLengthContactName = 105
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val m: Messages = stubMessages()
 
   "EmailService.sendConfirmationEmail" - {
 
     "Call sendConfirmationEmail with oss_returns_email_confirmation with the correct parameters" in {
-
-      val maxLengthBusiness = 160
-      val maxLengthContactName = 105
-      val totalVatOnSales = BigDecimal(100)
-
       forAll(
         validEmails,
         safeInputsWithMaxLength(maxLengthContactName),
         safeInputsWithMaxLength(maxLengthBusiness)
       ) {
         (email: String, contactName: String, businessName: String) =>
-          val returnReference = arbitrary[ReturnReference].sample.value
-          val stringPeriod = period.toString
           val paymentDeadlineString = period.paymentDeadlineDisplay
-          val vatOwed = totalVatOnSales.toString
-          val returnReferenceString = returnReference.value
-
           val expectedEmailToSendRequest = EmailToSendRequest(
             List(email),
             "oss_returns_email_confirmation",
             ReturnsConfirmationEmailParameters(
               contactName,
               businessName,
-              stringPeriod,
+              period.displayText,
               paymentDeadlineString
             )
           )
@@ -75,7 +68,7 @@ class EmailServiceSpec extends SpecBase {
             contactName,
             businessName,
             email,
-            totalVatOnSales,
+            BigDecimal(100),
             period
           ).futureValue mustBe EMAIL_ACCEPTED
 
@@ -84,28 +77,16 @@ class EmailServiceSpec extends SpecBase {
     }
 
     "Call sendConfirmationEmail with oss_returns_email_confirmation_no_vat_owed with the correct parameters" in {
-
-      val maxLengthContactName = 105
-      val maxLengthBusiness = 160
-      val totalVatOnSales = BigDecimal(0)
-
       forAll(
         validEmails,
         safeInputsWithMaxLength(maxLengthContactName),
         safeInputsWithMaxLength(maxLengthBusiness)
       ) {
         (email: String, contactName: String, businessName: String) =>
-          val stringPeriod = period.toString
-          val returnReference = arbitrary[ReturnReference].sample.value
-          val returnReferenceString = returnReference.value
-
           val expectedEmailToSendRequest = EmailToSendRequest(
             List(email),
             "oss_returns_email_confirmation_no_vat_owed",
-            ReturnsConfirmationEmailNoVatOwedParameters(
-              contactName,
-              stringPeriod
-            )
+            ReturnsConfirmationEmailNoVatOwedParameters(contactName, period.displayText)
           )
 
           when(connector.send(any())(any(), any())).thenReturn(Future.successful(EMAIL_ACCEPTED))
@@ -114,7 +95,7 @@ class EmailServiceSpec extends SpecBase {
             contactName,
             businessName,
             email,
-            totalVatOnSales,
+            BigDecimal(0),
             period
           ).futureValue mustBe EMAIL_ACCEPTED
 
