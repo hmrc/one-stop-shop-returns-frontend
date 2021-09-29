@@ -20,7 +20,7 @@ GET         /account/sign-out-survey                                            
 GET         /account/sign-out                                                                                controllers.auth.AuthController.signOutNoSurvey
 GET         /account/signed-out                                                                              controllers.auth.SignedOutController.onPageLoad
 
-GET         /notRegistered                                                                                   controllers.NotRegisteredController.onPageLoad()
+GET         /cannot-use-not-registered                                                                       controllers.NotRegisteredController.onPageLoad()
 
 GET         /:period/check-your-answers                                                                      controllers.CheckYourAnswersController.onPageLoad(period: Period)
 POST        /:period/check-your-answers                                                                      controllers.CheckYourAnswersController.onSubmit(period: Period)
