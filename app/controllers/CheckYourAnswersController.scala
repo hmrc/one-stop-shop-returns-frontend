@@ -120,7 +120,6 @@ class CheckYourAnswersController @Inject()(
                 request.registration.contactDetails.fullName,
                 request.registration.registeredCompanyName,
                 request.registration.contactDetails.emailAddress,
-                vatReturn.reference.value,
                 service.getTotalVatOnSales(request.userAnswers),
                 period
               ) flatMap {

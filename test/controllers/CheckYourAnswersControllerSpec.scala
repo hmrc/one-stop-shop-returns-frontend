@@ -106,7 +106,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .set(SoldGoodsFromEuPage, false).success.value
 
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any(), any())(any()))
+        when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
           .thenReturn(Future.successful(EMAIL_ACCEPTED))
 
         val app =
@@ -131,7 +131,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
         when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any(), any())(any()))
+        when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
           .thenReturn(Future.successful(EMAIL_ACCEPTED))
 
         val totalVatOnSales = BigDecimal(100)
@@ -168,10 +168,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .sendConfirmationEmail(eqTo(registration.contactDetails.fullName),
               eqTo(registration.registeredCompanyName),
               eqTo(registration.contactDetails.emailAddress),
-              eqTo(vatReturn.reference.value),
               eqTo(totalVatOnSales),
               eqTo(vatReturnRequest.period)
-            )(any())
+            )(any(), any())
           verify(mockSessionRepository, times(1)).set(eqTo(userAnswersWithEmailConfirmation))
         }
       }
