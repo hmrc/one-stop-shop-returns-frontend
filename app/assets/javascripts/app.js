@@ -33,10 +33,19 @@ function upTo(el, tagName) {
 
 if (typeof accessibleAutocomplete != 'undefined' && document.querySelector('.autocomplete') != null) {
   // load autocomplete
-  accessibleAutocomplete.enhanceSelectElement({
-    selectElement: document.querySelector('.autocomplete'),
-    showAllValues: true
-  });
+  var selectEl = document.querySelector('.autocomplete');
+  if (selectEl && selectEl.style.display !== "none") {
+    console.log("enhancing select element");
+    accessibleAutocomplete.enhanceSelectElement({
+      autoselect: true,
+      id: selectEl.id, // Important that id is the same
+      defaultValue:
+      selectEl.options[selectEl.options.selectedIndex].innerHTML,
+      minLength: 2,
+      selectElement: selectEl,
+      showAllValues: true
+    });
+  }
 
   // =====================================================
   // Polyfill autocomplete once loaded
