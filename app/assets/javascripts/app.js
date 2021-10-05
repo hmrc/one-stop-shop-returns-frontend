@@ -35,7 +35,6 @@ if (typeof accessibleAutocomplete != 'undefined' && document.querySelector('.aut
   // load autocomplete
   var selectEl = document.querySelector('.autocomplete');
   if (selectEl && selectEl.style.display !== "none") {
-    console.log("enhancing select element");
     accessibleAutocomplete.enhanceSelectElement({
       autoselect: true,
       id: selectEl.id, // Important that id is the same
