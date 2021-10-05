@@ -71,7 +71,7 @@ class IdentifierAction @Inject()(
       case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
         findVrnFromEnrolments(enrolments) match {
           case Some(vrn) =>
-            if (confidence >= ConfidenceLevel.L250) {
+            if (confidence >= ConfidenceLevel.L200) {
               Right(IdentifierRequest(request, credentials, vrn)).toFuture
             } else {
               throw InsufficientConfidenceLevel()
