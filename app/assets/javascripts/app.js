@@ -38,8 +38,7 @@ if (typeof accessibleAutocomplete != 'undefined' && document.querySelector('.aut
     accessibleAutocomplete.enhanceSelectElement({
       autoselect: true,
       id: selectEl.id, // Important that id is the same
-      defaultValue:
-      selectEl.options[selectEl.options.selectedIndex].innerHTML,
+      defaultValue: "",
       minLength: 2,
       selectElement: selectEl,
       showAllValues: true

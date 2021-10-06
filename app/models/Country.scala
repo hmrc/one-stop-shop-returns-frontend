@@ -272,7 +272,7 @@ object Country {
     selectItems(euCountriesWithNI)
 
   def selectItems(countries: Seq[Country]): Seq[SelectItem] =
-    SelectItem(value = None, text = "") +:
+    SelectItem(value = None, text = "&nbsp;") +:
       countries.map {
         country =>
           SelectItemViewModel(
