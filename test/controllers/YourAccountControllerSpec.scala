@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import connectors.VatReturnConnector
 import generators.Generators
-import models.{Period, SubmissionStatus}
+import models.{Period, PeriodWithStatus, SubmissionStatus}
 import models.Quarter.Q3
 import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
@@ -66,8 +66,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         contentAsString(result) mustEqual view(
           registration.registeredCompanyName,
           registration.vrn.vrn,
-          Period(2021, Q3),
-          SubmissionStatus.Due
+          Seq(PeriodWithStatus(Period(2021, Q3),SubmissionStatus.Due))
         )(request, messages(application)).toString
       }
     }

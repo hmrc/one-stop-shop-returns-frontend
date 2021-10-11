@@ -18,51 +18,58 @@ package controllers
 
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Period, SubmissionStatus}
-import models.Quarter.Q3
+import models.{PeriodWithStatus, SubmissionStatus}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.PeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
 import java.time.{LocalDate, ZoneOffset}
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class YourAccountController @Inject()(
-                                 cc: AuthenticatedControllerComponents,
-                                 vatReturnConnector: VatReturnConnector,
-                                 view: IndexView
-                               )(implicit ec: ExecutionContext)
+                                       cc: AuthenticatedControllerComponents,
+                                       vatReturnConnector: VatReturnConnector,
+                                       view: IndexView,
+                                       periodService: PeriodService
+                                     )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
+      val availablePeriods = periodService.getAvailablePeriods(request.registration.commencementDate)
 
-      val year = 2021
-      val period = Period(year, Q3)
+      val availablePeriodsWithStatus = Future.sequence(
+        availablePeriods.map { period =>
+          val submissionStatus = vatReturnConnector.get(period).map {
+            case Right(_) =>
+              SubmissionStatus.Complete
+            case _ =>
 
-      vatReturnConnector.get(period).map {
-        case Right(_) =>
-          SubmissionStatus.Complete
-        case _ =>
-
-          if(LocalDate.now(ZoneOffset.UTC).isAfter(period.paymentDeadline)) {
-            SubmissionStatus.Overdue
-          } else {
-            SubmissionStatus.Due
+              if (LocalDate.now(ZoneOffset.UTC).isAfter(period.paymentDeadline)) {
+                SubmissionStatus.Overdue
+              } else {
+                SubmissionStatus.Due
+              }
           }
-      }.map { submissionStatus =>
+
+          submissionStatus.map { submissionStatus =>
+            PeriodWithStatus(period, submissionStatus)
+          }
+        }
+      )
+      
+      availablePeriodsWithStatus.map { apws =>
         Ok(view(
           request.registration.registeredCompanyName,
           request.vrn.vrn,
-          period,
-          submissionStatus
+          apws
         ))
       }
-
 
   }
 }
