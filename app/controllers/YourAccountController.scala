@@ -42,7 +42,7 @@ class YourAccountController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      val availablePeriods = periodService.getAvailablePeriods(request.registration.commencementDate)
+      val availablePeriods = periodService.getReturnPeriods(request.registration.commencementDate)
 
       val availablePeriodsWithStatus = Future.sequence(
         availablePeriods.map { period =>

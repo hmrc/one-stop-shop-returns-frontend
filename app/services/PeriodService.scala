@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 class PeriodService @Inject()(clock: Clock) {
 
-  def getAvailablePeriods(commencementDate: LocalDate): Seq[Period] =
+  def getReturnPeriods(commencementDate: LocalDate): Seq[Period] =
     getAllPeriods().filterNot(_.lastDay.isBefore(commencementDate))
 
   def getAllPeriods(): Seq[Period] = {

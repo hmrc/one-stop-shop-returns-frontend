@@ -66,7 +66,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val vatReturn = arbitrary[VatReturn].sample.value
 
-        when(periodService.getAvailablePeriods(any())) thenReturn Seq(Period(2021, Q3))
+        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         running(application) {
@@ -98,7 +98,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[PeriodService].toInstance(periodService)
           ).build()
 
-        when(periodService.getAvailablePeriods(any())) thenReturn Seq(Period(2021, Q3))
+        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
         running(application) {
@@ -130,7 +130,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[PeriodService].toInstance(periodService)
           ).build()
 
-        when(periodService.getAvailablePeriods(any())) thenReturn Seq(Period(2021, Q3))
+        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
         running(application) {
@@ -162,7 +162,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[PeriodService].toInstance(periodService)
           ).build()
 
-        when(periodService.getAvailablePeriods(any())) thenReturn Seq(Period(2021, Q3), Period(2021, Q4))
+        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3), Period(2021, Q4))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
         running(application) {
@@ -194,7 +194,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[PeriodService].toInstance(periodService)
           ).build()
 
-        when(periodService.getAvailablePeriods(any())) thenReturn Seq(Period(2021, Q3), Period(2021, Q4))
+        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3), Period(2021, Q4))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
         running(application) {
@@ -231,7 +231,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val vatReturn = arbitrary[VatReturn].sample.value
 
-        when(periodService.getAvailablePeriods(any())) thenReturn Seq(firstPeriod, secondPeriod)
+        when(periodService.getReturnPeriods(any())) thenReturn Seq(firstPeriod, secondPeriod)
         when(vatReturnConnector.get(ArgumentMatchers.eq(firstPeriod))(any())) thenReturn Future.successful(Right(vatReturn))
         when(vatReturnConnector.get(ArgumentMatchers.eq(secondPeriod))(any())) thenReturn Future.successful(Left(NotFound))
 

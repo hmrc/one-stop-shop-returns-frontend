@@ -49,7 +49,7 @@ class PeriodServiceSpec
 
         val expectedPeriods = Seq(Period(2021, Q3))
 
-        service.getAvailablePeriods(commencementDate) must contain theSameElementsAs expectedPeriods
+        service.getReturnPeriods(commencementDate) must contain theSameElementsAs expectedPeriods
       }
 
       "should return nothing for commencement date of 10th October" in {
@@ -59,7 +59,7 @@ class PeriodServiceSpec
 
         val expectedPeriods = Seq.empty
 
-        service.getAvailablePeriods(commencementDate) must contain theSameElementsAs expectedPeriods
+        service.getReturnPeriods(commencementDate) must contain theSameElementsAs expectedPeriods
       }
     }
 
