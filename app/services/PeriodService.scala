@@ -16,26 +16,16 @@
 
 package services
 
-import models.{Period, Quarter}
+import models.Period
 import models.Quarter._
 
-import javax.inject.Inject
 import java.time.{Clock, LocalDate}
-import scala.:+
+import javax.inject.Inject
 
 class PeriodService @Inject()(clock: Clock) {
 
-  def getAvailablePeriods(commencementDate: LocalDate): Seq[Period] = {
-//    val today = LocalDate.now(clock)
-    val year = 2021
-    val period = Period(year, Q3)
-
-    if(period.lastDay.plusDays(1).isAfter(commencementDate)) {
-      Seq(period)
-    } else {
-      Seq.empty
-    }
-  }
+  def getAvailablePeriods(commencementDate: LocalDate): Seq[Period] =
+    getAllPeriods().filterNot(_.lastDay.isBefore(commencementDate))
 
   def getAllPeriods(): Seq[Period] = {
     val firstPeriod = Period(2021, Q3)

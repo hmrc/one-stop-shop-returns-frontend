@@ -25,7 +25,7 @@ import services.PeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
-import java.time.{LocalDate, ZoneOffset}
+import java.time.{Clock, LocalDate, ZoneOffset}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,7 +33,8 @@ class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        vatReturnConnector: VatReturnConnector,
                                        view: IndexView,
-                                       periodService: PeriodService
+                                       periodService: PeriodService,
+                                       clock: Clock
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport {
 
@@ -49,8 +50,7 @@ class YourAccountController @Inject()(
             case Right(_) =>
               SubmissionStatus.Complete
             case _ =>
-
-              if (LocalDate.now(ZoneOffset.UTC).isAfter(period.paymentDeadline)) {
+              if (LocalDate.now(clock).isAfter(period.paymentDeadline)) {
                 SubmissionStatus.Overdue
               } else {
                 SubmissionStatus.Due
@@ -62,12 +62,13 @@ class YourAccountController @Inject()(
           }
         }
       )
-      
+
       availablePeriodsWithStatus.map { apws =>
         Ok(view(
           request.registration.registeredCompanyName,
           request.vrn.vrn,
-          apws
+          apws.filter(_.status == SubmissionStatus.Overdue).map(_.period),
+          apws.find(_.status == SubmissionStatus.Due).map(_.period)
         ))
       }
 
