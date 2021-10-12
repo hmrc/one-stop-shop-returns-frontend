@@ -38,7 +38,8 @@ trait SelectFluency {
         id    = field.id,
         name  = field.name,
         items = items map (item => item copy (selected = field.value.isDefined && field.value == item.value)),
-        label = label
+        label = label,
+        errorMessage = errorMessage(field)
       )
   }
 

@@ -16,13 +16,10 @@
 
 package generators
 
-import models.ReturnReference
-
 import java.time.{Instant, LocalDate, ZoneOffset}
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
-import uk.gov.hmrc.domain.Vrn
 
 import scala.math.BigDecimal.RoundingMode
 

@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class EmailConnector @Inject()(
   config: Configuration,
   client: HttpClient
-)(implicit ec: ExecutionContext)  {
+) {
 
   private val baseUrl = config.get[Service]("microservice.services.email")
   private val identityReads: HttpReads[HttpResponse] = (_: String, _: String, response: HttpResponse) => response

@@ -18,9 +18,9 @@ package controllers
 
 import base.SpecBase
 import connectors.PaymentConnector
-import models.requests.{PaymentPeriod, PaymentRequest, PaymentResponse}
+import models.requests.PaymentResponse
 import models.responses.InvalidJson
-import org.mockito.ArgumentMatchers.{any, anyLong}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
