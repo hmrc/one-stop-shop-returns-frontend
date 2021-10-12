@@ -39,7 +39,7 @@ if (typeof accessibleAutocomplete != 'undefined' && document.querySelector('.aut
       autoselect: true,
       id: selectEl.id, // Important that id is the same
       defaultValue: "",
-      minLength: 2,
+      minLength: 0,
       selectElement: selectEl,
       showAllValues: true
     });
