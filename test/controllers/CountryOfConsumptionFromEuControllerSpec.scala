@@ -17,7 +17,6 @@
 package controllers
 
 import base.SpecBase
-import controllers.actions.{FakeGetRegistrationAction, GetRegistrationAction}
 import forms.CountryOfConsumptionFromEuFormProvider
 import models.{Country, NormalMode}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}

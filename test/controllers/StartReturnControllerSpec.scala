@@ -17,10 +17,8 @@
 package controllers
 
 import base.SpecBase
-import connectors.VatReturnConnector
 import forms.StartReturnFormProvider
 import models.Country
-import models.domain.VatReturn
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -31,7 +29,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.{NoOtherPeriodsAvailableView, StartReturnView}
+import views.html.StartReturnView
 
 import scala.concurrent.Future
 

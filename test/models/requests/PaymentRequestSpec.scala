@@ -19,7 +19,6 @@ package models.requests
 import base.SpecBase
 import models.Period
 import models.Quarter._
-import org.scalacheck.Arbitrary
 
 class PaymentRequestSpec extends SpecBase {
 

@@ -22,11 +22,10 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class IndexController @Inject()(
                                  cc: AuthenticatedControllerComponents,
-                               )(implicit ec: ExecutionContext)
+                               )
   extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
