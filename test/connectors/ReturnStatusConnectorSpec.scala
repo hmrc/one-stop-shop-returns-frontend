@@ -18,6 +18,7 @@ package connectors
 
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
+import formats.Format
 import models.{PaymentReference, PeriodWithStatus, ReturnReference}
 import models.domain.VatReturn
 import models.requests.VatReturnRequest
@@ -54,7 +55,7 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[ReturnStatusConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/statuses/${commencementDate.toEpochDay}"))
+          get(urlEqualTo(s"$url/statuses/${Format.dateTimeFormatter.format(commencementDate)}"))
             .willReturn(
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))

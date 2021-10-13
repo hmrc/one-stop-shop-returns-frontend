@@ -23,7 +23,11 @@ import java.util.Locale
 object Format {
 
   val localDateFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofLocalizedDate( FormatStyle.LONG )
-      .withLocale( Locale.UK )
-      .withZone( ZoneId.systemDefault() )
+    DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
+      .withLocale(Locale.UK)
+      .withZone(ZoneId.systemDefault())
+
+  val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    .withLocale(Locale.UK)
+    .withZone(ZoneId.systemDefault())
 }

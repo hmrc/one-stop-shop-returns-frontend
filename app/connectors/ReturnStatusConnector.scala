@@ -18,10 +18,13 @@ package connectors
 
 import config.Service
 import connectors.ReturnStatusesHttpParser._
+import formats.Format
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
-import java.time.LocalDate
+import java.time.{LocalDate, ZoneId}
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,7 +34,8 @@ class ReturnStatusConnector @Inject()(config: Configuration, httpClient: HttpCli
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
 
   def listStatuses(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[ReturnStatusesResponse] = {
-    val url = s"$baseUrl/vat-returns/statuses/${commencementDate.toEpochDay}"
+
+    val url = s"$baseUrl/vat-returns/statuses/${Format.dateTimeFormatter.format(commencementDate)}"
 
     httpClient.GET[ReturnStatusesResponse](url)
   }
