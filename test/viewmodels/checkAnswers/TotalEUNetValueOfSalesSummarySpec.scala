@@ -33,7 +33,7 @@ class TotalEUNetValueOfSalesSummarySpec extends SpecBase {
     ActionItemViewModel(
       "site.change",
       routes.SalesFromEuListController.onPageLoad(CheckMode, completeUserAnswers.period).url)
-      .withVisuallyHiddenText("soldGoodsFromEu.change.hidden")
+      .withVisuallyHiddenText("soldGoodsFromEu.changeEUSales.hidden")
   )
 
   "TotalEUNetValueOfSalesSummary" - {

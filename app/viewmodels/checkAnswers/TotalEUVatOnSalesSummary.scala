@@ -35,7 +35,7 @@ object TotalEUVatOnSalesSummary extends CurrencyFormatter {
           value = ValueViewModel(HtmlContent(currencyFormat(totalEUVatOnSales))),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesFromEuListController.onPageLoad(CheckMode, answers.period).url)
-              .withVisuallyHiddenText(messages("soldGoodsFromEu.change.hidden"))
+              .withVisuallyHiddenText(messages("soldGoodsFromEu.changeEUVAT.hidden"))
           )
         )
     }
