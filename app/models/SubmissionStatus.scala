@@ -26,4 +26,7 @@ object SubmissionStatus extends Enumerable.Implicits {
 
   val values: Seq[SubmissionStatus] = Seq(Due, Overdue, Complete)
 
+  implicit val enumerable: Enumerable[SubmissionStatus] =
+    Enumerable(values.map(v => v.toString -> v): _*)
+
 }

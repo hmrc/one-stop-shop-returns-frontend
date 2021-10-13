@@ -17,22 +17,18 @@
 package controllers
 
 import base.SpecBase
-import connectors.VatReturnConnector
+import connectors.ReturnStatusConnector
 import generators.Generators
-import models.Period
+import models.{Period, PeriodWithStatus, SubmissionStatus}
 import models.Quarter._
-import models.domain.VatReturn
-import models.responses.NotFound
-import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.when
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.PeriodService
 import views.html.IndexView
 
 import java.time.{Clock, Instant, ZoneId}
@@ -40,12 +36,10 @@ import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
 
-  private val vatReturnConnector = mock[VatReturnConnector]
-  private val periodService = mock[PeriodService]
+  private val returnStatusConnector = mock[ReturnStatusConnector]
 
   override def beforeEach(): Unit = {
-    Mockito.reset(vatReturnConnector)
-    Mockito.reset(periodService)
+    Mockito.reset(returnStatusConnector)
     super.beforeEach()
   }
 
@@ -60,14 +54,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
           ).build()
 
-        val vatReturn = arbitrary[VatReturn].sample.value
-
-        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -94,12 +86,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
           ).build()
 
-        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        val period = Period(2021, Q3)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -126,12 +119,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
           ).build()
 
-        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        val period = Period(2021, Q3)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Overdue))))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -158,12 +151,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
           ).build()
 
-        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3), Period(2021, Q4))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        val firstPeriod = Period(2021, Q3)
+        val secondPeriod = Period(2021, Q4)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(Right(Seq(
+            PeriodWithStatus(firstPeriod, SubmissionStatus.Overdue),
+            PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
+          )))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -177,8 +175,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Seq(Period(2021, Q3)),
-            Some(Period(2021, Q4))
+            Seq(firstPeriod),
+            Some(secondPeriod)
           )(request, messages(application)).toString
         }
       }
@@ -190,12 +188,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
           ).build()
-
-        when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3), Period(2021, Q4))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        val firstPeriod = Period(2021, Q3)
+        val secondPeriod = Period(2021, Q4)
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
+          PeriodWithStatus(firstPeriod, SubmissionStatus.Overdue),
+          PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
+        )))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -209,7 +209,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Seq(Period(2021, Q3), Period(2021, Q4)),
+            Seq(firstPeriod, secondPeriod),
             None
           )(request, messages(application)).toString
         }
@@ -222,18 +222,18 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
           ).build()
 
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
 
-        val vatReturn = arbitrary[VatReturn].sample.value
-
-        when(periodService.getReturnPeriods(any())) thenReturn Seq(firstPeriod, secondPeriod)
-        when(vatReturnConnector.get(ArgumentMatchers.eq(firstPeriod))(any())) thenReturn Future.successful(Right(vatReturn))
-        when(vatReturnConnector.get(ArgumentMatchers.eq(secondPeriod))(any())) thenReturn Future.successful(Left(NotFound))
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
+            )))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)

@@ -25,9 +25,9 @@ import javax.inject.Inject
 class PeriodService @Inject()(clock: Clock) {
 
   def getReturnPeriods(commencementDate: LocalDate): Seq[Period] =
-    getAllPeriods().filterNot(_.lastDay.isBefore(commencementDate))
+    getAllPeriods.filterNot(_.lastDay.isBefore(commencementDate))
 
-  def getAllPeriods(): Seq[Period] = {
+  def getAllPeriods: Seq[Period] = {
     val firstPeriod = Period(2021, Q3)
     getPeriodsUntilDate(firstPeriod, LocalDate.now(clock))
   }

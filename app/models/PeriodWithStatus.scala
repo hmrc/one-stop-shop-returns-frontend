@@ -16,4 +16,10 @@
 
 package models
 
+import play.api.libs.json.{Json, OFormat}
+
 case class PeriodWithStatus(period: Period, status: SubmissionStatus)
+
+object PeriodWithStatus {
+  implicit val format: OFormat[PeriodWithStatus] = Json.format[PeriodWithStatus]
+}
