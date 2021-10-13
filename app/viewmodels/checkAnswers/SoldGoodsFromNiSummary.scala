@@ -37,7 +37,7 @@ object SoldGoodsFromNiSummary  {
           value   = ValueViewModel(value),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SoldGoodsFromNiController.onPageLoad(CheckMode, answers.period).url)
-              .withVisuallyHiddenText(messages("soldGoodsFromNi.change.hidden"))
+              .withVisuallyHiddenText(messages("soldGoodsFromNi.changeSalesFromNI.hidden"))
           )
         )
     }

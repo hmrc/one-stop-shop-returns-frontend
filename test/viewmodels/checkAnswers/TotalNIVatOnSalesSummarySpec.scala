@@ -32,7 +32,7 @@ class TotalNIVatOnSalesSummarySpec extends SpecBase {
     ActionItemViewModel(
       "site.change",
       routes.SalesFromNiListController.onPageLoad(CheckMode, completeSalesFromNIUserAnswers.period).url)
-      .withVisuallyHiddenText("vatOnSalesFromNi.change.hidden")
+      .withVisuallyHiddenText("soldGoodsFromNi.changeNIVAT.hidden")
   )
 
   "TotalVatOnSalesFromNiSummary" - {
