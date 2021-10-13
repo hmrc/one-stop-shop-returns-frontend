@@ -52,7 +52,7 @@
 
             <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p2")</p>
 
-            <a class="govuk-button" href="@routes.PaymentController.makePayment(period, amountInPence)">@messages("returnSubmitted.payNow")</a>
+            <a role="button" data-module="govuk-button" class="govuk-button" href="@routes.PaymentController.makePayment(period, amountInPence)">@messages("returnSubmitted.payNow")</a>
 
             <p class="govuk-body">@messages("returnSubmitted.payBy.p1", period.paymentDeadlineDisplay)</p>
 
