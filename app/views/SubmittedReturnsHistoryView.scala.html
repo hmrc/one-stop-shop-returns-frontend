@@ -36,20 +36,16 @@
     <h1 class="govuk-heading-xl">@messages("submittedReturnsHistory.heading")</h1>
 
     <div class="govuk-tabs" data-module="govuk-tabs">
-        <ul class="govuk-tabs__list">
-            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+        <div class="govuk-tabs__list">
+            <p class="govuk-tabs__list-item govuk-tabs__list-item--selected">
                 <a class="govuk-tabs__tab" href="#returns_year">2021</a>
-            </li>
-        </ul>
+            <p/>
+        </div>
         <div class="govuk-tabs__panel" id="returns_year">
             <h2 class="govuk-heading-m">2021 returns</h2>
             @vatReturn match {
                 case Some(vatReturn) => {
-                    <ul class="govuk-list govuk-list--bullet">
-                        <li>
-                            <a class="govuk-link" href="@routes.PreviousReturnController.onPageLoad(vatReturn.period)">@vatReturn.period.displayText</a>
-                        </li>
-                    </ul>
+                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturn.period)">@vatReturn.period.displayText</a>
                 }
                 case _ => {
                     <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
