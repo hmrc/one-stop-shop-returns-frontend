@@ -98,9 +98,9 @@ soldGoodsFromNi.title = Did you make taxable sales of goods to consumers from No
 soldGoodsFromNi.heading = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
 soldGoodsFromNi.checkYourAnswersLabel = Sales made from Northern Ireland
 soldGoodsFromNi.error.required = Select yes if you made taxable sales of goods to consumers from Northern Ireland during this period
-soldGoodsFromNi.changeSalesFromNI.hidden = Change if you made taxable sales from Northern Ireland during this period
-soldGoodsFromNi.changeNISales.hidden = Change sales excluding VAT from Northern Ireland during this period
-soldGoodsFromNi.changeNIVAT.hidden = Change VAT charged from Northern Ireland during this period
+soldGoodsFromNi.changeSalesFromNI.hidden = if you made taxable sales from Northern Ireland during this period
+soldGoodsFromNi.changeNISales.hidden = sales excluding VAT from Northern Ireland during this period
+soldGoodsFromNi.changeNIVAT.hidden = VAT charged from Northern Ireland during this period
 
 vatRatesFromNi.title = Which VAT rates did you charge?
 vatRatesFromNi.heading = Which VAT rates did you charge?
@@ -154,9 +154,9 @@ soldGoodsFromEu.title = Did you make taxable sales of goods from EU countries to
 soldGoodsFromEu.heading = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
 soldGoodsFromEu.checkYourAnswersLabel = Sales made from EU countries
 soldGoodsFromEu.error.required = Select yes if you made taxable sales of goods from EU countries to consumers in other EU countries during this period
-soldGoodsFromEu.changeSalesFromEuToEu.hidden = Change if you made taxable sales from EU countries to consumers in other EU countries
-soldGoodsFromEu.changeEUSales.hidden = Change sales excluding VAT from EU countries to consumers in other EU countries
-soldGoodsFromEu.changeEUVAT.hidden = Change VAT charged from EU countries to consumers in other EU countries
+soldGoodsFromEu.changeSalesFromEuToEu.hidden = if you made taxable sales from EU countries to consumers in other EU countries
+soldGoodsFromEu.changeEUSales.hidden = sales excluding VAT from EU countries to consumers in other EU countries
+soldGoodsFromEu.changeEUVAT.hidden = VAT charged from EU countries to consumers in other EU countries
 
 vatRatesFromEu.title = Which VAT rates did you charge?
 vatRatesFromEu.heading = Which VAT rates did you charge?
