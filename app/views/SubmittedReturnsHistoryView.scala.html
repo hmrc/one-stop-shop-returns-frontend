@@ -45,7 +45,7 @@
             <h2 class="govuk-heading-m">2021 returns</h2>
             @vatReturn match {
                 case Some(vatReturn) => {
-                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturn.period)">@vatReturn.period.displayText</a>
+                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturn.period)" id="period">@vatReturn.period.displayText</a>
                 }
                 case _ => {
                     <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
