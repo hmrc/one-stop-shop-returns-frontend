@@ -15,67 +15,77 @@
  *@
 
 @this(
-    layout: templates.Layout,
-    govukButton: GovukButton
+        layout: templates.Layout,
+        govukButton: GovukButton
 )
 
-@(businessName: String, vrn: String, period: Period, submissionStatus: SubmissionStatus)(implicit request: Request[_], messages: Messages)
+@(businessName: String, vrn: String, overduePeriods: Seq[Period], duePeriod: Option[Period])(implicit request: Request[_], messages: Messages)
 
-@layout(
-    pageTitle    = titleNoForm(messages("index.title")),
-    showBackLink = false
-) {
+    @layout(
+        pageTitle = titleNoForm(messages("index.title")),
+        showBackLink = false
+    ) {
 
-    <h1 class="govuk-heading-l">
-        @messages("index.heading")
-        <span class="govuk-caption-m">@businessName</span>
-        <span class="govuk-caption-m">@messages("index.vrn", vrn)</span>
-    </h1>
+        <h1 class="govuk-heading-l">
+            @messages("index.heading")
+            <span class="govuk-caption-m">@businessName</span>
+            <span class="govuk-caption-m">@messages("index.vrn", vrn)</span>
+        </h1>
 
-    <div class="flex-container govuk-grid-row">
-        <div class="tile tile-no-border">
-            <div id="next-return" class="tile-body">
-                <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
+        <div class="flex-container govuk-grid-row">
+            <div class="tile tile-no-border">
+                <div id="next-return" class="tile-body">
+                    <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
 
-                @submissionStatus match {
-                    case SubmissionStatus.Complete => {
-                        <p class="govuk-body">@messages("index.yourReturns.nothingDue")</p>
+
+
+                    @overduePeriods.size match {
+                        case 0 => {}
+                        case 1 => { <p class="govuk-body">@messages("index.yourReturns.returnOverdue", overduePeriods.head.displayText)</p> }
+                        case x => { <p class="govuk-body">@messages("index.yourReturns.returnsOverdue", x)</p> }
                     }
-                    case SubmissionStatus.Due => {
-                        <p class="govuk-body">@messages("index.yourReturns.returnDue")</p>
 
-                        <p class="govuk-body">
-                            <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url">
-                               @messages("index.yourReturns.startReturn")
-                            </a>
-                        </p>
+                    @duePeriod match {
+                        case None => {}
+                        case Some(period) => {<p class="govuk-body">@messages("index.yourReturns.returnDue", period.displayText, period.paymentDeadlineDisplay)</p> }
                     }
-                    case SubmissionStatus.Overdue => {
-                        <p class="govuk-body">@messages("index.yourReturns.returnOverdue")</p>
 
-                        <p class="govuk-body">
-                            <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url">
+                    @(duePeriod, overduePeriods.size) match {
+                        case (None, 0) => {
+                            <p class="govuk-body">@messages("index.yourReturns.nothingDue")</p>
+                        }
+                        case (Some(period), 0) => {
+                            <p class="govuk-body">
+                                <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url">
                                 @messages("index.yourReturns.startReturn")
-                            </a>
-                        </p>
+                                </a>
+                            </p>
+                        }
+                        case _ => {
+                            <p class="govuk-body">
+                                <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(overduePeriods.head).url">
+                                @messages("index.yourReturns.startReturn")
+                                </a>
+                            </p>
+                        }
                     }
-                }
+
+                </div>
             </div>
-        </div>
 
-        <div class="tile tile-no-border">
-            <div id="history" class="tile-body">
-                <h2 class="govuk-heading-m">@messages("index.history")</h2>
+            <div class="tile tile-no-border">
+                <div id="history" class="tile-body">
+                    <h2 class="govuk-heading-m">@messages("index.history")</h2>
 
-                <p class="govuk-body">
-                    <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url">
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url">
                         @messages("index.history.previousReturns")
-                    </a>
-                </p>
+                        </a>
+                    </p>
+                </div>
             </div>
+
         </div>
 
-    </div>
 
-
-}
+    }

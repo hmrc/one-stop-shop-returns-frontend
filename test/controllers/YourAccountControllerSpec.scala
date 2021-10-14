@@ -17,11 +17,10 @@
 package controllers
 
 import base.SpecBase
-import connectors.VatReturnConnector
+import connectors.ReturnStatusConnector
 import generators.Generators
-import models.{Period, SubmissionStatus}
-import models.Quarter.Q3
-import models.responses.NotFound
+import models.{Period, PeriodWithStatus, SubmissionStatus}
+import models.Quarter._
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -32,43 +31,226 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.IndexView
 
+import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
 
-  private val vatReturnConnector = mock[VatReturnConnector]
+  private val returnStatusConnector = mock[ReturnStatusConnector]
 
   override def beforeEach(): Unit = {
-    Mockito.reset(vatReturnConnector)
+    Mockito.reset(returnStatusConnector)
     super.beforeEach()
   }
 
   "Your Account Controller" - {
 
-    "must return OK and the correct view" in {
+    "must return OK and the correct view" - {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
-        ).build()
+      "when there are no returns due" in {
 
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-      running(application) {
-        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+          ).build()
 
-        val result = route(application, request).value
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
 
-        val view = application.injector.instanceOf[IndexView]
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
-        status(result) mustEqual OK
+          val result = route(application, request).value
 
-        contentAsString(result) mustEqual view(
-          registration.registeredCompanyName,
-          registration.vrn.vrn,
-          Period(2021, Q3),
-          SubmissionStatus.Due
-        )(request, messages(application)).toString
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(),
+            None
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return due" in {
+
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+          ).build()
+
+        val period = Period(2021, Q3)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(),
+            Some(Period(2021, Q3))
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return overdue" in {
+
+        val instant = Instant.parse("2021-11-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+          ).build()
+
+        val period = Period(2021, Q3)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Overdue))))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(Period(2021, Q3)),
+            None
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return due, 1 return overdue" in {
+
+        val instant = Instant.parse("2022-01-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+          ).build()
+
+        val firstPeriod = Period(2021, Q3)
+        val secondPeriod = Period(2021, Q4)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(Right(Seq(
+            PeriodWithStatus(firstPeriod, SubmissionStatus.Overdue),
+            PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
+          )))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(firstPeriod),
+            Some(secondPeriod)
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 2 returns overdue" in {
+
+        val instant = Instant.parse("2022-02-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+          ).build()
+        val firstPeriod = Period(2021, Q3)
+        val secondPeriod = Period(2021, Q4)
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
+          PeriodWithStatus(firstPeriod, SubmissionStatus.Overdue),
+          PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
+        )))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(firstPeriod, secondPeriod),
+            None
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return is completed 1 return is due" in {
+
+        val instant = Instant.parse("2022-01-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+          ).build()
+
+        val firstPeriod = Period(2021, Q3)
+        val secondPeriod = Period(2021, Q4)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
+            )))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(),
+            Some(secondPeriod)
+          )(request, messages(application)).toString
+        }
       }
     }
   }

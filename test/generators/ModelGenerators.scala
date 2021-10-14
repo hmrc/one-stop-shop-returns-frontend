@@ -70,6 +70,14 @@ trait ModelGenerators {
       } yield Period(year, quarter)
   }
 
+  implicit val arbitraryPeriodWithStatus: Arbitrary[PeriodWithStatus] =
+    Arbitrary {
+      for {
+        period <- arbitrary[Period]
+        status <- Gen.oneOf(SubmissionStatus.values)
+      } yield PeriodWithStatus(period, status)
+  }
+
   implicit def arbitraryVrn: Arbitrary[Vrn] = Arbitrary {
     Gen.listOfN(9, Gen.numChar).map(_.mkString).map(Vrn(_))
   }

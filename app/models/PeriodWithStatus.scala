@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package formats
+package models
 
-import java.time.format.{DateTimeFormatter, FormatStyle}
-import java.time.ZoneId
-import java.util.Locale
+import play.api.libs.json.{Json, OFormat}
 
-object Format {
+case class PeriodWithStatus(period: Period, status: SubmissionStatus)
 
-  val localDateFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
-      .withLocale(Locale.UK)
-      .withZone(ZoneId.systemDefault())
-
-  val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    .withLocale(Locale.UK)
-    .withZone(ZoneId.systemDefault())
+object PeriodWithStatus {
+  implicit val format: OFormat[PeriodWithStatus] = Json.format[PeriodWithStatus]
 }

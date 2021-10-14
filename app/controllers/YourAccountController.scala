@@ -16,53 +16,46 @@
 
 package controllers
 
-import connectors.VatReturnConnector
+import connectors.ReturnStatusConnector
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Period, SubmissionStatus}
-import models.Quarter.Q3
+import logging.Logging
+import models.SubmissionStatus
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
-import java.time.{LocalDate, ZoneOffset}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class YourAccountController @Inject()(
-                                 cc: AuthenticatedControllerComponents,
-                                 vatReturnConnector: VatReturnConnector,
-                                 view: IndexView
-                               )(implicit ec: ExecutionContext)
-  extends FrontendBaseController with I18nSupport {
+                                       cc: AuthenticatedControllerComponents,
+                                       returnStatusConnector: ReturnStatusConnector,
+                                       view: IndexView
+                                     )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
-      val year = 2021
-      val period = Period(year, Q3)
-
-      vatReturnConnector.get(period).map {
-        case Right(_) =>
-          SubmissionStatus.Complete
-        case _ =>
-
-          if(LocalDate.now(ZoneOffset.UTC).isAfter(period.paymentDeadline)) {
-            SubmissionStatus.Overdue
-          } else {
-            SubmissionStatus.Due
-          }
-      }.map { submissionStatus =>
-        Ok(view(
-          request.registration.registeredCompanyName,
-          request.vrn.vrn,
-          period,
-          submissionStatus
-        ))
+      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
+        case Right(availablePeriodsWithStatus) =>
+          Ok(view(
+            request.registration.registeredCompanyName,
+            request.vrn.vrn,
+            availablePeriodsWithStatus
+              .filter(_.status == SubmissionStatus.Overdue)
+              .map(_.period),
+            availablePeriodsWithStatus
+              .find(_.status == SubmissionStatus.Due)
+              .map(_.period)
+          ))
+        case Left(value) =>
+          logger.error(s"there was an error $value")
+          throw new Exception(value.toString)
       }
-
 
   }
 }
