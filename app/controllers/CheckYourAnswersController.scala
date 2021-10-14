@@ -77,26 +77,18 @@ class CheckYourAnswersController @Inject()(
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
-      val vatToEuCountriesSummaryList = SummaryListViewModel(
-        rows =
-          VatOwedToEuCountriesSummary.row(service.getVatOwedToEuCountries(request.userAnswers))
-      ).withCssClass("govuk-!-margin-bottom-9")
-
-      val totalSummaryList = SummaryListViewModel(
-        rows = Seq(
-          TotalVatOnSalesSummary.row(service.getTotalVatOnSales(request.userAnswers))
-        ).flatten
-      ).withCssClass("govuk-!-margin-bottom-9")
+      val totalVatToCountries = service.getVatOwedToEuCountries(request.userAnswers)
+      val totalVatOnSales = service.getTotalVatOnSales(request.userAnswers)
 
       Ok(view(
         Seq(
           (None, businessSummaryList),
           (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
-          (Some("checkYourAnswers.vatOwedToEuCountries.heading"), vatToEuCountriesSummaryList),
-          (None, totalSummaryList)
+          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
         ),
-        period
+        period,
+        totalVatToCountries,
+        totalVatOnSales
       ))
   }
 
