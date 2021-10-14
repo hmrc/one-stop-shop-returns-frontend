@@ -222,6 +222,7 @@ returnSubmitted.backToAccount.link.text = Back to your account
 
 submittedReturnsHistory.title = Submitted returns
 submittedReturnsHistory.heading = Submitted returns
+submittedReturnsHistory.sub-heading = View and pay your previous returns
 submittedReturnsHistory.no-returns = You have not submitted any returns for this year.
 
 previousReturn.title = Submitted return for
