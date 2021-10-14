@@ -38,25 +38,27 @@
             @govukSummaryList(summaryList)
         }
 
-        <table class="govuk-table">
-            <caption class="govuk-table__caption govuk-table__caption--m">
-                @messages("checkYourAnswers.vatOwedToEuCountries.heading")
-            </caption>
-            <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswersLabel.country")</th>
-                <th scope="col" class="govuk-table__header">@messages("checkYourAnswersLabel.amount")</th>
-            </tr>
-            </thead>
-            <tbody class="govuk-table__body">
-            @for(totalVatToCountry <- totalVatToCountries) {
-            <tr class="govuk-table__row">
-                <td scope="row" class="govuk-table__cell">@totalVatToCountry.country.name</td>
-                <td class="govuk-table__cell">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
-            </tr>
-            }
-            </tbody>
-        </table>
+        @if(totalVatOnSales > 0) {
+            <table class="govuk-table">
+                <caption class="govuk-table__caption govuk-table__caption--m">
+                    @messages("checkYourAnswers.vatOwedToEuCountries.heading")
+                </caption>
+                <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswersLabel.country")</th>
+                    <th scope="col" class="govuk-table__header">@messages("checkYourAnswersLabel.amount")</th>
+                </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                @for(totalVatToCountry <- totalVatToCountries) {
+                <tr class="govuk-table__row">
+                    <td scope="row" class="govuk-table__cell">@totalVatToCountry.country.name</td>
+                    <td class="govuk-table__cell">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
+                </tr>
+                }
+                </tbody>
+            </table>
+        }
 
         <dl class="govuk-summary-list  govuk-!-margin-bottom-9">
             <div class="govuk-summary-list__row">
