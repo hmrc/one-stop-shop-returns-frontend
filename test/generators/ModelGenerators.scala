@@ -243,9 +243,9 @@ trait ModelGenerators {
     Arbitrary {
       for {
         period <- arbitrary[Period]
-        originalAmount <- arbitrary[BigDecimal]
-        outstandingAmount <- arbitrary[BigDecimal]
-        clearedAmount <- arbitrary[BigDecimal]
+        originalAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
+        outstandingAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
+        clearedAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
       } yield Charge(period, originalAmount, outstandingAmount, clearedAmount)
     }
 

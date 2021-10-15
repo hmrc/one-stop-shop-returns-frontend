@@ -23,7 +23,6 @@ import models.Period
 import models.Quarter.Q3
 import models.financialdata.Charge
 import models.responses.InvalidJson
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
 import play.api.http.Status._
@@ -40,12 +39,11 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
   private def application: Application =
     applicationBuilder()
       .configure("microservice.services.one-stop-shop-returns.port" -> server.port)
-
       .build()
 
   ".get" - {
 
-    val charge = arbitrary[Charge].sample.value
+    val charge = Charge(period, BigDecimal(1000.50), BigDecimal(1000.50), BigDecimal(1000.50))
     val responseJson = Json.toJson(charge)
 
     "must return a charge when successful" in {
