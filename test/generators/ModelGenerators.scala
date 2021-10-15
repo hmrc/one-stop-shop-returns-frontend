@@ -19,6 +19,7 @@ package generators
 import models.VatOnSalesChoice.Standard
 import models.{domain, _}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.financialdata.Charge
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
@@ -236,6 +237,16 @@ trait ModelGenerators {
         salesFromEu <- Gen.listOfN(euSales, arbitrary[SalesFromEuCountry])
         now         = Instant.now
       } yield VatReturn(vrn, period, ReturnReference(vrn, period), PaymentReference(vrn, period), None, None, salesFromNi, salesFromEu, now, now)
+    }
+
+  implicit val arbitraryCharge: Arbitrary[Charge] =
+    Arbitrary {
+      for {
+        period <- arbitrary[Period]
+        originalAmount <- arbitrary[BigDecimal]
+        outstandingAmount <- arbitrary[BigDecimal]
+        clearedAmount <- arbitrary[BigDecimal]
+      } yield Charge(period, originalAmount, outstandingAmount, clearedAmount)
     }
 
   implicit val arbitraryReturnReference: Arbitrary[ReturnReference] =

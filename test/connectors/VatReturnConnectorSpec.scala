@@ -18,10 +18,10 @@ package connectors
 
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.{PaymentReference, ReturnReference}
 import models.domain.VatReturn
 import models.requests.VatReturnRequest
 import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
+import models.{PaymentReference, ReturnReference}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
