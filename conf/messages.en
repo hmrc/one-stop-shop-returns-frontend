@@ -49,6 +49,9 @@ index.yourReturns.returnOverdue = {0} is overdue
 index.yourReturns.returnsOverdue = You have {0} returns overdue
 index.yourReturns.nothingDue = You do not have any returns due
 index.yourReturns.startReturn = Start your return
+index.payment.nothingOwed = You do not owe anything right now
+index.payment.makeAPayment = Make a payment
+index.payment.amountOwed = You owe {0} for {1}
 index.history = History
 index.history.previousReturns = View past returns
 

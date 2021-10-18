@@ -17,6 +17,7 @@
 package controllers
 
 import connectors.ReturnStatusConnector
+import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.SubmissionStatus
@@ -31,6 +32,7 @@ import scala.concurrent.ExecutionContext
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        returnStatusConnector: ReturnStatusConnector,
+                                       financialDataConnector: FinancialDataConnector,
                                        view: IndexView
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
@@ -40,8 +42,13 @@ class YourAccountController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
-      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
-        case Right(availablePeriodsWithStatus) =>
+      val results = for {
+        availablePeriodsWithStatus <- returnStatusConnector.listStatuses(request.registration.commencementDate)
+        periodsWithOutstandingAmounts <- financialDataConnector.getPeriodsAndOutstandingAmounts(request.registration.commencementDate)
+      } yield (availablePeriodsWithStatus, periodsWithOutstandingAmounts)
+
+      results.map {
+        case (Right(availablePeriodsWithStatus), Right(periodsWithOutstandingAmounts)) =>
           Ok(view(
             request.registration.registeredCompanyName,
             request.vrn.vrn,
@@ -50,11 +57,17 @@ class YourAccountController @Inject()(
               .map(_.period),
             availablePeriodsWithStatus
               .find(_.status == SubmissionStatus.Due)
-              .map(_.period)
-          ))
-        case Left(value) =>
-          logger.error(s"there was an error $value")
-          throw new Exception(value.toString)
+              .map(_.period),
+            periodsWithOutstandingAmounts))
+        case (Left(error), Left(error2)) =>
+          logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
+          throw new Exception(error.toString)
+        case (Left(error), _) =>
+          logger.error(s"there was an error during period with status $error")
+          throw new Exception(error.toString)
+        case (_, Left(error)) =>
+          logger.error(s"there was an error getting periods with outstanding amounts $error")
+          throw new Exception(error.toString)
       }
 
   }

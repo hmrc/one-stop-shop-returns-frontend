@@ -22,6 +22,7 @@ import models.Period
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
+import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,5 +34,10 @@ class FinancialDataConnector @Inject()(config: Configuration, httpClient: HttpCl
   def getCharge(period: Period)(implicit hc: HeaderCarrier): Future[ChargeResponse] = {
     val url = s"$baseUrl/financial-data/charge/$period"
     httpClient.GET[ChargeResponse](url)
+  }
+
+  def getPeriodsAndOutstandingAmounts(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[OutstandingPaymentsResponse] = {
+    val url = s"$baseUrl/financial-data/outstanding-payments/$commencementDate"
+    httpClient.GET[OutstandingPaymentsResponse](url)
   }
 }

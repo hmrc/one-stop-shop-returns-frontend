@@ -17,7 +17,7 @@
 package connectors.financialdata
 
 import logging.Logging
-import models.financialdata.Charge
+import models.financialdata.{Charge, PeriodWithOutstandingAmount}
 import models.responses._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -29,7 +29,20 @@ object FinancialDataHttpParser extends Logging {
   implicit object ChargeReads extends HttpReads[ChargeResponse] {
     override def read(method: String, url: String, response: HttpResponse): ChargeResponse = {
       response.json.validate[Charge] match {
-        case JsSuccess(vatReturn, _) => Right(vatReturn)
+        case JsSuccess(charge, _) => Right(charge)
+        case JsError(errors) =>
+          logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
+          Left(InvalidJson)
+      }
+    }
+  }
+
+  type OutstandingPaymentsResponse = Either[ErrorResponse, Seq[PeriodWithOutstandingAmount]]
+
+  implicit object PeriodWithOutstandingAmountReads extends HttpReads[OutstandingPaymentsResponse] {
+    override def read(method: String, url: String, response: HttpResponse): OutstandingPaymentsResponse = {
+      response.json.validate[Seq[PeriodWithOutstandingAmount]] match {
+        case JsSuccess(periodsWithOutstandingAmounts, _) => Right(periodsWithOutstandingAmounts)
         case JsError(errors) =>
           logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
           Left(InvalidJson)
