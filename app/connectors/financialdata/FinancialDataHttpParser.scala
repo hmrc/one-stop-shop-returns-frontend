@@ -19,6 +19,7 @@ package connectors.financialdata
 import logging.Logging
 import models.financialdata.Charge
 import models.responses._
+import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
@@ -28,11 +29,17 @@ object FinancialDataHttpParser extends Logging {
 
   implicit object ChargeReads extends HttpReads[ChargeResponse] {
     override def read(method: String, url: String, response: HttpResponse): ChargeResponse = {
-      response.json.validate[Charge] match {
-        case JsSuccess(vatReturn, _) => Right(vatReturn)
-        case JsError(errors) =>
-          logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
-          Left(InvalidJson)
+      response.status match {
+        case OK =>
+          response.json.validate[Charge] match {
+            case JsSuccess(vatReturn, _) => Right(vatReturn)
+            case JsError(errors) =>
+              logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
+              Left(InvalidJson)
+            }
+        case _ =>
+          logger.warn("Failed to retrieve charge data")
+          Left(UnexpectedResponseStatus(response.status, response.body))
       }
     }
   }
