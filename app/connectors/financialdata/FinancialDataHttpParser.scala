@@ -17,7 +17,7 @@
 package connectors.financialdata
 
 import logging.Logging
-import models.financialdata.Charge
+import models.financialdata.{Charge, PeriodWithOutstandingAmount}
 import models.responses._
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
@@ -36,9 +36,28 @@ object FinancialDataHttpParser extends Logging {
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
               Left(InvalidJson)
-            }
+          }
         case _ =>
           logger.warn("Failed to retrieve charge data")
+          Left(UnexpectedResponseStatus(response.status, response.body))
+      }
+    }
+  }
+
+  type OutstandingPaymentsResponse = Either[ErrorResponse, Seq[PeriodWithOutstandingAmount]]
+
+  implicit object PeriodWithOutstandingAmountReads extends HttpReads[OutstandingPaymentsResponse] {
+    override def read(method: String, url: String, response: HttpResponse): OutstandingPaymentsResponse = {
+      response.status match {
+        case OK =>
+          response.json.validate[Seq[PeriodWithOutstandingAmount]] match {
+            case JsSuccess(periodsWithOutstandingAmounts, _) => Right(periodsWithOutstandingAmounts)
+            case JsError(errors) =>
+              logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
+              Left(InvalidJson)
+          }
+        case _ =>
+          logger.warn("Failed to retrieve outstanding amount data")
           Left(UnexpectedResponseStatus(response.status, response.body))
       }
     }

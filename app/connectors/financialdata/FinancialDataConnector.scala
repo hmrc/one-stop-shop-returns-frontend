@@ -38,6 +38,11 @@ class FinancialDataConnector @Inject()(config: Configuration, httpClient: HttpCl
     httpClient.GET[ChargeResponse](url)
   }
 
+  def getPeriodsAndOutstandingAmounts(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[OutstandingPaymentsResponse] = {
+    val url = s"$baseUrl/financial-data/outstanding-payments/$commencementDate"
+    httpClient.GET[OutstandingPaymentsResponse](url)
+  }
+
   def getVatReturnWithFinancialData(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[VatReturnWithFinancialDataResponse] = {
     val url = s"$baseUrl/financial-data/charge-history/${Format.dateTimeFormatter.format(commencementDate)}"
     httpClient.GET[VatReturnWithFinancialDataResponse](url)
