@@ -79,7 +79,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCharge(period).futureValue mustBe Left(InvalidJson)
+        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Left(InvalidJson)
       }
     }
   }
@@ -88,7 +88,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
     val commencementDate = LocalDate.now()
     val url = s"$baseUrl/outstanding-payments/${Format.dateTimeFormatter.format(commencementDate)}"
     val periodWithOutstandingAmount = PeriodWithOutstandingAmount(period, BigDecimal(1000.50))
-    val responseJson = Json.toJson(periodWithOutstandingAmount)
+    val responseJson = Json.toJson(Seq(periodWithOutstandingAmount))
 
     "must return a PeriodWithOutstandingAmount when successful" in {
 
@@ -101,7 +101,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCharge(period).futureValue mustBe Right(periodWithOutstandingAmount)
+        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Right(Seq(periodWithOutstandingAmount))
       }
     }
 

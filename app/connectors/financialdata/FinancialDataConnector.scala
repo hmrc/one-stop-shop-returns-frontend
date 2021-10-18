@@ -39,7 +39,7 @@ class FinancialDataConnector @Inject()(config: Configuration, httpClient: HttpCl
   }
 
   def getPeriodsAndOutstandingAmounts(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[OutstandingPaymentsResponse] = {
-    val url = s"$baseUrl/financial-data/outstanding-payments/$commencementDate"
+    val url = s"$baseUrl/financial-data/outstanding-payments/${Format.dateTimeFormatter.format(commencementDate)}"
     httpClient.GET[OutstandingPaymentsResponse](url)
   }
 
