@@ -18,6 +18,7 @@ package connectors.financialdata
 
 import config.Service
 import connectors.financialdata.FinancialDataHttpParser._
+import formats.Format
 import models.Period
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
@@ -37,7 +38,7 @@ class FinancialDataConnector @Inject()(config: Configuration, httpClient: HttpCl
   }
 
   def getPeriodsAndOutstandingAmounts(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[OutstandingPaymentsResponse] = {
-    val url = s"$baseUrl/financial-data/outstanding-payments/$commencementDate"
+    val url = s"$baseUrl/financial-data/outstanding-payments/${Format.dateTimeFormatter.format(commencementDate)}"
     httpClient.GET[OutstandingPaymentsResponse](url)
   }
 }
