@@ -22,13 +22,36 @@
         govukButton: GovukButton
 )
 
-@(businessName: String, vrn: String, overduePeriods: Seq[Period], duePeriod: Option[Period], paymentOwedPeriods: Seq[PeriodWithOutstandingAmount])(implicit request: Request[_], messages: Messages)
+@(
+        businessName: String,
+        vrn: String,
+        overduePeriods: Seq[Period],
+        duePeriod: Option[Period],
+        duePaymentOwedPeriods: Seq[PeriodWithOutstandingAmount],
+        overduePaymentOwedPeriods: Seq[PeriodWithOutstandingAmount],
+        paymentError: Boolean
+)(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle = titleNoForm(messages("index.title")),
     showBackLink = false,
     fullWidth = true
 ) {
+
+    @if(paymentError) {
+        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                @messages("notificationBanner.title")
+                </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+                <p class="govuk-notification-banner__heading">
+                @messages("notificationBanner.text")
+                </p>
+            </div>
+        </div>
+    }
 
     <h1 class="govuk-heading-l">
         @messages("index.heading")
@@ -84,22 +107,32 @@
 
         <div class="tile tile-no-border">
             <div id="payments" class="tile-body">
-                <h2 class="govuk-heading-m push--top">Payments
-                </h2>
-
-                @paymentOwedPeriods.size match {
+                @(duePaymentOwedPeriods.size + overduePaymentOwedPeriods.size) match {
                     case 0 => {
+                        <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
+
                         <p class="govuk-body">
                         @messages("index.payment.nothingOwed")
                         </p>
                     }
                     case _ => {
-                        @for(periodWithOutstandingAmount <- paymentOwedPeriods) {
+                        @if(duePaymentOwedPeriods.nonEmpty) {
+                            <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
+                        }
+                        @for(periodWithOutstandingAmount <- duePaymentOwedPeriods) {
                             <p class="govuk-body">@Html(messages("index.payment.amountOwed", currencyFormat(periodWithOutstandingAmount.outstandingAmount), periodWithOutstandingAmount.period.displayText))</p>
                             <p class="govuk-body">
                                 <a class="govuk-link" href="@routes.PaymentController.makePayment(periodWithOutstandingAmount.period, (periodWithOutstandingAmount.outstandingAmount * 100).toLong)">@messages("index.payment.makeAPayment")</a>
                             </p>
-
+                        }
+                        @if(overduePaymentOwedPeriods.nonEmpty) {
+                            <h2 class="govuk-heading-m push--top">@messages("index.payment.overdueHeading")</h2>
+                        }
+                        @for(periodWithOutstandingAmount <- overduePaymentOwedPeriods) {
+                            <p class="govuk-body">@Html(messages("index.payment.overdueAmountOwed", currencyFormat(periodWithOutstandingAmount.outstandingAmount), periodWithOutstandingAmount.period.displayText, periodWithOutstandingAmount.period.paymentDeadlineDisplay))</p>
+                            <p class="govuk-body">
+                                <a class="govuk-link" href="@routes.PaymentController.makePayment(periodWithOutstandingAmount.period, (periodWithOutstandingAmount.outstandingAmount * 100).toLong)">@messages("index.payment.makeAPayment")</a>
+                            </p>
                         }
                     }
                 }

@@ -23,6 +23,7 @@ import generators.Generators
 import models.{Period, PeriodWithStatus, SubmissionStatus}
 import models.Quarter._
 import models.financialdata.PeriodWithOutstandingAmount
+import models.responses.InvalidJson
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -84,7 +85,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq.empty,
             None,
-            Seq.empty
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -123,7 +126,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq.empty,
             Some(Period(2021, Q3)),
-            Seq.empty
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -161,7 +166,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq(Period(2021, Q3)),
             None,
-            Seq.empty
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -204,7 +211,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq(firstPeriod),
             Some(secondPeriod),
-            Seq.empty
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -245,7 +254,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq(firstPeriod, secondPeriod),
             None,
-            Seq.empty
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -289,7 +300,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq.empty,
             Some(secondPeriod),
-            Seq.empty
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -337,7 +350,108 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq.empty,
             Some(secondPeriod),
-            Seq(outstandingPeriod)
+            Seq(outstandingPeriod),
+            Seq.empty,
+            paymentError = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return is completed and payment is outstanding and overdue" in {
+
+        val instant = Instant.parse("2022-01-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
+          ).build()
+
+        val firstPeriod = Period(2021, Q1)
+        val secondPeriod = Period(2021, Q2)
+        val outstandingPeriod = PeriodWithOutstandingAmount(secondPeriod, BigDecimal(1000))
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
+            )))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Right(
+              Seq(outstandingPeriod)
+            )
+          )
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(secondPeriod),
+            None,
+            Seq.empty,
+            Seq(outstandingPeriod),
+            paymentError = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return is completed and payment errors" in {
+
+        val instant = Instant.parse("2022-01-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
+          ).build()
+
+        val firstPeriod = Period(2021, Q1)
+        val secondPeriod = Period(2021, Q2)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
+            )))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Left(
+              InvalidJson
+            )
+          )
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(secondPeriod),
+            None,
+            Seq.empty,
+            Seq.empty,
+            paymentError = true
           )(request, messages(application)).toString
         }
       }
