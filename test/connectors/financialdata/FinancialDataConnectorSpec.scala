@@ -133,7 +133,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(BAD_REQUEST).withBody("")
             ))
 
-        connector.getCharge(period).futureValue mustBe Left(UnexpectedResponseStatus(BAD_REQUEST, ""))
+        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Left(UnexpectedResponseStatus(BAD_REQUEST, ""))
       }
     }
   }
