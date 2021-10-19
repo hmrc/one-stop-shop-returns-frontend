@@ -51,15 +51,14 @@ class PreviousReturnController @Inject()(
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-
-      val x: Future[(VatReturnResponse, ChargeResponse)] = for {
-        vatReturnResult <- vatReturnConnector.get(period)
-        chargeResult <- financialDataConnector.getCharge(period)
-      } yield (vatReturnResult, chargeResult)
-
-       x.map {
-        case (Right(vatReturn), z) =>
-          val charge = z.toOption
+      {
+        for {
+          vatReturnResult <- vatReturnConnector.get(period)
+          getChargeResult <- financialDataConnector.getCharge(period)
+        } yield (vatReturnResult, getChargeResult)
+      }.map {
+        case (Right(vatReturn), chargeResponse) =>
+          val charge = chargeResponse.toOption
           val displayBanner = charge.isEmpty
 
           val clearedAmount = charge.map(_.clearedAmount)

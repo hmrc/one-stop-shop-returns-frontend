@@ -32,7 +32,7 @@ object FinancialDataHttpParser extends Logging {
       response.status match {
         case OK =>
           response.json.validate[Charge] match {
-            case JsSuccess(vatReturn, _) => Right(vatReturn)
+            case JsSuccess(charge, _) => Right(charge)
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
               Left(InvalidJson)
