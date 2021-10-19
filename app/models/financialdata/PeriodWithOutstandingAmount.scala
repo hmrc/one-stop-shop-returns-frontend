@@ -18,7 +18,13 @@ package models.financialdata
 import play.api.libs.json.{Json, OFormat}
 import models.Period
 
-case class PeriodWithOutstandingAmount(period: Period, outstandingAmount: BigDecimal)
+import java.time.{Clock, LocalDate}
+
+case class PeriodWithOutstandingAmount(period: Period, outstandingAmount: BigDecimal) {
+  def isOverdue(clock: Clock): Boolean = {
+    period.paymentDeadline.isBefore(LocalDate.now(clock))
+  }
+}
 
 object PeriodWithOutstandingAmount {
   implicit val format: OFormat[PeriodWithOutstandingAmount] = Json.format[PeriodWithOutstandingAmount]

@@ -26,6 +26,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
+import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -33,7 +34,8 @@ class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
-                                       view: IndexView
+                                       view: IndexView,
+                                       clock: Clock
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -49,6 +51,8 @@ class YourAccountController @Inject()(
 
       results.map {
         case (Right(availablePeriodsWithStatus), Right(periodsWithOutstandingAmounts)) =>
+          val duePeriodsWithOutstandingAmounts = periodsWithOutstandingAmounts.filterNot(_.isOverdue(clock))
+          val overduePeriodsWithOutstandingAmounts = periodsWithOutstandingAmounts.filter(_.isOverdue(clock))
           Ok(view(
             request.registration.registeredCompanyName,
             request.vrn.vrn,
@@ -58,7 +62,25 @@ class YourAccountController @Inject()(
             availablePeriodsWithStatus
               .find(_.status == SubmissionStatus.Due)
               .map(_.period),
-            periodsWithOutstandingAmounts))
+            duePeriodsWithOutstandingAmounts,
+            overduePeriodsWithOutstandingAmounts,
+            paymentError = false
+          ))
+        case (Right(availablePeriodsWithStatus), Left(error)) =>
+          logger.warn(s"There was an error with getting payment information $error")
+          Ok(view(
+            request.registration.registeredCompanyName,
+            request.vrn.vrn,
+            availablePeriodsWithStatus
+              .filter(_.status == SubmissionStatus.Overdue)
+              .map(_.period),
+            availablePeriodsWithStatus
+              .find(_.status == SubmissionStatus.Due)
+              .map(_.period),
+            Seq.empty,
+            Seq.empty,
+            paymentError = true
+          ))
         case (Left(error), Left(error2)) =>
           logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
           throw new Exception(error.toString)
