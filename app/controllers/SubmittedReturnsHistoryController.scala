@@ -63,11 +63,11 @@ class SubmittedReturnsHistoryController @Inject()(
           val vatOwed = chargeOption.map(_.outstandingAmount)
             .getOrElse(vatReturnSalesService.getTotalVatOnSales(vatReturn))
           val vatOwedInPence: Long = (vatOwed * 100).toLong
-          Ok(view(Some(vatReturn), chargeOption, vatOwedInPence))
+          Ok(view(Some(vatReturn), chargeOption, Some(vatOwedInPence)))
         case (Left(NotFoundResponse), _) =>
-          Ok(view(None, None, 0L))
+          Ok(view(None, None, None))
         case (Left(e), _) =>
-          logger.error(s"Unexpected result from api while getting return: ${e}")
+          logger.error(s"Unexpected result from api while getting return: $e")
           Redirect(routes.JourneyRecoveryController.onPageLoad())
       }.recover {
         case e: Exception =>

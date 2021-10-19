@@ -18,6 +18,8 @@ package controllers
 
 import base.SpecBase
 import connectors.VatReturnConnector
+import connectors.financialdata.FinancialDataConnector
+import models.financialdata.Charge
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -27,14 +29,19 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.SubmittedReturnsHistoryView
-
-import models.responses.{ConflictFound, NotFound => NotFoundResponse}
+import models.responses.{ConflictFound, UnexpectedResponseStatus, NotFound => NotFoundResponse}
+import services.VatReturnSalesService
 
 import scala.concurrent.Future
 
 class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   private val vatReturnConnector = mock[VatReturnConnector]
+  private val financialDataConnector = mock[FinancialDataConnector]
+  private val vatReturnSalesService =  mock[VatReturnSalesService]
+
+  private val charge = Charge(period, BigDecimal(1000), BigDecimal(1000), BigDecimal(1000))
+  private val vatOwed = (charge.outstandingAmount * 100).toLong
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
@@ -47,10 +54,12 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
         ).build()
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
+      when(financialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(charge))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -59,7 +68,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(Some(completeVatReturn))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(Some(completeVatReturn), Some(charge), Some(vatOwed))(request, messages(application)).toString
       }
     }
 
@@ -69,6 +78,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
+      when(financialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(charge))
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
 
       running(application) {
@@ -79,7 +89,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(None)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(None, None, None)(request, messages(application)).toString
       }
     }
 
@@ -89,6 +99,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
+      when(financialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(charge))
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(ConflictFound))
 
       running(application) {
@@ -98,6 +109,31 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must return OK and correct view when a vat return exists but no charge is found" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService)
+        ).build()
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
+      when(financialDataConnector.getCharge(any())(any()))
+        .thenReturn(Future.successful(Left(UnexpectedResponseStatus(400, ""))))
+      when(vatReturnSalesService.getTotalVatOnSales(any())).thenReturn(BigDecimal(666.66))
+
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(Some(completeVatReturn), None, Some(66666))(request, messages(application)).toString
       }
     }
   }

@@ -22,7 +22,7 @@
         layout: templates.Layout
 )
 
-@(vatReturn: Option[VatReturn], charge: Option[Charge], vatOwed: Long)(implicit request: Request[_], messages: Messages)
+@(vatReturn: Option[VatReturn], charge: Option[Charge], vatOwed: Option[Long])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title")), showBackLink = false) {
 
@@ -34,6 +34,21 @@
             <li class="govuk-breadcrumbs__list-item">@messages("breadcrumbs.submittedReturns")</li>
         </ol>
     </div>
+
+    @if(charge.isEmpty) {
+        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                    @messages("notificationBanner.title")
+                </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+                <p class="govuk-notification-banner__heading">
+                    @messages("notificationBanner.text")
+                </p>
+            </div>
+        </div>
+    }
 
     <h1 class="govuk-heading-xl">@messages("submittedReturnsHistory.heading")</h1>
 
@@ -62,9 +77,9 @@
                                 @charge.map(c => Html(currencyFormat(c.outstandingAmount)))
                             </td>
                         }
-                        @if(charge.isEmpty || charge.exists(c => c.outstandingAmount > 0)) {
+                        @if(vatOwed.isDefined && (charge.isEmpty || charge.exists(c => c.outstandingAmount > 0))) {
                             <td class="govuk-table__cell">
-                                <a href="@routes.PaymentController.makePayment(vatReturn.period, vatOwed)">@messages("returnSubmitted.payNow")</a>
+                                <a href="@routes.PaymentController.makePayment(vatReturn.period, vatOwed.get)">@messages("returnSubmitted.payNow")</a>
                             </td>
                         }
                     </tr>
@@ -75,26 +90,4 @@
             <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
         }
     }
-
-
-
-    <!--<div class="govuk-tabs" data-module="govuk-tabs">
-        <h2 class="govuk-tabs__title">@messages("submittedReturnsHistory.sub-heading")</h2>
-        <div class="govuk-tabs__list">
-            <p class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                <a class="govuk-tabs__tab" href="#returns_year">2021</a>
-            <p/>
-        </div>
-        <div class="govuk-tabs__panel" id="returns_year">
-            <h2 class="govuk-heading-m">2021 returns</h2>
-            @vatReturn match {
-                case Some(vatReturn) => {
-                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturn.period)" id="period">@vatReturn.period.displayText</a>
-                }
-                case _ => {
-                    <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
-                }
-            }
-        </div>
-    </div>-->
 }
