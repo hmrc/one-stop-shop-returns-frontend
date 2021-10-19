@@ -226,10 +226,15 @@ submittedReturnsHistory.heading = Submitted returns
 submittedReturnsHistory.sub-heading = View and pay your previous returns
 submittedReturnsHistory.no-returns = You have not submitted any returns for this year.
 
+notificationBanner.title = Important
+notificationBanner.text = We cannot get your latest payment records due to a technical issue. Try again later.
+
 previousReturn.title = Submitted return for
 previousReturn.summary.title = Summary
 previousReturn.details.title = Details
 previousReturn.vatOwed.label = VAT owed this period
+previousReturn.clearedAmount.label = Amount paid
+previousReturn.amountOutstanding.label = Amount left to pay
 previousReturn.dateSubmitted.label = Date submitted
 previousReturn.dateDue.label = Date due
 previousReturn.returnReference.label = Return reference number

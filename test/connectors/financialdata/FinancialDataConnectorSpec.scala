@@ -22,7 +22,7 @@ import connectors.WireMockHelper
 import models.Period
 import models.Quarter.Q3
 import models.financialdata.Charge
-import models.responses.InvalidJson
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalatest.EitherValues
 import play.api.Application
 import play.api.http.Status._
@@ -75,6 +75,21 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
             ))
 
         connector.getCharge(period).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return unexpected response when response is not OK" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(BAD_REQUEST).withBody("")
+            ))
+
+        connector.getCharge(period).futureValue mustBe Left(UnexpectedResponseStatus(BAD_REQUEST, ""))
       }
     }
   }

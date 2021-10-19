@@ -32,7 +32,8 @@
         euSalesList: Map[String, Seq[TitledSummaryList]],
         totalSalesList: TitledSummaryList,
         displayPayNow: Boolean,
-        vatOwedInPence: Long
+        vatOwedInPence: Long,
+        displayBanner: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -43,7 +44,7 @@
     showBackLink = false
 ) {
 
-    <div class="govuk-breadcrumbs">
+    <div class="govuk-breadcrumbs" style="margin-bottom:50px;">
         <ol class="govuk-breadcrumbs__list">
             <li class="govuk-breadcrumbs__list-item">
                 <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad()" id="your-account">@messages("breadcrumbs.yourAccount")</a>
@@ -56,6 +57,21 @@
             </li>
         </ol>
     </div>
+
+    @if(displayBanner) {
+        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                    @messages("notificationBanner.title")
+                </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+                <p class="govuk-notification-banner__heading">
+                    @messages("notificationBanner.text")
+                </p>
+            </div>
+        </div>
+    }
 
     <header class="hmrc-page-heading">
         <h1 class="govuk-heading-xl">@vatReturn.period.displayText</h1>

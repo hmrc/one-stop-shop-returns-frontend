@@ -29,9 +29,11 @@ import viewmodels.implicits._
 
 object PreviousReturnSummary extends CurrencyFormatter {
 
-  def rows(vatReturn: VatReturn, vatOwed: BigDecimal)(implicit messages: Messages): Seq[SummaryListRow] = {
+  def rows(vatReturn: VatReturn, vatOwed: BigDecimal, clearedAmount: Option[BigDecimal], amountOutstanding: Option[BigDecimal])(implicit messages: Messages): Seq[SummaryListRow] = {
     Seq(
       vatOwedRow(vatOwed),
+      clearedAmountRow(clearedAmount),
+      amountOutstandingRow(amountOutstanding),
       dateSubmittedRow(vatReturn),
       dateDueRow(vatReturn),
       returnReferenceNumber(vatReturn),
@@ -47,6 +49,28 @@ object PreviousReturnSummary extends CurrencyFormatter {
           .withCssClass("govuk-!-width-one-half"),
         actions = Seq.empty
       ))
+  }
+
+  private[this] def clearedAmountRow(clearedAmount: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
+    clearedAmount.map(amount =>
+    SummaryListRowViewModel(
+      key = Key("previousReturn.clearedAmount.label")
+        .withCssClass("govuk-!-width-one-half"),
+      value = ValueViewModel(HtmlContent(currencyFormat(amount)))
+        .withCssClass("govuk-!-width-one-half"),
+      actions = Seq.empty
+    ))
+  }
+
+  private[this] def amountOutstandingRow(amountOutstanding: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
+    amountOutstanding.map(outstandingAmount =>
+    SummaryListRowViewModel(
+      key = Key("previousReturn.amountOutstanding.label")
+        .withCssClass("govuk-!-width-one-half"),
+      value = ValueViewModel(HtmlContent(currencyFormat(outstandingAmount)))
+        .withCssClass("govuk-!-width-one-half"),
+      actions = Seq.empty
+    ))
   }
 
   private[this] def dateSubmittedRow(vatReturn: VatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
