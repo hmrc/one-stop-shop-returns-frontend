@@ -17,6 +17,9 @@
 package controllers
 
 import connectors.VatReturnConnector
+import connectors.VatReturnHttpParser.VatReturnResponse
+import connectors.financialdata.FinancialDataConnector
+import connectors.financialdata.FinancialDataHttpParser.ChargeResponse
 import controllers.actions._
 import models.Quarter.Q3
 import models.Period
@@ -24,17 +27,21 @@ import models.Period
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import logging.Logging
+import models.financialdata.Charge
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmittedReturnsHistoryView
 import models.responses.{NotFound => NotFoundResponse}
+import services.VatReturnSalesService
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class SubmittedReturnsHistoryController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: SubmittedReturnsHistoryView,
-                                       vatReturnConnector: VatReturnConnector
+                                       vatReturnConnector: VatReturnConnector,
+                                       vatReturnSalesService: VatReturnSalesService,
+                                       financialDataConnector: FinancialDataConnector
                                      ) (implicit ec: ExecutionContext)
     extends FrontendBaseController with I18nSupport with Logging {
 
@@ -44,12 +51,22 @@ class SubmittedReturnsHistoryController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      vatReturnConnector.get(period).map {
-        case Right(vatReturn) =>
-          Ok(view(Some(vatReturn)))
-        case Left(NotFoundResponse) =>
-          Ok(view(None))
-        case Left(e) =>
+
+      val returns: Future[(VatReturnResponse, ChargeResponse)] = for {
+        vr <- vatReturnConnector.get(period)
+        cr <- financialDataConnector.getCharge(period)
+      } yield (vr, cr)
+
+    returns.map {
+        case (Right(vatReturn), chargeReturn) =>
+          val chargeOption = chargeReturn.toOption
+          val vatOwed = chargeOption.map(_.outstandingAmount)
+            .getOrElse(vatReturnSalesService.getTotalVatOnSales(vatReturn))
+          val vatOwedInPence: Long = (vatOwed * 100).toLong
+          Ok(view(Some(vatReturn), chargeOption, vatOwedInPence))
+        case (Left(NotFoundResponse), _) =>
+          Ok(view(None, None, 0L))
+        case (Left(e), _) =>
           logger.error(s"Unexpected result from api while getting return: ${e}")
           Redirect(routes.JourneyRecoveryController.onPageLoad())
       }.recover {
@@ -57,6 +74,5 @@ class SubmittedReturnsHistoryController @Inject()(
           logger.error(s"Error while getting previous return: ${e.getMessage}", e)
           Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
-
   }
 }
