@@ -79,7 +79,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Left(InvalidJson)
+        connector.getCharge(period).futureValue mustBe Left(InvalidJson)
       }
     }
   }
@@ -118,7 +118,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCharge(period).futureValue mustBe Left(InvalidJson)
+        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Left(InvalidJson)
       }
     }
 
