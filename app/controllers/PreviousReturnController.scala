@@ -60,6 +60,7 @@ class PreviousReturnController @Inject()(
        x.map {
         case (Right(vatReturn), z) =>
           val charge = z.toOption
+          val displayBanner = charge.isEmpty
 
           val clearedAmount = charge.map(_.clearedAmount)
           val amountOutstanding = charge.map(_.outstandingAmount)
@@ -67,7 +68,7 @@ class PreviousReturnController @Inject()(
           val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn)
           val mainList =
             SummaryListViewModel(rows = PreviousReturnSummary.rows(vatReturn, vatOwed, clearedAmount, amountOutstanding))
-          val displayPayNow = amountOutstanding.forall(outstanding => vatOwed > 0 && outstanding > 0)
+          val displayPayNow = vatOwed > 0 && amountOutstanding.map(outstanding => outstanding > 0).getOrElse(true)
           val vatOwedInPence: Long = (vatOwed * 100).toLong
 
           Ok(view(
@@ -77,7 +78,8 @@ class PreviousReturnController @Inject()(
             SaleAtVatRateSummary.getAllEuSales(vatReturn),
             getAllSales(vatReturn, vatOwed),
             displayPayNow,
-            vatOwedInPence
+            vatOwedInPence,
+            displayBanner
           ))
 
         case (Left(NotFoundResponse), _) =>

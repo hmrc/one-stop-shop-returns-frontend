@@ -140,7 +140,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           euSalesList,
           totalSalesList,
           displayPayNow,
-          (totalVatOnSales * 100).toLong
+          (totalVatOnSales * 100).toLong,
+          false
         )(request, implicitly).toString
       }
     }
@@ -194,7 +195,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           euSalesList,
           totalSalesList,
           displayPayNow,
-          (totalVatOnSales * 100).toLong
+          (totalVatOnSales * 100).toLong,
+          true
         )(request, implicitly).toString
       }
     }
