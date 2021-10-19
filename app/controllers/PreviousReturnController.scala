@@ -17,9 +17,7 @@
 package controllers
 
 import connectors.VatReturnConnector
-import connectors.VatReturnHttpParser.VatReturnResponse
 import connectors.financialdata.FinancialDataConnector
-import connectors.financialdata.FinancialDataHttpParser.ChargeResponse
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.Period
@@ -68,7 +66,7 @@ class PreviousReturnController @Inject()(
           val mainList =
             SummaryListViewModel(rows = PreviousReturnSummary.rows(vatReturn, vatOwed, clearedAmount, amountOutstanding))
           val displayPayNow = vatOwed > 0 && amountOutstanding.map(outstanding => outstanding > 0).getOrElse(true)
-          val vatOwedInPence: Long = (vatOwed * 100).toLong
+          val vatOwedInPence: Long = (amountOutstanding.getOrElse(vatOwed) * 100).toLong
 
           Ok(view(
             vatReturn,
