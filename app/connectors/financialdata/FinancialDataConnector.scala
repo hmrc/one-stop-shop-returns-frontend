@@ -18,10 +18,13 @@ package connectors.financialdata
 
 import config.Service
 import connectors.financialdata.FinancialDataHttpParser._
+import connectors.financialdata.VatReturnWithFinancialDataHttpParser._
+import formats.Format
 import models.Period
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
+import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,5 +36,10 @@ class FinancialDataConnector @Inject()(config: Configuration, httpClient: HttpCl
   def getCharge(period: Period)(implicit hc: HeaderCarrier): Future[ChargeResponse] = {
     val url = s"$baseUrl/financial-data/charge/$period"
     httpClient.GET[ChargeResponse](url)
+  }
+
+  def getVatReturnWithFinancialData(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[VatReturnWithFinancialDataResponse] = {
+    val url = s"$baseUrl/financial-data/charge-history/${Format.dateTimeFormatter.format(commencementDate)}"
+    httpClient.GET[VatReturnWithFinancialDataResponse](url)
   }
 }

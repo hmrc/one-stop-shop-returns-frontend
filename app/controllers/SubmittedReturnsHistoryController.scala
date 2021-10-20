@@ -16,30 +16,23 @@
 
 package controllers
 
-import connectors.VatReturnConnector
-import connectors.VatReturnHttpParser.VatReturnResponse
 import connectors.financialdata.FinancialDataConnector
-import connectors.financialdata.FinancialDataHttpParser.ChargeResponse
 import controllers.actions._
 import logging.Logging
 import models.financialdata.VatReturnWithFinancialData
-import models.responses.{ErrorResponse, NotFound => NotFoundResponse}
+import models.responses.ErrorResponse
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.{PeriodService, VatReturnSalesService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmittedReturnsHistoryView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class SubmittedReturnsHistoryController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: SubmittedReturnsHistoryView,
-                                       vatReturnConnector: VatReturnConnector,
-                                       vatReturnSalesService: VatReturnSalesService,
-                                       financialDataConnector: FinancialDataConnector,
-                                       periodService: PeriodService
+                                       financialDataConnector: FinancialDataConnector
                                      ) (implicit ec: ExecutionContext)
     extends FrontendBaseController with I18nSupport with Logging {
 
@@ -50,6 +43,26 @@ class SubmittedReturnsHistoryController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
+      financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate).map {
+        case Right(vatReturnsWithFinancialData) =>
+          val displayBanner = {
+            if(vatReturnsWithFinancialData.nonEmpty) {
+              vatReturnsWithFinancialData.exists(_.charge.isEmpty)
+            } else {
+              false
+            }
+          }
+
+          Ok(view(vatReturnsWithFinancialData, displayBanner))
+        case Left(e) =>
+          logger.warn(s"There were some errors: $e")
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
+      }
+
+  }
+}
+
+/*
       Future.sequence(
         periodService.getReturnPeriods(request.registration.commencementDate).map {
           period =>
@@ -90,5 +103,4 @@ class SubmittedReturnsHistoryController @Inject()(
             Redirect(routes.JourneyRecoveryController.onPageLoad()) // TODO does redirecting to journey recovery make sense?
         }
       }
-  }
-}
+ */

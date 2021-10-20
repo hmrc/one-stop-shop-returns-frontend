@@ -30,10 +30,8 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.SubmittedReturnsHistoryView
-import models.responses.{ConflictFound, UnexpectedResponseStatus, NotFound => NotFoundResponse}
-import services.{PeriodService, VatReturnSalesService}
 import uk.gov.hmrc.domain.Vrn
+import views.html.SubmittedReturnsHistoryView
 
 import scala.concurrent.Future
 
@@ -41,8 +39,6 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
   private val vatReturnConnector = mock[VatReturnConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
-  private val vatReturnSalesService =  mock[VatReturnSalesService]
-  private val periodService = mock[PeriodService]
 
   private val period1 = Period(2021, Q1)
   private val period2 = Period(2021, Q2)
@@ -52,7 +48,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   private val vatOwed = (charge.outstandingAmount * 100).toLong
   private val vatOwed2 = (charge2.outstandingAmount * 100).toLong
 
-  private val periods = Seq(period1, period2)
+  private val vatReturnWithFinancialData = VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed))
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
@@ -65,14 +61,10 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[PeriodService].toInstance(periodService)
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
         ).build()
 
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
-      when(financialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(charge))
-      when(periodService.getReturnPeriods(any())) thenReturn Seq(period1)
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -82,7 +74,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          List(VatReturnWithFinancialData(Some(completeVatReturn), Some(charge), Some(vatOwed))),
+          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed))),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -91,10 +83,10 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     "must return OK and correct view with no-returns message when no returns exist" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[PeriodService].toInstance(periodService)
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
         ).build()
 
-      when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq.empty))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -105,7 +97,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          List.empty,
+          Seq.empty,
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -114,17 +106,17 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     "must throw an exception when an unexpected result is returned" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
         ).build()
 
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
         val result = route(application, request).value
 
-        whenReady(result.failed) { exp => exp mustBe a[Exception]}
+        whenReady(result.failed) { exp => exp mustBe a[Exception] } // TODO should this be recovery?
       }
     }
 
@@ -132,17 +124,13 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-          bind[PeriodService].toInstance(periodService)
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
         ).build()
 
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
-      when(financialDataConnector.getCharge(any())(any()))
-        .thenReturn(Future.successful(Left(UnexpectedResponseStatus(400, ""))))
-      when(vatReturnSalesService.getTotalVatOnSales(any())).thenReturn(BigDecimal(666.66))
-      when(periodService.getReturnPeriods(any())) thenReturn Seq(period1)
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          vatReturnWithFinancialData.copy(charge = None, vatOwed = Some(66666))
+        ))))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -152,7 +140,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          List(VatReturnWithFinancialData(Some(completeVatReturn), None, Some(66666))),
+          Seq(VatReturnWithFinancialData(completeVatReturn, None, Some(66666))),
           displayBanner = true
         )(request, messages(application)).toString
       }
@@ -164,18 +152,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[PeriodService].toInstance(periodService)
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
         ).build()
 
-      when(vatReturnConnector.get(any())(any()))
-        .thenReturn(Future.successful(Right(completeVatReturn)))
-        .thenReturn(Future.successful(Right(completeVatReturn2)))
-      when(financialDataConnector.getCharge(any())(any()))
-        .thenReturn(Future.successful(Right(charge)))
-        .thenReturn(Future.successful(Right(charge2)))
-      when(periodService.getReturnPeriods(any())) thenReturn periods
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          vatReturnWithFinancialData,
+          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), Some(vatOwed2))
+        ))))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -184,8 +168,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         val vatReturnsWithFinancialData = List(
-          VatReturnWithFinancialData(Some(completeVatReturn), Some(charge), Some(vatOwed)),
-          VatReturnWithFinancialData(Some(completeVatReturn2), Some(charge2), Some(vatOwed2))
+          VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed)),
+          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), Some(vatOwed2))
         )
 
         status(result) mustEqual OK

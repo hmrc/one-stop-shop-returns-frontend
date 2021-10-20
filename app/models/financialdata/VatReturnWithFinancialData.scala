@@ -17,7 +17,12 @@
 package models.financialdata
 
 import models.domain.VatReturn
+import play.api.libs.json.{Format, Json}
 
-case class VatReturnWithFinancialData(vatReturn: Option[VatReturn], charge: Option[Charge], vatOwed: Option[Long])
+case class VatReturnWithFinancialData(vatReturn: VatReturn, charge: Option[Charge], vatOwed: Option[Long])
+
+object VatReturnWithFinancialData {
+  implicit val format: Format[VatReturnWithFinancialData] = Json.format[VatReturnWithFinancialData]
+}
 
 

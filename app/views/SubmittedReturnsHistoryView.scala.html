@@ -21,7 +21,7 @@
         layout: templates.Layout
 )
 
-@(vatReturnsWithFinancialData: List[VatReturnWithFinancialData], displayBanner: Boolean)(implicit request: Request[_], messages: Messages)
+@(vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData], displayBanner: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title")), showBackLink = false) {
 
@@ -71,27 +71,21 @@
                 </thead>
                 <tbody class="govuk-table__body">
                     @for(vatReturnWithFinancialData <- vatReturnsWithFinancialData) {
-                        @vatReturnWithFinancialData.vatReturn match {
-                            case Some(vatReturn) => {
-
-                                <tr class="govuk-table__row">
-                                    <th scope="row" class="govuk-table__header">
-                                        <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturn.period)" id="period">@vatReturn.period.displayText</a>
-                                    </th>
-                                    <td class="govuk-table__cell">
-                                        @if(vatReturnWithFinancialData.charge.isDefined) {
-                                            @vatReturnWithFinancialData.charge.map(c => Html(currencyFormat(c.outstandingAmount)))
-                                        }
-                                    </td>
-                                    <td class="govuk-table__cell">
-                                        @if(vatReturnWithFinancialData.vatOwed.isDefined && (vatReturnWithFinancialData.charge.isEmpty || vatReturnWithFinancialData.charge.exists(c => c.outstandingAmount > 0))) {
-                                            <a href="@routes.PaymentController.makePayment(vatReturn.period, vatReturnWithFinancialData.vatOwed.get)">@messages("returnSubmitted.payNow")</a>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                            case _ => {}
-                        }
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">
+                                <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturnWithFinancialData.vatReturn.period)" id="period">@vatReturnWithFinancialData.vatReturn.period.displayText</a>
+                            </th>
+                            <td class="govuk-table__cell">
+                                @if(vatReturnWithFinancialData.charge.isDefined) {
+                                    @vatReturnWithFinancialData.charge.map(c => Html(currencyFormat(c.outstandingAmount)))
+                                }
+                            </td>
+                            <td class="govuk-table__cell">
+                                @if(vatReturnWithFinancialData.vatOwed.isDefined && (vatReturnWithFinancialData.charge.isEmpty || vatReturnWithFinancialData.charge.exists(c => c.outstandingAmount > 0))) {
+                                    <a href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatReturnWithFinancialData.vatOwed.get)">@messages("returnSubmitted.payNow")</a>
+                                }
+                            </td>
+                        </tr>
                     }
                 </tbody>
             </table>
