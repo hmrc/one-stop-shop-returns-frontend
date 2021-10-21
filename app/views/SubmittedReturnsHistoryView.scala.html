@@ -61,12 +61,8 @@
                 <thead class="govuk-table__head">
                     <tr class="govuk-table__row">
                         <th scope="col" class="govuk-table__header">Return period</th>
-                        @if(vatReturnsWithFinancialData.exists(_.charge.isDefined)) {
-                            <th scope="col" class="govuk-table__header">Amount left to pay</th>
-                        }
-                        @if(vatReturnsWithFinancialData.exists(_.vatOwed.isDefined) && (vatReturnsWithFinancialData.exists(_.charge.isDefined) || vatReturnsWithFinancialData.exists(_.charge.exists(_.outstandingAmount > 0)))) {
-                            <th scope="col" class="govuk-table__header"></th>
-                        }
+                        <th scope="col" class="govuk-table__header">@if(vatReturnsWithFinancialData.exists(_.charge.isDefined)) { Amount left to pay }</th>
+                        <th scope="col" class="govuk-table__header"></th>
                     </tr>
                 </thead>
                 <tbody class="govuk-table__body">
@@ -78,11 +74,13 @@
                             <td class="govuk-table__cell">
                                 @if(vatReturnWithFinancialData.charge.isDefined) {
                                     @vatReturnWithFinancialData.charge.map(c => Html(currencyFormat(c.outstandingAmount)))
+                                } else {
+                                    N/A
                                 }
                             </td>
                             <td class="govuk-table__cell">
                                 @if(vatReturnWithFinancialData.vatOwed.isDefined && (vatReturnWithFinancialData.charge.isEmpty || vatReturnWithFinancialData.charge.exists(c => c.outstandingAmount > 0))) {
-                                    <a href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatReturnWithFinancialData.vatOwed.get)">@messages("returnSubmitted.payNow")</a>
+                                    <a class="govuk-link" href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatReturnWithFinancialData.vatOwed.get)">@messages("returnSubmitted.payNow")</a>
                                 }
                             </td>
                         </tr>
