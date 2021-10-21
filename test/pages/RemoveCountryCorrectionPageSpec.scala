@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package config
+package pages
 
-import com.google.inject.AbstractModule
-import controllers.actions._
+import pages.behaviours.PageBehaviours
 
-import java.time.{Clock, ZoneOffset}
+class RemoveCountryCorrectionPageSpec extends PageBehaviours {
 
-class Module extends AbstractModule {
+  "RemoveCountryCorrectionPage" - {
 
-  override def configure(): Unit = {
-    bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-    bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
+    beRetrievable[Boolean](RemoveCountryCorrectionPage)
+
+    beSettable[Boolean](RemoveCountryCorrectionPage)
+
+    beRemovable[Boolean](RemoveCountryCorrectionPage)
   }
 }

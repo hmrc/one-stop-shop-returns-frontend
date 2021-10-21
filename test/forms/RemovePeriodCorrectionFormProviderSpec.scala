@@ -14,18 +14,32 @@
  * limitations under the License.
  */
 
-package config
+package forms
 
-import com.google.inject.AbstractModule
-import controllers.actions._
+import forms.behaviours.BooleanFieldBehaviours
+import play.api.data.FormError
 
-import java.time.{Clock, ZoneOffset}
+class RemovePeriodCorrectionFormProviderSpec extends BooleanFieldBehaviours {
 
-class Module extends AbstractModule {
+  val requiredKey = "removePeriodCorrection.error.required"
+  val invalidKey = "error.boolean"
 
-  override def configure(): Unit = {
-    bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-    bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
+  val form = new RemovePeriodCorrectionFormProvider()()
+
+  ".value" - {
+
+    val fieldName = "value"
+
+    behave like booleanField(
+      form,
+      fieldName,
+      invalidError = FormError(fieldName, invalidKey)
+    )
+
+    behave like mandatoryField(
+      form,
+      fieldName,
+      requiredError = FormError(fieldName, requiredKey)
+    )
   }
 }

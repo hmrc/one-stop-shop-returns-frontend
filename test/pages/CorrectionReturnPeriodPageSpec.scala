@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package config
+package pages
 
-import com.google.inject.AbstractModule
-import controllers.actions._
+import models.CorrectionReturnPeriod
+import pages.behaviours.PageBehaviours
 
-import java.time.{Clock, ZoneOffset}
+class CorrectionReturnPeriodSpec extends PageBehaviours {
 
-class Module extends AbstractModule {
+  "CorrectionReturnPeriodPage" - {
 
-  override def configure(): Unit = {
-    bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-    bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
+    beRetrievable[CorrectionReturnPeriod](CorrectionReturnPeriodPage)
+
+    beSettable[CorrectionReturnPeriod](CorrectionReturnPeriodPage)
+
+    beRemovable[CorrectionReturnPeriod](CorrectionReturnPeriodPage)
   }
 }

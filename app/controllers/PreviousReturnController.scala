@@ -17,9 +17,7 @@
 package controllers
 
 import connectors.VatReturnConnector
-import connectors.VatReturnHttpParser.VatReturnResponse
 import connectors.financialdata.FinancialDataConnector
-import connectors.financialdata.FinancialDataHttpParser.ChargeResponse
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.Period
@@ -35,7 +33,7 @@ import views.html.PreviousReturnView
 import models.responses.{NotFound => NotFoundResponse}
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class PreviousReturnController @Inject()(
                                           override val messagesApi: MessagesApi,

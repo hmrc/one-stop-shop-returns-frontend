@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package config
+package forms
 
-import com.google.inject.AbstractModule
-import controllers.actions._
+import forms.mappings.Mappings
+import javax.inject.Inject
+import play.api.data.Form
 
-import java.time.{Clock, ZoneOffset}
+class CountryVatCorrectionFormProvider @Inject() extends Mappings {
 
-class Module extends AbstractModule {
-
-  override def configure(): Unit = {
-    bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-    bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
-  }
+  def apply(): Form[Int] =
+    Form(
+      "value" -> int(
+        "countryVatCorrection.error.required",
+        "countryVatCorrection.error.wholeNumber",
+        "countryVatCorrection.error.nonNumeric")
+          .verifying(inRange(0, 1000000, "countryVatCorrection.error.outOfRange"))
+    )
 }

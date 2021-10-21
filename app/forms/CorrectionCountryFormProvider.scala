@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package config
+package forms
 
-import com.google.inject.AbstractModule
-import controllers.actions._
+import javax.inject.Inject
 
-import java.time.{Clock, ZoneOffset}
+import forms.mappings.Mappings
+import play.api.data.Form
 
-class Module extends AbstractModule {
+class CorrectionCountryFormProvider @Inject() extends Mappings {
 
-  override def configure(): Unit = {
-    bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-    bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
-  }
+  def apply(): Form[String] =
+    Form(
+      "value" -> text("correctionCountry.error.required")
+        .verifying(maxLength(100, "correctionCountry.error.length"))
+    )
 }

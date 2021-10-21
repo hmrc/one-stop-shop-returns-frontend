@@ -303,3 +303,63 @@ noOtherPeriodsAvailable.title = You cannot start returns for other periods yet
 noOtherPeriodsAvailable.heading = You cannot start returns for other periods yet
 noOtherPeriodsAvailable.label = You can only start returns for periods that have ended.
 noOtherPeriodsAvailable.submit = Back to your account
+
+correctPreviousReturn.title = correctPreviousReturn
+correctPreviousReturn.heading = correctPreviousReturn
+correctPreviousReturn.checkYourAnswersLabel = correctPreviousReturn
+correctPreviousReturn.error.required = Select yes if correctPreviousReturn
+correctPreviousReturn.change.hidden = CorrectPreviousReturn
+
+correctionCountry.title = correctionCountry
+correctionCountry.heading = correctionCountry
+correctionCountry.checkYourAnswersLabel = correctionCountry
+correctionCountry.error.required = Enter correctionCountry
+correctionCountry.error.length = CorrectionCountry must be 100 characters or less
+correctionCountry.change.hidden = CorrectionCountry
+
+correctionReturnPeriod.title = Which return period do you want to correct?
+correctionReturnPeriod.heading = Which return period do you want to correct?
+correctionReturnPeriod.period1 = 1 January to 31 March 2022
+correctionReturnPeriod.period2 = 1 October to 31 December 2021
+correctionReturnPeriod.checkYourAnswersLabel = Which return period do you want to correct?
+correctionReturnPeriod.error.required = Select correctionReturnPeriod
+correctionReturnPeriod.change.hidden = CorrectionReturnPeriod
+
+countryVatCorrection.title = CountryVatCorrection
+countryVatCorrection.heading = CountryVatCorrection
+countryVatCorrection.checkYourAnswersLabel = CountryVatCorrection
+countryVatCorrection.error.nonNumeric = Enter your countryVatCorrection using numbers
+countryVatCorrection.error.required = Enter your countryVatCorrection
+countryVatCorrection.error.wholeNumber = Enter your countryVatCorrection using whole numbers
+countryVatCorrection.error.outOfRange = CountryVatCorrection must be between {0} and {1}
+countryVatCorrection.change.hidden = CountryVatCorrection
+
+removeCountryCorrection.title = removeCountryCorrection
+removeCountryCorrection.heading = removeCountryCorrection
+removeCountryCorrection.checkYourAnswersLabel = removeCountryCorrection
+removeCountryCorrection.error.required = Select yes if removeCountryCorrection
+removeCountryCorrection.change.hidden = RemoveCountryCorrection
+
+removePeriodCorrection.title = removePeriodCorrection
+removePeriodCorrection.heading = removePeriodCorrection
+removePeriodCorrection.checkYourAnswersLabel = removePeriodCorrection
+removePeriodCorrection.error.required = Select yes if removePeriodCorrection
+removePeriodCorrection.change.hidden = RemovePeriodCorrection
+
+undeclaredCountryCorrection.title = undeclaredCountryCorrection
+undeclaredCountryCorrection.heading = undeclaredCountryCorrection
+undeclaredCountryCorrection.checkYourAnswersLabel = undeclaredCountryCorrection
+undeclaredCountryCorrection.error.required = Select yes if undeclaredCountryCorrection
+undeclaredCountryCorrection.change.hidden = UndeclaredCountryCorrection
+
+vatCorrectionsList.title = vatCorrectionsList
+vatCorrectionsList.heading = vatCorrectionsList
+vatCorrectionsList.checkYourAnswersLabel = vatCorrectionsList
+vatCorrectionsList.error.required = Select yes if vatCorrectionsList
+vatCorrectionsList.change.hidden = VatCorrectionsList
+
+vatPeriodCorrectionsList.title = vatPeriodCorrectionsList
+vatPeriodCorrectionsList.heading = vatPeriodCorrectionsList
+vatPeriodCorrectionsList.checkYourAnswersLabel = vatPeriodCorrectionsList
+vatPeriodCorrectionsList.error.required = Select yes if vatPeriodCorrectionsList
+vatPeriodCorrectionsList.change.hidden = VatPeriodCorrectionsList

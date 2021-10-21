@@ -24,6 +24,78 @@ import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
 
+  implicit lazy val arbitraryVatPeriodCorrectionsListUserAnswersEntry: Arbitrary[(VatPeriodCorrectionsListPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[VatPeriodCorrectionsListPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryVatCorrectionsListUserAnswersEntry: Arbitrary[(VatCorrectionsListPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[VatCorrectionsListPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryUndeclaredCountryCorrectionUserAnswersEntry: Arbitrary[(UndeclaredCountryCorrectionPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[UndeclaredCountryCorrectionPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryRemovePeriodCorrectionUserAnswersEntry: Arbitrary[(RemovePeriodCorrectionPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[RemovePeriodCorrectionPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryRemoveCountryCorrectionUserAnswersEntry: Arbitrary[(RemoveCountryCorrectionPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[RemoveCountryCorrectionPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryCountryVatCorrectionUserAnswersEntry: Arbitrary[(CountryVatCorrectionPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[CountryVatCorrectionPage.type]
+        value <- arbitrary[Int].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryCorrectionReturnPeriodUserAnswersEntry: Arbitrary[(CorrectionReturnPeriodPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[CorrectionReturnPeriodPage.type]
+        value <- arbitrary[CorrectionReturnPeriod].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryCorrectionCountryUserAnswersEntry: Arbitrary[(CorrectionCountryPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[CorrectionCountryPage.type]
+        value <- arbitrary[String].suchThat(_.nonEmpty).map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryCorrectPreviousReturnUserAnswersEntry: Arbitrary[(CorrectPreviousReturnPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[CorrectPreviousReturnPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
   implicit lazy val arbitraryVatOnSalesFromEuUserAnswersEntry: Arbitrary[(VatOnSalesFromEuPage, JsValue)] =
     Arbitrary {
       for {

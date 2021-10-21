@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package config
+package pages
 
-import com.google.inject.AbstractModule
-import controllers.actions._
+import controllers.routes
+import models.UserAnswers
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-import java.time.{Clock, ZoneOffset}
+case object VatPeriodCorrectionsListPage extends QuestionPage[Boolean] {
 
-class Module extends AbstractModule {
+  override def path: JsPath = JsPath \ toString
 
-  override def configure(): Unit = {
-    bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-    bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
-  }
+  override def toString: String = "vatPeriodCorrectionsList"
+
+  override def navigateInNormalMode(answers: UserAnswers): Call =
+    routes.IndexController.onPageLoad()
 }
