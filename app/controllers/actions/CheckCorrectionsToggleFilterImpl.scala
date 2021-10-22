@@ -18,7 +18,7 @@ package controllers.actions
 
 import config.FrontendAppConfig
 import controllers.routes
-import models.requests.OptionalDataRequest
+import models.requests.{DataRequest, OptionalDataRequest}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import services.PeriodService
@@ -30,9 +30,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CheckCorrectionsToggleFilterImpl @Inject()(config: FrontendAppConfig)
                                      (implicit val executionContext: ExecutionContext)
-  extends ActionFilter[OptionalDataRequest] {
+  extends ActionFilter[DataRequest] {
 
-  override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
+  override protected def filter[A](request: DataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     if(config.correctionToggle){

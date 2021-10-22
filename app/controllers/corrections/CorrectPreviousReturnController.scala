@@ -37,7 +37,7 @@ class CorrectPreviousReturnController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
 
       val preparedForm = request.userAnswers.get(CorrectPreviousReturnPage) match {
@@ -48,7 +48,7 @@ class CorrectPreviousReturnController @Inject()(
       Ok(view(preparedForm, mode, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
+  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(
