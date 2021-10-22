@@ -17,13 +17,13 @@
 package controllers.corrections
 
 import controllers.actions._
-import forms.CorrectPreviousReturnFormProvider
+import forms.corrections.CorrectPreviousReturnFormProvider
 import models.{Mode, Period}
-import pages.CorrectPreviousReturnPage
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.CorrectPreviousReturnView
+import views.html.corrections.CorrectPreviousReturnView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

@@ -17,13 +17,13 @@
 package controllers.corrections
 
 import controllers.actions._
-import forms.VatCorrectionsListFormProvider
+import forms.corrections.VatCorrectionsListFormProvider
 import models.{Mode, Period}
-import pages.VatCorrectionsListPage
+import pages.corrections.VatCorrectionsListPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.VatCorrectionsListView
+import views.html.corrections.VatCorrectionsListView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

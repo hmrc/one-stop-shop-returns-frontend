@@ -17,17 +17,17 @@
 package controllers.corrections
 
 import base.SpecBase
-import forms.RemoveCountryCorrectionFormProvider
+import forms.corrections.RemoveCountryCorrectionFormProvider
 import models.NormalMode
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.RemoveCountryCorrectionPage
+import pages.corrections.RemoveCountryCorrectionPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.RemoveCountryCorrectionView
+import views.html.corrections.RemoveCountryCorrectionView
 
 import scala.concurrent.Future
 

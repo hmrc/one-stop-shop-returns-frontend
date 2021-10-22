@@ -17,17 +17,17 @@
 package controllers.corrections
 
 import base.SpecBase
-import forms.CountryVatCorrectionFormProvider
+import forms.corrections.CountryVatCorrectionFormProvider
 import models.NormalMode
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.CountryVatCorrectionPage
+import pages.corrections.CountryVatCorrectionPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.CountryVatCorrectionView
+import views.html.corrections.CountryVatCorrectionView
 
 import scala.concurrent.Future
 

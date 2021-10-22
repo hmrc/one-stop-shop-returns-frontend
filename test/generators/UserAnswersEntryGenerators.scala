@@ -20,6 +20,7 @@ import models._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
 import pages._
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage, RemovePeriodCorrectionPage, UndeclaredCountryCorrectionPage, VatCorrectionsListPage, VatPeriodCorrectionsListPage}
 import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {

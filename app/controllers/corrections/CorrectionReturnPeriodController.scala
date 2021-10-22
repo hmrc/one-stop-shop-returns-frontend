@@ -17,13 +17,13 @@
 package controllers.corrections
 
 import controllers.actions._
-import forms.CorrectionReturnPeriodFormProvider
+import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.{Mode, Period}
-import pages.CorrectionReturnPeriodPage
+import pages.corrections.CorrectionReturnPeriodPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.CorrectionReturnPeriodView
+import views.html.corrections.CorrectionReturnPeriodView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

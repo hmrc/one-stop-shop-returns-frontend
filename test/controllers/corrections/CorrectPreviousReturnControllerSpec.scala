@@ -17,17 +17,17 @@
 package controllers.corrections
 
 import base.SpecBase
-import forms.CorrectPreviousReturnFormProvider
+import forms.corrections.CorrectPreviousReturnFormProvider
 import models.NormalMode
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.CorrectPreviousReturnPage
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.CorrectPreviousReturnView
+import views.html.corrections.CorrectPreviousReturnView
 
 import scala.concurrent.Future
 
