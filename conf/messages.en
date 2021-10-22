@@ -223,6 +223,7 @@ returnSubmitted.backToAccount.link.text = Back to your account
 
 submittedReturnsHistory.title = Submitted returns
 submittedReturnsHistory.heading = Submitted returns
+submittedReturnsHistory.caption = There may be a delay in your payments showing on this page.
 submittedReturnsHistory.sub-heading = View and pay your previous returns
 submittedReturnsHistory.no-returns = You have not submitted any returns for this year.
 

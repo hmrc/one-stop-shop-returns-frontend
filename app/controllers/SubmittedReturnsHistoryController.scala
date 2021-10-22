@@ -65,7 +65,7 @@ class SubmittedReturnsHistoryController @Inject()(
           Ok(view(vatReturnsWithFinancialDataWithVatOwedCalculated, displayBanner))
         case Left(e) =>
           logger.warn(s"There were some errors: $e")
-          Redirect(routes.JourneyRecoveryController.onPageLoad())
+          Ok(view(Seq.empty, true))
       }
 
   }
