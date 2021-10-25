@@ -19,7 +19,7 @@ package controllers.corrections
 import controllers.actions._
 import forms.corrections.CountryVatCorrectionFormProvider
 import models.{Mode, Period}
-import pages.corrections.CountryVatCorrectionPage
+import pages.corrections.{CorrectionCountryPage, CountryVatCorrectionPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -34,26 +34,31 @@ class CountryVatCorrectionController @Inject()(
                                         view: CountryVatCorrectionView
                                       )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  private val form = formProvider()
+
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage).getOrElse("")
 
+      val form = formProvider(selectedCountry)
       val preparedForm = request.userAnswers.get(CountryVatCorrectionPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period))
+
+      Ok(view(preparedForm, mode, period, selectedCountry))
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage).getOrElse("")
 
+      val form = formProvider(selectedCountry)
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          Future.successful(BadRequest(view(formWithErrors, mode, period, selectedCountry))),
 
         value =>
           for {

@@ -23,12 +23,13 @@ import javax.inject.Inject
 
 class CountryVatCorrectionFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Int] =
+  def apply(country:String): Form[Int] =
     Form(
       "value" -> int(
         "countryVatCorrection.error.required",
         "countryVatCorrection.error.wholeNumber",
-        "countryVatCorrection.error.nonNumeric")
+        "countryVatCorrection.error.nonNumeric",
+        args = Seq(country))
           .verifying(inRange(0, 1000000, "countryVatCorrection.error.outOfRange"))
     )
 }
