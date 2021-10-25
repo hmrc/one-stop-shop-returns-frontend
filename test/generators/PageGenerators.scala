@@ -19,8 +19,36 @@ package generators
 import models.Index
 import org.scalacheck.Arbitrary
 import pages._
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage, RemovePeriodCorrectionPage, UndeclaredCountryCorrectionPage, VatCorrectionsListPage, VatPeriodCorrectionsListPage}
 
 trait PageGenerators {
+
+  implicit lazy val arbitraryVatPeriodCorrectionsListPage: Arbitrary[VatPeriodCorrectionsListPage.type] =
+    Arbitrary(VatPeriodCorrectionsListPage)
+
+  implicit lazy val arbitraryVatCorrectionsListPage: Arbitrary[VatCorrectionsListPage.type] =
+    Arbitrary(VatCorrectionsListPage)
+
+  implicit lazy val arbitraryUndeclaredCountryCorrectionPage: Arbitrary[UndeclaredCountryCorrectionPage.type] =
+    Arbitrary(UndeclaredCountryCorrectionPage)
+
+  implicit lazy val arbitraryRemovePeriodCorrectionPage: Arbitrary[RemovePeriodCorrectionPage.type] =
+    Arbitrary(RemovePeriodCorrectionPage)
+
+  implicit lazy val arbitraryRemoveCountryCorrectionPage: Arbitrary[RemoveCountryCorrectionPage.type] =
+    Arbitrary(RemoveCountryCorrectionPage)
+
+  implicit lazy val arbitraryCountryVatCorrectionPage: Arbitrary[CountryVatCorrectionPage.type] =
+    Arbitrary(CountryVatCorrectionPage)
+
+  implicit lazy val arbitraryCorrectionReturnPeriodPage: Arbitrary[CorrectionReturnPeriodPage.type] =
+    Arbitrary(CorrectionReturnPeriodPage)
+
+  implicit lazy val arbitraryCorrectionCountryPage: Arbitrary[CorrectionCountryPage.type] =
+    Arbitrary(CorrectionCountryPage)
+
+  implicit lazy val arbitraryCorrectPreviousReturnPage: Arbitrary[CorrectPreviousReturnPage.type] =
+    Arbitrary(CorrectPreviousReturnPage)
 
   implicit lazy val arbitraryVatOnSalesFromEuPage: Arbitrary[VatOnSalesFromEuPage] =
     Arbitrary(VatOnSalesFromEuPage(Index(0), Index(0), Index(0)))

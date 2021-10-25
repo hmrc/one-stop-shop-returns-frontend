@@ -180,7 +180,9 @@ trait SpecBase
         bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration)),
         bind[CheckReturnsFilterProvider].toInstance(new FakeCheckReturnsFilterProvider()),
         bind[CheckCommencementDateFilterProvider].toInstance(new FakeCheckCommencementDateFilterProvider()),
-        bind[Clock].toInstance(clockToBind)
+        bind[Clock].toInstance(clockToBind),
+        bind[CheckCorrectionsToggleFilterProvider].toInstance(new FakeCheckCorrectionsToggleFilterProvider())
       )
   }
+
 }

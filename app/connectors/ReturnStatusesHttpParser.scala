@@ -17,7 +17,6 @@
 package connectors
 
 import logging.Logging
-import models.domain.VatReturn
 import models.responses._
 import models.PeriodWithStatus
 import play.api.http.Status._

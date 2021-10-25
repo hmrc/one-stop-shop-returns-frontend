@@ -30,6 +30,11 @@ import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
 
+  implicit lazy val arbitraryCorrectionReturnPeriod: Arbitrary[CorrectionReturnPeriod] =
+    Arbitrary {
+      Gen.oneOf(CorrectionReturnPeriod.values.toSeq)
+    }
+
   implicit val arbitraryVatOnSales: Arbitrary[VatOnSales] =
     Arbitrary {
       for {

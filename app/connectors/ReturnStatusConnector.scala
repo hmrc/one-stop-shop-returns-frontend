@@ -21,10 +21,7 @@ import connectors.ReturnStatusesHttpParser._
 import formats.Format
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
-
-import java.time.{LocalDate, ZoneId}
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 

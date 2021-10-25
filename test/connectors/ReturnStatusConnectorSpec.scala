@@ -19,10 +19,7 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import formats.Format
-import models.{PaymentReference, PeriodWithStatus, ReturnReference}
-import models.domain.VatReturn
-import models.requests.VatReturnRequest
-import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
+import models.PeriodWithStatus
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
@@ -31,7 +28,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.{Instant, LocalDate}
+import java.time.LocalDate
 
 class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 

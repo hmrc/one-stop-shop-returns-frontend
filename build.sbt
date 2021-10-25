@@ -35,6 +35,7 @@ lazy val root = (project in file("."))
       "views.ViewUtils._",
       "models.Mode",
       "controllers.routes._",
+      "controllers.corrections.routes._",
       "viewmodels.govuk.all._"
     ),
     PlayKeys.playDefaultPort := 10204,

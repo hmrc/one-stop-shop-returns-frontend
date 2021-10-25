@@ -22,12 +22,22 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.TryValues
 import pages._
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage, RemovePeriodCorrectionPage, UndeclaredCountryCorrectionPage, VatCorrectionsListPage, VatPeriodCorrectionsListPage}
 import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersGenerator extends TryValues {
   self: Generators =>
 
   val generators: Seq[Gen[(QuestionPage[_], JsValue)]] =
+    arbitrary[(VatPeriodCorrectionsListPage.type, JsValue)] ::
+    arbitrary[(VatCorrectionsListPage.type, JsValue)] ::
+    arbitrary[(UndeclaredCountryCorrectionPage.type, JsValue)] ::
+    arbitrary[(RemovePeriodCorrectionPage.type, JsValue)] ::
+    arbitrary[(RemoveCountryCorrectionPage.type, JsValue)] ::
+    arbitrary[(CountryVatCorrectionPage.type, JsValue)] ::
+    arbitrary[(CorrectionReturnPeriodPage.type, JsValue)] ::
+    arbitrary[(CorrectionCountryPage.type, JsValue)] ::
+    arbitrary[(CorrectPreviousReturnPage.type, JsValue)] ::
     arbitrary[(VatRatesFromEuPage, JsValue)] ::
     arbitrary[(SoldGoodsFromEuPage.type, JsValue)] ::
     arbitrary[(CountryOfSaleFromEuPage, JsValue)] ::
