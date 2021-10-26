@@ -17,12 +17,18 @@
 package controllers.corrections
 
 import base.SpecBase
+import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
-import models.NormalMode
+import models.Quarter.Q4
+import models.SubmissionStatus.Complete
+import models.{NormalMode, Period, PeriodWithStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.CorrectionReturnSinglePeriodPage
+import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -31,46 +37,111 @@ import views.html.corrections.CorrectionReturnSinglePeriodView
 
 import scala.concurrent.Future
 
-class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSugar {
+class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+
+  private val returnStatusConnector = mock[ReturnStatusConnector]
 
   private val formProvider = new CorrectionReturnSinglePeriodFormProvider()
   private val form = formProvider()
 
   private lazy val correctionReturnSinglePeriodRoute = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
 
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    Mockito.reset(returnStatusConnector)
+  }
+
   "CorrectionReturnSinglePeriod Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET with 1 returns period" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(returnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          PeriodWithStatus(period, Complete)
+        ))))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .build()
 
       running(application) {
+        implicit val msgs: Messages = messages(application)
         val request = FakeRequest(GET, correctionReturnSinglePeriodRoute)
-
         val result = route(application, request).value
-
         val view = application.injector.instanceOf[CorrectionReturnSinglePeriodView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result).mustEqual(
+          view(form, NormalMode, period, period.displayText)(request, messages(application)).toString
+        )
+      }
+    }
+
+    "must redirect to CorrectionReturnPeriodController for a GET with more than 1 returns period" in {
+
+      when(returnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          PeriodWithStatus(period, Complete),
+          PeriodWithStatus(Period(2021, Q4), Complete)
+        ))))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, correctionReturnSinglePeriodRoute)
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value.mustEqual(
+          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period).url
+        )
+      }
+    }
+
+    "must redirect to JourneyRecoveryController for a GET with 0 previous returns periods" in {
+
+      when(returnStatusConnector.listStatuses(any())(any())).thenReturn(Future.successful(Right(Seq.empty)))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, correctionReturnSinglePeriodRoute)
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value.mustEqual(
+          controllers.routes.JourneyRecoveryController.onPageLoad().url
+        )
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
+      when(returnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          PeriodWithStatus(period, Complete)
+        ))))
+
       val userAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, true).success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .build()
 
       running(application) {
+        implicit val msgs: Messages = messages(application)
         val request = FakeRequest(GET, correctionReturnSinglePeriodRoute)
-
         val view = application.injector.instanceOf[CorrectionReturnSinglePeriodView]
-
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result).mustEqual(
+          view(form.fill(true), NormalMode, period, period.displayText)(request, messages(application)).toString
+        )
       }
     }
 
@@ -94,28 +165,86 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val expectedAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionReturnSinglePeriodPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value.mustEqual(
+          CorrectionReturnSinglePeriodPage.navigate(NormalMode, expectedAnswers).url
+        )
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(returnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          PeriodWithStatus(period, Complete)
+        ))))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .build()
+
+      running(application) {
+        implicit val msgs: Messages = messages(application)
+        val request =
+          FakeRequest(POST, correctionReturnSinglePeriodRoute)
+            .withFormUrlEncodedBody(("value", ""))
+
+        val boundForm = form.bind(Map("value" -> ""))
+        val view = application.injector.instanceOf[CorrectionReturnSinglePeriodView]
+        val result = route(application, request).value
+
+        status(result) mustEqual BAD_REQUEST
+        contentAsString(result).mustEqual(
+          view(boundForm, NormalMode, period, period.displayText)(request, messages(application)).toString
+        )
+      }
+    }
+
+    "must redirect to CorrectionReturnPeriodController when invalid data is submitted and connector returns more than 1 returns period" in {
+
+      when(returnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          PeriodWithStatus(period, Complete),
+          PeriodWithStatus(Period(2021, Q4), Complete)
+        ))))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .build()
 
       running(application) {
         val request =
           FakeRequest(POST, correctionReturnSinglePeriodRoute)
             .withFormUrlEncodedBody(("value", ""))
 
-        val boundForm = form.bind(Map("value" -> ""))
+        val result = route(application, request).value
 
-        val view = application.injector.instanceOf[CorrectionReturnSinglePeriodView]
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value.mustEqual(
+          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period).url
+        )
+      }
+    }
+
+    "must redirect to JourneyRecoveryController when invalid data is submitted and connector returns more than 0 returns periods" in {
+
+      when(returnStatusConnector.listStatuses(any())(any())).thenReturn(Future.successful(Right(Seq.empty)))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, correctionReturnSinglePeriodRoute)
+            .withFormUrlEncodedBody(("value", ""))
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value.mustEqual(
+          controllers.routes.JourneyRecoveryController.onPageLoad().url
+        )
       }
     }
 

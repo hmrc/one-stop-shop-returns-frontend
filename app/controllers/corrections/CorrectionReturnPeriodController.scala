@@ -16,7 +16,7 @@
 
 package controllers.corrections
 
-import connectors.{ReturnStatusConnector, VatReturnConnector}
+import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.SubmissionStatus.Complete

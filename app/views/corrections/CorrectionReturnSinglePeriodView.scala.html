@@ -22,9 +22,9 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, returnPeriod: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("correctionReturnSinglePeriod.title"))) {
+@layout(pageTitle = title(form, messages("correctionReturnSinglePeriod.title", returnPeriod))) {
 
     @formHelper(action = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onSubmit(mode, period), 'autoComplete -> "off") {
 
@@ -35,7 +35,7 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("correctionReturnSinglePeriod.heading")).asPageHeading()
+                legend = LegendViewModel(messages("correctionReturnSinglePeriod.heading", returnPeriod)).asPageHeading()
             )
         )
 
