@@ -20,7 +20,7 @@ import connectors.{ReturnStatusConnector, VatReturnConnector}
 import controllers.actions._
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.SubmissionStatus.Complete
-import models.{Mode, Period}
+import models.{Mode, NormalMode, Period}
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -45,14 +45,17 @@ class CorrectionReturnPeriodController @Inject()(
     implicit request =>
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
           case Right(returnStatuses) =>
-            //TODO check number of returns less than 2 -> Redirect
+            val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-            val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage) match {
-              case None => form
-              case Some(value) => form.fill(value)
+            if(periods.size < 2) {
+              Redirect(controllers.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period))
+            } else {
+              val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage) match {
+                case None => form
+                case Some(value) => form.fill(value)
+              }
+              Ok(view(preparedForm, mode, period, periods))
             }
-            Ok(view(preparedForm, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)))
-
           case Left(value) =>
             logger.error(s"there was an error $value")
             throw new Exception(value.toString)
@@ -66,11 +69,15 @@ class CorrectionReturnPeriodController @Inject()(
         formWithErrors => {
           returnStatusConnector.listStatuses(request.registration.commencementDate).map {
             case Right(returnStatuses) =>
-              //TODO check number of returns less than 2 -> Redirect
-              
-              BadRequest(view(
-                formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)
-              ))
+              val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+
+              if(periods.size < 2) {
+                Redirect(controllers.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period))
+              } else {
+                BadRequest(view(
+                  formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+                ))
+              }
             case Left(value) =>
               logger.error(s"there was an error $value")
               throw new Exception(value.toString)

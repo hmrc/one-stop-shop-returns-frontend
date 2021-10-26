@@ -80,6 +80,28 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
       }
     }
 
+    "must redirect to CorrectionReturnSinglePeriodController when less than 2 periods" in {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+            PeriodWithStatus(Period(2021, Q3), Complete)
+        ))))
+
+      running(application) {
+        val request = FakeRequest(GET, correctionReturnPeriodRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value.mustEqual(
+          controllers.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
+        )
+      }
+    }
+
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage, Period(2021, Q3)).success.value
@@ -163,6 +185,36 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
         contentAsString(result) mustEqual view(
           boundForm, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
         ).toString
+      }
+    }
+
+    "must redirect to CorrectionReturnSinglePeriodController when invalid data is submitted with < 2 previous returns" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
+        ).build()
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          PeriodWithStatus(Period(2021, Q3), Complete)
+        ))))
+
+      running(application) {
+        val request =
+          FakeRequest(POST, correctionReturnPeriodRoute)
+            .withFormUrlEncodedBody(("value", "invalid value"))
+
+        val boundForm = form.bind(Map("value" -> "invalid value"))
+
+        val view = application.injector.instanceOf[CorrectionReturnPeriodView]
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value.mustEqual(
+          controllers.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
+        )
       }
     }
 

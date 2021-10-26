@@ -23,6 +23,9 @@ import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, Corr
 
 trait PageGenerators {
 
+  implicit lazy val arbitraryCorrectionReturnSinglePeriodPage: Arbitrary[CorrectionReturnSinglePeriodPage.type] =
+    Arbitrary(CorrectionReturnSinglePeriodPage)
+
   implicit lazy val arbitraryVatPeriodCorrectionsListPage: Arbitrary[VatPeriodCorrectionsListPage.type] =
     Arbitrary(VatPeriodCorrectionsListPage)
 
