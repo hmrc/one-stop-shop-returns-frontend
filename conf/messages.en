@@ -307,7 +307,7 @@ noOtherPeriodsAvailable.submit = Back to your account
 correctPreviousReturn.title = Do you want to correct a previous return?
 correctPreviousReturn.heading = Do you want to correct a previous return?
 correctPreviousReturn.checkYourAnswersLabel = correctPreviousReturn
-correctPreviousReturn.error.required = Select yes if correctPreviousReturn
+correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = CorrectPreviousReturn
 
 correctionCountry.title = correctionCountry
