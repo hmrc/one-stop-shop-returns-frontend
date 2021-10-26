@@ -364,8 +364,8 @@ vatPeriodCorrectionsList.checkYourAnswersLabel = vatPeriodCorrectionsList
 vatPeriodCorrectionsList.error.required = Select yes if vatPeriodCorrectionsList
 vatPeriodCorrectionsList.change.hidden = VatPeriodCorrectionsList
 
-correctionReturnSinglePeriod.title = correctionReturnSinglePeriod
-correctionReturnSinglePeriod.heading = correctionReturnSinglePeriod
+correctionReturnSinglePeriod.title = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.checkYourAnswersLabel = correctionReturnSinglePeriod
-correctionReturnSinglePeriod.error.required = Select yes if correctionReturnSinglePeriod
+correctionReturnSinglePeriod.error.required = Select yes if you want to correct the VAT amounts in your {0} return
 correctionReturnSinglePeriod.change.hidden = CorrectionReturnSinglePeriod

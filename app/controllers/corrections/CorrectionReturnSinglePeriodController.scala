@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.corrections
 
 import controllers.actions._
-import forms.CorrectionReturnSinglePeriodFormProvider
-import javax.inject.Inject
+import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.{Mode, Period}
-import pages.CorrectionReturnSinglePeriodPage
+import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.CorrectionReturnSinglePeriodView
+import views.html.corrections.CorrectionReturnSinglePeriodView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionReturnSinglePeriodController @Inject()(

@@ -48,7 +48,9 @@ class CorrectionReturnPeriodController @Inject()(
             val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
             if(periods.size < 2) {
-              Redirect(controllers.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period))
+              Redirect(
+                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
+              )
             } else {
               val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage) match {
                 case None => form
@@ -72,7 +74,9 @@ class CorrectionReturnPeriodController @Inject()(
               val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
               if(periods.size < 2) {
-                Redirect(controllers.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period))
+                Redirect(
+                  controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
+                )
               } else {
                 BadRequest(view(
                   formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)

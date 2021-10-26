@@ -184,7 +184,7 @@ POST       /:period/vatPeriodCorrectionsList                        controllers.
 GET        /:period/changeVatPeriodCorrectionsList                  controllers.corrections.VatPeriodCorrectionsListController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST       /:period/changeVatPeriodCorrectionsList                  controllers.corrections.VatPeriodCorrectionsListController.onSubmit(mode: Mode = CheckMode, period: Period)
 
-GET        /:period/correctionReturnSinglePeriod                        controllers.CorrectionReturnSinglePeriodController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST       /:period/correctionReturnSinglePeriod                        controllers.CorrectionReturnSinglePeriodController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET        /:period/changeCorrectionReturnSinglePeriod                  controllers.CorrectionReturnSinglePeriodController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST       /:period/changeCorrectionReturnSinglePeriod                  controllers.CorrectionReturnSinglePeriodController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET        /:period/correctionReturnSinglePeriod                        controllers.corrections.CorrectionReturnSinglePeriodController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/correctionReturnSinglePeriod                        controllers.corrections.CorrectionReturnSinglePeriodController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeCorrectionReturnSinglePeriod                  controllers.corrections.CorrectionReturnSinglePeriodController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeCorrectionReturnSinglePeriod                  controllers.corrections.CorrectionReturnSinglePeriodController.onSubmit(mode: Mode = CheckMode, period: Period)

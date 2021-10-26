@@ -97,7 +97,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          controllers.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
+          controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
         )
       }
     }
@@ -205,15 +205,11 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
           FakeRequest(POST, correctionReturnPeriodRoute)
             .withFormUrlEncodedBody(("value", "invalid value"))
 
-        val boundForm = form.bind(Map("value" -> "invalid value"))
-
-        val view = application.injector.instanceOf[CorrectionReturnPeriodView]
-
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          controllers.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
+          controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
         )
       }
     }

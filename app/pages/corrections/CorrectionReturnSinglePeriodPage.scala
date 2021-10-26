@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package pages
+package pages.corrections
 
-import pages.behaviours.PageBehaviours
+import controllers.routes
+import models.UserAnswers
+import pages.QuestionPage
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-class CorrectionReturnSinglePeriodPageSpec extends PageBehaviours {
+case object CorrectionReturnSinglePeriodPage extends QuestionPage[Boolean] {
 
-  "CorrectionReturnSinglePeriodPage" - {
+  override def path: JsPath = JsPath \ toString
 
-    beRetrievable[Boolean](CorrectionReturnSinglePeriodPage)
+  override def toString: String = "correctionReturnSinglePeriod"
 
-    beSettable[Boolean](CorrectionReturnSinglePeriodPage)
-
-    beRemovable[Boolean](CorrectionReturnSinglePeriodPage)
-  }
+  override def navigateInNormalMode(answers: UserAnswers): Call =
+    routes.IndexController.onPageLoad()
 }

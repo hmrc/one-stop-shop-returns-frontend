@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.corrections
 
 import base.SpecBase
-import forms.CorrectionReturnSinglePeriodFormProvider
-import models.{NormalMode, UserAnswers}
+import forms.corrections.CorrectionReturnSinglePeriodFormProvider
+import models.NormalMode
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.CorrectionReturnSinglePeriodPage
+import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.CorrectionReturnSinglePeriodView
+import views.html.corrections.CorrectionReturnSinglePeriodView
 
 import scala.concurrent.Future
 
@@ -36,7 +36,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
   private val formProvider = new CorrectionReturnSinglePeriodFormProvider()
   private val form = formProvider()
 
-  private lazy val correctionReturnSinglePeriodRoute = routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
+  private lazy val correctionReturnSinglePeriodRoute = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
 
   "CorrectionReturnSinglePeriod Controller" - {
 
@@ -129,7 +129,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -145,7 +145,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
   }
