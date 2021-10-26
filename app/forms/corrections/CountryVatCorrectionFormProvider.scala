@@ -32,5 +32,6 @@ class CountryVatCorrectionFormProvider @Inject() extends Mappings {
         "countryVatCorrection.error.nonNumeric",
         args = Seq(country))
           .verifying(inRange[BigDecimal](-1000000000, maxCurrencyAmount, "countryVatCorrection.error.outOfRange"))
+        .verifying("countryVatCorrection.error.nonZero", input => input != 0)
     )
 }

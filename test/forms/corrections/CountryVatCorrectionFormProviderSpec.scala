@@ -36,16 +36,35 @@ class CountryVatCorrectionFormProviderSpec extends DecimalFieldBehaviours {
     val minimum = BigDecimal(-1000000000)
     val maximum = maxCurrencyAmount
 
-    val validDataGenerator =
-      Gen.choose[BigDecimal](minimum, maximum)
+    val validDataGeneratorForPositive =
+      Gen.choose[BigDecimal](BigDecimal(0.01), maximum)
         .map(_.setScale(2, RoundingMode.HALF_UP))
         .map(_.toString)
 
-    behave like fieldThatBindsValidData(
-      form,
-      fieldName,
-      validDataGenerator
-    )
+    val validDataGeneratorForNegative =
+      Gen.choose[BigDecimal](minimum, BigDecimal(-0.01))
+        .map(_.setScale(2, RoundingMode.HALF_UP))
+        .map(_.toString)
+
+    "bind valid data positive" in {
+
+      forAll(validDataGeneratorForPositive -> "validDataItem") {
+        dataItem: String =>
+          val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
+          result.value.value mustBe dataItem
+          result.errors mustBe empty
+      }
+    }
+
+    "bind valid data negative" in {
+
+      forAll(validDataGeneratorForNegative -> "validDataItem") {
+        dataItem: String =>
+          val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
+          result.value.value mustBe dataItem
+          result.errors mustBe empty
+      }
+    }
 
     behave like decimalField(
       form,
