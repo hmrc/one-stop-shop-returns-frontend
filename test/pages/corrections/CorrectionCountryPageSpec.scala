@@ -16,6 +16,7 @@
 
 package pages.corrections
 
+import models.Country
 import pages.behaviours.PageBehaviours
 
 
@@ -23,10 +24,10 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
   "CorrectionCountryPage" - {
 
-    beRetrievable[String](CorrectionCountryPage)
+    beRetrievable[Country](CorrectionCountryPage)
 
-    beSettable[String](CorrectionCountryPage)
+    beSettable[Country](CorrectionCountryPage)
 
-    beRemovable[String](CorrectionCountryPage)
+    beRemovable[Country](CorrectionCountryPage)
   }
 }
