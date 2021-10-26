@@ -25,7 +25,7 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, country: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, country: Country)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("undeclaredCountryCorrection.title"))) {
 
@@ -37,7 +37,7 @@
         }
 
         <header class="hmrc-page-heading">
-            <h1 class="govuk-heading-xl">@messages("undeclaredCountryCorrection.heading", country)</h1>
+            <h1 class="govuk-heading-xl">@messages("undeclaredCountryCorrection.heading", country.name)</h1>
             <p class="govuk-caption-xl hmrc-caption-xl">@messages("undeclaredCountryCorrection.caption", period.displayText)</p>
         </header>
 

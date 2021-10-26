@@ -39,32 +39,37 @@ class CountryVatCorrectionController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage).getOrElse("")
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
+      selectedCountry match {
+        case Some(country) =>
+            val form = formProvider(country.name)
+            val preparedForm = request.userAnswers.get(CountryVatCorrectionPage) match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
+            Ok(view(preparedForm, mode, period, country))
 
-      val form = formProvider(selectedCountry)
-      val preparedForm = request.userAnswers.get(CountryVatCorrectionPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
       }
 
-
-      Ok(view(preparedForm, mode, period, selectedCountry))
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage).getOrElse("")
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
 
-      val form = formProvider(selectedCountry)
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, selectedCountry))),
+      selectedCountry match {
+        case Some(country) =>
+          val form = formProvider(country.name)
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, mode, period, country))),
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryVatCorrectionPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CountryVatCorrectionPage.navigate(mode, updatedAnswers))
-      )
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryVatCorrectionPage, value))
+                _              <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(CountryVatCorrectionPage.navigate(mode, updatedAnswers))
+          )
+      }
   }
 }

@@ -24,9 +24,9 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, country: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, country: Country)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("countryVatCorrection.title", country))) {
+@layout(pageTitle = title(form, messages("countryVatCorrection.title", country.name))) {
 
     @formHelper(action = controllers.corrections.routes.CountryVatCorrectionController.onSubmit(mode, period), 'autoComplete -> "off") {
 
