@@ -19,7 +19,7 @@ package controllers.corrections
 import controllers.actions._
 import forms.corrections.UndeclaredCountryCorrectionFormProvider
 import models.{Mode, Period}
-import pages.corrections.UndeclaredCountryCorrectionPage
+import pages.corrections.{CorrectionCountryPage, UndeclaredCountryCorrectionPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -39,21 +39,21 @@ class UndeclaredCountryCorrectionController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage).getOrElse("")
       val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period))
+      Ok(view(preparedForm, mode, period, selectedCountry))
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage).getOrElse("")
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          Future.successful(BadRequest(view(formWithErrors, mode, period, selectedCountry))),
 
         value =>
           for {
