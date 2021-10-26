@@ -24,11 +24,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionCountry.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(mode, period)) {
+    @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(mode, period, index)) {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

@@ -315,7 +315,7 @@ correctionCountry.heading = Which country would you like to correct?
 correctionCountry.hint = You can also add a new country that was not included in your previous return.
 correctionCountry.checkYourAnswersLabel = correctionCountry
 correctionCountry.error.required = Enter correctionCountry
-correctionCountry.error.length = CorrectionCountry must be 100 characters or less
+correctionCountry.error.duplicate = You selected this country already. Select a different one.
 correctionCountry.change.hidden = CorrectionCountry
 
 correctionReturnPeriod.title = Which return period do you want to correct?
