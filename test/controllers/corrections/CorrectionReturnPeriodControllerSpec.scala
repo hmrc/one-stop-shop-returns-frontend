@@ -43,6 +43,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
   private val formProvider = new CorrectionReturnPeriodFormProvider()
   private val form = formProvider()
+
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private val mockReturnStatusConnector = mock[ReturnStatusConnector]
@@ -54,14 +55,16 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
   "CorrectionReturnPeriod Controller" - {
 
-    "must return OK and the correct view for a GET with one completed return" in {
+    "must return OK and the correct view for a GET with multiple completed returns" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
-        ).build()
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
 
       when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), Complete)))))
+        .thenReturn(Future.successful(Right(Seq(
+            PeriodWithStatus(Period(2021, Q3), Complete),
+            PeriodWithStatus(Period(2021, Q4), Complete)
+        ))))
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -72,7 +75,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form, NormalMode, period, Seq(Period(2021, Q3)))(request, messages(application)
+          form, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
         ).toString
       }
     }
@@ -87,7 +90,10 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
         ).build()
 
       when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), Complete)))))
+        .thenReturn(Future.successful(Right(Seq(
+          PeriodWithStatus(Period(2021, Q3), Complete),
+          PeriodWithStatus(Period(2021, Q4), Complete)
+        ))))
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -98,7 +104,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form.fill(Period(2021, Q3)), NormalMode, period, Seq(Period(2021, Q3)))(request, messages(application)
+          form.fill(Period(2021, Q3)), NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
         ).toString
       }
     }
@@ -129,7 +135,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
       }
     }
 
-    "must return a Bad Request and errors when invalid data is submitted" in {
+    "must return a Bad Request and errors when invalid data is submitted with multiple previous returns" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
@@ -137,7 +143,10 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
         ).build()
 
       when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), Complete)))))
+        .thenReturn(Future.successful(Right(Seq(
+          PeriodWithStatus(Period(2021, Q3), Complete),
+          PeriodWithStatus(Period(2021, Q4), Complete)
+        ))))
 
       running(application) {
         val request =
@@ -152,7 +161,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(
-          boundForm, NormalMode, period, Seq(Period(2021, Q3)))(request, messages(application)
+          boundForm, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
         ).toString
       }
     }

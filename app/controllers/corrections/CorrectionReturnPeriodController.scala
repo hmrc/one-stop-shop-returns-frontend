@@ -19,7 +19,6 @@ package controllers.corrections
 import connectors.{ReturnStatusConnector, VatReturnConnector}
 import controllers.actions._
 import forms.corrections.CorrectionReturnPeriodFormProvider
-import models.Quarter._
 import models.SubmissionStatus.Complete
 import models.{Mode, Period}
 import pages.corrections.CorrectionReturnPeriodPage
@@ -29,7 +28,6 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionReturnPeriodView
 
-import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,19 +37,22 @@ class CorrectionReturnPeriodController @Inject()(
                                        returnStatusConnector: ReturnStatusConnector,
                                        view: CorrectionReturnPeriodView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
-
   private val form = formProvider()
+
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
           case Right(returnStatuses) =>
+            //TODO check number of returns less than 2 -> Redirect
+
             val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage) match {
               case None => form
               case Some(value) => form.fill(value)
             }
             Ok(view(preparedForm, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)))
+
           case Left(value) =>
             logger.error(s"there was an error $value")
             throw new Exception(value.toString)
@@ -65,6 +66,8 @@ class CorrectionReturnPeriodController @Inject()(
         formWithErrors => {
           returnStatusConnector.listStatuses(request.registration.commencementDate).map {
             case Right(returnStatuses) =>
+              //TODO check number of returns less than 2 -> Redirect
+              
               BadRequest(view(
                 formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)
               ))
