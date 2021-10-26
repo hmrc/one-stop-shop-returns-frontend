@@ -333,7 +333,7 @@ countryVatCorrection.checkYourAnswersLabel = CountryVatCorrection
 countryVatCorrection.error.nonNumeric = Enter your correction for the total VAT payable to {0} using numbers
 countryVatCorrection.error.required = Enter your correction for the total VAT payable to {0}
 countryVatCorrection.error.wholeNumber = Enter your correction for the total VAT payable to {0} using whole numbers
-countryVatCorrection.error.outOfRange = Correction for the total VAT payable to {0} must be between {1} and {2}
+countryVatCorrection.error.outOfRange = Correction for the total VAT payable must be between {1} and {2}
 countryVatCorrection.change.hidden = CountryVatCorrection
 
 removeCountryCorrection.title =  Are you sure you want to remove this correction?

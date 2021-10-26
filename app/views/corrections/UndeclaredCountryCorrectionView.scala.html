@@ -36,20 +36,21 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-<header class="hmrc-page-heading">
-    <h1 class="govuk-heading-xl">@messages("undeclaredCountryCorrection.heading", country)</h1>
-    <p class="govuk-caption-xl hmrc-caption-xl">@messages("undeclaredCountryCorrection.caption", period.displayText)</p>
-</header>
+        <header class="hmrc-page-heading">
+            <h1 class="govuk-heading-xl">@messages("undeclaredCountryCorrection.heading", country)</h1>
+            <p class="govuk-caption-xl hmrc-caption-xl">@messages("undeclaredCountryCorrection.caption", period.displayText)</p>
+        </header>
 
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
                 legend = LegendViewModel(
-HtmlContent(
-Html(messages("undeclaredCountryCorrection.legend")))
-).withSize(LegendSize.Medium)
-)
+                    HtmlContent(
+                        Html(messages("undeclaredCountryCorrection.legend"))
+                    )
+                ).withSize(LegendSize.Medium)
             )
+        )
 
 
         @govukButton(
