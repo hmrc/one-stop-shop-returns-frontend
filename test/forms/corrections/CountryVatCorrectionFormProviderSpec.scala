@@ -15,11 +15,15 @@
  */
 
 package forms.corrections
-import forms.behaviours.IntFieldBehaviours
+import config.Constants.maxCurrencyAmount
+import forms.behaviours.{DecimalFieldBehaviours, IntFieldBehaviours}
+import org.scalacheck.Gen
 import pages.corrections.CorrectionCountryPage
 import play.api.data.FormError
 
-class CountryVatCorrectionFormProviderSpec extends IntFieldBehaviours {
+import scala.math.BigDecimal.RoundingMode
+
+class CountryVatCorrectionFormProviderSpec extends DecimalFieldBehaviours {
 
   private val country = "Country"
 
@@ -29,10 +33,13 @@ class CountryVatCorrectionFormProviderSpec extends IntFieldBehaviours {
 
     val fieldName = "value"
 
-    val minimum = 0
-    val maximum = 1000000
+    val minimum = BigDecimal(-1000000000)
+    val maximum = maxCurrencyAmount
 
-    val validDataGenerator = intsInRangeWithCommas(minimum, maximum)
+    val validDataGenerator =
+      Gen.choose[BigDecimal](minimum, maximum)
+        .map(_.setScale(2, RoundingMode.HALF_UP))
+        .map(_.toString)
 
     behave like fieldThatBindsValidData(
       form,
@@ -40,14 +47,14 @@ class CountryVatCorrectionFormProviderSpec extends IntFieldBehaviours {
       validDataGenerator
     )
 
-    behave like intField(
+    behave like decimalField(
       form,
       fieldName,
       nonNumericError  = FormError(fieldName, "countryVatCorrection.error.nonNumeric", Seq(country)),
-      wholeNumberError = FormError(fieldName, "countryVatCorrection.error.wholeNumber", Seq(country))
+      invalidNumericError = FormError(fieldName, "countryVatCorrection.error.wholeNumber", Seq(country))
     )
 
-    behave like intFieldWithRange(
+    behave like decimalFieldWithRange(
       form,
       fieldName,
       minimum       = minimum,

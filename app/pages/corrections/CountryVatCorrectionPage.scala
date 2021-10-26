@@ -22,7 +22,7 @@ import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object CountryVatCorrectionPage extends QuestionPage[Int] {
+case object CountryVatCorrectionPage extends QuestionPage[BigDecimal] {
 
   override def path: JsPath = JsPath \ toString
 

@@ -39,7 +39,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
   private val form = formProvider(countryString)
   private val userAnswersWithCountry = emptyUserAnswers.set(CorrectionCountryPage, countryString).success.value
 
-  private val validAnswer = 0
+  private val validAnswer = BigDecimal(0)
 
   private lazy val countryVatCorrectionRoute = controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, period).url
 
