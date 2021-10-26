@@ -62,14 +62,23 @@ class CorrectionReturnPeriodController @Inject()(
     implicit request =>
 
       form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, Seq(Period(2021, Q2), Period(2021, Q3), Period(2021, Q4))))),
-
+        formWithErrors => {
+          returnStatusConnector.listStatuses(request.registration.commencementDate).map {
+            case Right(returnStatuses) =>
+              BadRequest(view(
+                formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+              ))
+            case Left(value) =>
+              logger.error(s"there was an error $value")
+              throw new Exception(value.toString)
+        }},
         value =>
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage, value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectionReturnPeriodPage.navigate(mode, updatedAnswers))
+          } yield {
+            Redirect(CorrectionReturnPeriodPage.navigate(mode, updatedAnswers))
+          }
       )
   }
 }

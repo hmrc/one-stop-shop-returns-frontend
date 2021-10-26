@@ -36,7 +36,7 @@ class CorrectionReturnPeriodFormProviderSpec extends OptionFieldBehaviours {
       form,
       fieldName,
       validValues  = testPeriods,
-      invalidError = FormError(fieldName, "error.invalid")
+      invalidError = FormError(fieldName, "error.invalidPeriod")
     )
 
     behave like mandatoryField(

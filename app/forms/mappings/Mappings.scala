@@ -59,7 +59,7 @@ trait Mappings extends Formatters with Constraints {
     of(new LocalDateFormatter(invalidKey, allRequiredKey, twoRequiredKey, requiredKey, args))
 
   protected def period(requiredKey: String = "error.required",
-                        invalidKey: String = "error.period",
+                        invalidKey: String = "error.invalidPeriod",
                         args: Seq[String] = Seq.empty): FieldMapping[Period] =
     of(periodFormatter(requiredKey, invalidKey, args))
 }

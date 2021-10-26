@@ -23,7 +23,9 @@ import models.Quarter._
 import models.SubmissionStatus.Complete
 import models.{NormalMode, Period, PeriodWithStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.inject.bind
@@ -35,7 +37,7 @@ import views.html.corrections.CorrectionReturnPeriodView
 
 import scala.concurrent.Future
 
-class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
+class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private lazy val correctionReturnPeriodRoute = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period).url
 
@@ -44,6 +46,11 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private val mockReturnStatusConnector = mock[ReturnStatusConnector]
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    Mockito.reset(mockReturnStatusConnector)
+  }
 
   "CorrectionReturnPeriod Controller" - {
 
@@ -104,11 +111,9 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
+          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
+          bind[SessionRepository].toInstance(mockSessionRepository)
         ).build()
-
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), Complete)))))
 
       running(application) {
         val request =

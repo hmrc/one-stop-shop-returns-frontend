@@ -240,7 +240,7 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
 
     "must not bind an invalid period" in {
       val result = testForm.bind(Map("value" -> "2021-Q5"))
-      result.errors must contain only FormError("value", "error.period")
+      result.errors must contain only FormError("value", "error.invalidPeriod")
     }
 
     "must not bind an empty value" in {
