@@ -310,8 +310,9 @@ correctPreviousReturn.checkYourAnswersLabel = correctPreviousReturn
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = CorrectPreviousReturn
 
-correctionCountry.title = correctionCountry
-correctionCountry.heading = correctionCountry
+correctionCountry.title = Which country would you like to correct?
+correctionCountry.heading = Which country would you like to correct?
+correctionCountry.hint = You can also add a new country that was not included in your previous return.
 correctionCountry.checkYourAnswersLabel = correctionCountry
 correctionCountry.error.required = Enter correctionCountry
 correctionCountry.error.length = CorrectionCountry must be 100 characters or less

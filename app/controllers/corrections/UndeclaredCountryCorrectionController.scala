@@ -39,27 +39,33 @@ class UndeclaredCountryCorrectionController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage).getOrElse("")
-      val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
+      selectedCountry match {
+        case Some(country) => val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage) match {
+          case None => form
+          case Some(value) => form.fill(value)
+        }
+          Ok(view(preparedForm, mode, period, country))
       }
 
-      Ok(view(preparedForm, mode, period, selectedCountry))
+
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage).getOrElse("")
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, selectedCountry))),
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
+      selectedCountry match {
+        case Some(country) =>
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, mode, period, country))),
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(UndeclaredCountryCorrectionPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(UndeclaredCountryCorrectionPage.navigate(mode, updatedAnswers))
-      )
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(UndeclaredCountryCorrectionPage, value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(UndeclaredCountryCorrectionPage.navigate(mode, updatedAnswers))
+          )
+      }
   }
 }

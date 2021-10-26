@@ -20,7 +20,7 @@
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
-    govukInput: GovukInput,
+    govukSelect: GovukSelect,
     govukButton: GovukButton
 )
 
@@ -34,12 +34,18 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukInput(
-            InputViewModel(
+        @govukSelect(
+            SelectViewModel(
                 field = form("value"),
-                label = LabelViewModel(messages("correctionCountry.heading")).asPageHeading()
+                items = Country.euCountrySelectItems,
+                label = HmrcPageHeadingLabel(
+                    content = messages("correctionCountry.heading"),
+                    caption = period.displayText
+                )
             )
-            .withWidth(Full)
+            .withCssClass(Fixed20.toString)
+            .withCssClass("autocomplete")
+            .withHint(HintViewModel(messages("correctionCountry.hint")))
         )
 
         @govukButton(
