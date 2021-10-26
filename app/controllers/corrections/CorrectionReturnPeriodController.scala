@@ -16,36 +16,46 @@
 
 package controllers.corrections
 
+import connectors.{ReturnStatusConnector, VatReturnConnector}
 import controllers.actions._
 import forms.corrections.CorrectionReturnPeriodFormProvider
+import models.Quarter._
+import models.SubmissionStatus.Complete
 import models.{Mode, Period}
 import pages.corrections.CorrectionReturnPeriodPage
+import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionReturnPeriodView
 
+import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionReturnPeriodController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: CorrectionReturnPeriodFormProvider,
+                                       returnStatusConnector: ReturnStatusConnector,
                                        view: CorrectionReturnPeriodView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-
-      val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
+      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
+          case Right(returnStatuses) =>
+            val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage) match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
+            Ok(view(preparedForm, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)))
+          case Left(value) =>
+            logger.error(s"there was an error $value")
+            throw new Exception(value.toString)
       }
-
-      Ok(view(preparedForm, mode, period))
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
@@ -53,7 +63,7 @@ class CorrectionReturnPeriodController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          Future.successful(BadRequest(view(formWithErrors, mode, period, Seq(Period(2021, Q2), Period(2021, Q3), Period(2021, Q4))))),
 
         value =>
           for {

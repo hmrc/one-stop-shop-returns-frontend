@@ -73,14 +73,6 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
       } yield (page, value)
     }
 
-  implicit lazy val arbitraryCorrectionReturnPeriodUserAnswersEntry: Arbitrary[(CorrectionReturnPeriodPage.type, JsValue)] =
-    Arbitrary {
-      for {
-        page  <- arbitrary[CorrectionReturnPeriodPage.type]
-        value <- arbitrary[CorrectionReturnPeriod].map(Json.toJson(_))
-      } yield (page, value)
-    }
-
   implicit lazy val arbitraryCorrectionCountryUserAnswersEntry: Arbitrary[(CorrectionCountryPage.type, JsValue)] =
     Arbitrary {
       for {

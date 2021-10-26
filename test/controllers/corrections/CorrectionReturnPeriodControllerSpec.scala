@@ -17,8 +17,11 @@
 package controllers.corrections
 
 import base.SpecBase
+import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnPeriodFormProvider
-import models.{CorrectionReturnPeriod, NormalMode}
+import models.Quarter._
+import models.SubmissionStatus.Complete
+import models.{NormalMode, Period, PeriodWithStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -27,6 +30,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import uk.gov.hmrc.http.HeaderCarrier
 import views.html.corrections.CorrectionReturnPeriodView
 
 import scala.concurrent.Future
@@ -37,12 +41,20 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new CorrectionReturnPeriodFormProvider()
   private val form = formProvider()
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
+
+  private val mockReturnStatusConnector = mock[ReturnStatusConnector]
 
   "CorrectionReturnPeriod Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET with one completed return" in {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
+        ).build()
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), Complete)))))
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -52,15 +64,23 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionReturnPeriodView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form, NormalMode, period, Seq(Period(2021, Q3)))(request, messages(application)
+        ).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage, CorrectionReturnPeriod.values.head).success.value
+      val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage, Period(2021, Q3)).success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
+        ).build()
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), Complete)))))
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -70,7 +90,9 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(CorrectionReturnPeriod.values.head), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form.fill(Period(2021, Q3)), NormalMode, period, Seq(Period(2021, Q3)))(request, messages(application)
+        ).toString
       }
     }
 
@@ -80,18 +102,21 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-          .build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
+        ).build()
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), Complete)))))
 
       running(application) {
         val request =
           FakeRequest(POST, correctionReturnPeriodRoute)
-            .withFormUrlEncodedBody(("value", CorrectionReturnPeriod.values.head.toString))
+            .withFormUrlEncodedBody(("value", Period(2021, Q3).toString))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage, CorrectionReturnPeriod.values.head).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage, Period(2021, Q3)).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual CorrectionReturnPeriodPage.navigate(NormalMode, expectedAnswers).url
@@ -101,7 +126,13 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
+        ).build()
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), Complete)))))
 
       running(application) {
         val request =
@@ -115,7 +146,9 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          boundForm, NormalMode, period, Seq(Period(2021, Q3)))(request, messages(application)
+        ).toString
       }
     }
 
@@ -140,7 +173,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, correctionReturnPeriodRoute)
-            .withFormUrlEncodedBody(("value", CorrectionReturnPeriod.values.head.toString))
+            .withFormUrlEncodedBody(("value", Period(2021, Q3).toString))
 
         val result = route(application, request).value
 

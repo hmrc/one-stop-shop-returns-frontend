@@ -22,7 +22,7 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, allReturnPeriods: Seq[Period])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionReturnPeriod.title"))) {
 
@@ -36,7 +36,7 @@
             RadiosViewModel(
                 field  = form("value"),
                 legend = LegendViewModel(messages("correctionReturnPeriod.heading")).asPageHeading(),
-                items  = CorrectionReturnPeriod.options
+                items  = Period.options(allReturnPeriods)
             )
         )
 
