@@ -14,6 +14,9 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
+@import viewmodels.LegendSize
+
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
@@ -22,22 +25,33 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, country: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("undeclaredCountryCorrection.title"))) {
 
     @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(mode, period), 'autoComplete -> "off") {
 
+
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
+        <header class="hmrc-page-heading">
+            <h1 class="govuk-heading-xl">@messages("undeclaredCountryCorrection.heading", country)</h1>
+            <p class="govuk-caption-xl hmrc-caption-xl">@messages("undeclaredCountryCorrection.caption", period.displayText)</p>
+        </header>
+
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("undeclaredCountryCorrection.heading")).asPageHeading()
+                legend = LegendViewModel(
+                    HtmlContent(
+                        Html(messages("undeclaredCountryCorrection.legend"))
+                    )
+                ).withSize(LegendSize.Medium)
             )
         )
+
 
         @govukButton(
             ButtonViewModel(messages("site.continue"))

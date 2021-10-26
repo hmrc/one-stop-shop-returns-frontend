@@ -304,10 +304,10 @@ noOtherPeriodsAvailable.heading = You cannot start returns for other periods yet
 noOtherPeriodsAvailable.label = You can only start returns for periods that have ended.
 noOtherPeriodsAvailable.submit = Back to your account
 
-correctPreviousReturn.title = correctPreviousReturn
-correctPreviousReturn.heading = correctPreviousReturn
+correctPreviousReturn.title = Do you want to correct a previous return?
+correctPreviousReturn.heading = Do you want to correct a previous return?
 correctPreviousReturn.checkYourAnswersLabel = correctPreviousReturn
-correctPreviousReturn.error.required = Select yes if correctPreviousReturn
+correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = CorrectPreviousReturn
 
 correctionCountry.title = Which country would you like to correct?
@@ -326,31 +326,35 @@ correctionReturnPeriod.checkYourAnswersLabel = Which return period do you want t
 correctionReturnPeriod.error.required = Select correctionReturnPeriod
 correctionReturnPeriod.change.hidden = CorrectionReturnPeriod
 
-countryVatCorrection.title = CountryVatCorrection
-countryVatCorrection.heading = CountryVatCorrection
+countryVatCorrection.title = What is your correction for the total VAT payable to {0}?
+countryVatCorrection.heading = What is your correction for the total VAT payable to {0}?
+countryVatCorrection.caption = Correction period: {0}
+countryVatCorrection.hint = Enter a minus value if you declared too much in your previous return.
 countryVatCorrection.checkYourAnswersLabel = CountryVatCorrection
-countryVatCorrection.error.nonNumeric = Enter your countryVatCorrection using numbers
-countryVatCorrection.error.required = Enter your countryVatCorrection
-countryVatCorrection.error.wholeNumber = Enter your countryVatCorrection using whole numbers
-countryVatCorrection.error.outOfRange = CountryVatCorrection must be between {0} and {1}
+countryVatCorrection.error.nonNumeric = Enter your correction for the total VAT payable to {0} using numbers
+countryVatCorrection.error.required = Enter your correction for the total VAT payable to {0}
+countryVatCorrection.error.wholeNumber = Enter your correction for the total VAT payable to {0} using whole numbers
+countryVatCorrection.error.outOfRange = Correction for the total VAT payable must be between {1} and {2}
 countryVatCorrection.change.hidden = CountryVatCorrection
 
-removeCountryCorrection.title = removeCountryCorrection
-removeCountryCorrection.heading = removeCountryCorrection
+removeCountryCorrection.title =  Are you sure you want to remove this correction?
+removeCountryCorrection.heading =  Are you sure you want to remove this correction?
 removeCountryCorrection.checkYourAnswersLabel = removeCountryCorrection
-removeCountryCorrection.error.required = Select yes if removeCountryCorrection
+removeCountryCorrection.error.required = Select yes if you want to remove this correction
 removeCountryCorrection.change.hidden = RemoveCountryCorrection
 
-removePeriodCorrection.title = removePeriodCorrection
-removePeriodCorrection.heading = removePeriodCorrection
+removePeriodCorrection.title = Are you sure you want to remove this correction period?
+removePeriodCorrection.heading = Are you sure you want to remove this correction period?
 removePeriodCorrection.checkYourAnswersLabel = removePeriodCorrection
-removePeriodCorrection.error.required = Select yes if removePeriodCorrection
+removePeriodCorrection.error.required = Select yes if you want to remove this correction period
 removePeriodCorrection.change.hidden = RemovePeriodCorrection
 
-undeclaredCountryCorrection.title = undeclaredCountryCorrection
-undeclaredCountryCorrection.heading = undeclaredCountryCorrection
+undeclaredCountryCorrection.title = You did not declare any VAT to {0} in your original return
+undeclaredCountryCorrection.heading = You did not declare any VAT to {0} in your original return
+undeclaredCountryCorrection.caption = Correction period: {0}
+undeclaredCountryCorrection.legend = Do you want to add a correction to this country?
 undeclaredCountryCorrection.checkYourAnswersLabel = undeclaredCountryCorrection
-undeclaredCountryCorrection.error.required = Select yes if undeclaredCountryCorrection
+undeclaredCountryCorrection.error.required = Select yes if you want to add a correction to this country
 undeclaredCountryCorrection.change.hidden = UndeclaredCountryCorrection
 
 vatCorrectionsList.title = vatCorrectionsList

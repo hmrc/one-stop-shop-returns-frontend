@@ -22,7 +22,7 @@ import models.NormalMode
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.UndeclaredCountryCorrectionPage
+import pages.corrections.{CorrectionCountryPage, UndeclaredCountryCorrectionPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,9 +32,10 @@ import views.html.corrections.UndeclaredCountryCorrectionView
 import scala.concurrent.Future
 
 class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
-
+  private val countryString = "Country"
   private val formProvider = new UndeclaredCountryCorrectionFormProvider()
   private val form = formProvider()
+  private val userAnswersWithCountry = emptyUserAnswers.set(CorrectionCountryPage, countryString).success.value
 
   private lazy val undeclaredCountryCorrectionRoute = controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, period).url
 
@@ -42,7 +43,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry)).build()
 
       running(application) {
         val request = FakeRequest(GET, undeclaredCountryCorrectionRoute)
@@ -52,13 +53,13 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
         val view = application.injector.instanceOf[UndeclaredCountryCorrectionView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, countryString)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage, true).success.value
+      val userAnswers = userAnswersWithCountry.set(UndeclaredCountryCorrectionPage, true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -70,7 +71,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, countryString)(request, messages(application)).toString
       }
     }
 
@@ -81,7 +82,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(userAnswersWithCountry))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
@@ -91,7 +92,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage, true).success.value
+        val expectedAnswers = userAnswersWithCountry.set(UndeclaredCountryCorrectionPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual UndeclaredCountryCorrectionPage.navigate(NormalMode, expectedAnswers).url
@@ -101,7 +102,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry)).build()
 
       running(application) {
         val request =
@@ -115,7 +116,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, countryString)(request, messages(application)).toString
       }
     }
 

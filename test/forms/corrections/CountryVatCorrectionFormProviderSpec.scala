@@ -15,13 +15,15 @@
  */
 
 package forms.corrections
-
 import forms.behaviours.IntFieldBehaviours
+import pages.corrections.CorrectionCountryPage
 import play.api.data.FormError
 
 class CountryVatCorrectionFormProviderSpec extends IntFieldBehaviours {
 
-  val form = new CountryVatCorrectionFormProvider()()
+  private val country = "Country"
+
+  val form = new CountryVatCorrectionFormProvider()(country)
 
   ".value" - {
 
@@ -41,8 +43,8 @@ class CountryVatCorrectionFormProviderSpec extends IntFieldBehaviours {
     behave like intField(
       form,
       fieldName,
-      nonNumericError  = FormError(fieldName, "countryVatCorrection.error.nonNumeric"),
-      wholeNumberError = FormError(fieldName, "countryVatCorrection.error.wholeNumber")
+      nonNumericError  = FormError(fieldName, "countryVatCorrection.error.nonNumeric", Seq(country)),
+      wholeNumberError = FormError(fieldName, "countryVatCorrection.error.wholeNumber", Seq(country))
     )
 
     behave like intFieldWithRange(
@@ -56,7 +58,7 @@ class CountryVatCorrectionFormProviderSpec extends IntFieldBehaviours {
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, "countryVatCorrection.error.required")
+      requiredError = FormError(fieldName, "countryVatCorrection.error.required", Seq(country))
     )
   }
 }
