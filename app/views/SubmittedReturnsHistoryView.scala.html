@@ -60,37 +60,43 @@
             <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
         }
         case _ => {
-            <table class="govuk-table">
-                <caption class="govuk-table__caption govuk-table__caption--m">2021</caption>
-                <thead class="govuk-table__head">
-                    <tr class="govuk-table__row">
-                        <th scope="col" class="govuk-table__header">Return period</th>
-                        <th scope="col" class="govuk-table__header">@if(vatReturnsWithFinancialData.exists(_.charge.isDefined)) { Amount left to pay }</th>
-                        <th scope="col" class="govuk-table__header"></th>
-                    </tr>
-                </thead>
-                <tbody class="govuk-table__body">
-                    @for(vatReturnWithFinancialData <- vatReturnsWithFinancialData) {
-                        <tr class="govuk-table__row">
-                            <th scope="row" class="govuk-table__header">
-                                <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturnWithFinancialData.vatReturn.period)" id="period">@vatReturnWithFinancialData.vatReturn.period.displayText</a>
-                            </th>
-                            <td class="govuk-table__cell">
+            @vatReturnsWithFinancialData.groupBy(_.vatReturn.period.year).map {
+                case (year, vatReturnsWithFinancialData) => {
+                    <table class="govuk-table">
+                        <caption class="govuk-table__caption govuk-table__caption--m">@year.toString</caption>
+                        <thead class="govuk-table__head">
+                            <tr class="govuk-table__row">
+                                <th scope="col" class="govuk-table__header">@messages("submittedReturnsHistory.returnPeriod")</th>
+                                <th scope="col" class="govuk-table__header">@messages("submittedReturnsHistory.amountLeftToPay")</th>
+                                <th scope="col" class="govuk-table__header"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="govuk-table__body">
+                        @for(vatReturnWithFinancialData <- vatReturnsWithFinancialData) {
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">
+                                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturnWithFinancialData.vatReturn.period)" id="period">@vatReturnWithFinancialData.vatReturn.period.displayText</a>
+                                </th>
+                                <td class="govuk-table__cell">
                                 @if(vatReturnWithFinancialData.charge.isDefined) {
                                     @vatReturnWithFinancialData.charge.map(c => Html(currencyFormat(c.outstandingAmount)))
                                 } else {
-                                Updating
+                                    @messages("submittedReturnsHistory.updating")
                                 }
-                            </td>
-                            <td class="govuk-table__cell">
+                                </td>
+                                <td class="govuk-table__cell">
                                 @if(vatReturnWithFinancialData.vatOwed.isDefined && (vatReturnWithFinancialData.charge.isEmpty || vatReturnWithFinancialData.charge.exists(c => c.outstandingAmount > 0))) {
                                     <a class="govuk-link" href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatReturnWithFinancialData.vatOwed.get)">@messages("returnSubmitted.payNow")</a>
                                 }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+                case _ => {}
+            }
+
         }
     }
 
