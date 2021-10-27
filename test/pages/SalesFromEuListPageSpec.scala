@@ -17,11 +17,22 @@
 package pages
 
 import base.SpecBase
+import config.FrontendAppConfig
 import controllers.routes
 import models.{CheckMode, Country, Index, NormalMode}
+import org.mockito.Mockito
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar
 
-class SalesFromEuListPageSpec extends SpecBase {
+class SalesFromEuListPageSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+
+  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockAppConfig)
+  }
 
   "SalesFromEuList page" - {
 
@@ -37,17 +48,27 @@ class SalesFromEuListPageSpec extends SpecBase {
             emptyUserAnswers
               .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
 
-          SalesFromEuListPage.navigate(answers, NormalMode, addAnother = true)
+          SalesFromEuListPage.navigate(answers, NormalMode, addAnother = true, mockAppConfig)
             .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(1)))
         }
       }
 
       "when the answer is no" - {
 
-        "to Check your answers" in {
+        "to Check your answers when the Corrections toggle is false" in {
 
-          SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false)
+          when(mockAppConfig.correctionToggle).thenReturn(false)
+
+          SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false, mockAppConfig)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+        }
+
+        "to Do you want to correct a previous return page when the Corrections toggle is true" in {
+
+          when(mockAppConfig.correctionToggle).thenReturn(true)
+
+          SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false, mockAppConfig)
+            .mustEqual(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, emptyUserAnswers.period))
         }
       }
     }
@@ -64,7 +85,7 @@ class SalesFromEuListPageSpec extends SpecBase {
             emptyUserAnswers
               .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
 
-          SalesFromEuListPage.navigate(answers, CheckMode, addAnother = true)
+          SalesFromEuListPage.navigate(answers, CheckMode, addAnother = true, mockAppConfig)
             .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(1)))
         }
       }
@@ -73,7 +94,7 @@ class SalesFromEuListPageSpec extends SpecBase {
 
         "to Check your answers" in {
 
-          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false)
+          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false, mockAppConfig)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }
       }
