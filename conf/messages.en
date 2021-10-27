@@ -39,6 +39,7 @@ error.non_numeric = Give a value using only numbers
 error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
+error.invalidPeriod = Please enter a valid period
 
 index.title = Your account
 index.heading = Your account
@@ -322,7 +323,7 @@ correctionReturnPeriod.heading = Which return period do you want to correct?
 correctionReturnPeriod.period1 = 1 January to 31 March 2022
 correctionReturnPeriod.period2 = 1 October to 31 December 2021
 correctionReturnPeriod.checkYourAnswersLabel = Which return period do you want to correct?
-correctionReturnPeriod.error.required = Select correctionReturnPeriod
+correctionReturnPeriod.error.required = Select which period you want to correct
 correctionReturnPeriod.change.hidden = CorrectionReturnPeriod
 
 countryVatCorrection.title = CountryVatCorrection
@@ -366,6 +367,6 @@ vatPeriodCorrectionsList.change.hidden = VatPeriodCorrectionsList
 
 correctionReturnSinglePeriod.title = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in your {0} return?
-correctionReturnSinglePeriod.checkYourAnswersLabel = correctionReturnSinglePeriod
+correctionReturnSinglePeriod.checkYourAnswersLabel = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.error.required = Select yes if you want to correct the VAT amounts in your {0} return
 correctionReturnSinglePeriod.change.hidden = CorrectionReturnSinglePeriod
