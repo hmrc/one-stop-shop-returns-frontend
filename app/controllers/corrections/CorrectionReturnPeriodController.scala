@@ -20,7 +20,7 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.SubmissionStatus.Complete
-import models.{Mode, NormalMode, Period}
+import models.{Index, Mode, NormalMode, Period}
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -41,7 +41,7 @@ class CorrectionReturnPeriodController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
           case Right(returnStatuses) =>
@@ -52,7 +52,7 @@ class CorrectionReturnPeriodController @Inject()(
                 controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
               )
             } else {
-              val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage) match {
+              val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
                 case None => form
                 case Some(value) => form.fill(value)
               }
@@ -64,7 +64,7 @@ class CorrectionReturnPeriodController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(
@@ -88,10 +88,10 @@ class CorrectionReturnPeriodController @Inject()(
         }},
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), value))
             _              <- cc.sessionRepository.set(updatedAnswers)
           } yield {
-            Redirect(CorrectionReturnPeriodPage.navigate(mode, updatedAnswers))
+            Redirect(CorrectionReturnPeriodPage(index).navigate(mode, updatedAnswers))
           }
       )
   }

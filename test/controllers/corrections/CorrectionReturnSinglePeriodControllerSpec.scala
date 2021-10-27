@@ -21,7 +21,7 @@ import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.Quarter.Q4
 import models.SubmissionStatus.Complete
-import models.{NormalMode, Period, PeriodWithStatus}
+import models.{Index, NormalMode, Period, PeriodWithStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
@@ -95,7 +95,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period).url
+          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0)).url
         )
       }
     }
@@ -221,7 +221,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period).url
+          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0)).url
         )
       }
     }

@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.NormalMode
+import models.{Index, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class CorrectPreviousReturnPageSpec extends PageBehaviours {
@@ -32,19 +32,30 @@ class CorrectPreviousReturnPageSpec extends PageBehaviours {
 
     "must navigate in Normal mode" - {
 
-      "to Which return period do you want to correct when the answer is yes" in {
+      "when the answer is yes" - {
 
-        val answers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
+        "to the single version of the periods page when there is only a single period" in {
 
-        CorrectPreviousReturnPage.navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, answers.period))
+          val answers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
+
+          CorrectPreviousReturnPage.navigate(NormalMode, answers, 1)
+            .mustEqual(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, answers.period))
+        }
+
+        "to Which return period do you want to correct when there are multiple periods" in {
+
+          val answers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
+
+          CorrectPreviousReturnPage.navigate(NormalMode, answers, 2)
+            .mustEqual(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, answers.period, Index(0)))
+        }
       }
 
       "to Check your answers when the answer is no" in {
 
         val answers = emptyUserAnswers.set(CorrectPreviousReturnPage, false).success.value
 
-        CorrectPreviousReturnPage.navigate(NormalMode, answers)
+        CorrectPreviousReturnPage.navigate(NormalMode, answers, 0)
           .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
       }
     }
