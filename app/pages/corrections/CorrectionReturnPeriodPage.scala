@@ -17,17 +17,20 @@
 package pages.corrections
 
 import controllers.routes
-import models.{Period, UserAnswers}
+import models.{Index, NormalMode, Period, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object CorrectionReturnPeriodPage extends QuestionPage[Period] {
+case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[Period] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "correctionReturnPeriod"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    answers.get(CorrectionReturnPeriodPage) match {
+      case Some(period) => controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, period, index)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
 }
