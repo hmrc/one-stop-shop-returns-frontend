@@ -17,9 +17,7 @@
 package controllers.actions
 
 import config.FrontendAppConfig
-import connectors.VatReturnConnector
-import models.Period
-import models.requests.{DataRequest, OptionalDataRequest}
+import models.requests.DataRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 

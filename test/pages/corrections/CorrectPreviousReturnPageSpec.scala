@@ -48,5 +48,5 @@ class CorrectPreviousReturnPageSpec extends PageBehaviours {
           .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
       }
     }
-    }
+  }
 }
