@@ -22,10 +22,10 @@ class CountryVatCorrectionPageSpec extends PageBehaviours {
 
   "CountryVatCorrectionPage" - {
 
-    beRetrievable[Int](CountryVatCorrectionPage)
+    beRetrievable[BigDecimal](CountryVatCorrectionPage)
 
-    beSettable[Int](CountryVatCorrectionPage)
+    beSettable[BigDecimal](CountryVatCorrectionPage)
 
-    beRemovable[Int](CountryVatCorrectionPage)
+    beRemovable[BigDecimal](CountryVatCorrectionPage)
   }
 }

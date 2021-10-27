@@ -18,10 +18,11 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.CorrectionCountryFormProvider
-import models.{Mode, Period}
+import models.{Index, Mode, Period}
 import pages.corrections.CorrectionCountryPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.AllSalesFromEuQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionCountryView
 
@@ -34,26 +35,32 @@ class CorrectionCountryController @Inject()(
                                         view: CorrectionCountryView
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  private val form = formProvider()
+
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
+      val form = formProvider(index,
+        request.userAnswers
+          .get(CorrectionCountryPage).toSeq)
 
       val preparedForm = request.userAnswers.get(CorrectionCountryPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period))
+      Ok(view(preparedForm, mode, period, index))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
+      val form = formProvider(index,
+        request.userAnswers
+          .get(CorrectionCountryPage).toSeq)
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          Future.successful(BadRequest(view(formWithErrors, mode, period, index))),
 
         value =>
           for {

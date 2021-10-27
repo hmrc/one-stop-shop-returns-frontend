@@ -17,16 +17,16 @@
 package forms.corrections
 
 import forms.behaviours.StringFieldBehaviours
-import models.Country
+import models.{Country, Index}
 import org.scalacheck.Arbitrary.arbitrary
 import play.api.data.FormError
 
 class CorrectionCountryFormProviderSpec extends StringFieldBehaviours {
 
   val requiredKey = "correctionCountry.error.required"
-  val lengthKey = "correctionCountry.error.length"
+  val index = Index(0)
 
-  val form = new CorrectionCountryFormProvider()()
+  val form = new CorrectionCountryFormProvider()(index, Seq.empty)
 
   ".value" - {
 
@@ -43,5 +43,27 @@ class CorrectionCountryFormProviderSpec extends StringFieldBehaviours {
       fieldName,
       requiredError = FormError(fieldName, requiredKey)
     )
+
+    "must not bind any values other than valid country codes" in {
+
+      val invalidAnswers = arbitrary[String] suchThat (x => !Country.euCountries.map(_.code).contains(x))
+
+      forAll(invalidAnswers) {
+        answer =>
+          val result = form.bind(Map("value" -> answer)).apply(fieldName)
+          result.errors must contain only FormError(fieldName, requiredKey)
+      }
+    }
+
+    "must fail to bind when given a duplicate value" in {
+      val answer = Country.euCountries.tail.head
+      val existingAnswers = Seq(Country.euCountries.head, Country.euCountries.tail.head)
+
+      val duplicateForm = new CorrectionCountryFormProvider()(index, existingAnswers)
+
+      val result = duplicateForm.bind(Map(fieldName ->  answer.code)).apply(fieldName)
+      result.errors must contain only FormError(fieldName, "correctionCountry.error.duplicate")
+    }
+
   }
 }

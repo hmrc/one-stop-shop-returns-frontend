@@ -35,10 +35,10 @@ import scala.concurrent.Future
 class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new CorrectionCountryFormProvider()
-  private val form = formProvider()
+  private val form = formProvider(index, Seq.empty)
   val country: Country = arbitrary[Country].sample.value
 
-  private lazy val correctionCountryRoute = controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, period).url
+  private lazy val correctionCountryRoute = controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, period, index).url
 
   "CorrectionCountry Controller" - {
 
@@ -54,7 +54,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index)(request, messages(application)).toString
       }
     }
 
@@ -72,7 +72,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(country), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(country), NormalMode, period, index)(request, messages(application)).toString
       }
     }
 
@@ -117,7 +117,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index)(request, messages(application)).toString
       }
     }
 

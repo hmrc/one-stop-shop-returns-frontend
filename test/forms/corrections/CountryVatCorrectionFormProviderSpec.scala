@@ -15,11 +15,15 @@
  */
 
 package forms.corrections
-import forms.behaviours.IntFieldBehaviours
+import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
+import forms.behaviours.{DecimalFieldBehaviours, IntFieldBehaviours}
+import org.scalacheck.Gen
 import pages.corrections.CorrectionCountryPage
 import play.api.data.FormError
 
-class CountryVatCorrectionFormProviderSpec extends IntFieldBehaviours {
+import scala.math.BigDecimal.RoundingMode
+
+class CountryVatCorrectionFormProviderSpec extends DecimalFieldBehaviours {
 
   private val country = "Country"
 
@@ -29,25 +33,47 @@ class CountryVatCorrectionFormProviderSpec extends IntFieldBehaviours {
 
     val fieldName = "value"
 
-    val minimum = 0
-    val maximum = 1000000
+    val minimum = minCurrencyAmount
+    val maximum = maxCurrencyAmount
 
-    val validDataGenerator = intsInRangeWithCommas(minimum, maximum)
+    val validDataGeneratorForPositive =
+      Gen.choose[BigDecimal](BigDecimal(0.01), maximum)
+        .map(_.setScale(2, RoundingMode.HALF_UP))
+        .map(_.toString)
 
-    behave like fieldThatBindsValidData(
-      form,
-      fieldName,
-      validDataGenerator
-    )
+    val validDataGeneratorForNegative =
+      Gen.choose[BigDecimal](minimum, BigDecimal(-0.01))
+        .map(_.setScale(2, RoundingMode.HALF_UP))
+        .map(_.toString)
 
-    behave like intField(
+    "bind valid data positive" in {
+
+      forAll(validDataGeneratorForPositive -> "validDataItem") {
+        dataItem: String =>
+          val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
+          result.value.value mustBe dataItem
+          result.errors mustBe empty
+      }
+    }
+
+    "bind valid data negative" in {
+
+      forAll(validDataGeneratorForNegative -> "validDataItem") {
+        dataItem: String =>
+          val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
+          result.value.value mustBe dataItem
+          result.errors mustBe empty
+      }
+    }
+
+    behave like decimalField(
       form,
       fieldName,
       nonNumericError  = FormError(fieldName, "countryVatCorrection.error.nonNumeric", Seq(country)),
-      wholeNumberError = FormError(fieldName, "countryVatCorrection.error.wholeNumber", Seq(country))
+      invalidNumericError = FormError(fieldName, "countryVatCorrection.error.wholeNumber", Seq(country))
     )
 
-    behave like intFieldWithRange(
+    behave like decimalFieldWithRange(
       form,
       fieldName,
       minimum       = minimum,

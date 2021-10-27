@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Index, UserAnswers}
 import pages.corrections.CorrectionCountryPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -26,7 +26,7 @@ import viewmodels.implicits._
 
 object CorrectionCountrySummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(CorrectionCountryPage).map {
       answer =>
 
@@ -34,7 +34,7 @@ object CorrectionCountrySummary {
           key = "correctionCountry.checkYourAnswersLabel",
           value = ValueViewModel(answer.toString),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, index).url)
               .withVisuallyHiddenText(messages("correctionCountry.change.hidden"))
           )
         )
