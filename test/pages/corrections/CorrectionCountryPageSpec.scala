@@ -29,5 +29,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
     beSettable[Country](CorrectionCountryPage)
 
     beRemovable[Country](CorrectionCountryPage)
+
+
   }
 }

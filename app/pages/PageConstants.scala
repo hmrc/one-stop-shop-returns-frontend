@@ -25,4 +25,5 @@ object PageConstants {
   val vatRates: String         = "vatRates"
   val netValueOfSales: String  = "netValueOfSales"
   val vatOnSales: String       = "vatOnSales"
+  val period: String           = "correctionPeriod"
 }

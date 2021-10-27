@@ -149,10 +149,10 @@ POST       /:period/correctionCountry/:index                          controller
 GET        /:period/changeCorrectionCountry/:index                   controllers.corrections.CorrectionCountryController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
 POST       /:period/changeCorrectionCountry/:index                   controllers.corrections.CorrectionCountryController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
 
-GET        /:period/correctionReturnPeriod                        controllers.corrections.CorrectionReturnPeriodController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST       /:period/correctionReturnPeriod                        controllers.corrections.CorrectionReturnPeriodController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET        /:period/changeCorrectionReturnPeriod                  controllers.corrections.CorrectionReturnPeriodController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST       /:period/changeCorrectionReturnPeriod                  controllers.corrections.CorrectionReturnPeriodController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET        /:period/correctionReturnPeriod/:index                       controllers.corrections.CorrectionReturnPeriodController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
+POST       /:period/correctionReturnPeriod/:index                       controllers.corrections.CorrectionReturnPeriodController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
+GET        /:period/changeCorrectionReturnPeriod/:index                  controllers.corrections.CorrectionReturnPeriodController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
+POST       /:period/changeCorrectionReturnPeriod/:index                  controllers.corrections.CorrectionReturnPeriodController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
 
 GET        /:period/countryVatCorrection                  controllers.corrections.CountryVatCorrectionController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST       /:period/countryVatCorrection                  controllers.corrections.CountryVatCorrectionController.onSubmit(mode: Mode = NormalMode, period: Period)

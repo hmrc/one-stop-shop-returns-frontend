@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Index, UserAnswers}
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -27,8 +27,8 @@ import viewmodels.implicits._
 
 object CorrectionReturnPeriodSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CorrectionReturnPeriodPage).map {
+  def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(CorrectionReturnPeriodPage(index)).map {
       answer =>
 
         val value = ValueViewModel(
@@ -41,7 +41,9 @@ object CorrectionReturnPeriodSummary {
           key = "correctionReturnPeriod.checkYourAnswersLabel",
           value = value,
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(CheckMode, answers.period).url)
+            ActionItemViewModel(
+              "site.change",
+              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(CheckMode, answers.period, Index(0)).url)
               .withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
           )
         )

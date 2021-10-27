@@ -20,7 +20,7 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.SubmissionStatus.Complete
-import models.{Mode, NormalMode, Period}
+import models.{Index, Mode, NormalMode, Period}
 import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -58,7 +58,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
               Ok(view(preparedForm, mode, period, periods.head.displayText))
             case _ => Redirect(
-              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period)
+              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0))
             )
           }
         case Left(value) =>
@@ -80,7 +80,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
                 case 0 => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
                 case 1 => BadRequest(view(formWithErrors, mode, period, periods.head.displayText))
                 case _ => Redirect(
-                  controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period)
+                  controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0))
                 )
               }
 
