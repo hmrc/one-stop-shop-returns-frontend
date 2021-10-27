@@ -17,12 +17,12 @@
 package pages.corrections
 
 import controllers.routes
-import models.UserAnswers
+import models.{Country, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object CorrectionCountryPage extends QuestionPage[String] {
+case object CorrectionCountryPage extends QuestionPage[Country] {
 
   override def path: JsPath = JsPath \ toString
 

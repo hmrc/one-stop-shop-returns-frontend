@@ -17,13 +17,14 @@
 package forms.corrections
 
 import forms.behaviours.StringFieldBehaviours
+import models.Country
+import org.scalacheck.Arbitrary.arbitrary
 import play.api.data.FormError
 
 class CorrectionCountryFormProviderSpec extends StringFieldBehaviours {
 
   val requiredKey = "correctionCountry.error.required"
   val lengthKey = "correctionCountry.error.length"
-  val maxLength = 100
 
   val form = new CorrectionCountryFormProvider()()
 
@@ -34,14 +35,7 @@ class CorrectionCountryFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      stringsWithMaxLength(maxLength)
-    )
-
-    behave like fieldWithMaxLength(
-      form,
-      fieldName,
-      maxLength = maxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(maxLength))
+      arbitrary[Country].map(_.code)
     )
 
     behave like mandatoryField(
