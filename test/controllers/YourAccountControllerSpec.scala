@@ -67,7 +67,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(Seq.empty))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
 
@@ -108,7 +108,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
           Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
 
@@ -148,7 +148,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Overdue))))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
 
@@ -193,7 +193,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
           )))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
 
@@ -236,7 +236,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
         )))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
 
@@ -282,7 +282,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
             )))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
 
@@ -329,7 +329,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
             )))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
           Future.successful(
             Right(
               Seq(outstandingPeriod)
@@ -379,7 +379,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
             )))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
           Future.successful(
             Right(
               Seq(outstandingPeriod)
@@ -428,7 +428,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
             )))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
           Future.successful(
             Left(
               InvalidJson

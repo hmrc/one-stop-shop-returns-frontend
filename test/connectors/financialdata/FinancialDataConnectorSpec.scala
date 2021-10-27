@@ -86,7 +86,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
 
   ".getPeriodsAndOutstandingAmounts" - {
     val commencementDate = LocalDate.now()
-    val url = s"$baseUrl/outstanding-payments/${Format.dateTimeFormatter.format(commencementDate)}"
+    val url = s"$baseUrl/outstanding-payments"
     val periodWithOutstandingAmount = PeriodWithOutstandingAmount(period, BigDecimal(1000.50))
     val responseJson = Json.toJson(Seq(periodWithOutstandingAmount))
 
@@ -96,12 +96,12 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
         val connector = application.injector.instanceOf[FinancialDataConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url"))
+          get(urlEqualTo(url))
             .willReturn(
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Right(Seq(periodWithOutstandingAmount))
+        connector.getPeriodsAndOutstandingAmounts().futureValue mustBe Right(Seq(periodWithOutstandingAmount))
       }
     }
 
@@ -113,12 +113,12 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
         val connector = application.injector.instanceOf[FinancialDataConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url"))
+          get(urlEqualTo(url))
             .willReturn(
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Left(InvalidJson)
+        connector.getPeriodsAndOutstandingAmounts().futureValue mustBe Left(InvalidJson)
       }
     }
 
@@ -128,12 +128,12 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
         val connector = application.injector.instanceOf[FinancialDataConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url"))
+          get(urlEqualTo(url))
             .willReturn(
               aResponse().withStatus(BAD_REQUEST).withBody("")
             ))
 
-        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Left(UnexpectedResponseStatus(BAD_REQUEST, ""))
+        connector.getPeriodsAndOutstandingAmounts().futureValue mustBe Left(UnexpectedResponseStatus(BAD_REQUEST, ""))
       }
     }
   }
