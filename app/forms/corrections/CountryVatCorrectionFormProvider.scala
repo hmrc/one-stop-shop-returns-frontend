@@ -16,7 +16,7 @@
 
 package forms.corrections
 
-import config.Constants.maxCurrencyAmount
+import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.mappings.Mappings
 import play.api.data.Form
 
@@ -31,7 +31,7 @@ class CountryVatCorrectionFormProvider @Inject() extends Mappings {
         "countryVatCorrection.error.wholeNumber",
         "countryVatCorrection.error.nonNumeric",
         args = Seq(country))
-          .verifying(inRange[BigDecimal](-1000000000, maxCurrencyAmount, "countryVatCorrection.error.outOfRange"))
+          .verifying(inRange[BigDecimal](minCurrencyAmount, maxCurrencyAmount, "countryVatCorrection.error.outOfRange"))
         .verifying("countryVatCorrection.error.nonZero", input => input != 0)
     )
 }

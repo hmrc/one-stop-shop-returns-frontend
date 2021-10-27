@@ -19,7 +19,7 @@ package config
 object Constants {
 
   val maxCurrencyAmount: BigDecimal = 1000000000
-
+  val minCurrencyAmount: BigDecimal = -1000000000
   val returnsConfirmationTemplateId = "oss_returns_email_confirmation"
   val returnsConfirmationNoVatOwedTemplateId = "oss_returns_email_confirmation_no_vat_owed"
 

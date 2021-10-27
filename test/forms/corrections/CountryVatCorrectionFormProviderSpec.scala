@@ -15,7 +15,7 @@
  */
 
 package forms.corrections
-import config.Constants.maxCurrencyAmount
+import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.behaviours.{DecimalFieldBehaviours, IntFieldBehaviours}
 import org.scalacheck.Gen
 import pages.corrections.CorrectionCountryPage
@@ -33,7 +33,7 @@ class CountryVatCorrectionFormProviderSpec extends DecimalFieldBehaviours {
 
     val fieldName = "value"
 
-    val minimum = BigDecimal(-1000000000)
+    val minimum = minCurrencyAmount
     val maximum = maxCurrencyAmount
 
     val validDataGeneratorForPositive =
