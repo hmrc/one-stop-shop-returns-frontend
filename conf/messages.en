@@ -49,6 +49,12 @@ index.yourReturns.returnOverdue = {0} is overdue
 index.yourReturns.returnsOverdue = You have {0} returns overdue
 index.yourReturns.nothingDue = You do not have any returns due
 index.yourReturns.startReturn = Start your return
+index.payment.heading = Payments
+index.payment.overdueHeading = Overdue Payments
+index.payment.nothingOwed = You do not owe anything right now
+index.payment.makeAPayment = Make a payment
+index.payment.amountOwed = You owe {0} for {1}
+index.payment.overdueAmountOwed = You owe {0} for {1}, which was due by {2}
 index.history = History
 index.history.previousReturns = View past returns
 
@@ -223,8 +229,12 @@ returnSubmitted.backToAccount.link.text = Back to your account
 
 submittedReturnsHistory.title = Submitted returns
 submittedReturnsHistory.heading = Submitted returns
+submittedReturnsHistory.caption = There may be a delay in your payments showing on this page.
 submittedReturnsHistory.sub-heading = View and pay your previous returns
 submittedReturnsHistory.no-returns = You have not submitted any returns for this year.
+submittedReturnsHistory.returnPeriod = Return period
+submittedReturnsHistory.amountLeftToPay = Amount left to pay
+submittedReturnsHistory.updating = Updating
 
 notificationBanner.title = Important
 notificationBanner.text = We cannot get your latest payment records due to a technical issue. Try again later.

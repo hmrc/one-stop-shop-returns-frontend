@@ -14,13 +14,14 @@
  * limitations under the License.
  *@
 
-@import models.domain.VatReturn
+@import utils.CurrencyFormatter.currencyFormat
+@import models.financialdata.VatReturnWithFinancialData
 
 @this(
         layout: templates.Layout
 )
 
-@(vatReturn: Option[VatReturn])(implicit request: Request[_], messages: Messages)
+@(vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData], displayBanner: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title")), showBackLink = false) {
 
@@ -33,25 +34,71 @@
         </ol>
     </div>
 
-    <h1 class="govuk-heading-xl">@messages("submittedReturnsHistory.heading")</h1>
+    @if(displayBanner) {
+        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                @messages("notificationBanner.title")
+                </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+                <p class="govuk-notification-banner__heading">
+                @messages("notificationBanner.text")
+                </p>
+            </div>
+        </div>
+    }
 
-    <div class="govuk-tabs" data-module="govuk-tabs">
-        <h2 class="govuk-tabs__title">@messages("submittedReturnsHistory.sub-heading")</h2>
-        <div class="govuk-tabs__list">
-            <p class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                <a class="govuk-tabs__tab" href="#returns_year">2021</a>
-            <p/>
-        </div>
-        <div class="govuk-tabs__panel" id="returns_year">
-            <h2 class="govuk-heading-m">2021 returns</h2>
-            @vatReturn match {
-                case Some(vatReturn) => {
-                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturn.period)" id="period">@vatReturn.period.displayText</a>
+    <h1 class="govuk-heading-xl" style="margin-bottom:0px;">@messages("submittedReturnsHistory.heading")</h1>
+
+    <p class="govuk-caption-m hmrc-caption-m" style="margin-bottom:50px;">
+        @messages("submittedReturnsHistory.caption")
+    </p>
+
+    @vatReturnsWithFinancialData.size match {
+        case 0 => {
+            <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
+        }
+        case _ => {
+            @vatReturnsWithFinancialData.groupBy(_.vatReturn.period.year).map {
+                case (year, vatReturnsWithFinancialData) => {
+                    <table class="govuk-table">
+                        <caption class="govuk-table__caption govuk-table__caption--m">@year.toString</caption>
+                        <thead class="govuk-table__head">
+                            <tr class="govuk-table__row">
+                                <th scope="col" class="govuk-table__header">@messages("submittedReturnsHistory.returnPeriod")</th>
+                                <th scope="col" class="govuk-table__header">@messages("submittedReturnsHistory.amountLeftToPay")</th>
+                                <th scope="col" class="govuk-table__header"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="govuk-table__body">
+                        @for(vatReturnWithFinancialData <- vatReturnsWithFinancialData) {
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">
+                                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturnWithFinancialData.vatReturn.period)" id="period">@vatReturnWithFinancialData.vatReturn.period.displayText</a>
+                                </th>
+                                <td class="govuk-table__cell">
+                                @if(vatReturnWithFinancialData.charge.isDefined) {
+                                    @vatReturnWithFinancialData.charge.map(c => Html(currencyFormat(c.outstandingAmount)))
+                                } else {
+                                    @messages("submittedReturnsHistory.updating")
+                                }
+                                </td>
+                                <td class="govuk-table__cell">
+                                @if(vatReturnWithFinancialData.vatOwed.isDefined && (vatReturnWithFinancialData.charge.isEmpty || vatReturnWithFinancialData.charge.exists(c => c.outstandingAmount > 0))) {
+                                    <a class="govuk-link" href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatReturnWithFinancialData.vatOwed.get)">@messages("returnSubmitted.payNow")</a>
+                                }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
                 }
-                case _ => {
-                    <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
-                }
+                case _ => {}
             }
-        </div>
-    </div>
+
+        }
+    }
+
+
 }

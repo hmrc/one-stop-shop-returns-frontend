@@ -19,9 +19,10 @@ package connectors.financialdata
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.WireMockHelper
+import formats.Format
 import models.Period
 import models.Quarter.Q3
-import models.financialdata.Charge
+import models.financialdata.{Charge, PeriodWithOutstandingAmount}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalatest.EitherValues
 import play.api.Application
@@ -30,18 +31,22 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.LocalDate
+
 class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
-  val url = s"/one-stop-shop-returns/financial-data/charge/$period"
+  val baseUrl = s"/one-stop-shop-returns/financial-data"
 
   private def application: Application =
     applicationBuilder()
       .configure("microservice.services.one-stop-shop-returns.port" -> server.port)
       .build()
 
-  ".get" - {
+  ".getCharge" - {
+
+    val url = s"$baseUrl/charge/$period"
 
     val charge = Charge(period, BigDecimal(1000.50), BigDecimal(1000.50), BigDecimal(1000.50))
     val responseJson = Json.toJson(charge)
@@ -77,6 +82,45 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
         connector.getCharge(period).futureValue mustBe Left(InvalidJson)
       }
     }
+  }
+
+  ".getPeriodsAndOutstandingAmounts" - {
+    val commencementDate = LocalDate.now()
+    val url = s"$baseUrl/outstanding-payments/${Format.dateTimeFormatter.format(commencementDate)}"
+    val periodWithOutstandingAmount = PeriodWithOutstandingAmount(period, BigDecimal(1000.50))
+    val responseJson = Json.toJson(Seq(periodWithOutstandingAmount))
+
+    "must return a PeriodWithOutstandingAmount when successful" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Right(Seq(periodWithOutstandingAmount))
+      }
+    }
+
+    "must return invalid response when invalid charge json returned" in {
+
+      val responseJson = Json.toJson(Period(2021, Q3))
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Left(InvalidJson)
+      }
+    }
 
     "must return unexpected response when response is not OK" in {
 
@@ -89,7 +133,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(BAD_REQUEST).withBody("")
             ))
 
-        connector.getCharge(period).futureValue mustBe Left(UnexpectedResponseStatus(BAD_REQUEST, ""))
+        connector.getPeriodsAndOutstandingAmounts(commencementDate).futureValue mustBe Left(UnexpectedResponseStatus(BAD_REQUEST, ""))
       }
     }
   }

@@ -18,9 +18,12 @@ package controllers
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
+import connectors.financialdata.FinancialDataConnector
 import generators.Generators
 import models.{Period, PeriodWithStatus, SubmissionStatus}
 import models.Quarter._
+import models.financialdata.PeriodWithOutstandingAmount
+import models.responses.InvalidJson
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -37,9 +40,11 @@ import scala.concurrent.Future
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
 
   private val returnStatusConnector = mock[ReturnStatusConnector]
+  private val financialDataConnector = mock[FinancialDataConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(returnStatusConnector)
+    Mockito.reset(financialDataConnector)
     super.beforeEach()
   }
 
@@ -54,10 +59,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           ).build()
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
 
@@ -73,8 +83,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Seq(),
-            None
+            Seq.empty,
+            None,
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -86,13 +99,18 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           ).build()
 
         val period = Period(2021, Q3)
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
           Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -106,8 +124,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Seq(),
-            Some(Period(2021, Q3))
+            Seq.empty,
+            Some(Period(2021, Q3)),
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -119,12 +140,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           ).build()
 
         val period = Period(2021, Q3)
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Overdue))))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -139,7 +165,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             Seq(Period(2021, Q3)),
-            None
+            None,
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -151,7 +180,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           ).build()
 
         val firstPeriod = Period(2021, Q3)
@@ -162,6 +192,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             PeriodWithStatus(firstPeriod, SubmissionStatus.Overdue),
             PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
           )))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -176,7 +210,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             Seq(firstPeriod),
-            Some(secondPeriod)
+            Some(secondPeriod),
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -188,14 +225,20 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           ).build()
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
+
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
           PeriodWithStatus(firstPeriod, SubmissionStatus.Overdue),
           PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
         )))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -210,7 +253,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             Seq(firstPeriod, secondPeriod),
-            None
+            None,
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -222,7 +268,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector)
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           ).build()
 
         val firstPeriod = Period(2021, Q3)
@@ -234,6 +281,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
               PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
             )))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -247,8 +298,160 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Seq(),
-            Some(secondPeriod)
+            Seq.empty,
+            Some(secondPeriod),
+            Seq.empty,
+            Seq.empty,
+            paymentError = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return is completed and payment is outstanding" in {
+
+        val instant = Instant.parse("2022-01-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
+          ).build()
+
+        val firstPeriod = Period(2021, Q3)
+        val secondPeriod = Period(2021, Q4)
+        val outstandingPeriod = PeriodWithOutstandingAmount(secondPeriod, BigDecimal(1000))
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
+            )))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Right(
+              Seq(outstandingPeriod)
+            )
+          )
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq.empty,
+            Some(secondPeriod),
+            Seq(outstandingPeriod),
+            Seq.empty,
+            paymentError = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return is completed and payment is outstanding and overdue" in {
+
+        val instant = Instant.parse("2022-01-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
+          ).build()
+
+        val firstPeriod = Period(2021, Q1)
+        val secondPeriod = Period(2021, Q2)
+        val outstandingPeriod = PeriodWithOutstandingAmount(secondPeriod, BigDecimal(1000))
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
+            )))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Right(
+              Seq(outstandingPeriod)
+            )
+          )
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(secondPeriod),
+            None,
+            Seq.empty,
+            Seq(outstandingPeriod),
+            paymentError = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return is completed and payment errors" in {
+
+        val instant = Instant.parse("2022-01-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
+          ).build()
+
+        val firstPeriod = Period(2021, Q1)
+        val secondPeriod = Period(2021, Q2)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
+            )))
+
+        when(financialDataConnector.getPeriodsAndOutstandingAmounts(any())(any())) thenReturn
+          Future.successful(
+            Left(
+              InvalidJson
+            )
+          )
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(secondPeriod),
+            None,
+            Seq.empty,
+            Seq.empty,
+            paymentError = true
           )(request, messages(application)).toString
         }
       }

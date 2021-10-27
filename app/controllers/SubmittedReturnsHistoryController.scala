@@ -16,46 +16,56 @@
 
 package controllers
 
-import connectors.VatReturnConnector
+import connectors.financialdata.FinancialDataConnector
 import controllers.actions._
-import models.Quarter.Q3
-import models.Period
-
-import javax.inject.Inject
-import play.api.i18n.I18nSupport
 import logging.Logging
+import models.financialdata.VatReturnWithFinancialData
+import models.responses.ErrorResponse
+import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatReturnSalesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmittedReturnsHistoryView
-import models.responses.{NotFound => NotFoundResponse}
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class SubmittedReturnsHistoryController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       view: SubmittedReturnsHistoryView,
-                                       vatReturnConnector: VatReturnConnector
-                                     ) (implicit ec: ExecutionContext)
-    extends FrontendBaseController with I18nSupport with Logging {
+                                                   cc: AuthenticatedControllerComponents,
+                                                   view: SubmittedReturnsHistoryView,
+                                                   financialDataConnector: FinancialDataConnector,
+                                                   vatReturnSalesService: VatReturnSalesService
+                                                 )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with I18nSupport with Logging {
+
+  type VatReturnWithFinancialDataResponse = Either[ErrorResponse, VatReturnWithFinancialData]
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val period = new Period(2021, Q3)
-
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      vatReturnConnector.get(period).map {
-        case Right(vatReturn) =>
-          Ok(view(Some(vatReturn)))
-        case Left(NotFoundResponse) =>
-          Ok(view(None))
+
+      financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate).map {
+        case Right(vatReturnsWithFinancialData) =>
+          val displayBanner = {
+            if (vatReturnsWithFinancialData.nonEmpty) {
+              vatReturnsWithFinancialData.exists(_.charge.isEmpty)
+            } else {
+              false
+            }
+          }
+
+          val vatReturnsWithFinancialDataWithVatOwedCalculated = vatReturnsWithFinancialData.map { vatReturnWithFinancialData =>
+            val vatOwed = vatReturnWithFinancialData.vatOwed
+              .getOrElse((vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn) * 100).toLong)
+
+            vatReturnWithFinancialData.copy(vatOwed = Some(vatOwed))
+          }
+
+          Ok(view(vatReturnsWithFinancialDataWithVatOwedCalculated, displayBanner))
         case Left(e) =>
-          logger.error(s"Unexpected result from api while getting return: ${e}")
-          Redirect(routes.JourneyRecoveryController.onPageLoad())
-      }.recover {
-        case e: Exception =>
-          logger.error(s"Error while getting previous return: ${e.getMessage}", e)
-          Redirect(routes.JourneyRecoveryController.onPageLoad())
+          logger.warn(s"There were some errors: $e")
+          Ok(view(Seq.empty, true))
       }
 
   }
