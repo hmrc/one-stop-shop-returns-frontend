@@ -86,7 +86,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
 
   ".getPeriodsAndOutstandingAmounts" - {
     val commencementDate = LocalDate.now()
-    val url = s"$baseUrl/outstanding-payments/${Format.dateTimeFormatter.format(commencementDate)}"
+    val url = s"$baseUrl/outstanding-payments"
     val periodWithOutstandingAmount = PeriodWithOutstandingAmount(period, BigDecimal(1000.50))
     val responseJson = Json.toJson(Seq(periodWithOutstandingAmount))
 
@@ -96,7 +96,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
         val connector = application.injector.instanceOf[FinancialDataConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url"))
+          get(urlEqualTo(url))
             .willReturn(
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
@@ -113,7 +113,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
         val connector = application.injector.instanceOf[FinancialDataConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url"))
+          get(urlEqualTo(url))
             .willReturn(
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
@@ -128,7 +128,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
         val connector = application.injector.instanceOf[FinancialDataConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url"))
+          get(urlEqualTo(url))
             .willReturn(
               aResponse().withStatus(BAD_REQUEST).withBody("")
             ))
