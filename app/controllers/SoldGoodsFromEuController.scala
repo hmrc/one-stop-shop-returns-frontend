@@ -16,8 +16,10 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions._
 import forms.SoldGoodsFromEuFormProvider
+
 import javax.inject.Inject
 import models.{Mode, Period}
 import pages.SoldGoodsFromEuPage
@@ -31,7 +33,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class SoldGoodsFromEuController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: SoldGoodsFromEuFormProvider,
-                                       view: SoldGoodsFromEuView
+                                       view: SoldGoodsFromEuView,
+                                       config: FrontendAppConfig
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
@@ -59,7 +62,7 @@ class SoldGoodsFromEuController @Inject()(
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldGoodsFromEuPage, value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SoldGoodsFromEuPage.navigate(mode, updatedAnswers))
+          } yield Redirect(SoldGoodsFromEuPage.navigate(mode, updatedAnswers, config))
       )
   }
 }

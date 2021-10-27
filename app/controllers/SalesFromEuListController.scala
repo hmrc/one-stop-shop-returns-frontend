@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import forms.SalesFromEuListFormProvider
 import models.{Country, Mode, Period}
@@ -32,7 +33,8 @@ class SalesFromEuListController @Inject()(
                                            override val messagesApi: MessagesApi,
                                            cc: AuthenticatedControllerComponents,
                                            formProvider: SalesFromEuListFormProvider,
-                                           view: SalesFromEuListView
+                                           view: SalesFromEuListView,
+                                           config: FrontendAppConfig
                                          )
   extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
@@ -64,7 +66,7 @@ class SalesFromEuListController @Inject()(
               BadRequest(view(formWithErrors, mode, list, period, canAddCountries))
             },
             value =>
-              Redirect(SalesFromEuListPage.navigate(request.userAnswers, mode, value))
+              Redirect(SalesFromEuListPage.navigate(request.userAnswers, mode, value, config))
           )
       }
   }

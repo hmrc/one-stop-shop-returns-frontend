@@ -16,6 +16,8 @@
 
 package pages.corrections
 
+import controllers.routes
+import models.NormalMode
 import pages.behaviours.PageBehaviours
 
 class CorrectPreviousReturnPageSpec extends PageBehaviours {
@@ -27,5 +29,24 @@ class CorrectPreviousReturnPageSpec extends PageBehaviours {
     beSettable[Boolean](CorrectPreviousReturnPage)
 
     beRemovable[Boolean](CorrectPreviousReturnPage)
-  }
+
+    "must navigate in Normal mode" - {
+
+      "to Which return period do you want to correct when the answer is yes" in {
+
+        val answers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
+
+        CorrectPreviousReturnPage.navigate(NormalMode, answers)
+          .mustEqual(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, answers.period))
+      }
+
+      "to Check your answers when the answer is no" in {
+
+        val answers = emptyUserAnswers.set(CorrectPreviousReturnPage, false).success.value
+
+        CorrectPreviousReturnPage.navigate(NormalMode, answers)
+          .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
+      }
+    }
+    }
 }
