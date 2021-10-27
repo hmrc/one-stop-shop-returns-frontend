@@ -16,27 +16,24 @@
 
 package forms.corrections
 
-import forms.behaviours.OptionFieldBehaviours
-import models.Period
-import models.Quarter.{Q2, Q3, Q4}
+import forms.behaviours.BooleanFieldBehaviours
 import play.api.data.FormError
 
-class CorrectionReturnPeriodFormProviderSpec extends OptionFieldBehaviours {
+class CorrectionReturnSinglePeriodFormProviderSpec extends BooleanFieldBehaviours {
 
-  val form = new CorrectionReturnPeriodFormProvider()()
+  val requiredKey = "correctionReturnSinglePeriod.error.required"
+  val invalidKey = "error.boolean"
 
-  val testPeriods = Seq(Period(2021, Q2), Period(2021, Q3), Period(2021, Q4))
+  val form = new CorrectionReturnSinglePeriodFormProvider()()
 
   ".value" - {
 
     val fieldName = "value"
-    val requiredKey = "correctionReturnPeriod.error.required"
 
-    behave like optionsField[Period](
+    behave like booleanField(
       form,
       fieldName,
-      validValues  = testPeriods,
-      invalidError = FormError(fieldName, "error.invalidPeriod")
+      invalidError = FormError(fieldName, invalidKey)
     )
 
     behave like mandatoryField(

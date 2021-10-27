@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package forms.corrections
+package pages.corrections
 
-import forms.mappings.Mappings
-import models.Period
-import play.api.data.Form
+import pages.behaviours.PageBehaviours
 
-import javax.inject.Inject
+class CorrectionReturnSinglePeriodPageSpec extends PageBehaviours {
 
-class CorrectionReturnPeriodFormProvider @Inject() extends Mappings {
+  "CorrectionReturnSinglePeriodPage" - {
 
-  def apply(): Form[Period] =
-    Form(
-      "value" -> period("correctionReturnPeriod.error.required")
-    )
+    beRetrievable[Boolean](CorrectionReturnSinglePeriodPage)
+
+    beSettable[Boolean](CorrectionReturnSinglePeriodPage)
+
+    beRemovable[Boolean](CorrectionReturnSinglePeriodPage)
+  }
 }

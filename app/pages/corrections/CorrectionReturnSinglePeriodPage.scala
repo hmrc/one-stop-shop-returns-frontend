@@ -16,17 +16,18 @@
 
 package pages.corrections
 
-import models.CorrectionReturnPeriod
-import pages.behaviours.PageBehaviours
+import controllers.routes
+import models.UserAnswers
+import pages.QuestionPage
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-class CorrectionReturnPeriodSpec extends PageBehaviours {
+case object CorrectionReturnSinglePeriodPage extends QuestionPage[Boolean] {
 
-  "CorrectionReturnPeriodPage" - {
+  override def path: JsPath = JsPath \ toString
 
-    beRetrievable[CorrectionReturnPeriod](CorrectionReturnPeriodPage)
+  override def toString: String = "correctionReturnSinglePeriod"
 
-    beSettable[CorrectionReturnPeriod](CorrectionReturnPeriodPage)
-
-    beRemovable[CorrectionReturnPeriod](CorrectionReturnPeriodPage)
-  }
+  override def navigateInNormalMode(answers: UserAnswers): Call =
+    routes.IndexController.onPageLoad()
 }
