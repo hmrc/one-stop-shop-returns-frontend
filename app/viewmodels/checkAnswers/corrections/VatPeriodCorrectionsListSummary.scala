@@ -16,8 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, UserAnswers}
-import pages.corrections.VatPeriodCorrectionsListPage
+import models.{CheckMode, Period, UserAnswers}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
@@ -25,19 +24,15 @@ import viewmodels.implicits._
 
 object VatPeriodCorrectionsListSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatPeriodCorrectionsListPage).map {
-      answer =>
-
-        val value = if (answer) "site.yes" else "site.no"
-
-        SummaryListRowViewModel(
-          key = "vatPeriodCorrectionsList.checkYourAnswersLabel",
-          value = ValueViewModel(value),
-          actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period).url)
-              .withVisuallyHiddenText(messages("vatPeriodCorrectionsList.change.hidden"))
-          )
+  def row(answers: UserAnswers, correctionPeriod: Period)(implicit messages: Messages): SummaryListRow =
+      SummaryListRowViewModel(
+        key = "vatPeriodCorrectionsList.checkYourAnswersLabel",
+        value = ValueViewModel(correctionPeriod.displayText),
+        actions = Seq(
+          ActionItemViewModel("site.change", controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period).url)
+            .withVisuallyHiddenText(messages("vatPeriodCorrectionsList.change.hidden")),
+          ActionItemViewModel("site.remove", controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period).url)
+            .withVisuallyHiddenText(messages("vatPeriodCorrectionsList.remove.hidden"))
         )
-    }
+      )
 }

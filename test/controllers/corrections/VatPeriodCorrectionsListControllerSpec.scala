@@ -17,136 +17,95 @@
 package controllers.corrections
 
 import base.SpecBase
-import forms.corrections.VatPeriodCorrectionsListFormProvider
-import models.NormalMode
+import models.{NormalMode, Period}
+import models.Quarter.{Q1, Q2, Q3, Q4}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.VatPeriodCorrectionsListPage
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
 import views.html.corrections.VatPeriodCorrectionsListView
 
-import scala.concurrent.Future
-
 class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
-
-  private val formProvider = new VatPeriodCorrectionsListFormProvider()
-  private val form = formProvider()
 
   private lazy val vatPeriodCorrectionsListRoute = controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period).url
 
   "VatPeriodCorrectionsList Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET when there are no corrections" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        implicit val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
+
+        // TODO: Replace when correction retrieval implemented
+
+        val periodCorrectionsList = Seq(
+          Period(2021, Q1),
+          Period(2021, Q2),
+          Period(2021, Q3),
+          Period(2021, Q4)
+        )
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(NormalMode, period, periodCorrectionsList)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when there is one correction" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
 
-        val result = route(application, request).value
-
         val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
-      }
-    }
+        // TODO: Replace when correction retrieval implemented
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
-
-      val userAnswers = emptyUserAnswers.set(VatPeriodCorrectionsListPage, true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
-
-        val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
+        val periodCorrectionsList = Seq(
+          Period(2021, Q1),
+          Period(2021, Q2),
+          Period(2021, Q3),
+          Period(2021, Q4)
+        )
 
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(NormalMode, period, periodCorrectionsList)(request, messages(application)).toString
       }
     }
 
-    "must save the answer and redirect to the next page when valid data is submitted" in {
-
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, vatPeriodCorrectionsListRoute)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(VatPeriodCorrectionsListPage, true).success.value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatPeriodCorrectionsListPage.navigate(NormalMode, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
-      }
-    }
-
-    "must return a Bad Request and errors when invalid data is submitted" in {
+    "must return OK and the correct view for a GET when there is more than one correction" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, vatPeriodCorrectionsListRoute)
-            .withFormUrlEncodedBody(("value", ""))
-
-        val boundForm = form.bind(Map("value" -> ""))
+        val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
 
         val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
 
-        val result = route(application, request).value
+        // TODO: Replace when correction retrieval implemented
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
-      }
-    }
-
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
+        val periodCorrectionsList = Seq(
+          Period(2021, Q1),
+          Period(2021, Q2),
+          Period(2021, Q3),
+          Period(2021, Q4)
+        )
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(NormalMode, period, periodCorrectionsList)(request, messages(application)).toString
       }
     }
 
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, vatPeriodCorrectionsListRoute)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
   }
 }

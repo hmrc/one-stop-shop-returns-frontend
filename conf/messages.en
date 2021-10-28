@@ -374,8 +374,11 @@ vatCorrectionsList.checkYourAnswersLabel = vatCorrectionsList
 vatCorrectionsList.error.required = Select yes if vatCorrectionsList
 vatCorrectionsList.change.hidden = VatCorrectionsList
 
-vatPeriodCorrectionsList.title = vatPeriodCorrectionsList
-vatPeriodCorrectionsList.heading = vatPeriodCorrectionsList
+vatPeriodCorrectionsList.title = You have corrected the VAT amount for {0}
+vatPeriodCorrectionsList.title.empty = You have not corrected the VAT amount for any return periods
+vatPeriodCorrectionsList.heading = You have corrected the VAT amount for {0}
+vatPeriodCorrectionsList.heading.empty = You have not corrected the VAT amount for any return periods
 vatPeriodCorrectionsList.checkYourAnswersLabel = vatPeriodCorrectionsList
-vatPeriodCorrectionsList.error.required = Select yes if vatPeriodCorrectionsList
-vatPeriodCorrectionsList.change.hidden = VatPeriodCorrectionsList
+vatPeriodCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another return period
+vatPeriodCorrectionsList.change.hidden = Change
+vatPeriodCorrectionsList.remove.hidden = Remove

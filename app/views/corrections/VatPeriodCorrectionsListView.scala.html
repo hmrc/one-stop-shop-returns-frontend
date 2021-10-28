@@ -18,26 +18,45 @@
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
+    govukSummaryList: GovukSummaryList,
     govukRadios: GovukRadios,
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(mode: Mode, period: Period, periodList: Seq[Period])(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("vatPeriodCorrectionsList.title"))) {
+@layout(pageTitle = {
+    if(periodList.isEmpty) {
+        messages("vatPeriodCorrectionsList.title.empty")
+    } else {
+        messages("vatPeriodCorrectionsList.title", periodList.size + " return " + { if(periodList.size > 1) "periods" else "period" }  )
+    }}) {
 
     @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period), 'autoComplete -> "off") {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
+        <h1 class="govuk-heading-xl">@if(periodList.isEmpty){
+            @messages("vatPeriodCorrectionsList.heading.empty")
+        } else {
+            @messages("vatPeriodCorrectionsList.heading", periodList.size + " return " + { if(periodList.size > 1) "periods" else "period" })
+        }</h1>
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(messages("vatPeriodCorrectionsList.heading")).asPageHeading()
-            )
-        )
+        <table class="govuk-table">
+            <tbody class="govuk-table__body">
+            @for(p <- periodList) {
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">
+                        @p.displayText
+                    </td>
+                    <td class="govuk-table__cell">
+                        <a class="govuk-link" href="@controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period)">@messages("site.change")</a>
+                    </td>
+                    <td class="govuk-table__cell">
+                        <a class="govuk-link" href="@controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period)">@messages("site.remove")</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
 
         @govukButton(
             ButtonViewModel(messages("site.continue"))

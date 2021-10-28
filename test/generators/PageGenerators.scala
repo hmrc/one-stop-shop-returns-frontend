@@ -19,12 +19,9 @@ package generators
 import models.Index
 import org.scalacheck.Arbitrary
 import pages._
-import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage, RemovePeriodCorrectionPage, UndeclaredCountryCorrectionPage, VatCorrectionsListPage, VatPeriodCorrectionsListPage}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage, RemovePeriodCorrectionPage, UndeclaredCountryCorrectionPage, VatCorrectionsListPage}
 
 trait PageGenerators {
-
-  implicit lazy val arbitraryVatPeriodCorrectionsListPage: Arbitrary[VatPeriodCorrectionsListPage.type] =
-    Arbitrary(VatPeriodCorrectionsListPage)
 
   implicit lazy val arbitraryVatCorrectionsListPage: Arbitrary[VatCorrectionsListPage.type] =
     Arbitrary(VatCorrectionsListPage)

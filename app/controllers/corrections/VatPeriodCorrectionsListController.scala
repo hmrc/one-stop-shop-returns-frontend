@@ -16,10 +16,11 @@
 
 package controllers.corrections
 
+import controllers.routes.IndexController
 import controllers.actions._
 import forms.corrections.VatPeriodCorrectionsListFormProvider
-import models.{Mode, Period}
-import pages.corrections.VatPeriodCorrectionsListPage
+import models.Quarter._
+import models.{Mode, NormalMode, Period}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -34,32 +35,24 @@ class VatPeriodCorrectionsListController @Inject()(
                                        view: VatPeriodCorrectionsListView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(VatPeriodCorrectionsListPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
+      // TODO: Get list of corrections / periods
 
-      Ok(view(preparedForm, mode, period))
+      val periodList = Seq(
+        Period(2021, Q1),
+        Period(2021, Q2),
+        Period(2021, Q3),
+        Period(2021, Q4)
+      )
+
+      Ok(view(mode, period, periodList))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
-    implicit request =>
-
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
-
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPeriodCorrectionsListPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(VatPeriodCorrectionsListPage.navigate(mode, updatedAnswers))
-      )
+  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+    implicit request => Redirect(IndexController.onPageLoad())
   }
 }
