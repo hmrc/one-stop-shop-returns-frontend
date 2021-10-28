@@ -16,56 +16,63 @@
 
 package services
 
-import config.Constants.{returnsConfirmationNoVatOwedTemplateId, returnsConfirmationTemplateId}
+import config.Constants.{overdueReturnsConfirmationTemplateId, returnsConfirmationNoVatOwedTemplateId, returnsConfirmationTemplateId}
 import connectors.EmailConnector
 import models.Period
 import models.emails.{EmailSendingResult, EmailToSendRequest, ReturnsConfirmationEmailNoVatOwedParameters, ReturnsConfirmationEmailParameters}
 import play.api.i18n.Messages
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDate
+import java.time.{Clock, LocalDate}
 import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmailService @Inject()(
-  emailConnector: EmailConnector
-)(implicit executionContext: ExecutionContext) {
+                              emailConnector: EmailConnector,
+                              clock: Clock
+                            )(implicit executionContext: ExecutionContext) {
 
   def sendConfirmationEmail(
-   contactName: String,
-   businessName: String,
-   emailAddress: String,
-   totalVatOnSales: BigDecimal,
-   period: Period
-  )(implicit hc: HeaderCarrier, messages: Messages): Future[EmailSendingResult] = {
+                             contactName: String,
+                             businessName: String,
+                             emailAddress: String,
+                             totalVatOnSales: BigDecimal,
+                             period: Period
+                           )(implicit hc: HeaderCarrier, messages: Messages): Future[EmailSendingResult] = {
+    val vatOwed = totalVatOnSales > 0
 
-   val vatOwed = totalVatOnSales > 0
+    val templateId =
+      (vatOwed, period.paymentDeadline.isBefore(LocalDate.now(clock))) match {
+        case (true, true) => overdueReturnsConfirmationTemplateId
+        case (true, false) => returnsConfirmationTemplateId
+        case _ => returnsConfirmationNoVatOwedTemplateId
+      }
 
-   val emailParameters =
-     if(vatOwed) {
-       ReturnsConfirmationEmailParameters(
-         contactName,
-         businessName,
-         period.displayText,
-         format(period.paymentDeadline)
+    val emailParameters =
+      if (vatOwed) {
+        ReturnsConfirmationEmailParameters(
+          contactName,
+          businessName,
+          period.displayText,
+          format(period.paymentDeadline)
+        )
+      } else {
+        ReturnsConfirmationEmailNoVatOwedParameters(contactName, period.displayText)
+      }
+
+    emailConnector.send(
+      EmailToSendRequest(
+        List(emailAddress),
+        templateId,
+        emailParameters
       )
-    } else {
-       ReturnsConfirmationEmailNoVatOwedParameters(contactName, period.displayText)
-    }
-
-   emailConnector.send(
-     EmailToSendRequest(
-      List(emailAddress),
-      if(vatOwed) returnsConfirmationTemplateId else returnsConfirmationNoVatOwedTemplateId,
-      emailParameters
-     )
-   )
+    )
   }
 
   private def format(date: LocalDate) = {
-   val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
-   date.format(formatter)
+    val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+    date.format(formatter)
   }
 }

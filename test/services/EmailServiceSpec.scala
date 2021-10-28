@@ -18,6 +18,8 @@ package services
 
 import base.SpecBase
 import connectors.EmailConnector
+import models.Period
+import models.Quarter.Q2
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.emails.{EmailToSendRequest, ReturnsConfirmationEmailNoVatOwedParameters, ReturnsConfirmationEmailParameters}
 import org.mockito.ArgumentMatchers.{any, refEq}
@@ -54,6 +56,41 @@ class EmailServiceSpec extends SpecBase {
           val expectedEmailToSendRequest = EmailToSendRequest(
             List(email),
             "oss_returns_email_confirmation",
+            ReturnsConfirmationEmailParameters(
+              contactName,
+              businessName,
+              period.displayText,
+              paymentDeadlineString
+            )
+          )
+
+          when(connector.send(any())(any(), any())).thenReturn(Future.successful(EMAIL_ACCEPTED))
+
+          emailService.sendConfirmationEmail(
+            contactName,
+            businessName,
+            email,
+            BigDecimal(100),
+            period
+          ).futureValue mustBe EMAIL_ACCEPTED
+
+          verify(connector, times(1)).send(refEq(expectedEmailToSendRequest))(any(), any())
+      }
+    }
+
+    "Call sendConfirmationEmail with oss_overdue_returns_email_confirmation with the correct parameters" in {
+      val period = Period(2021, Q2)
+
+      forAll(
+        validEmails,
+        safeInputsWithMaxLength(maxLengthContactName),
+        safeInputsWithMaxLength(maxLengthBusiness)
+      ) {
+        (email: String, contactName: String, businessName: String) =>
+          val paymentDeadlineString = period.paymentDeadlineDisplay
+          val expectedEmailToSendRequest = EmailToSendRequest(
+            List(email),
+            "oss_overdue_returns_email_confirmation",
             ReturnsConfirmationEmailParameters(
               contactName,
               businessName,
