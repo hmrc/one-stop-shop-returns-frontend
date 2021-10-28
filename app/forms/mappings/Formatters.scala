@@ -18,7 +18,7 @@ package forms.mappings
 
 import play.api.data.FormError
 import play.api.data.format.Formatter
-import models.Enumerable
+import models.{Enumerable, Period}
 
 import scala.util.control.Exception.nonFatalCatch
 
@@ -122,5 +122,18 @@ trait Formatters {
 
       override def unbind(key: String, value: A): Map[String, String] =
         baseFormatter.unbind(key, value.toString)
+    }
+
+  private[mappings] def periodFormatter(requiredKey: String, invalidKey: String, args: Seq[String] = Seq.empty): Formatter[Period] =
+    new Formatter[Period] {
+
+      private val baseFormatter = stringFormatter(requiredKey, args)
+
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Period] =
+        baseFormatter
+          .bind(key, data)
+          .right.flatMap {s => Period.fromString(s).toRight(Seq(FormError(key, invalidKey, args))) }
+
+      def unbind(key: String, value: Period) = Map(key -> value.toString)
     }
 }

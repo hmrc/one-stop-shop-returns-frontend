@@ -18,49 +18,52 @@ package controllers.corrections
 
 import connectors.ReturnStatusConnector
 import controllers.actions._
-import forms.corrections.CorrectionReturnPeriodFormProvider
+import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.SubmissionStatus.Complete
 import models.{Mode, NormalMode, Period}
-import pages.corrections.CorrectionReturnPeriodPage
+import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.corrections.CorrectionReturnPeriodView
+import views.html.corrections.CorrectionReturnSinglePeriodView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CorrectionReturnPeriodController @Inject()(
+class CorrectionReturnSinglePeriodController @Inject()(
                                        cc: AuthenticatedControllerComponents,
-                                       formProvider: CorrectionReturnPeriodFormProvider,
-                                       returnStatusConnector: ReturnStatusConnector,
-                                       view: CorrectionReturnPeriodView
+                                       formProvider: CorrectionReturnSinglePeriodFormProvider,
+                                       view: CorrectionReturnSinglePeriodView,
+                                       returnStatusConnector: ReturnStatusConnector
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
-  private val form = formProvider()
 
+  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
-          case Right(returnStatuses) =>
-            val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-            if(periods.size < 2) {
-              Redirect(
-                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
-              )
-            } else {
-              val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage) match {
+      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
+        case Right(returnStatuses) =>
+          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+
+          periods.size match {
+            case 0 => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+            case 1 =>
+              val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage) match {
                 case None => form
                 case Some(value) => form.fill(value)
               }
-              Ok(view(preparedForm, mode, period, periods))
-            }
-          case Left(value) =>
-            logger.error(s"there was an error $value")
-            throw new Exception(value.toString)
+
+              Ok(view(preparedForm, mode, period, periods.head.displayText))
+            case _ => Redirect(
+              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period)
+            )
+          }
+        case Left(value) =>
+          logger.error(s"there was an error $value")
+          throw new Exception(value.toString)
       }
   }
 
@@ -73,26 +76,25 @@ class CorrectionReturnPeriodController @Inject()(
             case Right(returnStatuses) =>
               val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-              if(periods.size < 2) {
-                Redirect(
-                  controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
+              periods.size match {
+                case 0 => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+                case 1 => BadRequest(view(formWithErrors, mode, period, periods.head.displayText))
+                case _ => Redirect(
+                  controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period)
                 )
-              } else {
-                BadRequest(view(
-                  formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)
-                ))
               }
+
             case Left(value) =>
               logger.error(s"there was an error $value")
               throw new Exception(value.toString)
-        }},
+          }
+        },
+
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage, value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield {
-            Redirect(CorrectionReturnPeriodPage.navigate(mode, updatedAnswers))
-          }
+          } yield Redirect(CorrectionReturnSinglePeriodPage.navigate(mode, updatedAnswers))
       )
   }
 }

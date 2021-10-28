@@ -17,15 +17,14 @@
 package forms.corrections
 
 import forms.mappings.Mappings
-import models.Period
 import play.api.data.Form
 
 import javax.inject.Inject
 
-class CorrectionReturnPeriodFormProvider @Inject() extends Mappings {
+class CorrectionReturnSinglePeriodFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Period] =
+  def apply(): Form[Boolean] =
     Form(
-      "value" -> period("correctionReturnPeriod.error.required")
+      "value" -> boolean("correctionReturnSinglePeriod.error.required")
     )
 }
