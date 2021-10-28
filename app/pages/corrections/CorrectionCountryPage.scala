@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{Country, UserAnswers}
+import models.{Country, Mode, NormalMode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -28,6 +28,14 @@ case object CorrectionCountryPage extends QuestionPage[Country] {
 
   override def toString: String = "correctionCountry"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+   def navigate(mode: Mode, answers: UserAnswers, countries: Seq[Country]): Call = {
+    answers.get(CorrectionCountryPage) match {
+      case Some(country) =>
+        if(countries.contains(country)){
+          controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(mode, answers.period)
+        }else{
+          controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(mode, answers.period)}
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
+  }
 }

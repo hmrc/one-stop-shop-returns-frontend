@@ -18,12 +18,13 @@ package controllers.corrections
 
 import base.SpecBase
 import forms.corrections.CorrectionCountryFormProvider
-import models.{Country, NormalMode}
+import models.Quarter.Q3
+import models.{Country, NormalMode, Period, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.CorrectionCountryPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -44,7 +45,9 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+
+      val application = applicationBuilder(Some(userAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, correctionCountryRoute)
@@ -54,13 +57,31 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, period)(request, messages(application)).toString
+      }
+    }
+
+    "must redirect to Journey Recovery Controller when user calls onPageLoad and has not answered correction period question" in {
+
+      val application = applicationBuilder(Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, correctionCountryRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[CorrectionCountryView]
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CorrectionCountryPage, country).success.value
+      val userAnswers = emptyUserAnswers
+        .set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CorrectionCountryPage, country).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -72,7 +93,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(country), NormalMode, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(country), NormalMode, period, index, period)(request, messages(application)).toString
       }
     }
 
@@ -103,7 +124,10 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val userAnswers = emptyUserAnswers
+        .set(CorrectionReturnPeriodPage(index), period).success.value
+
+      val application = applicationBuilder(Some(userAnswers)).build()
 
       running(application) {
         val request =
@@ -117,7 +141,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, period)(request, messages(application)).toString
       }
     }
 

@@ -16,10 +16,12 @@
 
 package controllers.corrections
 
+import connectors.VatReturnConnector
 import controllers.actions._
 import forms.corrections.CorrectionCountryFormProvider
+import models.Quarter.Q3
 import models.{Index, Mode, Period}
-import pages.corrections.CorrectionCountryPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.AllSalesFromEuQuery
@@ -32,6 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CorrectionCountryController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: CorrectionCountryFormProvider,
+                                        vatReturnConnector: VatReturnConnector,
                                         view: CorrectionCountryView
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -49,7 +52,10 @@ class CorrectionCountryController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period, index))
+      request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+        case Some(correctionPeriod) => Ok(view(preparedForm, mode, period, index, correctionPeriod))
+        case None => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
+      }
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
@@ -60,13 +66,30 @@ class CorrectionCountryController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, index))),
+          request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+            case Some(correctionPeriod) => Future.successful(BadRequest(view(formWithErrors, mode, period, index, correctionPeriod)))
+            case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
+          },
 
         value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectionCountryPage.navigate(mode, updatedAnswers))
+          request.userAnswers.get(CorrectionReturnPeriodPage(index)) match{
+            case Some(correctionPeriod) =>
+              for {
+                          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage, value))
+                          vatReturnResult <- vatReturnConnector.get(period)
+                          _              <- cc.sessionRepository.set(updatedAnswers)
+                        } yield {
+                vatReturnResult match {
+                  case Right(vatReturn) => {
+                    val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
+                    Redirect(CorrectionCountryPage.navigate(mode, updatedAnswers, countriesFromNi))
+                  }
+                  case _ => ???
+                }
+                }
+            case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
+          }
+
       )
   }
 }
