@@ -188,3 +188,5 @@ GET        /:period/correctionReturnSinglePeriod                        controll
 POST       /:period/correctionReturnSinglePeriod                        controllers.corrections.CorrectionReturnSinglePeriodController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET        /:period/changeCorrectionReturnSinglePeriod                  controllers.corrections.CorrectionReturnSinglePeriodController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST       /:period/changeCorrectionReturnSinglePeriod                  controllers.corrections.CorrectionReturnSinglePeriodController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/noOtherCorrectionPeriodsAvailable                       controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onPageLoad(period: Period)

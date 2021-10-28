@@ -376,3 +376,7 @@ correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in
 correctionReturnSinglePeriod.checkYourAnswersLabel = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.error.required = Select yes if you want to correct the VAT amounts in your {0} return
 correctionReturnSinglePeriod.change.hidden = CorrectionReturnSinglePeriod
+
+noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other VAT One Stop Shop periods
+noOtherCorrectionPeriodsAvailable.heading = You cannot make a correction to other VAT One Stop Shop periods
+noOtherCorrectionPeriodsAvailable.paragraph = You can only make corrections for periods that have ended.

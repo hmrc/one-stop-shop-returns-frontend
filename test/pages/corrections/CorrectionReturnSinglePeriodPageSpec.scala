@@ -24,11 +24,11 @@ class CorrectionReturnSinglePeriodPageSpec extends PageBehaviours {
 
   "CorrectionReturnSinglePeriodPage" - {
 
-    beRetrievable[Period](CorrectionReturnSinglePeriodPage)
+    beRetrievable[Boolean](CorrectionReturnSinglePeriodPage)
 
-    beSettable[Period](CorrectionReturnSinglePeriodPage)
+    beSettable[Boolean](CorrectionReturnSinglePeriodPage)
 
-    beRemovable[Period](CorrectionReturnSinglePeriodPage)
+    beRemovable[Boolean](CorrectionReturnSinglePeriodPage)
 
     "must navigate in Normal mode" - {
 
@@ -42,10 +42,10 @@ class CorrectionReturnSinglePeriodPageSpec extends PageBehaviours {
 
       "to Which country would you like to correct page when answer is false" in {
 
-        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, true).success.value
+        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, false).success.value
 
         CorrectionReturnSinglePeriodPage.navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, Index(0)))
+          .mustEqual(controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(answers.period))
       }
 
       "to Journey recovery page when answer is invalid" in {
