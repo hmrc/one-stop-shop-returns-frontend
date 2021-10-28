@@ -181,7 +181,8 @@ trait SpecBase
         bind[CheckReturnsFilterProvider].toInstance(new FakeCheckReturnsFilterProvider()),
         bind[CheckCommencementDateFilterProvider].toInstance(new FakeCheckCommencementDateFilterProvider()),
         bind[Clock].toInstance(clockToBind),
-        bind[CheckCorrectionsToggleFilterProvider].toInstance(new FakeCheckCorrectionsToggleFilterProvider())
+        bind[CheckCorrectionsToggleFilterProvider].toInstance(new FakeCheckCorrectionsToggleFilterProvider()),
+        bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
       )
   }
 
