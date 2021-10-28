@@ -18,14 +18,14 @@ package pages.corrections
 
 import controllers.routes
 import models.{Index, NormalMode, Period, UserAnswers}
-import pages.PageConstants.period
+import pages.PageConstants.corrections
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
 case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[Period] {
 
-  override def path: JsPath = JsPath \ period \ index.position \ toString
+  override def path: JsPath = JsPath \ corrections \ index.position \ toString
 
   override def toString: String = "correctionReturnPeriod"
 
