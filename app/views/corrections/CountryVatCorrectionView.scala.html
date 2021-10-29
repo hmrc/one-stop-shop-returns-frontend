@@ -24,11 +24,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, country: Country, correctionPeriod:Period, periodIndex: Index, countryIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("countryVatCorrection.title", country.name))) {
 
-    @formHelper(action = controllers.corrections.routes.CountryVatCorrectionController.onSubmit(mode, period), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.CountryVatCorrectionController.onSubmit(mode, period, periodIndex, countryIndex), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -39,7 +39,7 @@
                 field = form("value"),
                 label = HmrcPageHeadingLabel(
                     content = messages("countryVatCorrection.heading", country.name),
-                    caption = messages("countryVatCorrection.caption", period.displayText)))
+                    caption = messages("countryVatCorrection.caption", correctionPeriod.displayText)))
             .asNumeric().withWidth(Fixed10).withCssClass("govuk-currency-input__inner__input")
             .withPrefix(PrefixOrSuffix(content = Text("£")))
             .withHint(HintViewModel(messages("countryVatCorrection.hint")))

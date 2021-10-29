@@ -37,33 +37,35 @@ class CountryVatCorrectionController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(Index(0), Index(0)))
-      selectedCountry match {
-        case Some(country) =>
+      val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
+      (correctionPeriod, selectedCountry) match {
+        case (Some(correctionPeriod), Some(country)) =>
             val form = formProvider(country.name)
-          //val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage())
+
             val preparedForm = request.userAnswers.get(CountryVatCorrectionPage) match {
               case None => form
               case Some(value) => form.fill(value)
             }
-            Ok(view(preparedForm, mode, period, country))
+            Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex))
 
       }
 
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(Index(0), Index(0)))
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
+      val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
 
-      selectedCountry match {
-        case Some(country) =>
+      (correctionPeriod, selectedCountry) match {
+        case (Some(correctionPeriod), Some(country)) =>
           val form = formProvider(country.name)
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, country))),
+              Future.successful(BadRequest(view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex))),
 
             value =>
               for {

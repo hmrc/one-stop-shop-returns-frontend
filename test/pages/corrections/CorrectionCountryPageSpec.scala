@@ -42,7 +42,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
         CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries, Seq.empty)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period))
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
       "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return for EU" in {
@@ -53,7 +53,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
         CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq.empty, countries)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period))
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
       "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
@@ -63,7 +63,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
         CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq(), Seq())
-          .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, answers.period))
+          .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
       "to Journey recovery page when answer is invalid" in {

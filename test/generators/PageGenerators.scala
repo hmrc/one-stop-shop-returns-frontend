@@ -32,8 +32,8 @@ trait PageGenerators {
   implicit lazy val arbitraryVatCorrectionsListPage: Arbitrary[VatCorrectionsListPage.type] =
     Arbitrary(VatCorrectionsListPage)
 
-  implicit lazy val arbitraryUndeclaredCountryCorrectionPage: Arbitrary[UndeclaredCountryCorrectionPage.type] =
-    Arbitrary(UndeclaredCountryCorrectionPage)
+  implicit lazy val arbitraryUndeclaredCountryCorrectionPage: Arbitrary[UndeclaredCountryCorrectionPage] =
+    Arbitrary(UndeclaredCountryCorrectionPage(Index(0), Index(0)))
 
   implicit lazy val arbitraryRemovePeriodCorrectionPage: Arbitrary[RemovePeriodCorrectionPage.type] =
     Arbitrary(RemovePeriodCorrectionPage)

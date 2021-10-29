@@ -154,10 +154,10 @@ POST       /:period/correctionReturnPeriod/:index                       controll
 GET        /:period/changeCorrectionReturnPeriod/:index                  controllers.corrections.CorrectionReturnPeriodController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
 POST       /:period/changeCorrectionReturnPeriod/:index                  controllers.corrections.CorrectionReturnPeriodController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
 
-GET        /:period/countryVatCorrection                  controllers.corrections.CountryVatCorrectionController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST       /:period/countryVatCorrection                  controllers.corrections.CountryVatCorrectionController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET        /:period/changeCountryVatCorrection                        controllers.corrections.CountryVatCorrectionController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST       /:period/changeCountryVatCorrection                        controllers.corrections.CountryVatCorrectionController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET        /:period/countryVatCorrection/:periodIndex/:countryIndex                  controllers.corrections.CountryVatCorrectionController.onPageLoad(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index)
+POST       /:period/countryVatCorrection/:periodIndex/:countryIndex                   controllers.corrections.CountryVatCorrectionController.onSubmit(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index)
+GET        /:period/changeCountryVatCorrection/:periodIndex/:countryIndex             controllers.corrections.CountryVatCorrectionController.onPageLoad(mode: Mode = CheckMode, period: Period, periodIndex: Index, countryIndex: Index)
+POST       /:period/changeCountryVatCorrection/:periodIndex/:countryIndex             controllers.corrections.CountryVatCorrectionController.onSubmit(mode: Mode = CheckMode, period: Period, periodIndex: Index, countryIndex: Index)
 
 GET        /:period/removeCountryCorrection                        controllers.corrections.RemoveCountryCorrectionController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST       /:period/removeCountryCorrection                        controllers.corrections.RemoveCountryCorrectionController.onSubmit(mode: Mode = NormalMode, period: Period)
@@ -169,10 +169,10 @@ POST       /:period/removePeriodCorrection                        controllers.co
 GET        /:period/changeRemovePeriodCorrection                  controllers.corrections.RemovePeriodCorrectionController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST       /:period/changeRemovePeriodCorrection                  controllers.corrections.RemovePeriodCorrectionController.onSubmit(mode: Mode = CheckMode, period: Period)
 
-GET        /:period/undeclaredCountryCorrection                        controllers.corrections.UndeclaredCountryCorrectionController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST       /:period/undeclaredCountryCorrection                        controllers.corrections.UndeclaredCountryCorrectionController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET        /:period/changeUndeclaredCountryCorrection                  controllers.corrections.UndeclaredCountryCorrectionController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST       /:period/changeUndeclaredCountryCorrection                  controllers.corrections.UndeclaredCountryCorrectionController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET        /:period/undeclaredCountryCorrection/:periodIndex/:countryIndex                          controllers.corrections.UndeclaredCountryCorrectionController.onPageLoad(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index)
+POST       /:period/undeclaredCountryCorrection/:periodIndex/:countryIndex                          controllers.corrections.UndeclaredCountryCorrectionController.onSubmit(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index)
+GET        /:period/changeUndeclaredCountryCorrection/:periodIndex/:countryIndex                    controllers.corrections.UndeclaredCountryCorrectionController.onPageLoad(mode: Mode = CheckMode, period: Period, periodIndex: Index, countryIndex: Index)
+POST       /:period/changeUndeclaredCountryCorrection/:periodIndex/:countryIndex                    controllers.corrections.UndeclaredCountryCorrectionController.onSubmit(mode: Mode = CheckMode, period: Period, periodIndex: Index, countryIndex: Index)
 
 GET        /:period/vatCorrectionsList                        controllers.corrections.VatCorrectionsListController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST       /:period/vatCorrectionsList                        controllers.corrections.VatCorrectionsListController.onSubmit(mode: Mode = NormalMode, period: Period)

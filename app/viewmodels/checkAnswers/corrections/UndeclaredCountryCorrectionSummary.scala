@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Index, UserAnswers}
 import pages.corrections.UndeclaredCountryCorrectionPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,7 +26,7 @@ import viewmodels.implicits._
 object UndeclaredCountryCorrectionSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(UndeclaredCountryCorrectionPage).map {
+    answers.get(UndeclaredCountryCorrectionPage(Index(0), Index(0))).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"
@@ -35,7 +35,7 @@ object UndeclaredCountryCorrectionSummary {
           key = "undeclaredCountryCorrection.checkYourAnswersLabel",
           value = ValueViewModel(value),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckMode, answers.period).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckMode, answers.period, Index(0), Index(0)).url)
               .withVisuallyHiddenText(messages("undeclaredCountryCorrection.change.hidden"))
           )
         )
