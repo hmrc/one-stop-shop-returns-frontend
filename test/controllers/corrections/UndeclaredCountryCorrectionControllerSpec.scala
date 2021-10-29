@@ -36,7 +36,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
   private val selectedCountry = arbitrary[Country].sample.value
   private val formProvider = new UndeclaredCountryCorrectionFormProvider()
   private val form = formProvider()
-  private val userAnswersWithCountry = emptyUserAnswers.set(CorrectionCountryPage, selectedCountry).success.value
+  private val userAnswersWithCountry = emptyUserAnswers.set(CorrectionCountryPage(index, index), selectedCountry).success.value
 
   private lazy val undeclaredCountryCorrectionRoute = controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, period).url
 

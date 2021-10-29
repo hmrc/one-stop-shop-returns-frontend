@@ -31,7 +31,7 @@ case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[Period]
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(CorrectionReturnPeriodPage(index)) match {
-      case Some(period) => controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, period, index)
+      case Some(period) => controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, period, index, Index(0))
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 }

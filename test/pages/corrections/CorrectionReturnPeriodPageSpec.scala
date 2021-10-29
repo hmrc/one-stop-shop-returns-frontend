@@ -37,7 +37,7 @@ class CorrectionReturnPeriodPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), period).success.value
 
         CorrectionReturnPeriodPage(Index(0)).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, Index(0)))
+          .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, Index(0), Index(0)))
       }
 
       "to Journey recovery page when answer is invalid" in {

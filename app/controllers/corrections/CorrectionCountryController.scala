@@ -23,6 +23,7 @@ import models.Quarter.Q3
 import models.{Index, Mode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.I18nSupport
+import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.AllSalesFromEuQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -41,50 +42,55 @@ class CorrectionCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      val form = formProvider(index,
+      val form = formProvider(periodIndex,
         request.userAnswers
-          .get(CorrectionCountryPage).toSeq)
+          .get(CorrectionCountryPage(periodIndex, countryIndex)).toSeq)
 
-      val preparedForm = request.userAnswers.get(CorrectionCountryPage) match {
+      val preparedForm = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
-        case Some(correctionPeriod) => Ok(view(preparedForm, mode, period, index, correctionPeriod))
+      request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
+        case Some(correctionPeriod) => Ok(view(preparedForm, mode, period, periodIndex, correctionPeriod, countryIndex))
         case None => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      val form = formProvider(index,
+      val form = formProvider(periodIndex,
         request.userAnswers
-          .get(CorrectionCountryPage).toSeq)
+          .get(CorrectionCountryPage(periodIndex, countryIndex)).toSeq)
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
-            case Some(correctionPeriod) => Future.successful(BadRequest(view(formWithErrors, mode, period, index, correctionPeriod)))
+          request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
+            case Some(correctionPeriod) => Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, correctionPeriod, countryIndex)))
             case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
           },
 
         value =>
-          request.userAnswers.get(CorrectionReturnPeriodPage(index)) match{
+          request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
             case Some(correctionPeriod) =>
               for {
-                          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage, value))
-                          vatReturnResult <- vatReturnConnector.get(period)
+                          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
+                          vatReturnResult <- vatReturnConnector.get(correctionPeriod)
                           _              <- cc.sessionRepository.set(updatedAnswers)
                         } yield {
                 vatReturnResult match {
                   case Right(vatReturn) => {
                     val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
-                    Redirect(CorrectionCountryPage.navigate(mode, updatedAnswers, countriesFromNi))
+                    val countriesFromEU = vatReturn.salesFromEu.map(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption)).flatten.distinct
+
+
+                    Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, countriesFromNi, countriesFromEU))
                   }
-                  case _ => ???
+                  case Left(value) =>
+                    logger.error(s"there was an error $value")
+                    throw new Exception(value.toString)
                 }
                 }
             case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
