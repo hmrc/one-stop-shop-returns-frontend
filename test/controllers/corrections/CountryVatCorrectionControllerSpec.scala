@@ -71,7 +71,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage, validAnswer).success.value
+      val userAnswers = userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
 
       val mockVatReturnConnector = mock[VatReturnConnector]
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
@@ -113,10 +113,10 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", validAnswer.toString))
 
         val result = route(application, request).value
-        val expectedAnswers = userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage, validAnswer).success.value
+        val expectedAnswers = userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CountryVatCorrectionPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual CountryVatCorrectionPage(index, index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }

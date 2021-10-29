@@ -45,7 +45,7 @@ class CountryVatCorrectionController @Inject()(
         case (Some(correctionPeriod), Some(country)) =>
             val form = formProvider(country.name)
 
-            val preparedForm = request.userAnswers.get(CountryVatCorrectionPage) match {
+            val preparedForm = request.userAnswers.get(CountryVatCorrectionPage(periodIndex, countryIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
             }
@@ -69,9 +69,9 @@ class CountryVatCorrectionController @Inject()(
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryVatCorrectionPage, value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryVatCorrectionPage(periodIndex, countryIndex), value))
                 _              <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(CountryVatCorrectionPage.navigate(mode, updatedAnswers))
+              } yield Redirect(CountryVatCorrectionPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
           )
       }
   }
