@@ -18,7 +18,7 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.UndeclaredCountryCorrectionFormProvider
-import models.{Mode, Period}
+import models.{Index, Mode, Period}
 import pages.corrections.{CorrectionCountryPage, UndeclaredCountryCorrectionPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -39,7 +39,7 @@ class UndeclaredCountryCorrectionController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(Index(0), Index(0)))
       selectedCountry match {
         case Some(country) => val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage) match {
           case None => form
@@ -53,7 +53,7 @@ class UndeclaredCountryCorrectionController @Inject()(
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(Index(0), Index(0)))
       selectedCountry match {
         case Some(country) =>
           form.bindFromRequest().fold(

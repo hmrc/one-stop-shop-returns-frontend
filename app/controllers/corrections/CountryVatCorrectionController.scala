@@ -18,8 +18,8 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.CountryVatCorrectionFormProvider
-import models.{Mode, Period}
-import pages.corrections.{CorrectionCountryPage, CountryVatCorrectionPage}
+import models.{Index, Mode, Period}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -39,10 +39,11 @@ class CountryVatCorrectionController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(Index(0), Index(0)))
       selectedCountry match {
         case Some(country) =>
             val form = formProvider(country.name)
+          //val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage())
             val preparedForm = request.userAnswers.get(CountryVatCorrectionPage) match {
               case None => form
               case Some(value) => form.fill(value)
@@ -55,7 +56,7 @@ class CountryVatCorrectionController @Inject()(
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(Index(0), Index(0)))
 
       selectedCountry match {
         case Some(country) =>

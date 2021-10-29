@@ -37,7 +37,7 @@ class CorrectionReturnSinglePeriodPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, true).success.value
 
         CorrectionReturnSinglePeriodPage.navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, Index(0)))
+          .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, Index(0), Index(0)))
       }
 
       "to Which country would you like to correct page when answer is false" in {

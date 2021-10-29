@@ -17,6 +17,7 @@
 package controllers.corrections
 
 import base.SpecBase
+import connectors.VatReturnConnector
 import forms.corrections.CorrectionCountryFormProvider
 import models.Quarter.Q3
 import models.{Country, NormalMode, Period, UserAnswers}
@@ -39,7 +40,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
   private val form = formProvider(index, Seq.empty)
   val country: Country = arbitrary[Country].sample.value
 
-  private lazy val correctionCountryRoute = controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, period, index).url
+  private lazy val correctionCountryRoute = controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, period, index, index).url
 
   "CorrectionCountry Controller" - {
 
@@ -57,7 +58,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, index, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, period, index)(request, messages(application)).toString
       }
     }
 
@@ -81,7 +82,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
       val userAnswers = emptyUserAnswers
         .set(CorrectionReturnPeriodPage(index), period).success.value
-        .set(CorrectionCountryPage, country).success.value
+        .set(CorrectionCountryPage(index, index), country).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -93,16 +94,17 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(country), NormalMode, period, index, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(country), NormalMode, period, index, period, index)(request, messages(application)).toString
       }
     }
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
+      val mockVatReturnConnector = mock[VatReturnConnector]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
+      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
@@ -114,10 +116,10 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", country.code))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage, country).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionCountryPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers, Seq(), Seq()).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -141,7 +143,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, period, index)(request, messages(application)).toString
       }
     }
 

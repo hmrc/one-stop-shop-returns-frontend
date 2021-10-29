@@ -36,7 +36,7 @@ trait UserAnswersGenerator extends TryValues {
     arbitrary[(RemovePeriodCorrectionPage.type, JsValue)] ::
     arbitrary[(RemoveCountryCorrectionPage.type, JsValue)] ::
     arbitrary[(CountryVatCorrectionPage.type, JsValue)] ::
-    arbitrary[(CorrectionCountryPage.type, JsValue)] ::
+    //arbitrary[(CorrectionCountryPage, JsValue)] ::
     arbitrary[(CorrectPreviousReturnPage.type, JsValue)] ::
     arbitrary[(VatRatesFromEuPage, JsValue)] ::
     arbitrary[(SoldGoodsFromEuPage.type, JsValue)] ::

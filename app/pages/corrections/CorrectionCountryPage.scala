@@ -17,21 +17,22 @@
 package pages.corrections
 
 import controllers.routes
-import models.{Country, Mode, NormalMode, UserAnswers}
+import models.{Country, Index, Mode, NormalMode, UserAnswers}
+import pages.PageConstants.{correctionToCountry, corrections}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object CorrectionCountryPage extends QuestionPage[Country] {
+case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Country] {
 
-  override def path: JsPath = JsPath \ toString
+  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionToCountry \ countryIndex.position \ toString
 
   override def toString: String = "correctionCountry"
 
-   def navigate(mode: Mode, answers: UserAnswers, countries: Seq[Country]): Call = {
-    answers.get(CorrectionCountryPage) match {
+   def navigate(mode: Mode, answers: UserAnswers, countriesFromNi: Seq[Country], countriesFromEU: Seq[Country]): Call = {
+    answers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
       case Some(country) =>
-        if(countries.contains(country)){
+        if(countriesFromNi.contains(country) || countriesFromEU.contains(country)){
           controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(mode, answers.period)
         }else{
           controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(mode, answers.period)}
