@@ -105,9 +105,12 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+      val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(expectedAnswers2))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .build()
 
       running(application) {
@@ -116,11 +119,11 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", country.code))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers, Seq(), Seq()).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq(), Seq()).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
       }
     }
 
