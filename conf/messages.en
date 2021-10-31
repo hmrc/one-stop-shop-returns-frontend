@@ -219,6 +219,8 @@ returnSubmitted.payVatOwed.p2 = You can pay by corporate card or bank transfer.
 returnSubmitted.payNow = Pay now
 returnSubmitted.payBy.p1 = You need to pay by {0}.
 returnSubmitted.payBy.p2 = EU countries can charge you interest or penalties for late payments.
+returnSubmitted.overduePayBy.p1 = Payment for this return was due by {0}.
+returnSubmitted.overduePayBy.p2 = You need to pay the return in full as soon as you can.
 returnSubmitted.backToAccount.link.text = Back to your account
 
 submittedReturnsHistory.title = Submitted returns
