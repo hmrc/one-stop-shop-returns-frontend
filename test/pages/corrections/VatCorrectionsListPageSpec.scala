@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode}
+import models.{CheckMode, Country, Index, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -28,15 +28,15 @@ class VatCorrectionsListPageSpec extends PageBehaviours {
 
       "when the answer is yes" - {
 
-        "to Country of Sale with an index equal to the number of countries we have details for" in {
+        "to Correction Country with an index equal to the number of countries we have details for" in {
 
           val country = arbitrary[Country].sample.value
 
           val answers =
             emptyUserAnswers
-              .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
+              .set(CorrectionCountryPage(index, Index(0)), country).success.value
 
-          SalesFromEuListPage.navigate(answers, NormalMode, addAnother = true)
+          VatCorrectionsListPage(index).navigate(answers, NormalMode, addAnother = true)
             .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(1)))
         }
       }
@@ -45,7 +45,7 @@ class VatCorrectionsListPageSpec extends PageBehaviours {
 
         "to Check your answers" in {
 
-          SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false)
+          VatCorrectionsListPage(index).navigate(emptyUserAnswers, NormalMode, addAnother = false)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }
       }
@@ -55,15 +55,15 @@ class VatCorrectionsListPageSpec extends PageBehaviours {
 
       "when the answer is yes" - {
 
-        "to Country of Sale with an index equal to the number of countries we have details for" in {
+        "to Correction Country with an index equal to the number of countries we have details for" in {
 
           val country = arbitrary[Country].sample.value
 
           val answers =
             emptyUserAnswers
-              .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
+              .set(CorrectionCountryPage(index, Index(0)), country).success.value
 
-          SalesFromEuListPage.navigate(answers, CheckMode, addAnother = true)
+          VatCorrectionsListPage(index).navigate(answers, CheckMode, addAnother = true)
             .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(1)))
         }
       }
@@ -72,7 +72,7 @@ class VatCorrectionsListPageSpec extends PageBehaviours {
 
         "to Check your answers" in {
 
-          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false)
+          VatCorrectionsListPage(index).navigate(emptyUserAnswers, CheckMode, addAnother = false)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }
       }

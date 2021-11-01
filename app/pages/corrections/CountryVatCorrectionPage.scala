@@ -31,7 +31,7 @@ case class CountryVatCorrectionPage(periodIndex: Index, countryIndex: Index) ext
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)) match {
-      case Some(vatAmount) => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period)
+      case Some(vatAmount) => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, periodIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 }

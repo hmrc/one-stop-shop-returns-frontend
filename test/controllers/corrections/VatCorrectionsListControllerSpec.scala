@@ -32,6 +32,7 @@ import repositories.SessionRepository
 import viewmodels.checkAnswers.corrections.VatCorrectionsListSummary
 import views.html.corrections.VatCorrectionsListView
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
@@ -39,7 +40,7 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new VatCorrectionsListFormProvider()
   private val form = formProvider()
 
-  private lazy val vatCorrectionsListRoute = controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, period).url
+  private lazy val vatCorrectionsListRoute = controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, period, index).url
 
   private val country = arbitrary[Country].sample.value
 
@@ -51,7 +52,7 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, vatCorrectionsListRoute)
@@ -59,9 +60,19 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[VatCorrectionsListView]
+        implicit val msgs: Messages = messages(application)
+        val list                    = VatCorrectionsListSummary.addToListRows(baseAnswers, NormalMode, index)
+
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form = form,
+          mode = NormalMode,
+          list = list,
+          period = period,
+          canAddCountries = true,
+          periodIndex = index
+        )(request, messages(application)).toString
       }
     }
 
@@ -94,27 +105,14 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
         val list                    = VatCorrectionsListSummary.addToListRows(baseAnswers, NormalMode, index)
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, list, period, canAddCountries = true)(request, implicitly).toString
-      }
-    }
-
-    "must return a Bad Request and errors when invalid data is submitted" in {
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, vatCorrectionsListRoute)
-            .withFormUrlEncodedBody(("value", ""))
-
-        val boundForm = form.bind(Map("value" -> ""))
-
-        val view = application.injector.instanceOf[VatCorrectionsListView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form = boundForm,
+          mode = NormalMode,
+          list = list,
+          period = period,
+          canAddCountries = true,
+          periodIndex = index
+        )(request, implicitly).toString
       }
     }
 
