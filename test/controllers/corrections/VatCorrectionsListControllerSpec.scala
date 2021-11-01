@@ -18,15 +18,18 @@ package controllers.corrections
 
 import base.SpecBase
 import forms.corrections.VatCorrectionsListFormProvider
-import models.NormalMode
+import models.{Country, NormalMode}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.VatCorrectionsListPage
+import pages.corrections.{CorrectionCountryPage, VatCorrectionsListPage}
+import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import viewmodels.checkAnswers.corrections.VatCorrectionsListSummary
 import views.html.corrections.VatCorrectionsListView
 
 import scala.concurrent.Future
@@ -37,6 +40,12 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
   private val form = formProvider()
 
   private lazy val vatCorrectionsListRoute = controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, period).url
+
+  private val country = arbitrary[Country].sample.value
+
+  private val baseAnswers =
+    emptyUserAnswers
+      .set(CorrectionCountryPage(index, index), country).success.value
 
   "VatCorrectionsList Controller" - {
 
@@ -56,46 +65,36 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
+    "must redirect to the next page when valid data is submitted" in {
 
-      val userAnswers = emptyUserAnswers.set(VatCorrectionsListPage, true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(Some(baseAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, vatCorrectionsListRoute)
-
-        val view = application.injector.instanceOf[VatCorrectionsListView]
+        val request   = FakeRequest(POST, vatCorrectionsListRoute).withFormUrlEncodedBody("value" -> "true")
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual VatCorrectionsListPage(index).navigate(baseAnswers, NormalMode, addAnother = true).url
       }
     }
 
-    "must save the answer and redirect to the next page when valid data is submitted" in {
+    "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-          .build()
+      val application = applicationBuilder(Some(baseAnswers)).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, vatCorrectionsListRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+        val request   = FakeRequest(POST, vatCorrectionsListRoute).withFormUrlEncodedBody("value" -> "")
+        val boundForm = form.bind(Map("value" -> ""))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(VatCorrectionsListPage, true).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatCorrectionsListPage.navigate(NormalMode, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+        val view                    = application.injector.instanceOf[VatCorrectionsListView]
+        implicit val msgs: Messages = messages(application)
+        val list                    = VatCorrectionsListSummary.addToListRows(baseAnswers, NormalMode, index)
+
+        status(result) mustEqual BAD_REQUEST
+        contentAsString(result) mustEqual view(boundForm, NormalMode, list, period, canAddCountries = true)(request, implicitly).toString
       }
     }
 

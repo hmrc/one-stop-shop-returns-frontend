@@ -50,9 +50,7 @@ class CountryVatCorrectionController @Inject()(
               case Some(value) => form.fill(value)
             }
             Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex))
-
       }
-
   }
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
