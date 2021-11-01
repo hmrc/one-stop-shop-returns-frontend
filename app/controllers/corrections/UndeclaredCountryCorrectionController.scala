@@ -18,8 +18,8 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.UndeclaredCountryCorrectionFormProvider
-import models.{Mode, Period}
-import pages.corrections.{CorrectionCountryPage, UndeclaredCountryCorrectionPage}
+import models.{Index, Mode, Period}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, UndeclaredCountryCorrectionPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -37,34 +37,38 @@ class UndeclaredCountryCorrectionController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
-      selectedCountry match {
-        case Some(country) => val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage) match {
+      val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
+      (correctionPeriod, selectedCountry) match {
+        case (Some(correctionPeriod), Some(country)) =>
+          val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
           case None => form
           case Some(value) => form.fill(value)
         }
-          Ok(view(preparedForm, mode, period, country))
+          Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex))
       }
 
 
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage)
-      selectedCountry match {
-        case Some(country) =>
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
+      val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+
+      (correctionPeriod, selectedCountry) match {
+        case (Some(correctionPeriod), Some(country)) =>
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, country))),
+              Future.successful(BadRequest(view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex))),
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(UndeclaredCountryCorrectionPage, value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(UndeclaredCountryCorrectionPage(periodIndex, countryIndex), value))
                 _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(UndeclaredCountryCorrectionPage.navigate(mode, updatedAnswers))
+              } yield Redirect(UndeclaredCountryCorrectionPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
           )
       }
   }

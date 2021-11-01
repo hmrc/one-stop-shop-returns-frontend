@@ -24,11 +24,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, periodIndex: Index, correctionPeriod: Period, countryIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionCountry.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(mode, period, index)) {
+    @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(mode, period, periodIndex, countryIndex)) {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -40,7 +40,7 @@
                 items = Country.euCountrySelectItems,
                 label = HmrcPageHeadingLabel(
                     content = messages("correctionCountry.heading"),
-                    caption = period.displayText
+                    caption = correctionPeriod.displayText
                 )
             )
             .withCssClass(Fixed20.toString)

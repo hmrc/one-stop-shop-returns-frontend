@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.UserAnswers
+import models.{Index, Mode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -28,6 +28,14 @@ case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
 
   override def toString: String = "correctPreviousReturn"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+  def navigate(mode: Mode, answers: UserAnswers, period: Int): Call =
+    answers.get(CorrectPreviousReturnPage) match {
+      case Some(true) => if(period > 1) {
+        controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, answers.period, Index(0))
+      } else {
+        controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, answers.period)
+      }
+      case Some(false) =>  routes.CheckYourAnswersController.onPageLoad(answers.period)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
 }

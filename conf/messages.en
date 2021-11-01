@@ -39,6 +39,7 @@ error.non_numeric = Give a value using only numbers
 error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
+error.invalidPeriod = Please enter a valid period
 
 index.title = Your account
 index.heading = Your account
@@ -225,6 +226,8 @@ returnSubmitted.payVatOwed.p2 = You can pay by corporate card or bank transfer.
 returnSubmitted.payNow = Pay now
 returnSubmitted.payBy.p1 = You need to pay by {0}.
 returnSubmitted.payBy.p2 = EU countries can charge you interest or penalties for late payments.
+returnSubmitted.overduePayBy.p1 = Payment for this return was due by {0}.
+returnSubmitted.overduePayBy.p2 = You need to pay the return in full as soon as you can.
 returnSubmitted.backToAccount.link.text = Back to your account
 
 submittedReturnsHistory.title = Submitted returns
@@ -333,7 +336,7 @@ correctionReturnPeriod.heading = Which return period do you want to correct?
 correctionReturnPeriod.period1 = 1 January to 31 March 2022
 correctionReturnPeriod.period2 = 1 October to 31 December 2021
 correctionReturnPeriod.checkYourAnswersLabel = Which return period do you want to correct?
-correctionReturnPeriod.error.required = Select correctionReturnPeriod
+correctionReturnPeriod.error.required = Select which period you want to correct
 correctionReturnPeriod.change.hidden = CorrectionReturnPeriod
 
 countryVatCorrection.title = What is your correction for the total VAT payable to {0}?
@@ -368,8 +371,13 @@ undeclaredCountryCorrection.checkYourAnswersLabel = undeclaredCountryCorrection
 undeclaredCountryCorrection.error.required = Select yes if you want to add a correction to this country
 undeclaredCountryCorrection.change.hidden = UndeclaredCountryCorrection
 
-vatCorrectionsList.title = vatCorrectionsList
-vatCorrectionsList.heading = vatCorrectionsList
+vatCorrectionsList.title = You have corrected the VAT amount for {0} EU countries
+vatCorrectionsList.title.singular = You have corrected the VAT amount for one EU country
+vatCorrectionsList.section = Correction period: {0}
+vatCorrectionsList.heading = You have corrected the VAT amount for {0} EU countries
+vatCorrectionsList.heading.singular = You have corrected the VAT amount for one EU country
+vatCorrectionsList.addAnother = Add corrections to VAT for another EU country?
+vatCorrectionsList.maximumReached = You have added corrections to every EU country
 vatCorrectionsList.checkYourAnswersLabel = vatCorrectionsList
 vatCorrectionsList.error.required = Select yes if vatCorrectionsList
 vatCorrectionsList.change.hidden = VatCorrectionsList
@@ -382,3 +390,13 @@ vatPeriodCorrectionsList.checkYourAnswersLabel = vatPeriodCorrectionsList
 vatPeriodCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another return period
 vatPeriodCorrectionsList.change.hidden = Change
 vatPeriodCorrectionsList.remove.hidden = Remove
+
+correctionReturnSinglePeriod.title = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.checkYourAnswersLabel = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.error.required = Select yes if you want to correct the VAT amounts in your {0} return
+correctionReturnSinglePeriod.change.hidden = CorrectionReturnSinglePeriod
+
+noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other VAT One Stop Shop periods
+noOtherCorrectionPeriodsAvailable.heading = You cannot make a correction to other VAT One Stop Shop periods
+noOtherCorrectionPeriodsAvailable.paragraph = You can only make corrections for periods that have ended.

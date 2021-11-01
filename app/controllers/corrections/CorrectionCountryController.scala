@@ -16,11 +16,14 @@
 
 package controllers.corrections
 
+import connectors.VatReturnConnector
 import controllers.actions._
 import forms.corrections.CorrectionCountryFormProvider
+import models.Quarter.Q3
 import models.{Index, Mode, Period}
-import pages.corrections.CorrectionCountryPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.I18nSupport
+import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.AllSalesFromEuQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -32,41 +35,67 @@ import scala.concurrent.{ExecutionContext, Future}
 class CorrectionCountryController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: CorrectionCountryFormProvider,
+                                        vatReturnConnector: VatReturnConnector,
                                         view: CorrectionCountryView
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      val form = formProvider(index,
+      val form = formProvider(periodIndex,
         request.userAnswers
-          .get(CorrectionCountryPage).toSeq)
+          .get(CorrectionCountryPage(periodIndex, countryIndex)).toSeq)
 
-      val preparedForm = request.userAnswers.get(CorrectionCountryPage) match {
+      val preparedForm = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period, index))
+      request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
+        case Some(correctionPeriod) => Ok(view(preparedForm, mode, period, periodIndex, correctionPeriod, countryIndex))
+        case None => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
+      }
   }
 
-  def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      val form = formProvider(index,
+      val form = formProvider(periodIndex,
         request.userAnswers
-          .get(CorrectionCountryPage).toSeq)
+          .get(CorrectionCountryPage(periodIndex, countryIndex)).toSeq)
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, index))),
+          request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
+            case Some(correctionPeriod) => Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, correctionPeriod, countryIndex)))
+            case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
+          },
 
         value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectionCountryPage.navigate(mode, updatedAnswers))
+          request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
+            case Some(correctionPeriod) =>
+              for {
+                          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
+                          _              <- cc.sessionRepository.set(updatedAnswers)
+                          vatReturnResult <- vatReturnConnector.get(correctionPeriod)
+                        } yield {
+                vatReturnResult match {
+                  case Right(vatReturn) => {
+                    val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
+                    val countriesFromEU = vatReturn.salesFromEu.map(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption)).flatten
+                    val allRecipientCountries = (countriesFromNi ::: countriesFromEU).distinct
+
+                    Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, allRecipientCountries))
+                  }
+                  case Left(value) =>
+                    logger.error(s"there was an error $value")
+                    throw new Exception(value.toString)
+                }
+                }
+            case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
+          }
+
       )
   }
 }

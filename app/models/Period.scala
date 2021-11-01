@@ -19,6 +19,8 @@ package models
 import play.api.i18n.Messages
 import play.api.libs.json._
 import play.api.mvc.PathBindable
+import uk.gov.hmrc.govukfrontend.views.Aliases.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -72,5 +74,14 @@ object Period {
 
     override def unbind(key: String, value: Period): String =
       value.toString
+  }
+
+  def options(periods: Seq[Period])(implicit messages: Messages): Seq[RadioItem] = periods.zipWithIndex.map {
+    case (value, index) =>
+      RadioItem(
+        content = Text(value.displayText),
+        value   = Some(value.toString),
+        id      = Some(s"value_$index")
+      )
   }
 }

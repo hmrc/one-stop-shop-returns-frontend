@@ -16,11 +16,12 @@
 
 package forms.mappings
 
+import models.Quarter.{Q2, Q3, Q4}
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.data.{Form, FormError}
-import models.Enumerable
+import models.{Enumerable, Period}
 
 object MappingsSpec {
 
@@ -223,6 +224,38 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
     "must unbind a valid value" in {
       val result = testForm.fill(1)
       result.apply("value").value.value mustEqual "1"
+    }
+  }
+
+  "period" - {
+    val testForm: Form[Period] =
+      Form(
+        "value" -> period()
+      )
+
+    "must bind a valid period" in {
+      val result = testForm.bind(Map("value" -> "2021-Q3"))
+      result.get mustEqual Period(2021, Q3)
+    }
+
+    "must not bind an invalid period" in {
+      val result = testForm.bind(Map("value" -> "2021-Q5"))
+      result.errors must contain only FormError("value", "error.invalidPeriod")
+    }
+
+    "must not bind an empty value" in {
+      val result = testForm.bind(Map("value" -> ""))
+      result.errors must contain(FormError("value", "error.required"))
+    }
+
+    "must not bind an empty map" in {
+      val result = testForm.bind(Map.empty[String, String])
+      result.errors must contain(FormError("value", "error.required"))
+    }
+
+    "must unbind a valid value" in {
+      val result = testForm.fill(Period(2021, Q3))
+      result.apply("value").value.value mustEqual "2021-Q3"
     }
   }
 }

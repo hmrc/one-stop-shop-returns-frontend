@@ -16,9 +16,8 @@
 
 package forms.corrections
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
-import forms.behaviours.{DecimalFieldBehaviours, IntFieldBehaviours}
+import forms.behaviours.DecimalFieldBehaviours
 import org.scalacheck.Gen
-import pages.corrections.CorrectionCountryPage
 import play.api.data.FormError
 
 import scala.math.BigDecimal.RoundingMode

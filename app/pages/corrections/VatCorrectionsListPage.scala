@@ -16,18 +16,25 @@
 
 package pages.corrections
 
+import controllers.corrections.{routes => correctionRoutes}
 import controllers.routes
-import models.UserAnswers
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import models.{Index, Mode, UserAnswers}
+import pages.Page
 import play.api.mvc.Call
+import queries.corrections.DeriveNumberOfCorrections
 
-case object VatCorrectionsListPage extends QuestionPage[Boolean] {
+case class VatCorrectionsListPage(periodIndex: Index) extends Page {
 
-  override def path: JsPath = JsPath \ toString
+  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call = {
+    if(addAnother) {
+      answers.get(DeriveNumberOfCorrections(periodIndex)) match {
+        case Some(size) =>
+          correctionRoutes.CorrectionCountryController.onPageLoad(mode, answers.period, periodIndex, Index(size))
+        case None => routes.JourneyRecoveryController.onPageLoad()
+      }
+    } else {
+      correctionRoutes.VatPeriodCorrectionsListController.onPageLoad(mode, answers.period)
+    }
+  }
 
-  override def toString: String = "vatCorrectionsList"
-
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
 }

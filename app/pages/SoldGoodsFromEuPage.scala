@@ -16,12 +16,14 @@
 
 package pages
 
+import config.FrontendAppConfig
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers}
+import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.AllSalesFromEuQuery
 
+import javax.inject.Inject
 import scala.util.Try
 
 case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
@@ -30,10 +32,14 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
 
   override def toString: String = "soldGoodsFromEu"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
+  def navigate(mode: Mode, answers: UserAnswers, config: FrontendAppConfig): Call =
     answers.get(SoldGoodsFromEuPage) match {
-      case Some(true)  => routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(0))
-      case Some(false) => routes.CheckYourAnswersController.onPageLoad(answers.period)
+      case Some(true)  => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
+      case Some(false) => if(config.correctionToggle) {
+        controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
+      } else {
+        routes.CheckYourAnswersController.onPageLoad(answers.period)
+      }
       case None        => routes.JourneyRecoveryController.onPageLoad()
     }
 

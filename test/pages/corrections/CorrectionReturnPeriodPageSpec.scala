@@ -16,17 +16,35 @@
 
 package pages.corrections
 
-import models.CorrectionReturnPeriod
+import controllers.routes
+import models.{Index, NormalMode, Period}
 import pages.behaviours.PageBehaviours
 
-class CorrectionReturnPeriodSpec extends PageBehaviours {
+class CorrectionReturnPeriodPageSpec extends PageBehaviours {
 
   "CorrectionReturnPeriodPage" - {
 
-    beRetrievable[CorrectionReturnPeriod](CorrectionReturnPeriodPage)
+    beRetrievable[Period](CorrectionReturnPeriodPage(Index(0)))
 
-    beSettable[CorrectionReturnPeriod](CorrectionReturnPeriodPage)
+    beSettable[Period](CorrectionReturnPeriodPage(Index(0)))
 
-    beRemovable[CorrectionReturnPeriod](CorrectionReturnPeriodPage)
+    beRemovable[Period](CorrectionReturnPeriodPage(Index(0)))
+
+    "must navigate in Normal mode" - {
+
+      "to Which country would you like to correct page when answer is valid" in {
+
+        val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), period).success.value
+
+        CorrectionReturnPeriodPage(Index(0)).navigate(NormalMode, answers)
+          .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, Index(0), Index(0)))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        CorrectionReturnPeriodPage(Index(0)).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
   }
 }

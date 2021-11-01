@@ -28,6 +28,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CurrencyFormatter._
 import views.html.ReturnSubmittedView
 
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -35,7 +36,8 @@ class ReturnSubmittedController @Inject()(
                                            cc: AuthenticatedControllerComponents,
                                            view: ReturnSubmittedView,
                                            vatReturnConnector: VatReturnConnector,
-                                           vatReturnSalesService: VatReturnSalesService
+                                           vatReturnSalesService: VatReturnSalesService,
+                                           clock: Clock
                                          )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -53,6 +55,7 @@ class ReturnSubmittedController @Inject()(
           val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)
           val displayPayNow = vatOwed > 0
           val amountToPayInPence: Long = (vatOwed * 100).toLong
+          val overdueReturn = period.paymentDeadline.isBefore(LocalDate.now(clock))
 
           Ok(view(
             period,
@@ -61,7 +64,8 @@ class ReturnSubmittedController @Inject()(
             showEmailConfirmation.get,
             email,
             displayPayNow,
-            amountToPayInPence
+            amountToPayInPence,
+            overdueReturn
           ))
         case _ =>
           Redirect(routes.YourAccountController.onPageLoad())

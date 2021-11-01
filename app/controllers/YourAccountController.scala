@@ -46,7 +46,7 @@ class YourAccountController @Inject()(
 
       val results = for {
         availablePeriodsWithStatus <- returnStatusConnector.listStatuses(request.registration.commencementDate)
-        periodsWithOutstandingAmounts <- financialDataConnector.getPeriodsAndOutstandingAmounts(request.registration.commencementDate)
+        periodsWithOutstandingAmounts <- financialDataConnector.getPeriodsAndOutstandingAmounts()
       } yield (availablePeriodsWithStatus, periodsWithOutstandingAmounts)
 
       results.map {

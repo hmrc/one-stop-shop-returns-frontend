@@ -17,15 +17,15 @@
 package forms.corrections
 
 import forms.mappings.Mappings
-import models.CorrectionReturnPeriod
+import models.Period
 import play.api.data.Form
 
 import javax.inject.Inject
 
 class CorrectionReturnPeriodFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[CorrectionReturnPeriod] =
+  def apply(): Form[Period] =
     Form(
-      "value" -> enumerable[CorrectionReturnPeriod]("correctionReturnPeriod.error.required")
+      "value" -> period("correctionReturnPeriod.error.required")
     )
 }

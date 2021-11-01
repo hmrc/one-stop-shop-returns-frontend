@@ -16,28 +16,23 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, UserAnswers}
-import pages.corrections.VatCorrectionsListPage
+import controllers.corrections.routes
+import models.{CheckMode, Index, Mode, UserAnswers}
 import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import play.twirl.api.HtmlFormat
+import queries.corrections.AllCorrectionCountriesQuery
+import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object VatCorrectionsListSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatCorrectionsListPage).map {
-      answer =>
+  def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index)(implicit messages: Messages): List[ListItem] =
+    answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.map {
+      case (country, countryIndex) =>
 
-        val value = if (answer) "site.yes" else "site.no"
-
-        SummaryListRowViewModel(
-          key = "vatCorrectionsList.checkYourAnswersLabel",
-          value = ValueViewModel(value),
-          actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckMode, answers.period).url)
-              .withVisuallyHiddenText(messages("vatCorrectionsList.change.hidden"))
-          )
+        ListItem(
+          name = HtmlFormat.escape(country.correctionCountry.name).toString,
+          changeUrl = routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, Index(countryIndex)).url,
+          removeUrl = routes.RemoveCountryCorrectionController.onPageLoad(currentMode, answers.period).url
         )
     }
 }

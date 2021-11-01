@@ -18,6 +18,8 @@ package services
 
 import base.SpecBase
 import connectors.EmailConnector
+import models.Period
+import models.Quarter.Q2
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.emails.{EmailToSendRequest, ReturnsConfirmationEmailNoVatOwedParameters, ReturnsConfirmationEmailParameters}
 import org.mockito.ArgumentMatchers.{any, refEq}
@@ -28,13 +30,13 @@ import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class EmailServiceSpec extends SpecBase {
 
   private val connector = mock[EmailConnector]
-  private val emailService = new EmailService(connector)
   private val maxLengthBusiness = 160
   private val maxLengthContactName = 105
 
@@ -44,6 +46,10 @@ class EmailServiceSpec extends SpecBase {
   "EmailService.sendConfirmationEmail" - {
 
     "Call sendConfirmationEmail with oss_returns_email_confirmation with the correct parameters" in {
+      val instant = Instant.parse("2021-10-20T00:00:00.00Z")
+      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+      val emailService = new EmailService(connector, stubClock)
+
       forAll(
         validEmails,
         safeInputsWithMaxLength(maxLengthContactName),
@@ -76,7 +82,49 @@ class EmailServiceSpec extends SpecBase {
       }
     }
 
+    "Call sendConfirmationEmail with oss_overdue_returns_email_confirmation with the correct parameters" in {
+      val period = Period(2021, Q2)
+      val instant = Instant.parse("2021-11-01T00:00:00.00Z")
+      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+      val emailService = new EmailService(connector, stubClock)
+
+      forAll(
+        validEmails,
+        safeInputsWithMaxLength(maxLengthContactName),
+        safeInputsWithMaxLength(maxLengthBusiness)
+      ) {
+        (email: String, contactName: String, businessName: String) =>
+          val paymentDeadlineString = period.paymentDeadlineDisplay
+          val expectedEmailToSendRequest = EmailToSendRequest(
+            List(email),
+            "oss_overdue_returns_email_confirmation",
+            ReturnsConfirmationEmailParameters(
+              contactName,
+              businessName,
+              period.displayText,
+              paymentDeadlineString
+            )
+          )
+
+          when(connector.send(any())(any(), any())).thenReturn(Future.successful(EMAIL_ACCEPTED))
+
+          emailService.sendConfirmationEmail(
+            contactName,
+            businessName,
+            email,
+            BigDecimal(100),
+            period
+          ).futureValue mustBe EMAIL_ACCEPTED
+
+          verify(connector, times(1)).send(refEq(expectedEmailToSendRequest))(any(), any())
+      }
+    }
+
     "Call sendConfirmationEmail with oss_returns_email_confirmation_no_vat_owed with the correct parameters" in {
+      val instant = Instant.parse("2021-10-20T00:00:00.00Z")
+      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+      val emailService = new EmailService(connector, stubClock)
+
       forAll(
         validEmails,
         safeInputsWithMaxLength(maxLengthContactName),

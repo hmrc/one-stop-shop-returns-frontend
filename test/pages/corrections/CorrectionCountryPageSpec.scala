@@ -16,7 +16,9 @@
 
 package pages.corrections
 
-import models.Country
+import controllers.routes
+import models.{Country, Index, NormalMode}
+import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
 
@@ -24,10 +26,40 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
   "CorrectionCountryPage" - {
 
-    beRetrievable[Country](CorrectionCountryPage)
+    beRetrievable[Country](CorrectionCountryPage(index, index))
 
-    beSettable[Country](CorrectionCountryPage)
+    beSettable[Country](CorrectionCountryPage(index, index))
 
-    beRemovable[Country](CorrectionCountryPage)
+    beRemovable[Country](CorrectionCountryPage(index, index))
+
+    "must navigate in Normal mode" - {
+
+      "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
+
+        val country  = arbitrary[Country].sample.value
+        val countries = Seq(country)
+
+        val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
+        CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries)
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
+      }
+
+      "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
+
+        val country  = arbitrary[Country].sample.value
+
+        val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
+        CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq())
+          .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers, Seq())
+          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
   }
 }

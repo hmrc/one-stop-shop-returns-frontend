@@ -16,11 +16,14 @@
 
 package controllers.corrections
 
+import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectPreviousReturnFormProvider
-import models.{Mode, Period}
+import models.SubmissionStatus.Complete
+import models.{Index, Mode, NormalMode, Period}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.I18nSupport
+import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectPreviousReturnView
@@ -31,7 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class CorrectPreviousReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: CorrectPreviousReturnFormProvider,
-                                       view: CorrectPreviousReturnView
+                                       view: CorrectPreviousReturnView,
+                                       returnStatusConnector: ReturnStatusConnector
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
@@ -56,10 +60,19 @@ class CorrectPreviousReturnController @Inject()(
           Future.successful(BadRequest(view(formWithErrors, mode, period))),
 
         value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectPreviousReturnPage.navigate(mode, updatedAnswers))
-      )
+      for {
+        updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage, value))
+        _ <- cc.sessionRepository.set(updatedAnswers)
+        periods <- returnStatusConnector.listStatuses(request.registration.commencementDate)
+      } yield {
+        periods match {
+          case Right(periods) =>Redirect(CorrectPreviousReturnPage.navigate(mode, updatedAnswers, periods.size))
+          case Left(value) =>
+            logger.error(s"there was an error $value")
+            Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+        }
+
+      }
+    )
   }
 }

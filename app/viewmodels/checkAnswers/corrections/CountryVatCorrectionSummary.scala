@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Index, UserAnswers}
 import pages.corrections.CountryVatCorrectionPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,14 +26,14 @@ import viewmodels.implicits._
 object CountryVatCorrectionSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CountryVatCorrectionPage).map {
+    answers.get(CountryVatCorrectionPage(Index(0), Index(0))).map {
       answer =>
 
         SummaryListRowViewModel(
           key = "countryVatCorrection.checkYourAnswersLabel",
           value = ValueViewModel(answer.toString),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, Index(0), Index(0)).url)
               .withVisuallyHiddenText(messages("countryVatCorrection.change.hidden"))
           )
         )

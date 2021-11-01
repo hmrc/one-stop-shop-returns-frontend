@@ -17,10 +17,15 @@
 package controllers.corrections
 
 import base.SpecBase
+import connectors.ReturnStatusConnector
 import forms.corrections.CorrectPreviousReturnFormProvider
-import models.NormalMode
+import models.{NormalMode, Period, PeriodWithStatus}
+import models.Quarter.{Q3, Q4}
+import models.SubmissionStatus.Complete
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.inject.bind
@@ -31,10 +36,17 @@ import views.html.corrections.CorrectPreviousReturnView
 
 import scala.concurrent.Future
 
-class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
+class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private val formProvider = new CorrectPreviousReturnFormProvider()
   private val form = formProvider()
+
+  private val mockReturnStatusConnector = mock[ReturnStatusConnector]
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    Mockito.reset(mockReturnStatusConnector)
+  }
 
   private lazy val correctPreviousReturnRoute = controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, period).url
 
@@ -83,7 +95,16 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
           .build()
+
+      val periods = Seq(
+                              PeriodWithStatus(Period(2021, Q3), Complete),
+                              PeriodWithStatus(Period(2021, Q4), Complete)
+                            )
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(periods)))
 
       running(application) {
         val request =
@@ -94,7 +115,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectPreviousReturnPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual CorrectPreviousReturnPage.navigate(NormalMode, expectedAnswers, periods.size).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
