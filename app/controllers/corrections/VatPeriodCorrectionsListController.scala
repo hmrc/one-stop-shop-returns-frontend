@@ -16,18 +16,19 @@
 
 package controllers.corrections
 
-import controllers.routes.IndexController
 import controllers.actions._
+import controllers.routes.IndexController
 import forms.corrections.VatPeriodCorrectionsListFormProvider
-import models.Quarter._
-import models.{Mode, NormalMode, Period}
+import models.{Mode, Period}
+import pages.PageConstants.{correctionPeriod, corrections}
 import play.api.i18n.I18nSupport
+import play.api.libs.json.JsObject
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.VatPeriodCorrectionsListView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class VatPeriodCorrectionsListController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -40,16 +41,10 @@ class VatPeriodCorrectionsListController @Inject()(
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
 
-      // TODO: Get list of corrections / periods
+      val correctionPeriods: List[Period] = (request.userAnswers.data \ corrections).asOpt[List[JsObject]]
+        .map(json => json.flatMap(o => (o \ correctionPeriod).asOpt[Period])).getOrElse(List())
 
-      val periodList = Seq(
-        Period(2021, Q1),
-        Period(2021, Q2),
-        Period(2021, Q3),
-        Period(2021, Q4)
-      )
-
-      Ok(view(mode, period, periodList))
+      Ok(view(mode, period, correctionPeriods))
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {

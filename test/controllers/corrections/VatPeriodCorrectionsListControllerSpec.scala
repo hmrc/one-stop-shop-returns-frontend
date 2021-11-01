@@ -17,11 +17,13 @@
 package controllers.corrections
 
 import base.SpecBase
-import models.{NormalMode, Period}
+import models.{Index, NormalMode, Period}
 import models.Quarter.{Q1, Q2, Q3, Q4}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import pages.corrections.CorrectionReturnPeriodPage
+import play.api.libs.json.{JsArray, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.corrections.VatPeriodCorrectionsListView
@@ -34,7 +36,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
     "must return OK and the correct view for a GET when there are no corrections" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers)).build()
 
       running(application) {
         implicit val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
@@ -43,14 +45,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
         val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
 
-        // TODO: Replace when correction retrieval implemented
-
-        val periodCorrectionsList = Seq(
-          Period(2021, Q1),
-          Period(2021, Q2),
-          Period(2021, Q3),
-          Period(2021, Q4)
-        )
+        val periodCorrectionsList = Seq()
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(NormalMode, period, periodCorrectionsList)(request, messages(application)).toString
@@ -59,20 +54,27 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
     "must return OK and the correct view for a GET when there is one correction" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val noCorrections = Json.obj(
+        "corrections" -> Json.arr(
+          Seq(
+            Json.obj(
+              "correctionReturnPeriod" -> Json.toJson(Period(2021, Q1))
+            )
+          )
+        )
+      )
+
+      val newUa = completeUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), Period(2021, Q1))
+
+      val application = applicationBuilder(userAnswers = newUa.toOption).build()
 
       running(application) {
         val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
 
         val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
 
-        // TODO: Replace when correction retrieval implemented
-
         val periodCorrectionsList = Seq(
-          Period(2021, Q1),
-          Period(2021, Q2),
-          Period(2021, Q3),
-          Period(2021, Q4)
+          Period(2021, Q1)
         )
 
         val result = route(application, request).value
@@ -84,20 +86,32 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
     "must return OK and the correct view for a GET when there is more than one correction" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val noCorrections = Json.obj(
+        "corrections" -> Json.arr(
+          Seq(
+            Json.obj(
+              "correctionReturnPeriod" -> Json.toJson(Period(2021, Q1))
+            ),
+            Json.obj(
+              "correctionReturnPeriod" -> Json.toJson(Period(2021, Q2))
+            )
+          )
+        )
+      )
+
+      val newUa = completeUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), Period(2021, Q1))
+        .flatMap(ua => ua.set(CorrectionReturnPeriodPage(Index(1)), Period(2021, Q2)))
+
+      val application = applicationBuilder(userAnswers = newUa.toOption).build()
 
       running(application) {
         val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
 
         val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
 
-        // TODO: Replace when correction retrieval implemented
-
         val periodCorrectionsList = Seq(
           Period(2021, Q1),
-          Period(2021, Q2),
-          Period(2021, Q3),
-          Period(2021, Q4)
+          Period(2021, Q2)
         )
 
         val result = route(application, request).value
