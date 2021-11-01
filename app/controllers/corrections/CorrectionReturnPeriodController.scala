@@ -56,7 +56,7 @@ class CorrectionReturnPeriodController @Inject()(
                 case None => form
                 case Some(value) => form.fill(value)
               }
-              Ok(view(preparedForm, mode, period, periods))
+              Ok(view(preparedForm, mode, period, periods, index))
             }
           case Left(value) =>
             logger.error(s"there was an error $value")
@@ -79,7 +79,7 @@ class CorrectionReturnPeriodController @Inject()(
                 )
               } else {
                 BadRequest(view(
-                  formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+                  formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period), index
                 ))
               }
             case Left(value) =>

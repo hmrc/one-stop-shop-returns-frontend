@@ -62,14 +62,14 @@ class CorrectPreviousReturnController @Inject()(
         value =>
       for {
         updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage, value))
-        periods <- returnStatusConnector.listStatuses(request.registration.commencementDate)
         _ <- cc.sessionRepository.set(updatedAnswers)
+        periods <- returnStatusConnector.listStatuses(request.registration.commencementDate)
       } yield {
         periods match {
           case Right(periods) =>Redirect(CorrectPreviousReturnPage.navigate(mode, updatedAnswers, periods.size))
           case Left(value) =>
             logger.error(s"there was an error $value")
-            throw new Exception(value.toString)
+            Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
         }
 
       }

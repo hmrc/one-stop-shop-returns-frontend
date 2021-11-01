@@ -34,25 +34,14 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
     "must navigate in Normal mode" - {
 
-      "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return for NI" in {
+      "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
 
         val country  = arbitrary[Country].sample.value
         val countries = Seq(country)
 
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-        CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries, Seq.empty)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
-      }
-
-      "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return for EU" in {
-
-        val country  = arbitrary[Country].sample.value
-        val countries = Seq(country)
-
-        val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
-
-        CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq.empty, countries)
+        CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries)
           .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
@@ -62,13 +51,13 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-        CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq(), Seq())
+        CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq())
           .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
       "to Journey recovery page when answer is invalid" in {
 
-        CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers, Seq(), Seq())
+        CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers, Seq())
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }
