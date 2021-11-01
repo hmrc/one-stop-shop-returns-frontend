@@ -32,8 +32,8 @@ trait PageGenerators {
   implicit lazy val arbitraryVatCorrectionsListPage: Arbitrary[VatCorrectionsListPage.type] =
     Arbitrary(VatCorrectionsListPage)
 
-  implicit lazy val arbitraryUndeclaredCountryCorrectionPage: Arbitrary[UndeclaredCountryCorrectionPage.type] =
-    Arbitrary(UndeclaredCountryCorrectionPage)
+  implicit lazy val arbitraryUndeclaredCountryCorrectionPage: Arbitrary[UndeclaredCountryCorrectionPage] =
+    Arbitrary(UndeclaredCountryCorrectionPage(Index(0), Index(0)))
 
   implicit lazy val arbitraryRemovePeriodCorrectionPage: Arbitrary[RemovePeriodCorrectionPage.type] =
     Arbitrary(RemovePeriodCorrectionPage)
@@ -41,14 +41,14 @@ trait PageGenerators {
   implicit lazy val arbitraryRemoveCountryCorrectionPage: Arbitrary[RemoveCountryCorrectionPage.type] =
     Arbitrary(RemoveCountryCorrectionPage)
 
-  implicit lazy val arbitraryCountryVatCorrectionPage: Arbitrary[CountryVatCorrectionPage.type] =
-    Arbitrary(CountryVatCorrectionPage)
+  implicit lazy val arbitraryCountryVatCorrectionPage: Arbitrary[CountryVatCorrectionPage] =
+    Arbitrary(CountryVatCorrectionPage(Index(0), Index(0)))
 
   implicit lazy val arbitraryCorrectionReturnPeriodPage: Arbitrary[CorrectionReturnPeriodPage.type] =
     Arbitrary(CorrectionReturnPeriodPage)
 
-  implicit lazy val arbitraryCorrectionCountryPage: Arbitrary[CorrectionCountryPage.type] =
-    Arbitrary(CorrectionCountryPage)
+  implicit lazy val arbitraryCorrectionCountryPage: Arbitrary[CorrectionCountryPage] =
+    Arbitrary(CorrectionCountryPage(Index(0), Index(0)))
 
   implicit lazy val arbitraryCorrectPreviousReturnPage: Arbitrary[CorrectPreviousReturnPage.type] =
     Arbitrary(CorrectPreviousReturnPage)

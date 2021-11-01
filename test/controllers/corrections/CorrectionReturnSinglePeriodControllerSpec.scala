@@ -21,13 +21,13 @@ import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.Quarter.Q4
 import models.SubmissionStatus.Complete
-import models.{NormalMode, Period, PeriodWithStatus}
+import models.{Index, NormalMode, Period, PeriodWithStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.CorrectionReturnSinglePeriodPage
+import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -95,7 +95,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period).url
+          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0)).url
         )
       }
     }
@@ -150,10 +150,15 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
       val mockSessionRepository = mock[SessionRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(returnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          PeriodWithStatus(period, Complete)
+        ))))
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
           .build()
 
       running(application) {
@@ -162,7 +167,9 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, true).success.value
+        val expectedAnswers = emptyUserAnswers
+          .set(CorrectionReturnSinglePeriodPage, true).success.value
+          .set(CorrectionReturnPeriodPage(Index(0)), period).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
@@ -221,7 +228,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period).url
+          controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0)).url
         )
       }
     }

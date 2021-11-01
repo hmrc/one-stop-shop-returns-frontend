@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import forms.SalesFromEuListFormProvider
 import models.{Country, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
@@ -64,6 +65,7 @@ class SalesFromEuListControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to the next page when valid data is submitted" in {
 
       val application = applicationBuilder(Some(baseAnswers)).build()
+      val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
       running(application) {
         val request   = FakeRequest(POST, salesFromEuListRoute).withFormUrlEncodedBody("value" -> "true")
@@ -71,7 +73,7 @@ class SalesFromEuListControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual SalesFromEuListPage.navigate(baseAnswers, NormalMode, addAnother = true).url
+        redirectLocation(result).value mustEqual SalesFromEuListPage.navigate(baseAnswers, NormalMode, addAnother = true, mockAppConfig).url
       }
     }
 

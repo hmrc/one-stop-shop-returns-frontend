@@ -17,11 +17,22 @@
 package pages
 
 import base.SpecBase
+import config.FrontendAppConfig
 import controllers.routes
 import models.{CheckMode, Index, NormalMode}
+import org.mockito.Mockito
+import org.mockito.Mockito.when
+import org.scalatest.BeforeAndAfterEach
 import pages.behaviours.PageBehaviours
+import org.scalatestplus.mockito.MockitoSugar
 
-class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase {
+class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoSugar with BeforeAndAfterEach {
+
+  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockAppConfig)
+  }
 
   "SoldGoodsFromEuPage" - {
 
@@ -37,17 +48,30 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase {
 
         val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, true).success.value
 
-        SoldGoodsFromEuPage.navigate(NormalMode, answers)
+        SoldGoodsFromEuPage.navigate(NormalMode, answers, mockAppConfig)
           .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(0)))
       }
 
-      "to Check your answers when the answer is no" in {
+      "to Check your answers when the answer is no and the Corrections feature toggle is false" in {
+
+        when(mockAppConfig.correctionToggle).thenReturn(false)
 
         val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
 
-        SoldGoodsFromEuPage.navigate(NormalMode, answers)
+        SoldGoodsFromEuPage.navigate(NormalMode, answers, mockAppConfig)
           .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
       }
+
+      "to Do you want to correct a previous return page when the answer is no and the Corrections feature toggle is true" in {
+
+        when(mockAppConfig.correctionToggle).thenReturn(true)
+
+        val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
+
+        SoldGoodsFromEuPage.navigate(NormalMode, answers, mockAppConfig)
+          .mustEqual(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, answers.period))
+      }
+
     }
 
     "must navigate in Check mode" - {

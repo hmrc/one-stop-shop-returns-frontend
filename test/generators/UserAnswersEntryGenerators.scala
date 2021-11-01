@@ -49,10 +49,10 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
       } yield (page, value)
     }
 
-  implicit lazy val arbitraryUndeclaredCountryCorrectionUserAnswersEntry: Arbitrary[(UndeclaredCountryCorrectionPage.type, JsValue)] =
+  implicit lazy val arbitraryUndeclaredCountryCorrectionUserAnswersEntry: Arbitrary[(UndeclaredCountryCorrectionPage, JsValue)] =
     Arbitrary {
       for {
-        page  <- arbitrary[UndeclaredCountryCorrectionPage.type]
+        page  <- arbitrary[UndeclaredCountryCorrectionPage]
         value <- arbitrary[Boolean].map(Json.toJson(_))
       } yield (page, value)
     }
@@ -73,18 +73,18 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
       } yield (page, value)
     }
 
-  implicit lazy val arbitraryCountryVatCorrectionUserAnswersEntry: Arbitrary[(CountryVatCorrectionPage.type, JsValue)] =
+  implicit lazy val arbitraryCountryVatCorrectionUserAnswersEntry: Arbitrary[(CountryVatCorrectionPage, JsValue)] =
     Arbitrary {
       for {
-        page  <- arbitrary[CountryVatCorrectionPage.type]
+        page  <- arbitrary[CountryVatCorrectionPage]
         value <- arbitrary[Int].map(Json.toJson(_))
       } yield (page, value)
     }
 
-  implicit lazy val arbitraryCorrectionCountryUserAnswersEntry: Arbitrary[(CorrectionCountryPage.type, JsValue)] =
+  implicit lazy val arbitraryCorrectionCountryUserAnswersEntry: Arbitrary[(CorrectionCountryPage, JsValue)] =
     Arbitrary {
       for {
-        page  <- arbitrary[CorrectionCountryPage.type]
+        page  <- arbitrary[CorrectionCountryPage]
         value <- arbitrary[String].suchThat(_.nonEmpty).map(Json.toJson(_))
       } yield (page, value)
     }

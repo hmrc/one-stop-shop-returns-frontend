@@ -25,11 +25,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, country: Country, correctionPeriod: Period, periodIndex: Index, countryIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("undeclaredCountryCorrection.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(mode, period), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(mode, period, periodIndex, countryIndex), 'autoComplete -> "off") {
 
 
         @if(form.errors.nonEmpty) {
@@ -38,7 +38,7 @@
 
         <header class="hmrc-page-heading">
             <h1 class="govuk-heading-xl">@messages("undeclaredCountryCorrection.heading", country.name)</h1>
-            <p class="govuk-caption-xl hmrc-caption-xl">@messages("undeclaredCountryCorrection.caption", period.displayText)</p>
+            <p class="govuk-caption-xl hmrc-caption-xl">@messages("undeclaredCountryCorrection.caption", correctionPeriod.displayText)</p>
         </header>
 
         @govukRadios(

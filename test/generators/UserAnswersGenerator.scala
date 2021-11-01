@@ -32,11 +32,11 @@ trait UserAnswersGenerator extends TryValues {
     arbitrary[(CorrectionReturnSinglePeriodPage.type, JsValue)] ::
     arbitrary[(VatPeriodCorrectionsListPage.type, JsValue)] ::
     arbitrary[(VatCorrectionsListPage.type, JsValue)] ::
-    arbitrary[(UndeclaredCountryCorrectionPage.type, JsValue)] ::
+    arbitrary[(UndeclaredCountryCorrectionPage, JsValue)] ::
     arbitrary[(RemovePeriodCorrectionPage.type, JsValue)] ::
     arbitrary[(RemoveCountryCorrectionPage.type, JsValue)] ::
-    arbitrary[(CountryVatCorrectionPage.type, JsValue)] ::
-    arbitrary[(CorrectionCountryPage.type, JsValue)] ::
+    arbitrary[(CountryVatCorrectionPage, JsValue)] ::
+    arbitrary[(CorrectionCountryPage, JsValue)] ::
     arbitrary[(CorrectPreviousReturnPage.type, JsValue)] ::
     arbitrary[(VatRatesFromEuPage, JsValue)] ::
     arbitrary[(SoldGoodsFromEuPage.type, JsValue)] ::

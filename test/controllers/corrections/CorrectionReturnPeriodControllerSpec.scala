@@ -21,7 +21,7 @@ import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.Quarter._
 import models.SubmissionStatus.Complete
-import models.{NormalMode, Period, PeriodWithStatus}
+import models.{Index, NormalMode, Period, PeriodWithStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
@@ -39,7 +39,7 @@ import scala.concurrent.Future
 
 class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private lazy val correctionReturnPeriodRoute = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period).url
+  private lazy val correctionReturnPeriodRoute = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0)).url
 
   private val formProvider = new CorrectionReturnPeriodFormProvider()
   private val form = formProvider()
@@ -75,7 +75,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
+          form, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)), index)(request, messages(application)
         ).toString
       }
     }
@@ -104,7 +104,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage, Period(2021, Q3)).success.value
+      val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), Period(2021, Q3)).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
@@ -126,7 +126,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form.fill(Period(2021, Q3)), NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
+          form.fill(Period(2021, Q3)), NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)), index)(request, messages(application)
         ).toString
       }
     }
@@ -149,10 +149,10 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
             .withFormUrlEncodedBody(("value", Period(2021, Q3).toString))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage, Period(2021, Q3)).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), Period(2021, Q3)).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionReturnPeriodPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual CorrectionReturnPeriodPage(Index(0)).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -183,7 +183,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(
-          boundForm, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
+          boundForm, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)), index)(request, messages(application)
         ).toString
       }
     }

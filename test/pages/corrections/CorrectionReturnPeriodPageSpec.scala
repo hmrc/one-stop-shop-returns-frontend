@@ -20,37 +20,29 @@ import controllers.routes
 import models.{Index, NormalMode, Period}
 import pages.behaviours.PageBehaviours
 
-class CorrectionReturnSinglePeriodPageSpec extends PageBehaviours {
+class CorrectionReturnPeriodPageSpec extends PageBehaviours {
 
-  "CorrectionReturnSinglePeriodPage" - {
+  "CorrectionReturnPeriodPage" - {
 
-    beRetrievable[Boolean](CorrectionReturnSinglePeriodPage)
+    beRetrievable[Period](CorrectionReturnPeriodPage(Index(0)))
 
-    beSettable[Boolean](CorrectionReturnSinglePeriodPage)
+    beSettable[Period](CorrectionReturnPeriodPage(Index(0)))
 
-    beRemovable[Boolean](CorrectionReturnSinglePeriodPage)
+    beRemovable[Period](CorrectionReturnPeriodPage(Index(0)))
 
     "must navigate in Normal mode" - {
 
-      "to Which country would you like to correct page when answer is true" in {
+      "to Which country would you like to correct page when answer is valid" in {
 
-        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, true).success.value
+        val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), period).success.value
 
-        CorrectionReturnSinglePeriodPage.navigate(NormalMode, answers)
+        CorrectionReturnPeriodPage(Index(0)).navigate(NormalMode, answers)
           .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, Index(0), Index(0)))
-      }
-
-      "to Which country would you like to correct page when answer is false" in {
-
-        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, false).success.value
-
-        CorrectionReturnSinglePeriodPage.navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(answers.period))
       }
 
       "to Journey recovery page when answer is invalid" in {
 
-        CorrectionReturnSinglePeriodPage.navigate(NormalMode, emptyUserAnswers)
+        CorrectionReturnPeriodPage(Index(0)).navigate(NormalMode, emptyUserAnswers)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }

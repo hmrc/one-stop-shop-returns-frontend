@@ -27,14 +27,14 @@ import viewmodels.implicits._
 object CorrectionCountrySummary {
 
   def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CorrectionCountryPage).map {
+    answers.get(CorrectionCountryPage(Index(0), Index(0))).map {
       answer =>
 
         SummaryListRowViewModel(
           key = "correctionCountry.checkYourAnswersLabel",
           value = ValueViewModel(answer.toString),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, index).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, index, Index(0)).url)
               .withVisuallyHiddenText(messages("correctionCountry.change.hidden"))
           )
         )

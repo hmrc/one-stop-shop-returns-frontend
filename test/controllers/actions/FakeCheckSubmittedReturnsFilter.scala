@@ -16,15 +16,16 @@
 
 package controllers.actions
 
-import config.FrontendAppConfig
-import models.requests.DataRequest
+import connectors.{ReturnStatusConnector, VatReturnConnector}
+import models.Period
+import models.requests.{DataRequest, OptionalDataRequest}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeCheckCorrectionsToggleFilter() extends CheckCorrectionsToggleFilterImpl(
-  mock[FrontendAppConfig]
+class FakeCheckSubmittedReturnsFilter() extends CheckSubmittedReturnsFilterImpl(
+  mock[ReturnStatusConnector]
 )(ExecutionContext.Implicits.global) {
 
   override protected def filter[A](request: DataRequest[A]): Future[Option[Result]] = {
@@ -33,9 +34,9 @@ class FakeCheckCorrectionsToggleFilter() extends CheckCorrectionsToggleFilterImp
 
 }
 
-class FakeCheckCorrectionsToggleFilterProvider()
-  extends CheckCorrectionsToggleFilterProvider(mock[FrontendAppConfig])(ExecutionContext.Implicits.global) {
+class FakeCheckSubmittedReturnsFilterProvider()
+  extends CheckSubmittedReturnsFilterProvider(mock[ReturnStatusConnector])(ExecutionContext.Implicits.global) {
 
-  override def apply(): CheckCorrectionsToggleFilterImpl = new FakeCheckCorrectionsToggleFilter()
+  override def apply(): CheckSubmittedReturnsFilterImpl = new FakeCheckSubmittedReturnsFilter()
 
 }

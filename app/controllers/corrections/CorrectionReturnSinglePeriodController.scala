@@ -20,8 +20,8 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.SubmissionStatus.Complete
-import models.{Mode, NormalMode, Period}
-import pages.corrections.CorrectionReturnSinglePeriodPage
+import models.{Index, Mode, NormalMode, Period}
+import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -58,7 +58,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
               Ok(view(preparedForm, mode, period, periods.head.displayText))
             case _ => Redirect(
-              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period)
+              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0))
             )
           }
         case Left(value) =>
@@ -70,31 +70,35 @@ class CorrectionReturnSinglePeriodController @Inject()(
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
-      form.bindFromRequest().fold(
-        formWithErrors => {
-          returnStatusConnector.listStatuses(request.registration.commencementDate).map {
-            case Right(returnStatuses) =>
-              val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+      returnStatusConnector.listStatuses(request.registration.commencementDate).flatMap {
+        case Right(returnStatuses) =>
+          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-              periods.size match {
-                case 0 => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-                case 1 => BadRequest(view(formWithErrors, mode, period, periods.head.displayText))
-                case _ => Redirect(
-                  controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period)
-                )
-              }
+          periods.size match {
+            case 0 => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+            case 1 => {
+              form.bindFromRequest().fold(
+                formWithErrors => {
+                  Future.successful(BadRequest(view(formWithErrors, mode, period, periods.head.displayText)))
+                },
 
-            case Left(value) =>
-              logger.error(s"there was an error $value")
-              throw new Exception(value.toString)
+                value =>
+                  for {
+                    updatedAnswers1 <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage, value))
+                    updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(CorrectionReturnPeriodPage(Index(0)), periods.head))
+                    _              <- cc.sessionRepository.set(updatedAnswers2)
+                  } yield Redirect(CorrectionReturnSinglePeriodPage.navigate(mode, updatedAnswers2))
+              )
+
+            }
+            case _ => Future.successful(Redirect(
+              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0))
+            ))
           }
-        },
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectionReturnSinglePeriodPage.navigate(mode, updatedAnswers))
-      )
+        case Left(value) =>
+          logger.error(s"there was an error $value")
+          throw new Exception(value.toString)
+      }
   }
 }
