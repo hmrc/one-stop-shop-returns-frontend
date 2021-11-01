@@ -26,8 +26,8 @@ import viewmodels.implicits._
 
 object CorrectionCountrySummary {
 
-  def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CorrectionCountryPage(Index(0), Index(0))).map {
+  def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(CorrectionCountryPage(periodIndex, countryIndex)).map {
       answer =>
 
         SummaryListRowViewModel(

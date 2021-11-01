@@ -17,17 +17,17 @@
 package pages.corrections
 
 import controllers.routes
-import models.UserAnswers
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import models.{Index, Mode, UserAnswers}
+import pages.Page
 import play.api.mvc.Call
 
-case object VatCorrectionsListPage extends QuestionPage[Boolean] {
+case class VatCorrectionsListPage(periodIndex: Index) extends Page {
 
-  override def path: JsPath = JsPath \ toString
+  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call =
+    if(addAnother) {
+      routes.IndexController.onPageLoad()
+    } else {
+      routes.IndexController.onPageLoad()
+    }
 
-  override def toString: String = "vatCorrectionsList"
-
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
 }

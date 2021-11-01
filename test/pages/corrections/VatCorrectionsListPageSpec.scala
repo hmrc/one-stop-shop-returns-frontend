@@ -16,16 +16,66 @@
 
 package pages.corrections
 
+import controllers.routes
+import models.{CheckMode, Index, NormalMode}
+import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
 class VatCorrectionsListPageSpec extends PageBehaviours {
 
   "VatCorrectionsListPage" - {
+    "must navigate in Normal mode" - {
 
-    beRetrievable[Boolean](VatCorrectionsListPage)
+      "when the answer is yes" - {
 
-    beSettable[Boolean](VatCorrectionsListPage)
+        "to Country of Sale with an index equal to the number of countries we have details for" in {
 
-    beRemovable[Boolean](VatCorrectionsListPage)
+          val country = arbitrary[Country].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
+
+          SalesFromEuListPage.navigate(answers, NormalMode, addAnother = true)
+            .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(1)))
+        }
+      }
+
+      "when the answer is no" - {
+
+        "to Check your answers" in {
+
+          SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false)
+            .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+        }
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "when the answer is yes" - {
+
+        "to Country of Sale with an index equal to the number of countries we have details for" in {
+
+          val country = arbitrary[Country].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
+
+          SalesFromEuListPage.navigate(answers, CheckMode, addAnother = true)
+            .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(1)))
+        }
+      }
+
+      "when the answer is no" - {
+
+        "to Check your answers" in {
+
+          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false)
+            .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+        }
+      }
+    }
   }
 }

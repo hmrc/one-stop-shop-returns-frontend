@@ -18,48 +18,52 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.VatCorrectionsListFormProvider
-import models.{Mode, Period}
+import models.{Country, Index, Mode, Period}
 import pages.corrections.VatCorrectionsListPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import viewmodels.checkAnswers.corrections.VatCorrectionsListSummary
 import views.html.corrections.VatCorrectionsListView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class VatCorrectionsListController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       formProvider: VatCorrectionsListFormProvider,
-                                       view: VatCorrectionsListView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                              cc: AuthenticatedControllerComponents,
+                                              formProvider: VatCorrectionsListFormProvider,
+                                              view: VatCorrectionsListView
+                                            )(implicit ec: ExecutionContext) extends FrontendBaseController with VatCorrectionsBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
+  private val form = formProvider()
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
+      getNumberOfCorrections(periodIndex) { number =>
 
-      val preparedForm = request.userAnswers.get(VatCorrectionsListPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
+        val canAddCountries = number < Country.euCountries.size
+        val list = VatCorrectionsListSummary.addToListRows(request.userAnswers, mode, periodIndex)
+
+        Ok(view(form, mode, list, period, periodIndex, canAddCountries))
       }
 
-      Ok(view(preparedForm, mode, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
+      getNumberOfCorrections(periodIndex) { number =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+        val canAddCountries = number < Country.euCountries.size
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(VatCorrectionsListPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(VatCorrectionsListPage.navigate(mode, updatedAnswers))
-      )
+        form.bindFromRequest().fold(
+          formWithErrors => {
+            val list = VatCorrectionsListSummary.addToListRows(request.userAnswers, mode, periodIndex)
+            BadRequest(view(formWithErrors, mode, list, period, periodIndex, canAddCountries))
+          },
+          value =>
+            Redirect(VatCorrectionsListPage(periodIndex).navigate(request.userAnswers, mode, value))
+        )
+      }
   }
 }
