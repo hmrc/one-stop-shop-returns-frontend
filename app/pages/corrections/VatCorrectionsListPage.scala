@@ -16,18 +16,24 @@
 
 package pages.corrections
 
+import controllers.corrections.{routes => correctionRoutes}
 import controllers.routes
 import models.{Index, Mode, UserAnswers}
 import pages.Page
 import play.api.mvc.Call
+import queries.corrections.DeriveNumberOfCorrections
 
 case class VatCorrectionsListPage(periodIndex: Index) extends Page {
 
   def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call =
     if(addAnother) {
-      routes.IndexController.onPageLoad()
+      answers.get(DeriveNumberOfCorrections(periodIndex)) match {
+        case Some(size) =>
+          correctionRoutes.CorrectionCountryController.onPageLoad(mode, answers.period, periodIndex, Index(size))
+        case None => routes.JourneyRecoveryController.onPageLoad()
+      }
     } else {
-      routes.IndexController.onPageLoad()
+      correctionRoutes.VatPeriodCorrectionsListController.onPageLoad(mode, answers.period)
     }
 
 }

@@ -16,7 +16,7 @@
 
 package pages.corrections
 
-import controllers.routes
+import controllers.corrections.routes
 import models.{CheckMode, Country, Index, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
@@ -37,16 +37,16 @@ class VatCorrectionsListPageSpec extends PageBehaviours {
               .set(CorrectionCountryPage(index, Index(0)), country).success.value
 
           VatCorrectionsListPage(index).navigate(answers, NormalMode, addAnother = true)
-            .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(1)))
+            .mustEqual(routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, index, Index(1)))
         }
       }
 
       "when the answer is no" - {
 
-        "to Check your answers" in {
+        "to Vat period corrections list page" in {
 
           VatCorrectionsListPage(index).navigate(emptyUserAnswers, NormalMode, addAnother = false)
-            .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+            .mustEqual(routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, emptyUserAnswers.period))
         }
       }
     }
@@ -64,16 +64,16 @@ class VatCorrectionsListPageSpec extends PageBehaviours {
               .set(CorrectionCountryPage(index, Index(0)), country).success.value
 
           VatCorrectionsListPage(index).navigate(answers, CheckMode, addAnother = true)
-            .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(1)))
+            .mustEqual(routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, index, Index(1)))
         }
       }
 
       "when the answer is no" - {
 
-        "to Check your answers" in {
+        "to Vat period corrections list page" in {
 
           VatCorrectionsListPage(index).navigate(emptyUserAnswers, CheckMode, addAnother = false)
-            .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+            .mustEqual(routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, emptyUserAnswers.period))
         }
       }
     }
