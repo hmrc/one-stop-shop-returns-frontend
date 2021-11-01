@@ -17,6 +17,7 @@
 package controllers
 
 import connectors.ReturnStatusConnector
+import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.SubmissionStatus
@@ -25,13 +26,16 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
+import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        returnStatusConnector: ReturnStatusConnector,
-                                       view: IndexView
+                                       financialDataConnector: FinancialDataConnector,
+                                       view: IndexView,
+                                       clock: Clock
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -40,8 +44,15 @@ class YourAccountController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
-      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
-        case Right(availablePeriodsWithStatus) =>
+      val results = for {
+        availablePeriodsWithStatus <- returnStatusConnector.listStatuses(request.registration.commencementDate)
+        periodsWithOutstandingAmounts <- financialDataConnector.getPeriodsAndOutstandingAmounts()
+      } yield (availablePeriodsWithStatus, periodsWithOutstandingAmounts)
+
+      results.map {
+        case (Right(availablePeriodsWithStatus), Right(periodsWithOutstandingAmounts)) =>
+          val duePeriodsWithOutstandingAmounts = periodsWithOutstandingAmounts.filterNot(_.isOverdue(clock))
+          val overduePeriodsWithOutstandingAmounts = periodsWithOutstandingAmounts.filter(_.isOverdue(clock))
           Ok(view(
             request.registration.registeredCompanyName,
             request.vrn.vrn,
@@ -50,11 +61,35 @@ class YourAccountController @Inject()(
               .map(_.period),
             availablePeriodsWithStatus
               .find(_.status == SubmissionStatus.Due)
-              .map(_.period)
+              .map(_.period),
+            duePeriodsWithOutstandingAmounts,
+            overduePeriodsWithOutstandingAmounts,
+            paymentError = false
           ))
-        case Left(value) =>
-          logger.error(s"there was an error $value")
-          throw new Exception(value.toString)
+        case (Right(availablePeriodsWithStatus), Left(error)) =>
+          logger.warn(s"There was an error with getting payment information $error")
+          Ok(view(
+            request.registration.registeredCompanyName,
+            request.vrn.vrn,
+            availablePeriodsWithStatus
+              .filter(_.status == SubmissionStatus.Overdue)
+              .map(_.period),
+            availablePeriodsWithStatus
+              .find(_.status == SubmissionStatus.Due)
+              .map(_.period),
+            Seq.empty,
+            Seq.empty,
+            paymentError = true
+          ))
+        case (Left(error), Left(error2)) =>
+          logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
+          throw new Exception(error.toString)
+        case (Left(error), _) =>
+          logger.error(s"there was an error during period with status $error")
+          throw new Exception(error.toString)
+        case (_, Left(error)) =>
+          logger.error(s"there was an error getting periods with outstanding amounts $error")
+          throw new Exception(error.toString)
       }
 
   }

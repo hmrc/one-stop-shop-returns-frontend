@@ -32,7 +32,7 @@
 
 @media screen and (min-width: 900px) {
     .tile {
-        flex-basis: 45%;
+        flex-basis: 31%;
     }
     .tile:nth-child(3n-1) {
         margin-left: 3%;
@@ -41,7 +41,7 @@
 }
 
 html[data-useragent*='MSIE 10.0'] .flex-container .tile {
-    flex-basis: 45%;
+    flex-basis: 31%;
     margin: 3%;
 }
 
