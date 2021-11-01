@@ -25,7 +25,7 @@ import queries.corrections.DeriveNumberOfCorrections
 
 case class VatCorrectionsListPage(periodIndex: Index) extends Page {
 
-  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call =
+  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call = {
     if(addAnother) {
       answers.get(DeriveNumberOfCorrections(periodIndex)) match {
         case Some(size) =>
@@ -35,5 +35,6 @@ case class VatCorrectionsListPage(periodIndex: Index) extends Page {
     } else {
       correctionRoutes.VatPeriodCorrectionsListController.onPageLoad(mode, answers.period)
     }
+  }
 
 }

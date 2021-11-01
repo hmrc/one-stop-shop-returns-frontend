@@ -30,7 +30,7 @@ object VatCorrectionsListSummary {
       case (country, countryIndex) =>
 
         ListItem(
-          name = HtmlFormat.escape(country.name).toString,
+          name = HtmlFormat.escape(country.correctionCountry.name).toString,
           changeUrl = routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, Index(countryIndex)).url,
           removeUrl = routes.RemoveCountryCorrectionController.onPageLoad(currentMode, answers.period).url
         )

@@ -16,6 +16,7 @@
 
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
 @import viewmodels.LegendSize
+@import controllers.corrections.{ routes => correctionRoutes }
 
 @this(
     layout: templates.Layout,
@@ -32,10 +33,10 @@
     @layout(pageTitle = title(
         form,
         messages("vatCorrectionsList.title" + messageSuffix, list.size),
-        Some(period.displayText)
+        Some(messages("vatCorrectionsList.section", period.displayText))
     )) {
 
-        @formHelper(action = routes.SalesFromEuListController.onSubmit(mode, period), 'autoComplete -> "off") {
+        @formHelper(action = correctionRoutes.VatCorrectionsListController.onSubmit(mode, period, periodIndex), 'autoComplete -> "off") {
 
             @if(form.errors.nonEmpty) {
                 @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -43,7 +44,7 @@
 
             <header class="hmrc-page-heading">
                 <h1 class="govuk-heading-xl">@messages("vatCorrectionsList.heading" + messageSuffix, list.size)</h1>
-                <p class="govuk-caption-xl hmrc-caption-xl">@period.displayText</p>
+                <p class="govuk-caption-xl hmrc-caption-xl">@messages("vatCorrectionsList.section", period.displayText)</p>
             </header>
 
             @addToList(list, Long, "vatCorrectionsList.change.hidden", "vatCorrectionsList.remove.hidden", None)
@@ -55,8 +56,6 @@
                         legend = LegendViewModel(
                             HtmlContent(Html(messages("vatCorrectionsList.addAnother")))
                         ).withSize(LegendSize.Medium)
-                    ).withHint(
-                        HintViewModel(messages("vatCorrectionsList.hint"))
                     )
                 )
             } else {
