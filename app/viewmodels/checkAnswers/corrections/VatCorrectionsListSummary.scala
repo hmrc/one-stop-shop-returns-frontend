@@ -27,11 +27,11 @@ object VatCorrectionsListSummary {
 
   def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index)(implicit messages: Messages): List[ListItem] =
     answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.map {
-      case (details, index) =>
+      case (country, countryIndex) =>
 
         ListItem(
-          name = HtmlFormat.escape(details.name).toString,
-          changeUrl = routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period).url,
+          name = HtmlFormat.escape(country.name).toString,
+          changeUrl = routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, Index(countryIndex)).url,
           removeUrl = routes.RemoveCountryCorrectionController.onPageLoad(currentMode, answers.period).url
         )
     }

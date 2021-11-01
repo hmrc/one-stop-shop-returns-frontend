@@ -34,7 +34,7 @@ object CorrectionCountrySummary {
           key = "correctionCountry.checkYourAnswersLabel",
           value = ValueViewModel(answer.toString),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, index, Index(0)).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex).url)
               .withVisuallyHiddenText(messages("correctionCountry.change.hidden"))
           )
         )
