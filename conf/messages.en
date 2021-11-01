@@ -378,9 +378,11 @@ vatCorrectionsList.heading = You have corrected the VAT amount for {0} EU countr
 vatCorrectionsList.heading.singular = You have corrected the VAT amount for one EU country
 vatCorrectionsList.addAnother = Add corrections to VAT for another EU country?
 vatCorrectionsList.maximumReached = You have added corrections to every EU country
+vatCorrectionsList.correctionAmount = Correction amount
 vatCorrectionsList.checkYourAnswersLabel = vatCorrectionsList
 vatCorrectionsList.error.required = Select yes if vatCorrectionsList
 vatCorrectionsList.change.hidden = VatCorrectionsList
+vatCorrectionsList.remove.hidden = VatCorrectionsList
 
 vatPeriodCorrectionsList.title = vatPeriodCorrectionsList
 vatPeriodCorrectionsList.heading = vatPeriodCorrectionsList
