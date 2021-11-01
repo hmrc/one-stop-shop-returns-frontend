@@ -77,16 +77,16 @@ class CorrectionCountryController @Inject()(
             case Some(correctionPeriod) =>
               for {
                           updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
-                          vatReturnResult <- vatReturnConnector.get(correctionPeriod)
                           _              <- cc.sessionRepository.set(updatedAnswers)
+                          vatReturnResult <- vatReturnConnector.get(correctionPeriod)
                         } yield {
                 vatReturnResult match {
                   case Right(vatReturn) => {
                     val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
-                    val countriesFromEU = vatReturn.salesFromEu.map(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption)).flatten.distinct
+                    val countriesFromEU = vatReturn.salesFromEu.map(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption)).flatten
+                    val allRecipientCountries = (countriesFromNi ::: countriesFromEU).distinct
 
-
-                    Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, countriesFromNi, countriesFromEU))
+                    Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, allRecipientCountries))
                   }
                   case Left(value) =>
                     logger.error(s"there was an error $value")

@@ -29,10 +29,10 @@ case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) extend
 
   override def toString: String = "correctionCountry"
 
-   def navigate(mode: Mode, answers: UserAnswers, countriesFromNi: Seq[Country], countriesFromEU: Seq[Country]): Call = {
+   def navigate(mode: Mode, answers: UserAnswers, countries: Seq[Country]): Call = {
     answers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
       case Some(country) =>
-        if(countriesFromNi.contains(country) || countriesFromEU.contains(country)){
+        if(countries.contains(country)){
           controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(mode, answers.period, periodIndex, countryIndex)
         }else{
           controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(mode, answers.period, periodIndex, countryIndex)}

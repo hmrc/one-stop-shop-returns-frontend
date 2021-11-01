@@ -122,7 +122,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq(), Seq()).url
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq()).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
       }
     }

@@ -75,7 +75,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
+          form, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)), index)(request, messages(application)
         ).toString
       }
     }
@@ -126,7 +126,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form.fill(Period(2021, Q3)), NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
+          form.fill(Period(2021, Q3)), NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)), index)(request, messages(application)
         ).toString
       }
     }
@@ -183,7 +183,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(
-          boundForm, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)))(request, messages(application)
+          boundForm, NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)), index)(request, messages(application)
         ).toString
       }
     }
