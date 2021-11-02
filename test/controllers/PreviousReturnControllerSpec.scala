@@ -14,22 +14,6 @@
  * limitations under the License.
  */
 
-/*
- * Copyright 2021 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package controllers
 
 import base.SpecBase
@@ -86,7 +70,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
   "Previous Return Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET with no banner" in {
 
       val application = applicationBuilder(Some(baseAnswers))
         .overrides(
@@ -107,7 +91,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       val charge = Charge(Period(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-      when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(charge))
+      when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(Some(charge)))
       when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
       when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
       when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
@@ -141,6 +125,56 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           totalSalesList,
           displayPayNow,
           (charge.outstandingAmount * 100).toLong,
+          false
+        )(request, implicitly).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET without banner for nil return" in {
+
+      val application = applicationBuilder(Some(baseAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+          bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector)
+        ).build()
+
+      val zero = BigDecimal(0)
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+      when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn zero
+      when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn zero
+      when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn zero
+      when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn zero
+      when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn zero
+
+      running(application) {
+        val request = FakeRequest(GET, previousReturnRoute)
+
+        val result = route(application, request).value
+
+        val view                    = application.injector.instanceOf[PreviousReturnView]
+        implicit val msgs: Messages = messages(application)
+        val summaryList             = SummaryListViewModel(
+          rows = PreviousReturnSummary.rows(vatReturn, zero, None, None))
+        val niSalesList             = SaleAtVatRateSummary.getAllNiSales(vatReturn)
+        val euSalesList             = SaleAtVatRateSummary.getAllEuSales(vatReturn)
+        val totalSalesList          = TitledSummaryList(
+          title = "All sales",
+          list = SummaryListViewModel(
+            TotalSalesSummary.rows(zero, zero, zero, zero, zero)
+          ))
+        val displayPayNow = false
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          vatReturn,
+          summaryList,
+          niSalesList,
+          euSalesList,
+          totalSalesList,
+          displayPayNow,
+          zero.toLong,
           false
         )(request, implicitly).toString
       }
