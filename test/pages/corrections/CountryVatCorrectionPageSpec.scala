@@ -38,7 +38,7 @@ class CountryVatCorrectionPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
 
         CountryVatCorrectionPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period))
+          .mustEqual(controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, index))
       }
 
       "to Journey recovery page when answer is invalid" in {

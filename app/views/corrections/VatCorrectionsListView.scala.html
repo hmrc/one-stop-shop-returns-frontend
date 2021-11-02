@@ -14,33 +14,68 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
+@import viewmodels.{LegendSize, TitledSummaryList}
+@import controllers.corrections.{ routes => correctionRoutes }
+
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    govukButton: GovukButton
+    govukButton: GovukButton,
+    govukSummaryList: GovukSummaryList
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, list: List[TitledSummaryList], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("vatCorrectionsList.title"))) {
+@defining(if(list.size == 1) ".singular" else "") { messageSuffix =>
+    @layout(pageTitle = title(
+        form,
+        messages("vatCorrectionsList.title" + messageSuffix, list.size),
+        Some(messages("vatCorrectionsList.section", correctionPeriod.displayText))
+    )) {
 
-    @formHelper(action = controllers.corrections.routes.VatCorrectionsListController.onSubmit(mode, period), 'autoComplete -> "off") {
+        @formHelper(action = correctionRoutes.VatCorrectionsListController.onSubmit(mode, period, periodIndex), 'autoComplete -> "off") {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
+            @if(form.errors.nonEmpty) {
+                @govukErrorSummary(ErrorSummaryViewModel(form))
+            }
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(messages("vatCorrectionsList.heading")).asPageHeading()
+            <header class="hmrc-page-heading">
+                <h1 class="govuk-heading-xl">@messages("vatCorrectionsList.heading" + messageSuffix, list.size)</h1>
+                <p class="govuk-caption-xl hmrc-caption-xl">@messages("vatCorrectionsList.section", correctionPeriod.displayText)</p>
+            </header>
+
+            @for(item <- list) {
+                <h2 class="govuk-heading-m">@{
+                    item.title
+                }</h2>
+
+                @govukSummaryList(item.list)
+
+                <p class="govuk-body govuk-!-margin-bottom-8">
+                    <a class="govuk-link" href="@correctionRoutes.RemoveCountryCorrectionController.onPageLoad(mode, period)">@messages("site.remove") <span class="govuk-visually-hidden">@messages("vatCorrectionsList.remove.hidden")</span></a>
+                </p>
+            }
+
+            @if(canAddCountries) {
+                @govukRadios(
+                    RadiosViewModel.yesNo(
+                        field = form("value"),
+                        legend = LegendViewModel(
+                            HtmlContent(Html(messages("vatCorrectionsList.addAnother")))
+                        ).withSize(LegendSize.Medium)
+                    )
+                )
+            } else {
+                <p class="govuk-body">@messages("vatCorrectionsList.maximumReached")</p>
+                <input type="hidden" name="value" id="value" value="false"/>
+            }
+
+            @govukButton(
+                ButtonViewModel(messages("site.continue"))
             )
-        )
-
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        }
     }
 }

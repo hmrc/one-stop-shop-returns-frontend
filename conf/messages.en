@@ -371,11 +371,18 @@ undeclaredCountryCorrection.checkYourAnswersLabel = undeclaredCountryCorrection
 undeclaredCountryCorrection.error.required = Select yes if you want to add a correction to this country
 undeclaredCountryCorrection.change.hidden = UndeclaredCountryCorrection
 
-vatCorrectionsList.title = vatCorrectionsList
-vatCorrectionsList.heading = vatCorrectionsList
+vatCorrectionsList.title = You have corrected the VAT amount for {0} EU countries
+vatCorrectionsList.title.singular = You have corrected the VAT amount for one EU country
+vatCorrectionsList.section = Correction period: {0}
+vatCorrectionsList.heading = You have corrected the VAT amount for {0} EU countries
+vatCorrectionsList.heading.singular = You have corrected the VAT amount for one EU country
+vatCorrectionsList.addAnother = Add corrections to VAT for another EU country?
+vatCorrectionsList.maximumReached = You have added corrections to every EU country
+vatCorrectionsList.correctionAmount = Correction amount
 vatCorrectionsList.checkYourAnswersLabel = vatCorrectionsList
 vatCorrectionsList.error.required = Select yes if vatCorrectionsList
 vatCorrectionsList.change.hidden = VatCorrectionsList
+vatCorrectionsList.remove.hidden = VatCorrectionsList
 
 vatPeriodCorrectionsList.title = vatPeriodCorrectionsList
 vatPeriodCorrectionsList.heading = vatPeriodCorrectionsList

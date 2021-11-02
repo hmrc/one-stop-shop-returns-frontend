@@ -16,27 +16,42 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, UserAnswers}
-import pages.corrections.VatCorrectionsListPage
+import controllers.corrections.routes
+import models.{CheckMode, Index, Mode, UserAnswers}
 import play.api.i18n.Messages
+import queries.corrections.AllCorrectionCountriesQuery
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
+import utils.CurrencyFormatter.currencyFormat
+import viewmodels.TitledSummaryList
 
 object VatCorrectionsListSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatCorrectionsListPage).map {
-      answer =>
+  def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index)(implicit messages: Messages): List[TitledSummaryList] =
+    answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.map {
+      case (correctionToCountry, countryIndex) =>
 
-        val value = if (answer) "site.yes" else "site.no"
-
-        SummaryListRowViewModel(
-          key = "vatCorrectionsList.checkYourAnswersLabel",
-          value = ValueViewModel(value),
+        val row = SummaryListRowViewModel(
+          key = messages("vatCorrectionsList.correctionAmount"),
+          value = ValueViewModel(HtmlContent(currencyFormat(correctionToCountry.countryVatCorrection))),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckMode, answers.period).url)
-              .withVisuallyHiddenText(messages("vatCorrectionsList.change.hidden"))
+            ActionItemViewModel(
+              content = "site.change",
+              href = routes.CountryVatCorrectionController.onPageLoad(
+                currentMode,
+                answers.period,
+                periodIndex,
+                Index(countryIndex)).url
+            ).withVisuallyHiddenText(messages("vatCorrectionsList.change.hidden"))
+          )
+        )
+
+        TitledSummaryList(
+          title = correctionToCountry.correctionCountry.name,
+          list = SummaryListViewModel(
+            rows = Seq(row)
           )
         )
     }
