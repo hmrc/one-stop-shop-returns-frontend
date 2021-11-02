@@ -49,7 +49,8 @@ class SubmittedReturnsHistoryController @Inject()(
         case Right(vatReturnsWithFinancialData) =>
           val displayBanner = {
             if (vatReturnsWithFinancialData.nonEmpty) {
-              vatReturnsWithFinancialData.exists(_.charge.isEmpty)
+              vatReturnsWithFinancialData.exists(data => data.charge.isEmpty && data.vatOwed
+                .getOrElse((vatReturnSalesService.getTotalVatOnSales(data.vatReturn) * 100).toLong) > 0)
             } else {
               false
             }
