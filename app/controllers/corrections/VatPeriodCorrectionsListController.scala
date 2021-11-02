@@ -18,9 +18,12 @@ package controllers.corrections
 
 import controllers.actions._
 import controllers.routes.IndexController
+import controllers.corrections.{routes => correctionsRoutes}
+import controllers.{routes => baseRoutes}
 import forms.corrections.VatPeriodCorrectionsListFormProvider
-import models.{Mode, Period}
+import models.{Index, Mode, Period}
 import pages.PageConstants.{correctionPeriod, corrections}
+import pages.corrections.VatCorrectionsListPage
 import play.api.i18n.I18nSupport
 import play.api.libs.json.JsObject
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -48,6 +51,6 @@ class VatPeriodCorrectionsListController @Inject()(
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
-    implicit request => Redirect(IndexController.onPageLoad())
+    implicit request => Redirect(baseRoutes.CheckYourAnswersController.onPageLoad(period))
   }
 }

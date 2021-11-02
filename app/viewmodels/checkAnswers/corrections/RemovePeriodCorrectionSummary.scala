@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Index, UserAnswers}
 import pages.corrections.RemovePeriodCorrectionPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -25,7 +25,7 @@ import viewmodels.implicits._
 
 object RemovePeriodCorrectionSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(RemovePeriodCorrectionPage).map {
       answer =>
 
@@ -35,7 +35,7 @@ object RemovePeriodCorrectionSummary {
           key = "removePeriodCorrection.checkYourAnswersLabel",
           value = ValueViewModel(value),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(CheckMode, answers.period).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(CheckMode, answers.period, index).url)
               .withVisuallyHiddenText(messages("removePeriodCorrection.change.hidden"))
           )
         )
