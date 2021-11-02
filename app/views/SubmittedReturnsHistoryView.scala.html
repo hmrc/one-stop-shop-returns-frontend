@@ -78,14 +78,14 @@
                                     <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturnWithFinancialData.vatReturn.period)" id="period">@vatReturnWithFinancialData.vatReturn.period.displayText</a>
                                 </th>
                                 <td class="govuk-table__cell">
-                                @if(vatReturnWithFinancialData.charge.isEmpty && vatReturnWithFinancialData.vatOwed.getOrElse(0L) > 0L) {
+                                @if(vatReturnWithFinancialData.showUpdating) {
                                     @messages("submittedReturnsHistory.updating")
                                 } else {
-                                    @vatReturnWithFinancialData.charge.map(c => Html(currencyFormat(c.outstandingAmount)))
+                                    @vatReturnWithFinancialData.charge.map(c => Html(currencyFormat(c.outstandingAmount))).getOrElse(Html(currencyFormat(0L)))
                                 }
                                 </td>
                                 <td class="govuk-table__cell">
-                                @if(vatReturnWithFinancialData.vatOwed.isDefined && (vatReturnWithFinancialData.charge.isEmpty || vatReturnWithFinancialData.charge.exists(c => c.outstandingAmount > 0))) {
+                                @if(vatReturnWithFinancialData.showPayNow) {
                                     <a class="govuk-link" href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatReturnWithFinancialData.vatOwed.get)">@messages("returnSubmitted.payNow")</a>
                                 }
                                 </td>
