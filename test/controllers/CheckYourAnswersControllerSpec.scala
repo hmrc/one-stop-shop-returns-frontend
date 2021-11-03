@@ -74,6 +74,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
         contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
         contentAsString(result).contains("VAT owed to EU countries") mustBe true
+        contentAsString(result).contains("Corrections") mustBe true
       }
     }
 

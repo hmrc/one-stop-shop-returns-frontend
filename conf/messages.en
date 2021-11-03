@@ -201,8 +201,10 @@ checkYourAnswers.salesFromNi.heading = Sales from Northern Ireland to EU countri
 checkYourAnswers.salesFromEU.heading = Sales from EU countries to other EU countries
 checkYourAnswers.vatOwedToEuCountries.heading = VAT owed to EU countries
 checkYourAnswers.allSales.heading = All sales
+checkYourAnswers.corrections.heading = Corrections
 checkYourAnswers.netValueOfSales.checkYourAnswersLabel = Total sales excluding VAT
 checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT owed
+checkYourAnswers.correctionReturnPeriod.checkYourAnswersLabel = Periods with corrections
 
 salesFromEuList.title.singular = You added sales from one EU country
 salesFromEuList.heading.singular = You added sales from one EU country
@@ -319,7 +321,7 @@ noOtherPeriodsAvailable.submit = Back to your account
 
 correctPreviousReturn.title = Do you want to correct a previous return?
 correctPreviousReturn.heading = Do you want to correct a previous return?
-correctPreviousReturn.checkYourAnswersLabel = correctPreviousReturn
+correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = CorrectPreviousReturn
 

@@ -33,6 +33,7 @@ import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnSer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -80,11 +81,19 @@ class CheckYourAnswersController @Inject()(
       val totalVatToCountries = service.getVatOwedToEuCountries(request.userAnswers)
       val totalVatOnSales = service.getTotalVatOnSales(request.userAnswers)
 
+      val correctionsSummaryList = SummaryListViewModel(
+        rows = Seq(
+          CorrectPreviousReturnSummary.row(request.userAnswers),
+          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers)
+        ).flatten
+      ).withCssClass("govuk-!-margin-bottom-9")
+
       Ok(view(
         Seq(
           (None, businessSummaryList),
           (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
+          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
+          (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
         ),
         period,
         totalVatToCountries,
