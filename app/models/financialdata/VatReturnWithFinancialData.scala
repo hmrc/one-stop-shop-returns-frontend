@@ -19,10 +19,17 @@ package models.financialdata
 import models.domain.VatReturn
 import play.api.libs.json.{Format, Json}
 
-case class VatReturnWithFinancialData(vatReturn: VatReturn, charge: Option[Charge], vatOwed: Option[Long])
+case class VatReturnWithFinancialData(vatReturn: VatReturn, charge: Option[Charge], vatOwed: Option[Long]){
+
+  val showPayNow: Boolean = (vatOwed.isDefined && vatOwed.getOrElse(0L) > 0L) &&
+    (charge.isEmpty || charge.exists(c => c.outstandingAmount > 0))
+
+  val showUpdating: Boolean = charge.isEmpty && vatOwed.getOrElse(0L) > 0L
+}
 
 object VatReturnWithFinancialData {
   implicit val format: Format[VatReturnWithFinancialData] = Json.format[VatReturnWithFinancialData]
+
 }
 
 
