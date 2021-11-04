@@ -17,10 +17,12 @@
 package pages.corrections
 
 import controllers.routes
-import models.UserAnswers
+import controllers.corrections.{routes => correctionRoutes}
+import models.{Index, Mode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.corrections.{DeriveNumberOfCorrectionPeriods, DeriveNumberOfCorrections}
 
 case object VatPeriodCorrectionsListPage extends QuestionPage[Boolean] {
 
@@ -28,6 +30,15 @@ case object VatPeriodCorrectionsListPage extends QuestionPage[Boolean] {
 
   override def toString: String = "vatPeriodCorrectionsList"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+  def navigate(mode: Mode, answers: UserAnswers, addAnother: Boolean): Call = {
+    if(addAnother) {
+      answers.get(DeriveNumberOfCorrectionPeriods) match {
+        case Some(size) =>
+          correctionRoutes.CorrectionReturnPeriodController.onPageLoad(mode, answers.period, Index(size))
+        case None => routes.JourneyRecoveryController.onPageLoad()
+      }
+    } else {
+      routes.CheckYourAnswersController.onPageLoad(answers.period)
+    }
+  }
 }
