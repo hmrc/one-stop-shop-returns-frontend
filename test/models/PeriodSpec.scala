@@ -185,5 +185,16 @@ class PeriodSpec
 
     }
 
+    "returns false when" - {
+
+      "period is 2021-Q3 and today is 25th October" in {
+        val period = Period(2021, Q3)
+        val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
+
+        period.isOverdue(clock) mustBe false
+      }
+
+    }
+
   }
 }
