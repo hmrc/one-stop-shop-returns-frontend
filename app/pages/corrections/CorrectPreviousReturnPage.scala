@@ -21,6 +21,9 @@ import models.{Index, Mode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.corrections.AllCorrectionPeriodsQuery
+
+import scala.util.Try
 
 case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
 
@@ -38,4 +41,7 @@ case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
       case Some(false) =>  routes.CheckYourAnswersController.onPageLoad(answers.period)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
+
+  override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] =
+    userAnswers.remove(AllCorrectionPeriodsQuery)
 }
