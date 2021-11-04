@@ -52,10 +52,13 @@ index.yourReturns.nothingDue = You do not have any returns due
 index.yourReturns.startReturn = Start your return
 index.payment.heading = Payments
 index.payment.overdueHeading = Overdue Payments
+index.payment.pendingPayments = We may still be processing pending payments
 index.payment.nothingOwed = You do not owe anything right now
 index.payment.makeAPayment = Make a payment
 index.payment.amountOwed = You owe {0} for {1}
+index.payment.amountMaybeOwed = You still may owe {0} for {1}
 index.payment.overdueAmountOwed = You owe {0} for {1}, which was due by {2}
+index.payment.overdueAmountMaybeOwed = You still may owe {0} for {1}, which was due by {2}
 index.history = History
 index.history.previousReturns = View past returns
 

@@ -22,7 +22,7 @@ import play.api.mvc.PathBindable
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
-import java.time.LocalDate
+import java.time.{Clock, LocalDate}
 import java.time.format.DateTimeFormatter
 import scala.util.Try
 import scala.util.matching.Regex
@@ -40,6 +40,10 @@ case class Period(year: Int, quarter: Quarter) {
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
 
   val paymentDeadlineDisplay: String = paymentDeadline.format(lastDayFormatter)
+
+  def isOverdue(clock: Clock): Boolean = {
+    paymentDeadline.isBefore(LocalDate.now(clock))
+  }
 
   override def toString: String = s"$year-${quarter.toString}"
 }
