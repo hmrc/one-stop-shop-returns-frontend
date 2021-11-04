@@ -81,9 +81,12 @@ class CheckYourAnswersController @Inject()(
 
       val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
-      val totalVatToCountries = service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
-      val noPaymentDueCountries = service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
-      val totalVatOnSales = service.getTotalVatOwedAfterCorrections(request.userAnswers)
+      val totalVatToCountries =
+        service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
+      val noPaymentDueCountries =
+        service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
+      val totalVatOnSales =
+        service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(

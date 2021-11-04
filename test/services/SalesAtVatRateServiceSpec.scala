@@ -519,6 +519,5 @@ class SalesAtVatRateServiceSpec extends SpecBase {
         service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(100)
       }
     }
-
   }
 }
