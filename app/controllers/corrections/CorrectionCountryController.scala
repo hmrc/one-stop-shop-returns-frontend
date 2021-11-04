@@ -26,6 +26,7 @@ import play.api.i18n.I18nSupport
 import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.AllSalesFromEuQuery
+import queries.corrections.AllCorrectionCountriesQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionCountryView
 
@@ -44,9 +45,9 @@ class CorrectionCountryController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      val form = formProvider(periodIndex,
+      val form = formProvider(countryIndex,
         request.userAnswers
-          .get(CorrectionCountryPage(periodIndex, countryIndex)).toSeq)
+          .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
 
       val preparedForm = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
         case None => form
@@ -61,9 +62,9 @@ class CorrectionCountryController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      val form = formProvider(periodIndex,
+      val form = formProvider(countryIndex,
         request.userAnswers
-          .get(CorrectionCountryPage(periodIndex, countryIndex)).toSeq)
+          .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
 
       form.bindFromRequest().fold(
         formWithErrors =>

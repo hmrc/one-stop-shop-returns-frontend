@@ -25,6 +25,7 @@ import pages.corrections.CorrectionReturnPeriodPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionReturnPeriodView
 
@@ -37,62 +38,71 @@ class CorrectionReturnPeriodController @Inject()(
                                        returnStatusConnector: ReturnStatusConnector,
                                        view: CorrectionReturnPeriodView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
-  private val form = formProvider()
+
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
-          case Right(returnStatuses) =>
-            val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-            if(periods.size < 2) {
-              Redirect(
-                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
-              )
-            } else {
-              val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
-                case None => form
-                case Some(value) => form.fill(value)
-              }
-              Ok(view(preparedForm, mode, period, periods, index))
+      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
+        case Right(returnStatuses) =>
+          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+
+          if (periods.size < 2) {
+            Redirect(
+              controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
+            )
+          } else {
+            val form = formProvider(index, periods, request.userAnswers
+              .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
+
+            val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+              case None => form
+              case Some(value) => form.fill(value)
             }
-          case Left(value) =>
-            logger.error(s"there was an error $value")
-            throw new Exception(value.toString)
+            Ok(view(preparedForm, mode, period, periods, index))
+          }
+        case Left(value) =>
+          logger.error(s"there was an error $value")
+          throw new Exception(value.toString)
       }
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
-      form.bindFromRequest().fold(
-        formWithErrors => {
-          returnStatusConnector.listStatuses(request.registration.commencementDate).map {
-            case Right(returnStatuses) =>
-              val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+      returnStatusConnector.listStatuses(request.registration.commencementDate).flatMap {
+        case Right(returnStatuses) =>
+          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-              if(periods.size < 2) {
-                Redirect(
+          val form = formProvider(index, periods, request.userAnswers
+            .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
+
+          form.bindFromRequest().fold(
+            formWithErrors => {
+              if (periods.size < 2) {
+                Future.successful(Redirect(
                   controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
-                )
-              } else {
-                BadRequest(view(
-                  formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period), index
                 ))
+              } else {
+                Future.successful(BadRequest(view(
+                  formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period), index
+                )))
               }
-            case Left(value) =>
-              logger.error(s"there was an error $value")
-              throw new Exception(value.toString)
-        }},
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield {
-            Redirect(CorrectionReturnPeriodPage(index).navigate(mode, updatedAnswers))
-          }
-      )
+            },
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield {
+                Redirect(CorrectionReturnPeriodPage(index).navigate(mode, updatedAnswers))
+              }
+          )
+
+        case Left(value) =>
+          logger.error(s"there was an error $value")
+          throw new Exception(value.toString)
+      }
   }
 }

@@ -20,6 +20,7 @@ import controllers.actions._
 import generators.Generators
 import models.VatOnSalesChoice.Standard
 import models.PaymentReference
+import models.Quarter.{Q1, Q2, Q3, Q4}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
@@ -161,6 +162,8 @@ trait SpecBase
       List.empty,
       List.empty
     )
+
+  val testPeriodsList = Seq(Period(2021, Q1), Period(2021, Q2), Period(2021, Q3), Period(2021, Q4), Period(2022, Q1), Period(2022, Q2))
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

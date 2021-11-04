@@ -63,7 +63,7 @@ class VatPeriodCorrectionsListController @Inject()(
             if(availableCorrectionPeriods.isEmpty) {
               Ok(view(mode, period, completedCorrectionPeriods))
             } else {
-              Redirect(controllers.corrections.routes.VatPeriodAvailableCorrectionsListController.onPageLoad(NormalMode, period))
+              Redirect(controllers.corrections.routes.VatPeriodAvailableCorrectionsListController.onPageLoad(mode, period))
             }
           }
         case Left(value) =>

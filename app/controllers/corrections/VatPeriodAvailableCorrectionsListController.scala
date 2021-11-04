@@ -103,7 +103,7 @@ class VatPeriodAvailableCorrectionsListController @Inject()(
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPeriodCorrectionsListPage, value))
                   _              <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(VatPeriodCorrectionsListPage.navigate(mode, updatedAnswers))
+                } yield Redirect(VatPeriodCorrectionsListPage.navigate(mode, updatedAnswers, value))
             )
           }
         case Left(value) =>

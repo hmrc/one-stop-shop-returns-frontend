@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package forms.corrections
+package queries.corrections
 
-import forms.mappings.Mappings
-import models.{Country, Index, Period}
-import play.api.data.Form
+import pages.PageConstants
+import play.api.libs.json.{JsObject, JsPath}
+import queries.Derivable
 
-import javax.inject.Inject
+case object DeriveNumberOfCorrectionPeriods extends Derivable[List[JsObject], Int] {
 
-class CorrectionReturnPeriodFormProvider @Inject() extends Mappings {
+  override val derive: List[JsObject] => Int = _.size
 
-  def apply(index: Index, availablePeriods: Seq[Period], existingAnswers: Seq[Period]): Form[Period] =
-    Form(
-      "value" -> period("correctionReturnPeriod.error.required")
-        .verifying("correctionReturnPeriod.error.required", value => availablePeriods.contains(value))
-        .verifying(notADuplicate(index, existingAnswers, "correctionReturnPeriod.error.duplicate"))
-    )
+  override def path: JsPath = JsPath \ PageConstants.corrections
 }
