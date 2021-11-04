@@ -26,7 +26,7 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.mvc.PathBindable
 
-import java.time.LocalDate
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 import java.time.Month._
 
 class PeriodSpec
@@ -170,5 +170,20 @@ class PeriodSpec
           period.paymentDeadline mustEqual LocalDate.of(year + 1, JANUARY, 31)
       }
     }
+  }
+
+  ".isOverdue" - {
+
+    "returns true when" - {
+
+      "period is 2021-Q3 and today is 1st December 2021" in {
+        val period = Period(2021, Q3)
+        val clock: Clock = Clock.fixed(Instant.parse("2021-12-01T12:00:00Z"), ZoneId.systemDefault)
+
+        period.isOverdue(clock) mustBe true
+      }
+
+    }
+
   }
 }

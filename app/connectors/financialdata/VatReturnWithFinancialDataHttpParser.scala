@@ -32,7 +32,8 @@ object VatReturnWithFinancialDataHttpParser extends Logging {
       response.status match {
         case OK =>
           response.json.validate[Seq[VatReturnWithFinancialData]] match {
-            case JsSuccess(vatReturnWithFinancialData, _) => Right(vatReturnWithFinancialData)
+            case JsSuccess(vatReturnWithFinancialData, _) =>
+              Right(vatReturnWithFinancialData)
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
               Left(InvalidJson)

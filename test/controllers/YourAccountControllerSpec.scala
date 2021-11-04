@@ -22,7 +22,7 @@ import connectors.financialdata.FinancialDataConnector
 import generators.Generators
 import models.{Period, PeriodWithStatus, SubmissionStatus}
 import models.Quarter._
-import models.financialdata.PeriodWithOutstandingAmount
+import models.financialdata.{Charge, PeriodWithOutstandingAmount, VatReturnWithFinancialData}
 import models.responses.InvalidJson
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -320,7 +320,18 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
-        val outstandingPeriod = PeriodWithOutstandingAmount(secondPeriod, BigDecimal(1000))
+        val outstandingAmount = BigDecimal(1000)
+        val vatReturn = completeVatReturn.copy(period = firstPeriod)
+        val vatReturnWithFinancialData = VatReturnWithFinancialData(
+          vatReturn = vatReturn,
+          charge = Some(Charge(
+            period = firstPeriod,
+            outstandingAmount = outstandingAmount,
+            originalAmount = outstandingAmount,
+            clearedAmount = BigDecimal(0)
+          )),
+          vatOwed = Some(outstandingAmount.toLong)
+        )
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
           Future.successful(
@@ -329,10 +340,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
             )))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
+
+        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(
-              Seq(outstandingPeriod)
+              Seq(vatReturnWithFinancialData)
             )
           )
 
@@ -350,7 +362,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq.empty,
             Some(secondPeriod),
-            Seq(outstandingPeriod),
+            Seq(vatReturnWithFinancialData),
             Seq.empty,
             paymentError = false
           )(request, messages(application)).toString
@@ -370,7 +382,18 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val firstPeriod = Period(2021, Q1)
         val secondPeriod = Period(2021, Q2)
-        val outstandingPeriod = PeriodWithOutstandingAmount(secondPeriod, BigDecimal(1000))
+        val outstandingAmount = BigDecimal(1000)
+        val vatReturn = completeVatReturn.copy(period = firstPeriod)
+        val vatReturnWithFinancialData = VatReturnWithFinancialData(
+          vatReturn = vatReturn,
+          charge = Some(Charge(
+            period = firstPeriod,
+            outstandingAmount = outstandingAmount,
+            originalAmount = outstandingAmount,
+            clearedAmount = BigDecimal(0)
+          )),
+          vatOwed = Some(outstandingAmount.toLong)
+        )
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
           Future.successful(
@@ -379,10 +402,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PeriodWithStatus(secondPeriod, SubmissionStatus.Overdue)
             )))
 
-        when(financialDataConnector.getPeriodsAndOutstandingAmounts()(any())) thenReturn
+        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(
-              Seq(outstandingPeriod)
+              Seq(vatReturnWithFinancialData)
             )
           )
 
@@ -401,7 +424,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Seq(secondPeriod),
             None,
             Seq.empty,
-            Seq(outstandingPeriod),
+            Seq(vatReturnWithFinancialData),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -448,6 +471,47 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             Seq(secondPeriod),
+            None,
+            Seq.empty,
+            Seq.empty,
+            paymentError = true
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return is completed and charge is not in ETMP" in {
+        val clock: Clock = Clock.fixed(Instant.parse("2022-01-01T12:00:00Z"), ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
+          ).build()
+
+        val firstPeriod = Period(2021, Q3)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete)
+            )))
+
+        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+          Future.successful(Right(Seq.empty))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq.empty,
             None,
             Seq.empty,
             Seq.empty,
