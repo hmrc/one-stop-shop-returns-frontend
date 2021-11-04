@@ -130,6 +130,66 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       }
     }
 
+    "must return OK and the correct view for a GET with banner when charge is empty but expected" in {
+
+      val application = applicationBuilder(Some(baseAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+          bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector)
+        ).build()
+
+      val netSalesFromNi = BigDecimal(4141)
+      val netSalesFromEu = BigDecimal(2333)
+      val vatOnSalesFromNi = BigDecimal(55)
+      val vatOnSalesFromEu = BigDecimal(44)
+      val totalVatOnSales = vatOnSalesFromNi + vatOnSalesFromEu
+
+      val clearedAmount = BigDecimal(3333.33)
+      val outstandingAmount = BigDecimal(2222.22)
+
+      val charge = Charge(Period(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+      when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
+      when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
+      when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
+      when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
+      when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn totalVatOnSales
+
+      running(application) {
+        val request = FakeRequest(GET, previousReturnRoute)
+
+        val result = route(application, request).value
+
+        val view                    = application.injector.instanceOf[PreviousReturnView]
+        implicit val msgs: Messages = messages(application)
+        val summaryList             = SummaryListViewModel(
+          rows = PreviousReturnSummary.rows(vatReturn, totalVatOnSales, None, None))
+        val niSalesList             = SaleAtVatRateSummary.getAllNiSales(vatReturn)
+        val euSalesList             = SaleAtVatRateSummary.getAllEuSales(vatReturn)
+        val totalSalesList          = TitledSummaryList(
+          title = "All sales",
+          list = SummaryListViewModel(
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales)
+          ))
+        val displayPayNow = true
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          vatReturn,
+          summaryList,
+          niSalesList,
+          euSalesList,
+          totalSalesList,
+          displayPayNow,
+          (totalVatOnSales * 100).toLong,
+          true
+        )(request, implicitly).toString
+      }
+    }
+
     "must return OK and the correct view for a GET without banner for nil return" in {
 
       val application = applicationBuilder(Some(baseAnswers))
