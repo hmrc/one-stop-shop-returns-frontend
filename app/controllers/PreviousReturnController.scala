@@ -57,7 +57,9 @@ class PreviousReturnController @Inject()(
       }.map {
         case (Right(vatReturn), chargeResponse) =>
           val (charge, displayBanner) = chargeResponse match {
-            case Right(chargeOption) => (chargeOption, false)
+            case Right(chargeOption) =>
+              val hasVatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn) > 0
+              (chargeOption, chargeOption.isEmpty && hasVatOwed)
             case _ => (None, true)
           }
 
