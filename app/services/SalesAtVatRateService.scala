@@ -19,6 +19,7 @@ package services
 import models.{TotalVatToCountry, UserAnswers}
 import queries.AllSalesFromEuQuery
 import queries.AllSalesFromNiQuery
+import queries.corrections.AllCorrectionPeriodsQuery
 
 import javax.inject.Inject
 
@@ -56,20 +57,6 @@ class SalesAtVatRateService @Inject()() {
     )
   }
 
-  def getTotalNetSales(userAnswers: UserAnswers): BigDecimal   = {
-    val niNet = getNiTotalNetSales(userAnswers).getOrElse(BigDecimal(0))
-    val euNet = getEuTotalNetSales(userAnswers).getOrElse(BigDecimal(0))
-
-    niNet + euNet
-  }
-
-  def getTotalVatOnSales(userAnswers: UserAnswers): BigDecimal = {
-    val niVat = getNiTotalVatOnSales(userAnswers).getOrElse(BigDecimal(0))
-    val euVat = getEuTotalVatOnSales(userAnswers).getOrElse(BigDecimal(0))
-
-    niVat + euVat
-  }
-
   def getVatOwedToEuCountries(userAnswers: UserAnswers): List[TotalVatToCountry] = {
 
     val vatOwedToEuCountriesFromEu =
@@ -87,8 +74,15 @@ class SalesAtVatRateService @Inject()() {
         salesAtVatRate <- saleFromNi.salesAtVatRate
       } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.vatOnSales.amount)
 
+    val correctionCountriesAmount =
+      for{
+        allCorrectionPeriods <- userAnswers.get(AllCorrectionPeriodsQuery).toSeq
+        periodWithCorrections <- allCorrectionPeriods
+        countryCorrection <- periodWithCorrections.correctionToCountry
+      }yield TotalVatToCountry(countryCorrection.correctionCountry, countryCorrection.countryVatCorrection)
+
     val vatOwedToEuCountries =
-      vatOwedToEuCountriesFromEu ++ vatOwedToEuCountriesFromNI
+      vatOwedToEuCountriesFromEu ++ vatOwedToEuCountriesFromNI ++ correctionCountriesAmount
 
     vatOwedToEuCountries.groupBy(_.country).map {
       case (country, salesToCountry) =>
@@ -96,4 +90,8 @@ class SalesAtVatRateService @Inject()() {
         TotalVatToCountry(country, totalVatToCountry)
     }.toList
   }
+
+  def getTotalVatOwedAfterCorrections(userAnswers: UserAnswers) : BigDecimal =
+    getVatOwedToEuCountries(userAnswers).filter(vat => vat.totalVat > 0).map(_.totalVat).sum
+
 }

@@ -23,7 +23,7 @@
     govukButton: GovukButton
 )
 
-@(summaryLists: Seq[(Option[String], SummaryList)], period: Period, totalVatToCountries: List[TotalVatToCountry], totalVatOnSales: BigDecimal)(implicit request: Request[_], messages: Messages)
+@(summaryLists: Seq[(Option[String], SummaryList)], period: Period, totalVatToCountries: List[TotalVatToCountry], totalVatOnSales: BigDecimal, noPaymentDueCountries: List[TotalVatToCountry], containsCorrections: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
 
@@ -39,9 +39,12 @@
         }
 
         @if(totalVatOnSales > 0) {
-            <table class="govuk-table">
-                <caption class="govuk-table__caption govuk-table__caption--m">
-                    @messages("checkYourAnswers.vatOwedToEuCountries.heading")
+            <table class="govuk-table govuk-!-margin-bottom-8">
+                <caption class="govuk-table__caption">
+                    @if(containsCorrections){
+                    <p class=" govuk-table__caption--m">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>
+                    <p class=" govuk-table__caption--s">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption")</p>
+                    }else{<p class=" govuk-table__caption--m">@messages("checkYourAnswers.vatOwedToEuCountries.heading")</p>}
                 </caption>
                 <thead class="govuk-table__head">
                 <tr class="govuk-table__row">
@@ -60,6 +63,7 @@
             </table>
         }
 
+
         <dl class="govuk-summary-list  govuk-!-margin-bottom-9">
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-third">
@@ -71,6 +75,29 @@
             </div>
         </dl>
 
+        @if(noPaymentDueCountries.nonEmpty) {
+        <table class="govuk-table">
+            <caption class="govuk-table__caption">
+                <p class=" govuk-table__caption--s">@messages("checkYourAnswers.noPaymentsDue.heading")</p>
+                <p class="govuk-body">@messages("checkYourAnswers.noPaymentsDue.caption")</p>
+
+            </caption>
+            <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswersLabel.country")</th>
+                <th scope="col" class="govuk-table__header">@messages("checkYourAnswersLabel.amount")</th>
+            </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+            @for(noPaymentDueCountry <- noPaymentDueCountries) {
+            <tr class="govuk-table__row">
+                <td scope="row" class="govuk-table__cell">@noPaymentDueCountry.country.name</td>
+                <td class="govuk-table__cell">@Html(currencyFormat(noPaymentDueCountry.totalVat))</td>
+            </tr>
+            }
+            </tbody>
+        </table>
+        }
         @govukButton(
             ButtonViewModel(messages("site.submit"))
         )

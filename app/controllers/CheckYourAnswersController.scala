@@ -29,6 +29,7 @@ import pages.CheckYourAnswersPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.EmailConfirmationQuery
+import queries.corrections.AllCorrectionPeriodsQuery
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
@@ -78,8 +79,11 @@ class CheckYourAnswersController @Inject()(
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
-      val totalVatToCountries = service.getVatOwedToEuCountries(request.userAnswers)
-      val totalVatOnSales = service.getTotalVatOnSales(request.userAnswers)
+      val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
+
+      val totalVatToCountries = service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
+      val noPaymentDueCountries = service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
+      val totalVatOnSales = service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
@@ -87,6 +91,7 @@ class CheckYourAnswersController @Inject()(
           CorrectionReturnPeriodSummary.getAllRows(request.userAnswers)
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
+
 
       Ok(view(
         Seq(
@@ -97,7 +102,9 @@ class CheckYourAnswersController @Inject()(
         ),
         period,
         totalVatToCountries,
-        totalVatOnSales
+        totalVatOnSales,
+        noPaymentDueCountries,
+        containsCorrections
       ))
   }
 
@@ -121,7 +128,7 @@ class CheckYourAnswersController @Inject()(
                 request.registration.contactDetails.fullName,
                 request.registration.registeredCompanyName,
                 request.registration.contactDetails.emailAddress,
-                service.getTotalVatOnSales(request.userAnswers),
+                service.getTotalVatOwedAfterCorrections(request.userAnswers),
                 period
               ) flatMap {
                 emailConfirmationResult =>

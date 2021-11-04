@@ -20,6 +20,7 @@ import base.SpecBase
 import models.VatOnSalesChoice.Standard
 import models.{Country, Index, TotalVatToCountry, VatOnSales, VatRate, VatRateType}
 import pages._
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 
 class SalesAtVatRateServiceSpec extends SpecBase {
 
@@ -258,66 +259,6 @@ class SalesAtVatRateServiceSpec extends SpecBase {
       }
     }
 
-    "getTotalNetSales" - {
-
-      "must return correct total when NI and EU sales exist" in {
-
-        service.getTotalNetSales(completeUserAnswers) mustBe BigDecimal(200)
-      }
-
-      "must return zero when total NI and EU sales don't exist" in {
-
-        service.getTotalNetSales(emptyUserAnswers) mustBe BigDecimal(0)
-      }
-
-      "must return total when NI exists and EU sales don't exist" in {
-
-        service.getTotalNetSales(completeSalesFromNIUserAnswers) mustBe BigDecimal(100)
-      }
-
-      "must return total when NI doesn't exist and EU does exist" in {
-        val answers = emptyUserAnswers
-          .set(SoldGoodsFromEuPage,true).success.value
-          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
-          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
-          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
-          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
-          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-
-        service.getTotalNetSales(answers) mustBe BigDecimal(100)
-      }
-    }
-
-    "getTotalVatOnSales" - {
-
-      "must return correct total when NI and EU sales exist" in {
-
-        service.getTotalVatOnSales(completeUserAnswers) mustBe BigDecimal(1020)
-      }
-
-      "must return zero when total NI and EU sales don't exist" in {
-
-        service.getTotalVatOnSales(emptyUserAnswers) mustBe BigDecimal(0)
-      }
-
-      "must return total when NI exists and EU sales don't exist" in {
-
-        service.getTotalVatOnSales(completeSalesFromNIUserAnswers) mustBe BigDecimal(1000)
-      }
-
-      "must return total when NI doesn't exist and EU does exist" in {
-        val answers = emptyUserAnswers
-          .set(SoldGoodsFromEuPage,true).success.value
-          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
-          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
-          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
-          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
-          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-
-        service.getTotalVatOnSales(answers) mustBe BigDecimal(20)
-      }
-    }
-
     "getVatOwedToEuCountries" - {
 
       val belgium: Country = Country("BE", "Belgium")
@@ -334,6 +275,40 @@ class SalesAtVatRateServiceSpec extends SpecBase {
           .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
         val expected = List(TotalVatToCountry(belgium, BigDecimal(20)))
+
+        service.getVatOwedToEuCountries(ua) mustBe expected
+      }
+
+      "must return correct total vat to eu countries for one country from, one country to with one vat rate and a correction for the country" in {
+      val ua = emptyUserAnswers
+        .set(SoldGoodsFromEuPage,true).success.value
+        .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+        .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+        .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
+        .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+        .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+        .set(CorrectionReturnPeriodPage(index0), period).success.value
+        .set(CorrectionCountryPage(index0, index0), belgium).success.value
+        .set(CountryVatCorrectionPage(index0, index0), BigDecimal(100)).success.value
+
+      val expected = List(TotalVatToCountry(belgium, BigDecimal(120)))
+
+      service.getVatOwedToEuCountries(ua) mustBe expected
+    }
+
+      "must return correct total vat to eu countries for one country from, one country to with one vat rate and a correction for another country" in {
+        val ua = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(CorrectionReturnPeriodPage(index0), period).success.value
+          .set(CorrectionCountryPage(index0, index0), spain).success.value
+          .set(CountryVatCorrectionPage(index0, index0), BigDecimal(-100)).success.value
+
+        val expected = List(TotalVatToCountry(belgium, BigDecimal(20)), TotalVatToCountry(spain, BigDecimal(-100)))
 
         service.getVatOwedToEuCountries(ua) mustBe expected
       }
@@ -453,5 +428,97 @@ class SalesAtVatRateServiceSpec extends SpecBase {
         )
       }
     }
+
+    "getTotalVatOwedAfterCorrections" - {
+
+      "must return correct total when NI and EU sales exist" in {
+
+        service.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1020)
+      }
+
+      "must return zero when total NI and EU sales don't exist" in {
+
+        service.getTotalVatOwedAfterCorrections(emptyUserAnswers) mustBe BigDecimal(0)
+      }
+
+      "must return total when NI exists and EU sales don't exist" in {
+
+        service.getTotalVatOwedAfterCorrections(completeSalesFromNIUserAnswers) mustBe BigDecimal(1000)
+      }
+
+      "must return total when NI doesn't exist and EU does exist" in {
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+
+        service.getTotalVatOwedAfterCorrections(answers) mustBe BigDecimal(20)
+      }
+
+      "must return correct total when there is a positive correction " in {
+        val ua = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(CorrectionReturnPeriodPage(index0), period).success.value
+          .set(CorrectionCountryPage(index0, index0), Country("BE", "Belgium")).success.value
+          .set(CountryVatCorrectionPage(index0, index0), BigDecimal(100)).success.value
+
+        service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(120)
+
+      }
+
+      "must return correct total when there is a negative correction" in {
+        val ua = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(1000)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(200))).success.value
+          .set(CorrectionReturnPeriodPage(index0), period).success.value
+          .set(CorrectionCountryPage(index0, index0), Country("BE", "Belgium")).success.value
+          .set(CountryVatCorrectionPage(index0, index0), BigDecimal(-100)).success.value
+
+        service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(100)
+      }
+
+      "must return zero when the correction makes the total amount negative for a country" in {
+        val ua = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(1000)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(100))).success.value
+          .set(CorrectionReturnPeriodPage(index0), period).success.value
+          .set(CorrectionCountryPage(index0, index0), Country("BE", "Belgium")).success.value
+          .set(CountryVatCorrectionPage(index0, index0), BigDecimal(-1000)).success.value
+
+        service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(0)
+      }
+
+      "must not subtract the negative amount for one country from the positive total for other countries" in {
+        val ua = emptyUserAnswers
+          .set(SoldGoodsFromEuPage,true).success.value
+          .set(CountryOfSaleFromEuPage(index), Country("HR", "Croatia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index, index), Country("BE", "Belgium")).success.value
+          .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
+          .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(1000)).success.value
+          .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(100))).success.value
+          .set(CorrectionReturnPeriodPage(index0), period).success.value
+          .set(CorrectionCountryPage(index0, index0), Country("EE", "Estonia")).success.value
+          .set(CountryVatCorrectionPage(index0, index0), BigDecimal(-1000)).success.value
+
+        service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(100)
+      }
+    }
+
   }
 }

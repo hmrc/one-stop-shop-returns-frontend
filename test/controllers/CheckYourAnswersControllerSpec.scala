@@ -32,6 +32,7 @@ import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import pages.{CheckYourAnswersPage, SoldGoodsFromEuPage, SoldGoodsFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -74,6 +75,55 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
         contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
         contentAsString(result).contains("VAT owed to EU countries") mustBe true
+        contentAsString(result).contains("Corrections") mustBe true
+      }
+    }
+
+    "must contain VAT declared to EU countries after corrections heading if there were corrections" in {
+      val answers = completeUserAnswers
+        .set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
+
+      val application = applicationBuilder(userAnswers = Some(answers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(period).url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result).contains("Business name") mustBe true
+        contentAsString(result).contains(registration.registeredCompanyName) mustBe true
+        contentAsString(result).contains(registration.vrn.vrn) mustBe true
+        contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
+        contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
+        contentAsString(result).contains("VAT declared to EU countries after corrections") mustBe true
+        contentAsString(result).contains("Corrections") mustBe true
+      }
+    }
+
+    "must contain VAT declared where no payment is due heading if there were corrections" in {
+      val answers = completeUserAnswers
+        .set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(-1000)).success.value
+
+      val application = applicationBuilder(userAnswers = Some(answers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(period).url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result).contains("Business name") mustBe true
+        contentAsString(result).contains(registration.registeredCompanyName) mustBe true
+        contentAsString(result).contains(registration.vrn.vrn) mustBe true
+        contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
+        contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
+        contentAsString(result).contains("VAT declared to EU countries after corrections") mustBe true
+        contentAsString(result).contains("VAT declared where no payment is due") mustBe true
         contentAsString(result).contains("Corrections") mustBe true
       }
     }
@@ -136,7 +186,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           .thenReturn(Future.successful(EMAIL_ACCEPTED))
 
         val totalVatOnSales = BigDecimal(100)
-        when(salesAtVatRateService.getTotalVatOnSales(any())) thenReturn totalVatOnSales
+        when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
         doNothing().when(auditService).audit(any())(any(), any())
 
         val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
@@ -277,7 +327,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       when(salesAtVatRateService.getEuTotalNetSales(any())).thenReturn(Some(BigDecimal(4444)))
       when(salesAtVatRateService.getNiTotalVatOnSales(any())).thenReturn(Some(BigDecimal(5555)))
       when(salesAtVatRateService.getNiTotalNetSales(any())).thenReturn(Some(BigDecimal(6666)))
-      when(salesAtVatRateService.getTotalVatOnSales(any())).thenReturn(BigDecimal(8888))
+      when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())).thenReturn(BigDecimal(8888))
       when(salesAtVatRateService.getVatOwedToEuCountries(any()))
         .thenReturn(List(TotalVatToCountry(spain, BigDecimal(7777))))
 
