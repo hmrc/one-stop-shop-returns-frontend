@@ -18,7 +18,7 @@ package controllers.corrections
 
 import base.SpecBase
 import forms.corrections.RemovePeriodCorrectionFormProvider
-import models.NormalMode
+import models.{Index, NormalMode}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -36,7 +36,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new RemovePeriodCorrectionFormProvider()
   private val form = formProvider()
 
-  private lazy val removePeriodCorrectionRoute = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period).url
+  private lazy val removePeriodCorrectionRoute = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, index).url
 
   "RemovePeriodCorrection Controller" - {
 
@@ -52,7 +52,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[RemovePeriodCorrectionView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index)(request, messages(application)).toString
       }
     }
 
@@ -70,7 +70,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, index)(request, messages(application)).toString
       }
     }
 
@@ -115,7 +115,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index)(request, messages(application)).toString
       }
     }
 

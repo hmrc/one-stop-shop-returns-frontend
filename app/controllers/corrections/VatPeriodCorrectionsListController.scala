@@ -16,14 +16,17 @@
 
 package controllers.corrections
 
+import connectors.ReturnStatusConnector
 import controllers.actions._
 import controllers.routes.IndexController
 import controllers.corrections.{routes => correctionsRoutes}
 import controllers.{routes => baseRoutes}
 import forms.corrections.VatPeriodCorrectionsListFormProvider
-import models.{Index, Mode, Period}
+import models.SubmissionStatus.Complete
+import models.{Index, Mode, NormalMode, Period}
 import pages.PageConstants.{correctionPeriod, corrections}
-import pages.corrections.VatCorrectionsListPage
+import pages.corrections.{CorrectionReturnSinglePeriodPage, VatCorrectionsListPage}
+import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.libs.json.JsObject
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -35,19 +38,38 @@ import scala.concurrent.ExecutionContext
 
 class VatPeriodCorrectionsListController @Inject()(
                                        cc: AuthenticatedControllerComponents,
-                                       formProvider: VatPeriodCorrectionsListFormProvider,
-                                       view: VatPeriodCorrectionsListView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                       view: VatPeriodCorrectionsListView,
+                                       returnStatusConnector: ReturnStatusConnector
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+
     implicit request =>
 
-      val correctionPeriods: List[Period] = (request.userAnswers.data \ corrections).asOpt[List[JsObject]]
-        .map(json => json.flatMap(o => (o \ correctionPeriod).asOpt[Period])).getOrElse(List())
+      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
+        case Right(returnStatuses) =>
+          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-      Ok(view(mode, period, correctionPeriods))
+          if(periods.isEmpty) {
+            Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+          } else {
+            val completedCorrectionPeriods: List[Period] = (request.userAnswers.data \ corrections).asOpt[List[JsObject]]
+              .map(json => json.flatMap(o => (o \ correctionPeriod).asOpt[Period])).getOrElse(List())
+
+            val availableCorrectionPeriods = periods.diff(completedCorrectionPeriods).distinct
+
+            if(availableCorrectionPeriods.isEmpty) {
+              Ok(view(mode, period, completedCorrectionPeriods))
+            } else {
+              Redirect(controllers.corrections.routes.VatPeriodAvailableCorrectionsListController.onPageLoad(NormalMode, period))
+            }
+          }
+        case Left(value) =>
+          logger.error(s"there was an error $value")
+          throw new Exception(value.toString)
+      }
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
