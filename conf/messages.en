@@ -207,7 +207,7 @@ checkYourAnswers.noPaymentsDue.caption = EU countries are responsible for refund
 checkYourAnswers.allSales.heading = All sales
 checkYourAnswers.corrections.heading = Corrections
 checkYourAnswers.netValueOfSales.checkYourAnswersLabel = Total sales excluding VAT
-checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT owed
+checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT payable
 checkYourAnswers.correctionReturnPeriod.checkYourAnswersLabel = Periods with corrections
 
 salesFromEuList.title.singular = You added sales from one EU country
