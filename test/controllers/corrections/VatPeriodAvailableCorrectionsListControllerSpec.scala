@@ -21,14 +21,14 @@ import connectors.ReturnStatusConnector
 import forms.corrections.{UndeclaredCountryCorrectionFormProvider, VatPeriodCorrectionsListFormProvider}
 import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.{Complete, Overdue}
-import models.{Index, NormalMode, Period, PeriodWithStatus, SubmissionStatus, UserAnswers}
+import models.{Country, Index, NormalMode, Period, PeriodWithStatus, SubmissionStatus, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.CorrectionReturnPeriodPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -43,7 +43,9 @@ class VatPeriodAvailableCorrectionsListControllerSpec extends SpecBase with Mock
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] =
     periods.zipWithIndex
       .foldLeft (Option(userAnswers))((ua, indexedPeriod) =>
-        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption))
+        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption)
+          .flatMap(_.set(CorrectionCountryPage(Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
+          .flatMap(_.set(CountryVatCorrectionPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
 
   private def getStatusResponse(periods: Seq[Period]): Future[Right[Nothing, Seq[PeriodWithStatus]]] =
     getStatusResponse(periods, Complete)

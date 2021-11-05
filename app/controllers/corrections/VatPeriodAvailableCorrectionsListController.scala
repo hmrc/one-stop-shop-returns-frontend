@@ -20,17 +20,14 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.SubmissionStatus.Complete
-import models.{Index, Mode, NormalMode, Period}
-import models.Period._
+import models.{Mode, NormalMode, Period}
 import pages.corrections.VatPeriodCorrectionsListPage
-import play.api.i18n.I18nSupport
-import play.api.libs.json.JsObject
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.corrections.VatPeriodCorrectionsListView
-import views.html.corrections.VatPeriodAvailableCorrectionsListView
-import pages.PageConstants.{correctionPeriod, corrections}
 import play.api.Logging
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.DeriveCompletedCorrectionPeriods
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.corrections.VatPeriodAvailableCorrectionsListView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -55,17 +52,18 @@ class VatPeriodAvailableCorrectionsListController @Inject()(
 
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
         case Right(returnStatuses) =>
-          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+          val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-          if(periods.isEmpty) {
+          if(allPeriods.isEmpty) {
             Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
           } else {
-            val completedCorrectionPeriods: List[Period] = (request.userAnswers.data \ corrections).asOpt[List[JsObject]]
-              .map(json => json.flatMap(o => (o \ correctionPeriod).asOpt[Period])).getOrElse(List())
 
-            val availableCorrectionPeriods = periods.diff(completedCorrectionPeriods).distinct
+            val completedCorrectionPeriods: List[Period] = request.userAnswers
+              .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
 
-            if(availableCorrectionPeriods.isEmpty) {
+            val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
+
+            if(uncompletedCorrectionPeriods.isEmpty) {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period))
             } else {
               Ok(view(preparedForm, mode, period, completedCorrectionPeriods))
@@ -82,18 +80,19 @@ class VatPeriodAvailableCorrectionsListController @Inject()(
 
       returnStatusConnector.listStatuses(request.registration.commencementDate).flatMap {
         case Right(returnStatuses) =>
-          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-          if(periods.isEmpty) {
+          val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+
+          if(allPeriods.isEmpty) {
             Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
           }
 
-          val completedCorrectionPeriods: List[Period] = (request.userAnswers.data \ corrections).asOpt[List[JsObject]]
-            .map(json => json.flatMap(o => (o \ correctionPeriod).asOpt[Period])).getOrElse(List())
+          val completedCorrectionPeriods: List[Period] = request.userAnswers
+            .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
 
-          val availableCorrectionPeriods = periods.diff(completedCorrectionPeriods).distinct
+          val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
 
-          if(availableCorrectionPeriods.isEmpty) {
+          if(uncompletedCorrectionPeriods.isEmpty) {
             Future.successful(Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period)))
           } else {
             form.bindFromRequest().fold(
@@ -102,7 +101,6 @@ class VatPeriodAvailableCorrectionsListController @Inject()(
               value =>
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPeriodCorrectionsListPage, value))
-                  _              <- cc.sessionRepository.set(updatedAnswers)
                 } yield Redirect(VatPeriodCorrectionsListPage.navigate(mode, updatedAnswers, value))
             )
           }

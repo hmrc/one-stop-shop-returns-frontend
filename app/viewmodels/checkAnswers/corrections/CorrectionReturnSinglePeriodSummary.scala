@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers.corrections
 
 import controllers.routes
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Index, UserAnswers}
 import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,8 +26,8 @@ import viewmodels.implicits._
 
 object CorrectionReturnSinglePeriodSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CorrectionReturnSinglePeriodPage).map {
+  def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(CorrectionReturnSinglePeriodPage(index)).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"
@@ -36,7 +36,7 @@ object CorrectionReturnSinglePeriodSummary {
           key = "correctionReturnSinglePeriod.checkYourAnswersLabel",
           value = ValueViewModel(value),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(CheckMode, answers.period).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(CheckMode, answers.period, index).url)
               .withVisuallyHiddenText(messages("correctionReturnSinglePeriod.change.hidden"))
           )
         )

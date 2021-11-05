@@ -18,18 +18,17 @@ package controllers.corrections
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
-import models.{Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
-import models.Quarter.{Q1, Q2, Q3, Q4}
+import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.Complete
+import models.{Country, Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.CorrectionReturnPeriodPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.inject.bind
-import play.api.libs.json.{JsArray, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.corrections.VatPeriodCorrectionsListView
@@ -43,7 +42,9 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] =
     periods.zipWithIndex
       .foldLeft (Option(userAnswers))((ua, indexedPeriod) =>
-        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption))
+        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption)
+          .flatMap(_.set(CorrectionCountryPage(Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
+          .flatMap(_.set(CountryVatCorrectionPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
 
   private def getStatusResponse(periods: Seq[Period]) = {
     Future.successful(Right(periods.map(period => PeriodWithStatus(period, Complete))))
@@ -73,8 +74,6 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
         val result = route(application, request).value
 
-        val periodCorrectionsList = Seq()
-
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
@@ -94,8 +93,6 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
       "and no corrections have been added" - {
 
         val completedCorrections = Seq()
-
-        val availableCorrectionPeriods = allPeriods
 
         val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, completedCorrections))
           .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -147,9 +144,6 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
         "and there are no available correction periods" - {
 
-          val completedCorrections = allPeriods
-
-          val availableCorrectionPeriods = Seq()
 
           val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, allPeriods))
             .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -175,7 +169,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
               tableRows.size() mustEqual 3
 
               val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
-              responseString mustEqual view(NormalMode, period, completedCorrections)(request, messages(application)).toString
+              responseString mustEqual view(NormalMode, period, allPeriods)(request, messages(application)).toString
             }
 
           }
