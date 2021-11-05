@@ -191,7 +191,7 @@ POST        /:period/vatPeriodCorrectionsList                                   
 GET         /:period/changeVatPeriodCorrectionsList                                                          controllers.corrections.VatPeriodCorrectionsListController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST        /:period/changeVatPeriodCorrectionsList                                                          controllers.corrections.VatPeriodCorrectionsListController.onSubmit(mode: Mode = CheckMode, period: Period)
 
-GET         /:period/vatPeriodAvailableCorrectionsList                                                       controllers.corrections.VatPeriodAvailableCorrectionsListController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST        /:period/vatPeriodAvailableCorrectionsList                                                       controllers.corrections.VatPeriodAvailableCorrectionsListController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET         /:period/changeVatPeriodAvailableCorrectionsList                                                 controllers.corrections.VatPeriodAvailableCorrectionsListController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST        /:period/changeVatPeriodAvailableCorrectionsList                                                 controllers.corrections.VatPeriodAvailableCorrectionsListController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET         /:period/vatPeriodAvailableCorrectionsList                                                       controllers.corrections.VatPeriodCorrectionsListWithFormController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST        /:period/vatPeriodAvailableCorrectionsList                                                       controllers.corrections.VatPeriodCorrectionsListWithFormController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET         /:period/changeVatPeriodAvailableCorrectionsList                                                 controllers.corrections.VatPeriodCorrectionsListWithFormController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST        /:period/changeVatPeriodAvailableCorrectionsList                                                 controllers.corrections.VatPeriodCorrectionsListWithFormController.onSubmit(mode: Mode = CheckMode, period: Period)

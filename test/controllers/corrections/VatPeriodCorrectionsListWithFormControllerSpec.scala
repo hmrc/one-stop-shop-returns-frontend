@@ -18,7 +18,7 @@ package controllers.corrections
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
-import forms.corrections.{UndeclaredCountryCorrectionFormProvider, VatPeriodCorrectionsListFormProvider}
+import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.{Complete, Overdue}
 import models.{Country, Index, NormalMode, Period, PeriodWithStatus, SubmissionStatus, UserAnswers}
@@ -32,13 +32,13 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Cou
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.corrections.{VatPeriodAvailableCorrectionsListView, VatPeriodCorrectionsListView}
+import views.html.corrections.VatPeriodAvailableCorrectionsListView
 
 import scala.concurrent.Future
 
-class VatPeriodAvailableCorrectionsListControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private lazy val vatPeriodCorrectionsListRoute = controllers.corrections.routes.VatPeriodAvailableCorrectionsListController.onPageLoad(NormalMode, period).url
+  private lazy val vatPeriodCorrectionsListRoute = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(NormalMode, period).url
 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] =
     periods.zipWithIndex
@@ -70,11 +70,9 @@ class VatPeriodAvailableCorrectionsListControllerSpec extends SpecBase with Mock
     Period(2022, Q1)
   )
 
-  "VatPeriodCorrectionsList Controller" - {
+  "VatPeriodCorrectionsListWithFormController" - {
 
     "when there are no previous return periods must redirect to JourneyRecovery" in {
-
-      Mockito.reset(mockReturnStatusConnector)
 
       when(mockReturnStatusConnector.listStatuses(any())(any()))
         .thenReturn(getStatusResponse(allPeriods, Overdue))
@@ -91,9 +89,12 @@ class VatPeriodAvailableCorrectionsListControllerSpec extends SpecBase with Mock
       }
     }
 
-    "when there are multiple previous return periods" - {
+    "when there are previous return periods" - {
 
-      "and no corrections have been added" - {
+      "and no corrections have been added must display empty table and form" in {
+
+        val expectedTitle = "You have not corrected the VAT amount for any return periods"
+        val expectedTableRows = 0
 
         val completedCorrections = List.empty[Period]
 
@@ -109,22 +110,24 @@ class VatPeriodAvailableCorrectionsListControllerSpec extends SpecBase with Mock
           val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
           val result = route(application, request).value
 
-          "must display correct header without table and form" in {
-            status(result) mustEqual OK
-            val responseString = contentAsString(result)
-            val doc = Jsoup.parse(responseString)
-            val header = doc.getElementsByClass("govuk-heading-xl").get(0).text()
-            doc.getElementsByClass("govuk-table__row").size() mustBe 0
-            header mustEqual "You have not corrected the VAT amount for any return periods"
-            val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
-            responseString mustEqual view(form, NormalMode, period, completedCorrections)(request, messages(application)).toString
-          }
+          status(result) mustEqual OK
+          val responseString = contentAsString(result)
+          val doc = Jsoup.parse(responseString)
+
+          doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
+          doc.getElementsByClass("govuk-table__row").size() mustBe expectedTableRows
+
+          val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
+          responseString mustEqual view(form, NormalMode, period, completedCorrections)(request, messages(application)).toString
         }
       }
 
       "and corrections have been added" - {
 
-        "and there are available correction periods must display correct header and table and form" in {
+        "and there are uncompleted correction periods must display filled table and form" in {
+
+          val expectedTitle = "You have corrected the VAT amount for one return period"
+          val expectedTableRows = 1
 
           val completedCorrections = List(
             Period(2021, Q3)
@@ -142,28 +145,21 @@ class VatPeriodAvailableCorrectionsListControllerSpec extends SpecBase with Mock
 
           running(application) {
             val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
-
             val result = route(application, request).value
-
             status(result) mustEqual OK
 
             val responseString = contentAsString(result)
             val doc = Jsoup.parse(responseString)
-            val header = doc.getElementsByClass("govuk-heading-xl").get(0).text()
-            val tableRows = doc.getElementsByClass("govuk-table__row")
 
-            header mustEqual "You have corrected the VAT amount for one return period"
-            tableRows.size() mustEqual 1
+            doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
+            doc.getElementsByClass("govuk-table__row").size() mustEqual expectedTableRows
 
             val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
             responseString mustEqual view(form, NormalMode, period, completedCorrections)(request, messages(application)).toString
           }
-
-          // on submit, form must be answered
-
         }
 
-        "and there are no available correction periods must display correct header and table and no for"  in {
+        "and there are no uncompleted correction periods must redirect to page without form"  in {
 
           when(mockReturnStatusConnector.listStatuses(any())(any()))
             .thenReturn(getStatusResponse(allPeriods))

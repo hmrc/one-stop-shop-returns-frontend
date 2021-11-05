@@ -32,7 +32,7 @@ import views.html.corrections.VatPeriodAvailableCorrectionsListView
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class VatPeriodAvailableCorrectionsListController @Inject()(
+class VatPeriodCorrectionsListWithFormController @Inject()(
                                                     cc: AuthenticatedControllerComponents,
                                                     formProvider: VatPeriodCorrectionsListFormProvider,
                                                     view: VatPeriodAvailableCorrectionsListView,

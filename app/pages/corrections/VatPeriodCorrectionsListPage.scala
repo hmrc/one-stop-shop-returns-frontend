@@ -16,13 +16,13 @@
 
 package pages.corrections
 
-import controllers.routes
 import controllers.corrections.{routes => correctionRoutes}
+import controllers.routes
 import models.{Index, Mode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.corrections.{DeriveNumberOfCorrectionPeriods, DeriveNumberOfCorrections}
+import queries.corrections.DeriveNumberOfCorrectionPeriods
 
 case object VatPeriodCorrectionsListPage extends QuestionPage[Boolean] {
 
