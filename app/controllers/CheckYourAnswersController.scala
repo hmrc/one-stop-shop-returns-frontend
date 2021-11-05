@@ -18,6 +18,7 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
@@ -47,7 +48,8 @@ class CheckYourAnswersController @Inject()(
                                             vatReturnService: VatReturnService,
                                             auditService: AuditService,
                                             emailService: EmailService,
-                                            vatReturnConnector: VatReturnConnector
+                                            vatReturnConnector: VatReturnConnector,
+                                            config: FrontendAppConfig
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -79,30 +81,40 @@ class CheckYourAnswersController @Inject()(
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
-      val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
+      val containsCorrections = config.correctionToggle && request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
       val totalVatToCountries =
         service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
-      val noPaymentDueCountries =
+      val noPaymentDueCountries = if(config.correctionToggle) {
         service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
+      }else{List.empty}
       val totalVatOnSales =
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
-      val correctionsSummaryList = SummaryListViewModel(
-        rows = Seq(
-          CorrectPreviousReturnSummary.row(request.userAnswers),
-          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers)
-        ).flatten
-      ).withCssClass("govuk-!-margin-bottom-9")
 
-
-      Ok(view(
+      val summaryLists = if(config.correctionToggle){
+        val correctionsSummaryList = SummaryListViewModel(
+          rows = Seq(
+            CorrectPreviousReturnSummary.row(request.userAnswers),
+            CorrectionReturnPeriodSummary.getAllRows(request.userAnswers)
+          ).flatten
+        ).withCssClass("govuk-!-margin-bottom-9")
+        Seq(
+        (None, businessSummaryList),
+        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
+        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
+        (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
+      )}else{
         Seq(
           (None, businessSummaryList),
           (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
-          (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
-        ),
+          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
+        )
+      }
+
+
+      Ok(view(
+        summaryLists,
         period,
         totalVatToCountries,
         totalVatOnSales,

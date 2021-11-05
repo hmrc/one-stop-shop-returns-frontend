@@ -16,6 +16,7 @@
 
 package services
 
+import config.FrontendAppConfig
 import models.{TotalVatToCountry, UserAnswers}
 import queries.AllSalesFromEuQuery
 import queries.AllSalesFromNiQuery
@@ -23,7 +24,7 @@ import queries.corrections.AllCorrectionPeriodsQuery
 
 import javax.inject.Inject
 
-class SalesAtVatRateService @Inject()() {
+class SalesAtVatRateService @Inject()(config: FrontendAppConfig) {
 
   def getNiTotalNetSales(userAnswers: UserAnswers): Option[BigDecimal]   = {
     userAnswers.get(AllSalesFromNiQuery).map(allSales =>
@@ -74,12 +75,13 @@ class SalesAtVatRateService @Inject()() {
         salesAtVatRate <- saleFromNi.salesAtVatRate
       } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.vatOnSales.amount)
 
-    val correctionCountriesAmount =
+    val correctionCountriesAmount = if(config.correctionToggle) {
       for {
         allCorrectionPeriods <- userAnswers.get(AllCorrectionPeriodsQuery).toSeq
         periodWithCorrections <- allCorrectionPeriods
         countryCorrection <- periodWithCorrections.correctionToCountry
       } yield TotalVatToCountry(countryCorrection.correctionCountry, countryCorrection.countryVatCorrection)
+    }else{List.empty}
 
     val vatOwedToEuCountries =
       vatOwedToEuCountriesFromEu ++ vatOwedToEuCountriesFromNI ++ correctionCountriesAmount
