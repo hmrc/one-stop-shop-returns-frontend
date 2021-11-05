@@ -206,7 +206,7 @@
                                         case Some(vatOwed) => {
                                             <p class="govuk-body">
                                                 @Html(messages(
-                                                    "index.payment.overdueAmountMaybeOwed",
+                                                    "index.payment.overdueAmountOwed",
                                                     currencyFormat(vatOwed),
                                                     vatReturnWithFinancialData.vatReturn.period.displayText,
                                                     vatReturnWithFinancialData.vatReturn.period.paymentDeadlineDisplay
@@ -222,7 +222,7 @@
                                         case _ => {
                                             <p class="govuk-body">
                                                 @Html(messages(
-                                                    "index.payment.overdueMaybeAmountOwed",
+                                                    "index.payment.overdueAmountMaybeOwed",
                                                     "money",
                                                     vatReturnWithFinancialData.vatReturn.period.displayText,
                                                     vatReturnWithFinancialData.vatReturn.period.paymentDeadlineDisplay
