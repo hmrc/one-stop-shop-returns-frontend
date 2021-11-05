@@ -107,18 +107,14 @@
 
         <div class="tile tile-no-border">
             <div id="payments" class="tile-body">
+                <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
                 @(dueVatReturnWithFinancialData.size + overdueVatReturnWithFinancialData.size) match {
                     case 0 => {
-                        <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
-
                         <p class="govuk-body">
                         @messages("index.payment.nothingOwed")
                         </p>
                     }
                     case _ => {
-                        @if(dueVatReturnWithFinancialData.nonEmpty) {
-                            <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
-                        }
                         <div class="govuk-warning-text">
                             <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                             <strong class="govuk-warning-text__text">
@@ -126,6 +122,9 @@
                                 @messages("index.payment.pendingPayments")
                             </strong>
                         </div>
+                        @if(dueVatReturnWithFinancialData.nonEmpty) {
+                            <h3 class="govuk-heading-s push--top">@messages("index.payment.dueHeading")</h3>
+                        }
                         @for(vatReturnWithFinancialData <- dueVatReturnWithFinancialData) {
                             @vatReturnWithFinancialData.charge match {
                                 case Some(charge) => {
@@ -182,7 +181,7 @@
 
                         }
                         @if(overdueVatReturnWithFinancialData.nonEmpty) {
-                            <h2 class="govuk-heading-m push--top">@messages("index.payment.overdueHeading")</h2>
+                            <h3 class="govuk-heading-s push--top">@messages("index.payment.overdueHeading")</h3>
                         }
                         @for(vatReturnWithFinancialData <- overdueVatReturnWithFinancialData) {
                             @vatReturnWithFinancialData.charge match {
