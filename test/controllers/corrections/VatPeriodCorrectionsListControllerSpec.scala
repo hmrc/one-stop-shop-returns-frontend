@@ -87,10 +87,10 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         Period(2022, Q1)
       )
 
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(getStatusResponse(allPeriods))
-
       "and there are uncompleted correction periods must redirect to page with form" in {
+
+        when(mockReturnStatusConnector.listStatuses(any())(any()))
+          .thenReturn(getStatusResponse(allPeriods))
 
         val completedCorrections = Seq()
 
@@ -108,6 +108,9 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
       }
 
       "and there no uncompleted correction periods must display filled table and correct header" in {
+
+        when(mockReturnStatusConnector.listStatuses(any())(any()))
+          .thenReturn(getStatusResponse(allPeriods))
 
         val expectedTitle = "You have corrected the VAT amount for 3 return periods"
         val expectedTableRows = 3
