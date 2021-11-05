@@ -44,11 +44,10 @@
             }
             @govukSummaryList(summaryList)
         }
-
+        @if(containsCorrections){<p class="govuk-table__caption--m">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>}
         @if(noPaymentDueCountries.nonEmpty) {
             <table class="govuk-table">
                 <caption class="govuk-table__caption">
-                    <p class="govuk-table__caption--m">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>
                     <p class="govuk-table__caption--s">@messages("checkYourAnswers.noPaymentsDue.heading")</p>
                     <p class="govuk-body">@messages("checkYourAnswers.noPaymentsDue.caption")</p>
                 </caption>

@@ -59,7 +59,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
   "Check Your Answers Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET when there were no corrections" in {
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers)).build()
 
@@ -76,10 +76,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
         contentAsString(result).contains("VAT owed to EU countries") mustBe true
         contentAsString(result).contains("Corrections") mustBe true
+        contentAsString(result).contains("VAT declared where no payment is due") mustBe false
+        contentAsString(result).contains("VAT declared to EU countries after corrections") mustBe false
       }
     }
 
-    "must contain VAT declared to EU countries after corrections heading if there were corrections" in {
+    "must contain VAT declared to EU countries after corrections heading if there were corrections and all totals are positive" in {
       val answers = completeUserAnswers
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
@@ -100,10 +102,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
         contentAsString(result).contains("VAT declared to EU countries after corrections") mustBe true
         contentAsString(result).contains("Corrections") mustBe true
+        contentAsString(result).contains("VAT declared where no payment is due") mustBe false
+        contentAsString(result).contains("VAT owed to EU countries") mustBe false
       }
     }
 
-    "must contain VAT declared where no payment is due heading if there were corrections" in {
+    "must contain VAT declared where no payment is due heading if there were negative totals after corrections" in {
       val answers = completeUserAnswers
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
@@ -125,6 +129,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         contentAsString(result).contains("VAT declared to EU countries after corrections") mustBe true
         contentAsString(result).contains("VAT declared where no payment is due") mustBe true
         contentAsString(result).contains("Corrections") mustBe true
+        contentAsString(result).contains("VAT owed to EU countries") mustBe false
       }
     }
 
