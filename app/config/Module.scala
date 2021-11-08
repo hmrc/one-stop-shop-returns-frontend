@@ -25,12 +25,7 @@ class Module extends AbstractModule {
 
   override def configure(): Unit = {
     bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(
-      Clock.fixed(
-        Instant.parse("2023-10-01T12:00:00.00Z"),
-        ZoneId.of("Australia/Melbourne")
-      )
-    )
+    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
     bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
   }
 }
