@@ -148,7 +148,6 @@
                                             <p class="govuk-body">
                                                 @Html(messages(
                                                     "index.payment.amountMaybeOwed",
-                                                    currencyFormat(vatOwed),
                                                     vatReturnWithFinancialData.vatReturn.period.displayText
                                                 ))
                                             </p>
@@ -163,7 +162,6 @@
                                             <p class="govuk-body">
                                                 @Html(messages(
                                                     "index.payment.amountMaybeOwed",
-                                                    "money",
                                                     vatReturnWithFinancialData.vatReturn.period.displayText
                                                 ))
                                             </p>
@@ -223,7 +221,6 @@
                                             <p class="govuk-body">
                                                 @Html(messages(
                                                     "index.payment.overdueAmountMaybeOwed",
-                                                    "money",
                                                     vatReturnWithFinancialData.vatReturn.period.displayText,
                                                     vatReturnWithFinancialData.vatReturn.period.paymentDeadlineDisplay
                                                 ))
