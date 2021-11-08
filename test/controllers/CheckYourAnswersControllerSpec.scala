@@ -62,14 +62,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
     "when correction toggle if false" - {
       "must return OK and the correct view for a GET" in {
-        val mockAppConfig = mock[FrontendAppConfig]
-        when(mockAppConfig.correctionToggle) thenReturn (false)
         val answers = completeUserAnswers
           .set(CorrectionReturnPeriodPage(index), period).success.value
           .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
           .set(CountryVatCorrectionPage(index, index), BigDecimal(-1000)).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
+          .configure("features.corrections-toggle" -> false)
           .build()
 
         running(application) {
@@ -94,10 +93,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
     "when correction toggle is true" - {
 
       "must return OK and the correct view for a GET when there were no corrections" in {
-        val mockAppConfig = mock[FrontendAppConfig]
-        when(mockAppConfig.correctionToggle) thenReturn (true)
-
         val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+          .configure("features.corrections-toggle" -> true)
           .build()
 
         running(application) {
@@ -119,15 +116,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       }
 
       "must contain VAT declared to EU countries after corrections heading if there were corrections and all totals are positive" in {
-        val mockAppConfig = mock[FrontendAppConfig]
-        when(mockAppConfig.correctionToggle) thenReturn (true)
-
         val answers = completeUserAnswers
           .set(CorrectionReturnPeriodPage(index), period).success.value
           .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
           .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
+          .configure("features.corrections-toggle" -> true)
           .build()
 
         running(application) {
@@ -149,14 +144,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       }
 
       "must contain VAT declared where no payment is due heading if there were negative totals after corrections" in {
-        val mockAppConfig = mock[FrontendAppConfig]
-        when(mockAppConfig.correctionToggle) thenReturn (true)
         val answers = completeUserAnswers
           .set(CorrectionReturnPeriodPage(index), period).success.value
           .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
           .set(CountryVatCorrectionPage(index, index), BigDecimal(-1000)).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
+          .configure("features.corrections-toggle" -> true)
           .build()
 
         running(application) {
