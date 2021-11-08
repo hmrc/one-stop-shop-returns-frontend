@@ -51,22 +51,25 @@ object CorrectionReturnPeriodSummary {
     }
 
   def getAllRows(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
-    val periods = answers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).map{
-      correction => correction.correctionReturnPeriod.displayText
+    val periods =
+      answers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).map {
+        correction => correction.correctionReturnPeriod.displayText
+      }
+
+    if(periods.nonEmpty) {
+      Some(SummaryListRowViewModel(
+        key = messages("checkYourAnswers.correctionReturnPeriod.checkYourAnswersLabel"),
+        value = ValueViewModel(HtmlContent(periods.mkString("</br>"))),
+        actions = Seq(
+          ActionItemViewModel(
+            "site.change",
+            controllers.corrections.routes.VatPeriodCorrectionsListController
+              .onPageLoad(CheckMode, answers.period).url
+          ).withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
+        )
+      ))
+    } else {
+      None
     }
-    if(periods.nonEmpty){
-    Some(SummaryListRowViewModel(
-      key = messages("checkYourAnswers.correctionReturnPeriod.checkYourAnswersLabel"),
-      value = ValueViewModel(HtmlContent(periods.mkString("</br>"))),
-      actions = Seq(
-        ActionItemViewModel(
-          "site.change",
-          controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period).url)
-          .withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
-      )
-    ))
-  }else {None}
   }
-
-
 }

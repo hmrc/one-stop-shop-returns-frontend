@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import models.financialdata.PeriodWithOutstandingAmount
+@import models.financialdata.VatReturnWithFinancialData
 @import utils.CurrencyFormatter.currencyFormat
 
 @this(
@@ -27,8 +27,8 @@
         vrn: String,
         overduePeriods: Seq[Period],
         duePeriod: Option[Period],
-        duePaymentOwedPeriods: Seq[PeriodWithOutstandingAmount],
-        overduePaymentOwedPeriods: Seq[PeriodWithOutstandingAmount],
+        dueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
+        overdueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
         paymentError: Boolean
 )(implicit request: Request[_], messages: Messages)
 
@@ -107,37 +107,137 @@
 
         <div class="tile tile-no-border">
             <div id="payments" class="tile-body">
-                @(duePaymentOwedPeriods.size + overduePaymentOwedPeriods.size) match {
+                <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
+                @(dueVatReturnWithFinancialData.size + overdueVatReturnWithFinancialData.size) match {
                     case 0 => {
-                        <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
-
                         <p class="govuk-body">
                         @messages("index.payment.nothingOwed")
                         </p>
                     }
                     case _ => {
-                        @if(duePaymentOwedPeriods.nonEmpty) {
-                            <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
+                        <div class="govuk-warning-text">
+                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                            <strong class="govuk-warning-text__text">
+                                <span class="govuk-warning-text__assistive">Warning</span>
+                                @messages("index.payment.pendingPayments")
+                            </strong>
+                        </div>
+                        @if(dueVatReturnWithFinancialData.nonEmpty) {
+                            <h3 class="govuk-heading-s push--top">@messages("index.payment.dueHeading")</h3>
                         }
-                        @for(periodWithOutstandingAmount <- duePaymentOwedPeriods) {
-                            <p class="govuk-body">@Html(messages("index.payment.amountOwed", currencyFormat(periodWithOutstandingAmount.outstandingAmount), periodWithOutstandingAmount.period.displayText))</p>
-                            <p class="govuk-body">
-                                <a class="govuk-link" href="@routes.PaymentController.makePayment(periodWithOutstandingAmount.period, (periodWithOutstandingAmount.outstandingAmount * 100).toLong)">@messages("index.payment.makeAPayment")</a>
-                            </p>
+                        @for(vatReturnWithFinancialData <- dueVatReturnWithFinancialData) {
+                            @vatReturnWithFinancialData.charge match {
+                                case Some(charge) => {
+                                    <p class="govuk-body">
+                                        @Html(messages(
+                                            "index.payment.amountOwed",
+                                            currencyFormat(charge.outstandingAmount),
+                                            vatReturnWithFinancialData.vatReturn.period.displayText
+                                        ))
+                                    </p>
+                                    <p class="govuk-body">
+                                        <a class="govuk-link"
+                                          href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, (charge.outstandingAmount * 100).toLong)">
+                                            @messages("index.payment.makeAPayment")
+                                        </a>
+                                    </p>
+                                }
+                                case _ => {
+                                    @vatReturnWithFinancialData.vatOwed match {
+                                        case Some(vatOwed) => {
+                                            <p class="govuk-body">
+                                                @Html(messages(
+                                                    "index.payment.amountMaybeOwed",
+                                                    vatReturnWithFinancialData.vatReturn.period.displayText
+                                                ))
+                                            </p>
+                                            <p class="govuk-body">
+                                                <a class="govuk-link"
+                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatOwed)">
+                                                    @messages("index.payment.makeAPayment")
+                                                </a>
+                                            </p>
+                                        }
+                                        case _ => {
+                                            <p class="govuk-body">
+                                                @Html(messages(
+                                                    "index.payment.amountMaybeOwed",
+                                                    vatReturnWithFinancialData.vatReturn.period.displayText
+                                                ))
+                                            </p>
+                                            <p class="govuk-body">
+                                                <a class="govuk-link"
+                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, 0L)">
+                                                    @messages("index.payment.makeAPayment")
+                                                </a>
+                                            </p>
+                                        }
+                                    }
+
+                                }
+                            }
+
                         }
-                        @if(overduePaymentOwedPeriods.nonEmpty) {
-                            <h2 class="govuk-heading-m push--top">@messages("index.payment.overdueHeading")</h2>
+                        @if(overdueVatReturnWithFinancialData.nonEmpty) {
+                            <h3 class="govuk-heading-s push--top">@messages("index.payment.overdueHeading")</h3>
                         }
-                        @for(periodWithOutstandingAmount <- overduePaymentOwedPeriods) {
-                            <p class="govuk-body">@Html(messages("index.payment.overdueAmountOwed", currencyFormat(periodWithOutstandingAmount.outstandingAmount), periodWithOutstandingAmount.period.displayText, periodWithOutstandingAmount.period.paymentDeadlineDisplay))</p>
-                            <p class="govuk-body">
-                                <a class="govuk-link" href="@routes.PaymentController.makePayment(periodWithOutstandingAmount.period, (periodWithOutstandingAmount.outstandingAmount * 100).toLong)">@messages("index.payment.makeAPayment")</a>
-                            </p>
+                        @for(vatReturnWithFinancialData <- overdueVatReturnWithFinancialData) {
+                            @vatReturnWithFinancialData.charge match {
+                                case Some(charge) => {
+                                    <p class="govuk-body">
+                                        @Html(messages(
+                                            "index.payment.overdueAmountOwed",
+                                            currencyFormat(charge.outstandingAmount),
+                                            vatReturnWithFinancialData.vatReturn.period.displayText,
+                                            vatReturnWithFinancialData.vatReturn.period.paymentDeadlineDisplay
+                                        ))
+                                    </p>
+                                    <p class="govuk-body">
+                                        <a class="govuk-link"
+                                          href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, (charge.outstandingAmount * 100).toLong)">
+                                            @messages("index.payment.makeAPayment")
+                                        </a>
+                                    </p>
+                                }
+                                case _ => {
+                                    @vatReturnWithFinancialData.vatOwed match {
+                                        case Some(vatOwed) => {
+                                            <p class="govuk-body">
+                                                @Html(messages(
+                                                    "index.payment.overdueAmountOwed",
+                                                    currencyFormat(vatOwed),
+                                                    vatReturnWithFinancialData.vatReturn.period.displayText,
+                                                    vatReturnWithFinancialData.vatReturn.period.paymentDeadlineDisplay
+                                                ))
+                                            </p>
+                                            <p class="govuk-body">
+                                                <a class="govuk-link"
+                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatOwed * 100L)">
+                                                    @messages("index.payment.makeAPayment")
+                                                </a>
+                                            </p>
+                                        }
+                                        case _ => {
+                                            <p class="govuk-body">
+                                                @Html(messages(
+                                                    "index.payment.overdueAmountMaybeOwed",
+                                                    vatReturnWithFinancialData.vatReturn.period.displayText,
+                                                    vatReturnWithFinancialData.vatReturn.period.paymentDeadlineDisplay
+                                                ))
+                                            </p>
+                                            <p class="govuk-body">
+                                                <a class="govuk-link"
+                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, 0L)">
+                                                    @messages("index.payment.makeAPayment")
+                                                </a>
+                                            </p>
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-
-
             </div>
         </div>
 

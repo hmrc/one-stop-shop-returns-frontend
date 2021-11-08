@@ -21,8 +21,11 @@ import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.SubmissionStatus
+import models.financialdata.VatReturnWithFinancialData
 import play.api.i18n.I18nSupport
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.{FinancialDataService, VatReturnSalesService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
@@ -34,6 +37,8 @@ class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
+                                       financialDataService: FinancialDataService,
+                                       vatReturnSalesService: VatReturnSalesService,
                                        view: IndexView,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext)
@@ -46,13 +51,23 @@ class YourAccountController @Inject()(
 
       val results = for {
         availablePeriodsWithStatus <- returnStatusConnector.listStatuses(request.registration.commencementDate)
-        periodsWithOutstandingAmounts <- financialDataConnector.getPeriodsAndOutstandingAmounts()
-      } yield (availablePeriodsWithStatus, periodsWithOutstandingAmounts)
+        vatReturnsWithFinancialData <- financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate)
+      } yield (availablePeriodsWithStatus, vatReturnsWithFinancialData)
 
       results.map {
-        case (Right(availablePeriodsWithStatus), Right(periodsWithOutstandingAmounts)) =>
-          val duePeriodsWithOutstandingAmounts = periodsWithOutstandingAmounts.filterNot(_.isOverdue(clock))
-          val overduePeriodsWithOutstandingAmounts = periodsWithOutstandingAmounts.filter(_.isOverdue(clock))
+        case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData)) =>
+          val filteredPeriodsWithOutstandingAmounts = financialDataService
+            .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData)
+            .map(vatReturnWithfinancialData => vatReturnWithfinancialData.vatOwed match {
+              case Some(vatOwed) => vatReturnWithfinancialData.copy(vatOwed = Some(vatOwed))
+              case _ =>
+                vatReturnWithfinancialData.copy(
+                  vatOwed = Some((vatReturnSalesService.getTotalVatOnSales(vatReturnWithfinancialData.vatReturn) * 100).toLong)
+                )
+            })
+          val paymentError = filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty)
+          val duePeriodsWithOutstandingAmounts = filteredPeriodsWithOutstandingAmounts.filterNot(_.vatReturn.period.isOverdue(clock))
+          val overduePeriodsWithOutstandingAmounts = filteredPeriodsWithOutstandingAmounts.filter(_.vatReturn.period.isOverdue(clock))
           Ok(view(
             request.registration.registeredCompanyName,
             request.vrn.vrn,
@@ -64,7 +79,7 @@ class YourAccountController @Inject()(
               .map(_.period),
             duePeriodsWithOutstandingAmounts,
             overduePeriodsWithOutstandingAmounts,
-            paymentError = false
+            paymentError = paymentError
           ))
         case (Right(availablePeriodsWithStatus), Left(error)) =>
           logger.warn(s"There was an error with getting payment information $error")
