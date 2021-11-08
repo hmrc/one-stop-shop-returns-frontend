@@ -335,6 +335,7 @@ correctPreviousReturn.change.hidden = CorrectPreviousReturn
 
 correctionCountry.title = Which country would you like to correct?
 correctionCountry.heading = Which country would you like to correct?
+correctionCountry.caption = Correction period: {0}
 correctionCountry.hint = You can also add a new country that was not included in your previous return.
 correctionCountry.checkYourAnswersLabel = correctionCountry
 correctionCountry.error.required = Enter correctionCountry
@@ -349,10 +350,11 @@ correctionReturnPeriod.checkYourAnswersLabel = Which return period do you want t
 correctionReturnPeriod.error.required = Select which period you want to correct
 correctionReturnPeriod.change.hidden = CorrectionReturnPeriod
 
-countryVatCorrection.title = What is your correction for the total VAT payable to {0}?
-countryVatCorrection.heading = What is your correction for the total VAT payable to {0}?
+countryVatCorrection.title = What is your correction for the VAT payable to {0}?
+countryVatCorrection.heading = What is your correction for the VAT payable to {0}?
 countryVatCorrection.caption = Correction period: {0}
 countryVatCorrection.hint = Enter a minus value if you declared too much in your previous return.
+countryVatCorrection.previous-amount.hint = Your most recent declaration for this period is {0}.
 countryVatCorrection.checkYourAnswersLabel = CountryVatCorrection
 countryVatCorrection.error.nonNumeric = Enter your correction for the total VAT payable to {0} using numbers
 countryVatCorrection.error.required = Enter your correction for the total VAT payable to {0}

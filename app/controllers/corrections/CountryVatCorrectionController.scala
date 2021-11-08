@@ -16,8 +16,10 @@
 
 package controllers.corrections
 
+import connectors.VatReturnConnector
 import controllers.actions._
 import forms.corrections.CountryVatCorrectionFormProvider
+import models.domain.SalesToCountry
 import models.{Index, Mode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.I18nSupport
@@ -31,6 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CountryVatCorrectionController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: CountryVatCorrectionFormProvider,
+                                        connector: VatReturnConnector,
                                         view: CountryVatCorrectionView
                                       )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -43,6 +46,15 @@ class CountryVatCorrectionController @Inject()(
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
       (correctionPeriod, selectedCountry) match {
         case (Some(correctionPeriod), Some(country)) =>
+//            val previousPeriodCountryAmount = connector.get(correctionPeriod).map( vatReturn => vatReturn match {
+//              case Right(vr) => {
+//                val nIToCountry = vr.salesFromNi.find(x => x.countryOfConsumption.code == country.code)
+//                val eUToCountry = vr.salesFromEu.map(countryFrom => countryFrom.sales
+//                  .find(y => y.countryOfConsumption.code == country.code)
+//                )
+//              }
+//            }
+//            )
             val form = formProvider(country.name)
 
             val preparedForm = request.userAnswers.get(CountryVatCorrectionPage(periodIndex, countryIndex)) match {

@@ -42,7 +42,10 @@
                     caption = messages("countryVatCorrection.caption", correctionPeriod.displayText)))
             .asNumeric().withWidth(Fixed10).withCssClass("govuk-currency-input__inner__input")
             .withPrefix(PrefixOrSuffix(content = Text("£")))
-            .withHint(HintViewModel(messages("countryVatCorrection.hint")))
+            .withHint(HintViewModel(HtmlContent(
+                s"<p>${Html(messages("countryVatCorrection.hint"))}</p>" +
+                s"<p>${Html(messages("countryVatCorrection.previous-amount.hint", "hello"))}</p>")
+            ))
         )
 
         @govukButton(
