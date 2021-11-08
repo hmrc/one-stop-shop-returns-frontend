@@ -200,9 +200,15 @@ checkYourAnswers.returnPeriod.checkYourAnswersLabel = Return period
 checkYourAnswers.salesFromNi.heading = Sales from Northern Ireland to EU countries
 checkYourAnswers.salesFromEU.heading = Sales from EU countries to other EU countries
 checkYourAnswers.vatOwedToEuCountries.heading = VAT owed to EU countries
+checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading = VAT declared to EU countries after corrections
+checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption = VAT owed to each country
+checkYourAnswers.noPaymentsDue.heading = VAT declared where no payment is due
+checkYourAnswers.noPaymentsDue.caption = EU countries are responsible for refunding any overpayments.
 checkYourAnswers.allSales.heading = All sales
+checkYourAnswers.corrections.heading = Corrections
 checkYourAnswers.netValueOfSales.checkYourAnswersLabel = Total sales excluding VAT
-checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT owed
+checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT payable
+checkYourAnswers.correctionReturnPeriod.checkYourAnswersLabel = Periods with corrections
 
 salesFromEuList.title.singular = You added sales from one EU country
 salesFromEuList.heading.singular = You added sales from one EU country
@@ -319,7 +325,7 @@ noOtherPeriodsAvailable.submit = Back to your account
 
 correctPreviousReturn.title = Do you want to correct a previous return?
 correctPreviousReturn.heading = Do you want to correct a previous return?
-correctPreviousReturn.checkYourAnswersLabel = correctPreviousReturn
+correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = CorrectPreviousReturn
 

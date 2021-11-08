@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package pages
+package queries.corrections
 
-object PageConstants {
+import models.Period
+import models.corrections.PeriodWithCorrections
+import pages.PageConstants._
+import play.api.libs.json.JsPath
+import queries.{Gettable, Settable}
 
-  val salesFromNi: String = "salesFromNi"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val salesFromEu: String = "salesFromEu"
-  val salesFromCountry: String = "salesFromCountry"
-  val vatRates: String = "vatRates"
-  val netValueOfSales: String = "netValueOfSales"
-  val vatOnSales: String = "vatOnSales"
-  val corrections: String = "corrections"
-  val correctionToCountry: String = "correctionToCountry"
-  val correctionPeriod: String = "correctionPeriod"
+case object AllCorrectionPeriodsQuery extends Gettable[List[PeriodWithCorrections]] with Settable[List[PeriodWithCorrections]] {
+
+  override def path: JsPath = JsPath \ corrections
+
 }
+

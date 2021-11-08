@@ -18,6 +18,7 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
@@ -29,10 +30,12 @@ import pages.CheckYourAnswersPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.EmailConfirmationQuery
+import queries.corrections.AllCorrectionPeriodsQuery
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -45,7 +48,8 @@ class CheckYourAnswersController @Inject()(
                                             vatReturnService: VatReturnService,
                                             auditService: AuditService,
                                             emailService: EmailService,
-                                            vatReturnConnector: VatReturnConnector
+                                            vatReturnConnector: VatReturnConnector,
+                                            config: FrontendAppConfig
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -77,18 +81,45 @@ class CheckYourAnswersController @Inject()(
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
 
-      val totalVatToCountries = service.getVatOwedToEuCountries(request.userAnswers)
-      val totalVatOnSales = service.getTotalVatOnSales(request.userAnswers)
+      val containsCorrections = config.correctionToggle && request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
-      Ok(view(
+      val totalVatToCountries =
+        service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
+      val noPaymentDueCountries = if(config.correctionToggle) {
+        service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
+      }else{List.empty}
+      val totalVatOnSales =
+        service.getTotalVatOwedAfterCorrections(request.userAnswers)
+
+
+      val summaryLists = if(config.correctionToggle){
+        val correctionsSummaryList = SummaryListViewModel(
+          rows = Seq(
+            CorrectPreviousReturnSummary.row(request.userAnswers),
+            CorrectionReturnPeriodSummary.getAllRows(request.userAnswers)
+          ).flatten
+        ).withCssClass("govuk-!-margin-bottom-9")
+        Seq(
+        (None, businessSummaryList),
+        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
+        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
+        (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
+      )}else{
         Seq(
           (None, businessSummaryList),
           (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
           (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
-        ),
+        )
+      }
+
+
+      Ok(view(
+        summaryLists,
         period,
         totalVatToCountries,
-        totalVatOnSales
+        totalVatOnSales,
+        noPaymentDueCountries,
+        containsCorrections
       ))
   }
 
@@ -112,7 +143,7 @@ class CheckYourAnswersController @Inject()(
                 request.registration.contactDetails.fullName,
                 request.registration.registeredCompanyName,
                 request.registration.contactDetails.emailAddress,
-                service.getTotalVatOnSales(request.userAnswers),
+                service.getTotalVatOwedAfterCorrections(request.userAnswers),
                 period
               ) flatMap {
                 emailConfirmationResult =>
