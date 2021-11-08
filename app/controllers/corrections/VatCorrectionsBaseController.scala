@@ -18,18 +18,20 @@ package controllers.corrections
 
 import controllers.JourneyRecoverySyntax._
 import models.requests.DataRequest
-import models.Index
+import models.{Index, Period}
+import pages.corrections.CorrectionReturnPeriodPage
 import play.api.mvc.{AnyContent, Result}
 import queries.corrections.DeriveNumberOfCorrections
 
 trait VatCorrectionsBaseController {
 
   protected def getNumberOfCorrections(periodIndex: Index)
-                                      (block: (Int) => Result)
+                                      (block: (Int, Period) => Result)
                                       (implicit request: DataRequest[AnyContent]): Result =
     (for {
       numberOfCorrections <- request.userAnswers.get(DeriveNumberOfCorrections(periodIndex))
-    } yield block(numberOfCorrections))
+      correctionPeriod <- request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+    } yield block(numberOfCorrections, correctionPeriod))
       .orRecoverJourney
 
 }

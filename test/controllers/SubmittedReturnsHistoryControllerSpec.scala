@@ -146,6 +146,33 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       }
     }
 
+
+    "must return OK and correct view when a nil vat return exists and no charge is found" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
+        .thenReturn(Future.successful(Right(Seq(
+          vatReturnWithFinancialData.copy(charge = None, vatOwed = Some(0))
+        ))))
+
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          Seq(VatReturnWithFinancialData(completeVatReturn, None, Some(0))),
+          displayBanner = false
+        )(request, messages(application)).toString
+      }
+    }
+
     "must return OK and correct view with multiple periods" in {
 
       val completeVatReturn2 = completeVatReturn.copy(vrn = Vrn("063407445"))

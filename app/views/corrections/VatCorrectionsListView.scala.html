@@ -15,7 +15,7 @@
  *@
 
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
-@import viewmodels.LegendSize
+@import viewmodels.{LegendSize, TitledSummaryList}
 @import controllers.corrections.{ routes => correctionRoutes }
 
 @this(
@@ -24,16 +24,16 @@
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
     govukButton: GovukButton,
-    addToList: components.addToList
+    govukSummaryList: GovukSummaryList
 )
 
-@(form: Form[_], mode: Mode, list: List[ListItem], period: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, list: List[TitledSummaryList], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
 
 @defining(if(list.size == 1) ".singular" else "") { messageSuffix =>
     @layout(pageTitle = title(
         form,
         messages("vatCorrectionsList.title" + messageSuffix, list.size),
-        Some(messages("vatCorrectionsList.section", period.displayText))
+        Some(messages("vatCorrectionsList.section", correctionPeriod.displayText))
     )) {
 
         @formHelper(action = correctionRoutes.VatCorrectionsListController.onSubmit(mode, period, periodIndex), 'autoComplete -> "off") {
@@ -44,10 +44,20 @@
 
             <header class="hmrc-page-heading">
                 <h1 class="govuk-heading-xl">@messages("vatCorrectionsList.heading" + messageSuffix, list.size)</h1>
-                <p class="govuk-caption-xl hmrc-caption-xl">@messages("vatCorrectionsList.section", period.displayText)</p>
+                <p class="govuk-caption-xl hmrc-caption-xl">@messages("vatCorrectionsList.section", correctionPeriod.displayText)</p>
             </header>
 
-            @addToList(list, Long, "vatCorrectionsList.change.hidden", "vatCorrectionsList.remove.hidden", None)
+            @for(item <- list) {
+                <h2 class="govuk-heading-m">@{
+                    item.title
+                }</h2>
+
+                @govukSummaryList(item.list)
+
+                <p class="govuk-body govuk-!-margin-bottom-8">
+                    <a class="govuk-link" href="@correctionRoutes.RemoveCountryCorrectionController.onPageLoad(mode, period)">@messages("site.remove") <span class="govuk-visually-hidden">@messages("vatCorrectionsList.remove.hidden")</span></a>
+                </p>
+            }
 
             @if(canAddCountries) {
                 @govukRadios(

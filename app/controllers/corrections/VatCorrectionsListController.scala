@@ -19,7 +19,7 @@ package controllers.corrections
 import controllers.actions._
 import forms.corrections.VatCorrectionsListFormProvider
 import models.{Country, Index, Mode, Period}
-import pages.corrections.VatCorrectionsListPage
+import pages.corrections.{CorrectionReturnPeriodPage, VatCorrectionsListPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -40,26 +40,26 @@ class VatCorrectionsListController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      getNumberOfCorrections(periodIndex) { number =>
+      getNumberOfCorrections(periodIndex) { (number, correctionPeriod) =>
 
         val canAddCountries = number < Country.euCountries.size
         val list = VatCorrectionsListSummary.addToListRows(request.userAnswers, mode, periodIndex)
 
-        Ok(view(form, mode, list, period, periodIndex, canAddCountries))
+        Ok(view(form, mode, list, period, correctionPeriod, periodIndex, canAddCountries))
       }
 
   }
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      getNumberOfCorrections(periodIndex) { number =>
+      getNumberOfCorrections(periodIndex) { (number, correctionPeriod) =>
 
         val canAddCountries = number < Country.euCountries.size
 
         form.bindFromRequest().fold(
           formWithErrors => {
             val list = VatCorrectionsListSummary.addToListRows(request.userAnswers, mode, periodIndex)
-            BadRequest(view(formWithErrors, mode, list, period, periodIndex, canAddCountries))
+            BadRequest(view(formWithErrors, mode, list, period, correctionPeriod, periodIndex, canAddCountries))
           },
           value =>
             Redirect(VatCorrectionsListPage(periodIndex).navigate(request.userAnswers, mode, value))

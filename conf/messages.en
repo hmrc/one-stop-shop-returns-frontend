@@ -51,11 +51,15 @@ index.yourReturns.returnsOverdue = You have {0} returns overdue
 index.yourReturns.nothingDue = You do not have any returns due
 index.yourReturns.startReturn = Start your return
 index.payment.heading = Payments
+index.payment.dueHeading = Due Payments
 index.payment.overdueHeading = Overdue Payments
+index.payment.pendingPayments = We cannot show your updated payment information
 index.payment.nothingOwed = You do not owe anything right now
 index.payment.makeAPayment = Make a payment
 index.payment.amountOwed = You owe {0} for {1}
+index.payment.amountMaybeOwed = You may still have VAT to pay for {0}
 index.payment.overdueAmountOwed = You owe {0} for {1}, which was due by {2}
+index.payment.overdueAmountMaybeOwed = You may still have VAT to pay for {0}, which was due by {1}
 index.history = History
 index.history.previousReturns = View past returns
 
@@ -200,9 +204,15 @@ checkYourAnswers.returnPeriod.checkYourAnswersLabel = Return period
 checkYourAnswers.salesFromNi.heading = Sales from Northern Ireland to EU countries
 checkYourAnswers.salesFromEU.heading = Sales from EU countries to other EU countries
 checkYourAnswers.vatOwedToEuCountries.heading = VAT owed to EU countries
+checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading = VAT declared to EU countries after corrections
+checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption = VAT owed to each country
+checkYourAnswers.noPaymentsDue.heading = VAT declared where no payment is due
+checkYourAnswers.noPaymentsDue.caption = EU countries are responsible for refunding any overpayments.
 checkYourAnswers.allSales.heading = All sales
+checkYourAnswers.corrections.heading = Corrections
 checkYourAnswers.netValueOfSales.checkYourAnswersLabel = Total sales excluding VAT
-checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT owed
+checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT payable
+checkYourAnswers.correctionReturnPeriod.checkYourAnswersLabel = Periods with corrections
 
 salesFromEuList.title.singular = You added sales from one EU country
 salesFromEuList.heading.singular = You added sales from one EU country
@@ -319,7 +329,7 @@ noOtherPeriodsAvailable.submit = Back to your account
 
 correctPreviousReturn.title = Do you want to correct a previous return?
 correctPreviousReturn.heading = Do you want to correct a previous return?
-correctPreviousReturn.checkYourAnswersLabel = correctPreviousReturn
+correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = CorrectPreviousReturn
 
@@ -378,9 +388,11 @@ vatCorrectionsList.heading = You have corrected the VAT amount for {0} EU countr
 vatCorrectionsList.heading.singular = You have corrected the VAT amount for one EU country
 vatCorrectionsList.addAnother = Add corrections to VAT for another EU country?
 vatCorrectionsList.maximumReached = You have added corrections to every EU country
+vatCorrectionsList.correctionAmount = Correction amount
 vatCorrectionsList.checkYourAnswersLabel = vatCorrectionsList
 vatCorrectionsList.error.required = Select yes if vatCorrectionsList
 vatCorrectionsList.change.hidden = VatCorrectionsList
+vatCorrectionsList.remove.hidden = VatCorrectionsList
 
 vatPeriodCorrectionsList.title = You have corrected the VAT amount for {0} return periods
 vatPeriodCorrectionsList.title.empty = You have not corrected the VAT amount for any return periods

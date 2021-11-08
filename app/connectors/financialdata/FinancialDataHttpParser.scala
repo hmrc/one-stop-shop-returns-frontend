@@ -25,14 +25,14 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object FinancialDataHttpParser extends Logging {
 
-  type ChargeResponse = Either[ErrorResponse, Charge]
+  type ChargeResponse = Either[ErrorResponse, Option[Charge]]
 
   implicit object ChargeReads extends HttpReads[ChargeResponse] {
     override def read(method: String, url: String, response: HttpResponse): ChargeResponse = {
       response.status match {
         case OK =>
-          response.json.validate[Charge] match {
-            case JsSuccess(charge, _) => Right(charge)
+          response.json.validateOpt[Charge] match {
+            case JsSuccess(chargeOption, _) => Right(chargeOption)
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
               Left(InvalidJson)
