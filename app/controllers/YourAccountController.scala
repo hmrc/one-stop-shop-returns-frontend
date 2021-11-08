@@ -25,7 +25,7 @@ import models.financialdata.VatReturnWithFinancialData
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.FinancialDataService
+import services.{FinancialDataService, VatReturnSalesService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
@@ -38,6 +38,7 @@ class YourAccountController @Inject()(
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
                                        financialDataService: FinancialDataService,
+                                       vatReturnSalesService: VatReturnSalesService,
                                        view: IndexView,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext)
@@ -55,7 +56,15 @@ class YourAccountController @Inject()(
 
       results.map {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData)) =>
-          val filteredPeriodsWithOutstandingAmounts = financialDataService.filterIfPaymentIsOutstanding(vatReturnsWithFinancialData)
+          val filteredPeriodsWithOutstandingAmounts = financialDataService
+            .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData)
+            .map(vatReturnWithfinancialData => vatReturnWithfinancialData.vatOwed match {
+              case Some(vatOwed) => vatReturnWithfinancialData.copy(vatOwed = Some(vatOwed))
+              case _ =>
+                vatReturnWithfinancialData.copy(
+                  vatOwed = Some((vatReturnSalesService.getTotalVatOnSales(vatReturnWithfinancialData.vatReturn) * 100).toLong)
+                )
+            })
           val paymentError = filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty)
           val duePeriodsWithOutstandingAmounts = filteredPeriodsWithOutstandingAmounts.filterNot(_.vatReturn.period.isOverdue(clock))
           val overduePeriodsWithOutstandingAmounts = filteredPeriodsWithOutstandingAmounts.filter(_.vatReturn.period.isOverdue(clock))

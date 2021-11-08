@@ -32,6 +32,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.VatReturnSalesService
 import views.html.IndexView
 
 import java.time.{Clock, Instant, ZoneId}
@@ -41,6 +42,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   private val returnStatusConnector = mock[ReturnStatusConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
+  private val vatReturnSalesService = mock[VatReturnSalesService]
 
   override def beforeEach(): Unit = {
     Mockito.reset(returnStatusConnector)
@@ -481,11 +483,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "when there is 1 return is completed and charge is not in ETMP" in {
         val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
+        val vatOwed = BigDecimal(1563.49)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService)
           ).build()
 
         val firstPeriod = Period(2021, Q3)
@@ -505,6 +509,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(Right(Seq(vatReturnWithFinancialData)))
 
+        when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn
+          vatOwed
+
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
@@ -519,7 +526,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq.empty,
             None,
-            Seq(vatReturnWithFinancialData),
+            Seq(vatReturnWithFinancialData.copy(vatOwed = Some((vatOwed * 100).toLong))),
             Seq.empty,
             paymentError = true
           )(request, messages(application)).toString
