@@ -27,7 +27,7 @@ import viewmodels.implicits._
 object VatPayableForCountrySummary  {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatPayableForCountryPage).map {
+    answers.get(VatPayableForCountryPage(Index(0), Index(0))).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"

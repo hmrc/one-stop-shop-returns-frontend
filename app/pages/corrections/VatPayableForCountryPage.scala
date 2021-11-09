@@ -17,17 +17,21 @@
 package pages.corrections
 
 import controllers.routes
-import models.UserAnswers
+import models.{Index, NormalMode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object VatPayableForCountryPage extends QuestionPage[Boolean] {
+case class VatPayableForCountryPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "vatPayableForCountry"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
+      case Some(true) => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, periodIndex)
+      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
 }

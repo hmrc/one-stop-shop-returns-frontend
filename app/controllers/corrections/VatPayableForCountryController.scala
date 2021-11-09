@@ -51,7 +51,7 @@ class VatPayableForCountryController @Inject()(
           for {
             vatOwedToCountryOnPrevReturn <- vatReturnService.getVatOwedToCountryOnReturn(country, correctionPeriod)
           } yield {
-            val preparedForm = request.userAnswers.get(VatPayableForCountryPage) match {
+            val preparedForm = request.userAnswers.get(VatPayableForCountryPage(Index(0), Index(0))) match {
               case None => form
               case Some(value) => form.fill(value)
             }
@@ -82,9 +82,9 @@ class VatPayableForCountryController @Inject()(
 
                 value =>
                   for {
-                    updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage, value))
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(Index(0), Index(0)), value))
                     _ <- cc.sessionRepository.set(updatedAnswers)
-                  } yield Redirect(VatPayableForCountryPage.navigate(mode, updatedAnswers))
+                  } yield Redirect(VatPayableForCountryPage(Index(0), Index(0)).navigate(mode, updatedAnswers))
               )
             }
           }

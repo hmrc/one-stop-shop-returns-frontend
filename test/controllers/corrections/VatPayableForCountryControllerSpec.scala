@@ -71,7 +71,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswers = emptyUserAnswers
-        .set(VatPayableForCountryPage, true).success.value
+        .set(VatPayableForCountryPage(Index(0), Index(0)), true).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
@@ -118,10 +118,10 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = userAnswers.set(VatPayableForCountryPage, true).success.value
+        val expectedAnswers = userAnswers.set(VatPayableForCountryPage(Index(0), Index(0)), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatPayableForCountryPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual VatPayableForCountryPage(Index(0), Index(0)).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -129,7 +129,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       val userAnswers = emptyUserAnswers
-        .set(VatPayableForCountryPage, true).success.value
+        .set(VatPayableForCountryPage(Index(0), Index(0)), true).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
