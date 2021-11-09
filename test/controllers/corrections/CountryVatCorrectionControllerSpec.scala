@@ -29,6 +29,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.VatReturnService
 import views.html.corrections.CountryVatCorrectionView
 
 import scala.concurrent.Future
@@ -51,10 +52,14 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
     "must return OK and the correct view for a GET" in {
 
       val mockVatReturnConnector = mock[VatReturnConnector]
+      val mockService = mock[VatReturnService]
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(validAnswer)
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
-        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .overrides(
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[VatReturnService].toInstance(mockService))
         .build()
 
       running(application) {
@@ -65,7 +70,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CountryVatCorrectionView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, selectedCountry, period, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, selectedCountry, period, index, index, validAnswer)(request, messages(application)).toString
       }
     }
 
@@ -74,10 +79,16 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
       val userAnswers = userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
 
       val mockVatReturnConnector = mock[VatReturnConnector]
+      val mockService = mock[VatReturnService]
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(validAnswer)
+
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
-        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .overrides(
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[VatReturnService].toInstance(mockService)
+        )
         .build()
 
 
@@ -89,7 +100,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(validAnswer), NormalMode, period, selectedCountry, period, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(validAnswer), NormalMode, period, selectedCountry, period, index, index, validAnswer)(request, messages(application)).toString
       }
     }
 
@@ -124,10 +135,16 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       val mockVatReturnConnector = mock[VatReturnConnector]
+      val mockService = mock[VatReturnService]
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(validAnswer)
+
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
-        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .overrides(
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[VatReturnService].toInstance(mockService)
+        )
         .build()
 
       running(application) {
@@ -142,7 +159,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, selectedCountry, period, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, selectedCountry, period, index, index, validAnswer)(request, messages(application)).toString
       }
     }
 

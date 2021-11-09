@@ -195,3 +195,10 @@ GET         /:period/vatPeriodAvailableCorrectionsList                          
 POST        /:period/vatPeriodAvailableCorrectionsList                                                       controllers.corrections.VatPeriodCorrectionsListWithFormController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET         /:period/changeVatPeriodAvailableCorrectionsList                                                 controllers.corrections.VatPeriodCorrectionsListWithFormController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST        /:period/changeVatPeriodAvailableCorrectionsList                                                 controllers.corrections.VatPeriodCorrectionsListWithFormController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/checkVatPayableAmount                       controllers.corrections.CheckVatPayableAmountController.onPageLoad(period: Period)
+
+GET        /:period/vatPayableForCountry/:periodIndex/:countryIndex                        controllers.corrections.VatPayableForCountryController.onPageLoad(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index)
+POST       /:period/vatPayableForCountry/:periodIndex/:countryIndex                        controllers.corrections.VatPayableForCountryController.onSubmit(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index)
+GET        /:period/changeVatPayableForCountry/:periodIndex/:countryIndex                  controllers.corrections.VatPayableForCountryController.onPageLoad(mode: Mode = CheckMode, period: Period, periodIndex: Index, countryIndex: Index)
+POST       /:period/changeVatPayableForCountry/:periodIndex/:countryIndex                  controllers.corrections.VatPayableForCountryController.onSubmit(mode: Mode = CheckMode, period: Period, periodIndex: Index, countryIndex: Index)
