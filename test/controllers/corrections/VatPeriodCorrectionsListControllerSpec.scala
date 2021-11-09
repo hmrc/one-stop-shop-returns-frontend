@@ -18,21 +18,20 @@ package controllers.corrections
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
-import models.{Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
-import models.Quarter.{Q1, Q2, Q3, Q4}
+import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.Complete
+import models.{Country, Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.CorrectionReturnPeriodPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.inject.bind
-import play.api.libs.json.{JsArray, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.corrections.VatPeriodCorrectionsListView
+import views.html.corrections.{VatPeriodAvailableCorrectionsListView, VatPeriodCorrectionsListView}
 
 import scala.concurrent.Future
 
@@ -43,7 +42,9 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] =
     periods.zipWithIndex
       .foldLeft (Option(userAnswers))((ua, indexedPeriod) =>
-        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption))
+        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption)
+          .flatMap(_.set(CorrectionCountryPage(Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
+          .flatMap(_.set(CountryVatCorrectionPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
 
   private def getStatusResponse(periods: Seq[Period]) = {
     Future.successful(Right(periods.map(period => PeriodWithStatus(period, Complete))))
@@ -73,14 +74,12 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
         val result = route(application, request).value
 
-        val periodCorrectionsList = Seq()
-
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
-    "when there are multiple previous return periods" - {
+    "when there are previous return periods" - {
 
       val allPeriods = Seq(
         Period(2021, Q3),
@@ -88,14 +87,12 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         Period(2022, Q1)
       )
 
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(getStatusResponse(allPeriods))
+      "and there are uncompleted correction periods must redirect to page with form" in {
 
-      "and no corrections have been added" - {
+        when(mockReturnStatusConnector.listStatuses(any())(any()))
+          .thenReturn(getStatusResponse(allPeriods))
 
         val completedCorrections = Seq()
-
-        val availableCorrectionPeriods = allPeriods
 
         val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, completedCorrections))
           .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -105,80 +102,38 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         running(application) {
           val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
           val result = route(application, request).value
-
-          "must display correct header and table and form" in {
-
-            status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.corrections.routes.VatPeriodAvailableCorrectionsListController.onPageLoad(NormalMode, period).url
-          }
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(NormalMode, period).url
         }
       }
 
-      "and corrections have been added" - {
+      "and there no uncompleted correction periods must display filled table and correct header" in {
 
-        "and there are available correction periods" - {
+        when(mockReturnStatusConnector.listStatuses(any())(any()))
+          .thenReturn(getStatusResponse(allPeriods))
 
-          val completedCorrections = Seq(
-            Period(2021, Q3)
-          )
+        val expectedTitle = "You have corrected the VAT amount for 3 return periods"
+        val expectedTableRows = 3
 
-          val availableCorrectionPeriods = allPeriods.diff(completedCorrections).distinct
+        val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, allPeriods))
+          .configure("bootstrap.filters.csrf.enabled" -> false)
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .build()
 
-          val ua = addCorrectionPeriods(completeUserAnswers, completedCorrections)
+        running(application) {
+          val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
 
-          val application = applicationBuilder(userAnswers = ua)
-            .configure("bootstrap.filters.csrf.enabled" -> false)
-            .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
-            .build()
+          val result = route(application, request).value
 
-          running(application) {
-            val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
-            val result = route(application, request).value
+          status(result) mustEqual OK
+          val responseString = contentAsString(result)
 
-            "must display correct header and table and form" in {
-              status(result) mustEqual SEE_OTHER
-              redirectLocation(result).value mustEqual controllers.corrections.routes.VatPeriodAvailableCorrectionsListController.onPageLoad(NormalMode, period).url
-            }
+          val doc = Jsoup.parse(responseString)
+          doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
+          doc.getElementsByClass("govuk-table__row").size() mustEqual expectedTableRows
 
-            // on submit, form must be answered
-
-          }
-        }
-
-        "and there are no available correction periods" - {
-
-          val completedCorrections = allPeriods
-
-          val availableCorrectionPeriods = Seq()
-
-          val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, allPeriods))
-            .configure("bootstrap.filters.csrf.enabled" -> false)
-            .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
-            .build()
-
-          running(application) {
-            val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
-
-            val result = route(application, request).value
-
-            "must display correct header and table and no form" in {
-
-              status(result) mustEqual OK
-
-              val responseString = contentAsString(result)
-
-              val doc = Jsoup.parse(responseString)
-              val header = doc.getElementsByClass("govuk-heading-xl").get(0).text()
-              val tableRows = doc.getElementsByClass("govuk-table__row")
-
-              header mustEqual "You have corrected the VAT amount for 3 return periods"
-              tableRows.size() mustEqual 3
-
-              val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
-              responseString mustEqual view(NormalMode, period, completedCorrections)(request, messages(application)).toString
-            }
-
-          }
+          val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
+          responseString mustEqual view(NormalMode, period, allPeriods)(request, messages(application)).toString
         }
       }
     }

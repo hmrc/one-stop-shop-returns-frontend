@@ -24,33 +24,33 @@ class CorrectionReturnSinglePeriodPageSpec extends PageBehaviours {
 
   "CorrectionReturnSinglePeriodPage" - {
 
-    beRetrievable[Boolean](CorrectionReturnSinglePeriodPage)
+    beRetrievable[Boolean](CorrectionReturnSinglePeriodPage(Index(0)))
 
-    beSettable[Boolean](CorrectionReturnSinglePeriodPage)
+    beSettable[Boolean](CorrectionReturnSinglePeriodPage(Index(0)))
 
-    beRemovable[Boolean](CorrectionReturnSinglePeriodPage)
+    beRemovable[Boolean](CorrectionReturnSinglePeriodPage(Index(0)))
 
     "must navigate in Normal mode" - {
 
       "to Which country would you like to correct page when answer is true" in {
 
-        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, true).success.value
+        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(Index(0)), true).success.value
 
-        CorrectionReturnSinglePeriodPage.navigate(NormalMode, answers)
+        CorrectionReturnSinglePeriodPage(Index(0)).navigate(NormalMode, answers)
           .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, Index(0), Index(0)))
       }
 
       "to Which country would you like to correct page when answer is false" in {
 
-        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, false).success.value
+        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(Index(0)), false).success.value
 
-        CorrectionReturnSinglePeriodPage.navigate(NormalMode, answers)
+        CorrectionReturnSinglePeriodPage(Index(0)).navigate(NormalMode, answers)
           .mustEqual(controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(answers.period))
       }
 
       "to Journey recovery page when answer is invalid" in {
 
-        CorrectionReturnSinglePeriodPage.navigate(NormalMode, emptyUserAnswers)
+        CorrectionReturnSinglePeriodPage(Index(0)).navigate(NormalMode, emptyUserAnswers)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }

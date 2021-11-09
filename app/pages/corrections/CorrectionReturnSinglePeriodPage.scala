@@ -22,15 +22,15 @@ import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object CorrectionReturnSinglePeriodPage extends QuestionPage[Boolean] {
+case class CorrectionReturnSinglePeriodPage(index: Index) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "correctionReturnSinglePeriod"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    answers.get(CorrectionReturnSinglePeriodPage) match {
-      case Some(true) => controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, Index(0), Index(0))
+    answers.get(this) match {
+      case Some(true) => controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, index, Index(0))
       case Some(false) => controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(answers.period)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }

@@ -26,6 +26,7 @@ import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery}
+import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionReturnPeriodView
 
@@ -44,28 +45,32 @@ class CorrectionReturnPeriodController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
-        case Right(returnStatuses) =>
-          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+          case Right(returnStatuses) =>
 
-          if (periods.size < 2) {
-            Redirect(
-              controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
-            )
-          } else {
-            val form = formProvider(index, periods, request.userAnswers
-              .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
+            val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-            val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
-              case None => form
-              case Some(value) => form.fill(value)
+            val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+
+            val uncompletedCorrectionPeriods = allPeriods.diff(completedCorrectionPeriods).distinct
+
+            if(uncompletedCorrectionPeriods.size < 2) {
+              Redirect(
+                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period, index)
+              )
+            } else {
+              val form = formProvider(index, allPeriods, request.userAnswers
+                .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
+
+              val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+                case None => form
+                case Some(value) => form.fill(value)
+              }
+              Ok(view(preparedForm, mode, period, uncompletedCorrectionPeriods, index))
             }
-            Ok(view(preparedForm, mode, period, periods, index))
-          }
-        case Left(value) =>
-          logger.error(s"there was an error $value")
-          throw new Exception(value.toString)
+          case Left(value) =>
+            logger.error(s"there was an error $value")
+            throw new Exception(value.toString)
       }
   }
 

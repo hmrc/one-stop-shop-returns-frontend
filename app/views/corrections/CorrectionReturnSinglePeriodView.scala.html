@@ -22,11 +22,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, returnPeriod: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, returnPeriod: String, periodIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionReturnSinglePeriod.title", returnPeriod))) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onSubmit(mode, period), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onSubmit(mode, period, periodIndex), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

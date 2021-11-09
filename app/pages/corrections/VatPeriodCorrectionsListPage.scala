@@ -30,9 +30,6 @@ case object VatPeriodCorrectionsListPage extends QuestionPage[Boolean] {
 
   override def toString: String = "vatPeriodCorrectionsList"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
-
   def navigate(mode: Mode, answers: UserAnswers, addAnother: Boolean): Call = {
     if(addAnother) {
       answers.get(DeriveNumberOfCorrectionPeriods) match {

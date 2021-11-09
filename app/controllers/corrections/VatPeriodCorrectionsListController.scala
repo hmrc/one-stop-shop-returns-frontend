@@ -18,18 +18,13 @@ package controllers.corrections
 
 import connectors.ReturnStatusConnector
 import controllers.actions._
-import controllers.routes.IndexController
-import controllers.corrections.{routes => correctionsRoutes}
 import controllers.{routes => baseRoutes}
-import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.SubmissionStatus.Complete
-import models.{Index, Mode, NormalMode, Period}
-import pages.PageConstants.{correctionPeriod, corrections}
-import pages.corrections.{CorrectionReturnSinglePeriodPage, VatCorrectionsListPage}
+import models.{Mode, NormalMode, Period}
 import play.api.Logging
 import play.api.i18n.I18nSupport
-import play.api.libs.json.JsObject
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.VatPeriodCorrectionsListView
 
@@ -50,17 +45,18 @@ class VatPeriodCorrectionsListController @Inject()(
 
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
         case Right(returnStatuses) =>
-          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+          val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-          if(periods.isEmpty) {
+          if(allPeriods.isEmpty) {
             Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
           } else {
-            val completedCorrectionPeriods: List[Period] = (request.userAnswers.data \ corrections).asOpt[List[JsObject]]
-              .map(json => json.flatMap(o => (o \ correctionPeriod).asOpt[Period])).getOrElse(List())
 
-            val availableCorrectionPeriods = periods.diff(completedCorrectionPeriods).distinct
+            val completedCorrectionPeriods: List[Period] = request.userAnswers
+              .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
 
-            if(availableCorrectionPeriods.isEmpty) {
+            val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
+
+            if(uncompletedCorrectionPeriods.isEmpty) {
               Ok(view(mode, period, completedCorrectionPeriods))
             } else {
               Redirect(controllers.corrections.routes.VatPeriodAvailableCorrectionsListController.onPageLoad(mode, period))
