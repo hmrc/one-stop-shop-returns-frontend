@@ -39,7 +39,7 @@ class CorrectPreviousReturnPageSpec extends PageBehaviours {
           val answers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
 
           CorrectPreviousReturnPage.navigate(NormalMode, answers, 1)
-            .mustEqual(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, answers.period))
+            .mustEqual(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, answers.period,Index(0)))
         }
 
         "to Which return period do you want to correct when there are multiple periods" in {

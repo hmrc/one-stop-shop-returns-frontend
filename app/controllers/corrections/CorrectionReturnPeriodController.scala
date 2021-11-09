@@ -25,6 +25,7 @@ import pages.corrections.CorrectionReturnPeriodPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionReturnPeriodView
 
@@ -45,18 +46,23 @@ class CorrectionReturnPeriodController @Inject()(
     implicit request =>
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
           case Right(returnStatuses) =>
-            val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-            if(periods.size < 2) {
+            val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
+            val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+
+            val uncompletedCorrectionPeriods = allPeriods.diff(completedCorrectionPeriods).distinct
+
+            if(uncompletedCorrectionPeriods.size < 2) {
               Redirect(
-                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
+                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period, index)
               )
             } else {
               val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
                 case None => form
                 case Some(value) => form.fill(value)
               }
-              Ok(view(preparedForm, mode, period, periods, index))
+              Ok(view(preparedForm, mode, period, uncompletedCorrectionPeriods, index))
             }
           case Left(value) =>
             logger.error(s"there was an error $value")
@@ -75,7 +81,7 @@ class CorrectionReturnPeriodController @Inject()(
 
               if(periods.size < 2) {
                 Redirect(
-                  controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
+                  controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period, index)
                 )
               } else {
                 BadRequest(view(
