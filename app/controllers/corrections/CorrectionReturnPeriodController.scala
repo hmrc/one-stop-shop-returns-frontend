@@ -88,7 +88,7 @@ class CorrectionReturnPeriodController @Inject()(
             formWithErrors => {
               if (periods.size < 2) {
                 Future.successful(Redirect(
-                  controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period)
+                  controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, period, index)
                 ))
               } else {
                 Future.successful(BadRequest(view(
