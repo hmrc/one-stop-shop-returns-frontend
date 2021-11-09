@@ -347,6 +347,7 @@ correctionReturnPeriod.period1 = 1 January to 31 March 2022
 correctionReturnPeriod.period2 = 1 October to 31 December 2021
 correctionReturnPeriod.checkYourAnswersLabel = Which return period do you want to correct?
 correctionReturnPeriod.error.required = Select which period you want to correct
+correctionReturnPeriod.error.duplicate = You selected this period already. Select a different one.
 correctionReturnPeriod.change.hidden = CorrectionReturnPeriod
 
 countryVatCorrection.title = What is your correction for the total VAT payable to {0}?

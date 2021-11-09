@@ -16,7 +16,6 @@
 
 package queries.corrections
 
-import models.Index
 import pages.PageConstants
 import play.api.libs.json.{JsObject, JsPath}
 import queries.Derivable

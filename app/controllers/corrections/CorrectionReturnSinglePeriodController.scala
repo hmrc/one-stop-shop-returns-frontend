@@ -64,7 +64,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
               Ok(view(preparedForm, mode, period, uncompletedCorrectionPeriods.head.displayText, index))
             case _ => Redirect(
-              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, index)
+              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, period, index)
             )
           }
         case Left(value) =>
@@ -102,7 +102,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
             }
             case _ => Future.successful(Redirect(
-              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, index)
+              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, period, index)
             ))
           }
 

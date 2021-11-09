@@ -64,7 +64,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
             val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
 
             if(uncompletedCorrectionPeriods.isEmpty) {
-              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period))
+              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
             } else {
               Ok(view(preparedForm, mode, period, completedCorrectionPeriods))
             }
@@ -93,7 +93,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
           val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
 
           if(uncompletedCorrectionPeriods.isEmpty) {
-            Future.successful(Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period)))
+            Future.successful(Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period)))
           } else {
             form.bindFromRequest().fold(
               formWithErrors =>
@@ -101,6 +101,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
               value =>
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPeriodCorrectionsListPage, value))
+                  _              <- cc.sessionRepository.set(updatedAnswers)
                 } yield Redirect(VatPeriodCorrectionsListPage.navigate(mode, updatedAnswers, value))
             )
           }

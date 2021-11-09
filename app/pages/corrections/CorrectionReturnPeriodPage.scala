@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{Index, NormalMode, Period, UserAnswers}
+import models.{CheckMode, Index, NormalMode, Period, UserAnswers}
 import pages.PageConstants.corrections
 import pages.QuestionPage
 import play.api.libs.json.JsPath
@@ -32,6 +32,12 @@ case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[Period]
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(CorrectionReturnPeriodPage(index)) match {
       case Some(period) => controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, index, Index(0))
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  override def navigateInCheckMode(answers: UserAnswers): Call =
+    answers.get(CorrectionReturnPeriodPage(index)) match {
+      case Some(period) => controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, index, Index(0))
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 }

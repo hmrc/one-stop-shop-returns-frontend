@@ -17,15 +17,17 @@
 package forms.corrections
 
 import forms.mappings.Mappings
-import models.Period
+import models.{Country, Index, Period}
 import play.api.data.Form
 
 import javax.inject.Inject
 
 class CorrectionReturnPeriodFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Period] =
+  def apply(index: Index, availablePeriods: Seq[Period], existingAnswers: Seq[Period]): Form[Period] =
     Form(
       "value" -> period("correctionReturnPeriod.error.required")
+        .verifying("correctionReturnPeriod.error.required", value => availablePeriods.contains(value))
+        .verifying(notADuplicate(index, existingAnswers, "correctionReturnPeriod.error.duplicate"))
     )
 }
