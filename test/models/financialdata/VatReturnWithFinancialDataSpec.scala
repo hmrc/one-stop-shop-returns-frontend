@@ -18,6 +18,7 @@ package models.financialdata
 
 import base.SpecBase
 import generators.Generators
+import models.PaymentState.{NoneDue, Paid, PaymentDue}
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -32,31 +33,48 @@ class VatReturnWithFinancialDataSpec extends AnyFreeSpec
   "showPayNow" - {
 
     "is true when" - {
+
       "the return is not nil and there is an outstanding charge" in {
         val returnWithData = VatReturnWithFinancialData(completeVatReturn, Some(outstandingCharge), Some(vatAmount))
         returnWithData.showPayNow mustBe true
+        returnWithData.paymentState mustBe PaymentDue
       }
 
       "the return is not nil and there is no charge" in {
         val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, Some(vatAmount))
         returnWithData.showPayNow mustBe true
+        returnWithData.paymentState mustBe PaymentDue
       }
     }
 
     "is false when" - {
+
       "the return is nil and there is no charge" in {
         val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, Some(0L))
         returnWithData.showPayNow mustBe false
+        returnWithData.paymentState mustBe NoneDue
       }
 
-      "the return is not nil and there is zero outstanding charge" in {
-        val returnWithData = VatReturnWithFinancialData(completeVatReturn, Some(payedCharge), Some(0L))
-        returnWithData.showPayNow mustBe false
+      "the return is not nil and there is zero outstanding charge" - {
+
+        "and there is an initial charge" in {
+          val returnWithData = VatReturnWithFinancialData(completeVatReturn, Some(payedCharge), Some(0L))
+          returnWithData.showPayNow mustBe false
+          returnWithData.paymentState mustBe Paid
+        }
+
+        "and there is no initial charge" in {
+          val payedCharge = Charge(completeVatReturn.period, BigDecimal(0), BigDecimal(0), BigDecimal(0))
+          val returnWithData = VatReturnWithFinancialData(completeVatReturn, Some(payedCharge), Some(0L))
+          returnWithData.showPayNow mustBe false
+          returnWithData.paymentState mustBe NoneDue
+        }
       }
 
       "the vat owed is none and there is no outstanding charge" in {
         val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, None)
         returnWithData.showPayNow mustBe false
+        returnWithData.paymentState mustBe NoneDue
       }
     }
   }
