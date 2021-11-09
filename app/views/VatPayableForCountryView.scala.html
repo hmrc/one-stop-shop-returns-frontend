@@ -34,11 +34,18 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
+        <header class="hmrc-page-heading">
+            <h1 class="govuk-heading-xl">@messages("vatPayableForCountry.heading", selectedCountry.name, currencyFormat(newAmount))</h1>
+            <p class="govuk-caption-xl hmrc-caption-xl">@messages("vatPayableForCountry.caption", "Hello")</p>
+        </header>
+
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("vatPayableForCountry.heading", selectedCountry.name, currencyFormat(newAmount))).asPageHeading()
-            )
+                legend = LegendViewModel(
+                    content = messages("vatPayableForCountry.heading", selectedCountry.name, currencyFormat(newAmount))
+                )
+            ).withHint(HintViewModel(HtmlContent(Html(messages("vatPayableForCountry.caption", "Hello")))))
         )
 
         @govukButton(

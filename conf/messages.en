@@ -426,6 +426,8 @@ checkVatPayableAmount.heading = checkVatPayableAmount
 
 vatPayableForCountry.title = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
+vatPayableForCountry.caption = Correction period: {0}
+vatPayableForCountry.hint = We've calculated this total based on your most recent declaration and the correction amount.
 vatPayableForCountry.checkYourAnswersLabel = vatPayableForCountry
 vatPayableForCountry.error.required = Select yes if vatPayableForCountry
 vatPayableForCountry.change.hidden = VatPayableForCountry

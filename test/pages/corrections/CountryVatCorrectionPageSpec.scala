@@ -32,12 +32,12 @@ class CountryVatCorrectionPageSpec extends PageBehaviours {
 
     "must navigate in Normal mode" - {
 
-      "to Check your answers page when answer is valid" in {
+      "to VatPayableForCountry page when answer is valid" in {
 
         val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
 
         CountryVatCorrectionPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, index))
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
       "to Journey recovery page when answer is invalid" in {
