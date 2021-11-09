@@ -19,6 +19,7 @@ package services
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
+import connectors.VatReturnConnector
 import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
@@ -291,8 +292,9 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   }
 
   trait Fixture {
+    protected val connector = mock[VatReturnConnector]
 
-    protected val service = new VatReturnService()
+    protected val service = new VatReturnService(connector)
 
     protected val country1: Country             = arbitrary[Country].sample.value
     protected val country2: Country             = arbitrary[Country].sample.value

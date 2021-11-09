@@ -17,18 +17,22 @@
 package services
 
 import cats.implicits._
+import connectors.VatReturnConnector
 import models._
 import models.domain.EuTaxIdentifierType.Vat
-import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration.{EuVatRegistration, Registration, RegistrationWithFixedEstablishment}
 import models.requests.VatReturnRequest
 import pages._
+import play.api.i18n.Lang.logger
 import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery, EuSalesAtVatRateQuery, NiSalesAtVatRateQuery}
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
-class VatReturnService @Inject()() {
+class VatReturnService @Inject()(connector: VatReturnConnector) {
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, registration: Registration): ValidationResult[VatReturnRequest] =
     (
@@ -38,6 +42,21 @@ class VatReturnService @Inject()() {
       (salesFromNi, salesFromEu) =>
         VatReturnRequest(vrn, period, None, None, salesFromNi, salesFromEu)
     )
+
+  def getVatOwedToCountryOnReturn(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext) = {
+    connector.get(period).map {
+      case Right(vatReturn) =>
+        val sumFromNiToSelectedCountry = vatReturn.salesFromNi.filter(_.countryOfConsumption.code == country.code)
+          .flatMap(x => x.amounts.map(_.vatOnSales.amount)).sum
+        val salesFromEU = vatReturn.salesFromEu.flatMap(_.sales)
+        val sumFromEUToSelectedCountry = salesFromEU.filter(_.countryOfConsumption.code == country.code)
+          .flatMap(x => x.amounts.map(_.vatOnSales.amount)).sum
+        val vatOwedToCountryOnPrevReturn = sumFromEUToSelectedCountry + sumFromNiToSelectedCountry
+        vatOwedToCountryOnPrevReturn
+      case Left(value) =>
+        logger.error(s"there was an error $value")
+        throw new Exception(value.toString)
+  }}
 
   private def getSalesFromNi(answers: UserAnswers): ValidationResult[List[SalesToCountry]] =
     answers.get(SoldGoodsFromNiPage) match {
