@@ -23,15 +23,24 @@ import connectors.VatReturnConnector
 import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
+import models.responses.UnexpectedResponseStatus
 import models.{Country, DataMissingError, Index, VatOnSales, VatRate, VatRateType}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
 import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery}
+import uk.gov.hmrc.http.HeaderCarrier
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
-  
+
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
+  implicit private lazy val ec: ExecutionContext = ExecutionContext.global
+
   ".fromUserAnswers" - {
 
     "must return a vat return request" - {
@@ -288,6 +297,35 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
       }
+    }
+  }
+
+  "getVatOwedToCountryOnReturn" - {
+
+    "must return a valid amount when connector returns a VatReturnResponse" in {
+
+      val vatReturnConnector = mock[VatReturnConnector]
+      val vatReturnService = new VatReturnService(vatReturnConnector)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(simpleCompleteVatReturn))
+
+      val result = vatReturnService.getVatOwedToCountryOnReturn(Country("LT", "Lithuania"), period)
+
+      val expected = BigDecimal(1800.00)
+
+      assert(result.futureValue == expected)
+    }
+
+    "must return an exception when connector returns a ErrorResponse" in {
+
+      val vatReturnConnector = mock[VatReturnConnector]
+      val vatReturnService = new VatReturnService(vatReturnConnector)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      val result = vatReturnService.getVatOwedToCountryOnReturn(Country("LT", "Lithuania"), period)
+
+      whenReady(result.failed) { exp => exp mustBe a[Exception] }
     }
   }
 

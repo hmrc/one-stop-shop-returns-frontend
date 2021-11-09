@@ -411,3 +411,12 @@ correctionReturnSinglePeriod.change.hidden = CorrectionReturnSinglePeriod
 noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other VAT One Stop Shop periods
 noOtherCorrectionPeriodsAvailable.heading = You cannot make a correction to other VAT One Stop Shop periods
 noOtherCorrectionPeriodsAvailable.paragraph = You can only make corrections for periods that have ended.
+
+checkVatPayableAmount.title = checkVatPayableAmount
+checkVatPayableAmount.heading = checkVatPayableAmount
+
+vatPayableForCountry.title = Is the total VAT payable for {0} {1}?
+vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
+vatPayableForCountry.checkYourAnswersLabel = vatPayableForCountry
+vatPayableForCountry.error.required = Select yes if vatPayableForCountry
+vatPayableForCountry.change.hidden = VatPayableForCountry
