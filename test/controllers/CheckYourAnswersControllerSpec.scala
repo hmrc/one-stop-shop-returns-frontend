@@ -33,7 +33,7 @@ import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import pages.{CheckYourAnswersPage, SoldGoodsFromEuPage, SoldGoodsFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -109,6 +109,28 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
           contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
           contentAsString(result).contains("VAT owed to EU countries") mustBe true
+          contentAsString(result).contains("VAT declared where no payment is due") mustBe false
+          contentAsString(result).contains("VAT declared to EU countries after corrections") mustBe false
+        }
+      }
+
+      "must return OK and the correct view for a GET when the correction choice was NO " in {
+        val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, false).success.value))
+          .configure("features.corrections-toggle" -> true)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(period).url)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual OK
+          contentAsString(result).contains("Business name") mustBe true
+          contentAsString(result).contains(registration.registeredCompanyName) mustBe true
+          contentAsString(result).contains(registration.vrn.vrn) mustBe true
+          contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
+          contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
+          contentAsString(result).contains("VAT owed to EU countries") mustBe true
           contentAsString(result).contains("Corrections") mustBe true
           contentAsString(result).contains("VAT declared where no payment is due") mustBe false
           contentAsString(result).contains("VAT declared to EU countries after corrections") mustBe false
@@ -117,6 +139,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "must contain VAT declared to EU countries after corrections heading if there were corrections and all totals are positive" in {
         val answers = completeUserAnswers
+          .set(CorrectPreviousReturnPage, true).success.value
           .set(CorrectionReturnPeriodPage(index), period).success.value
           .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
           .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
@@ -145,6 +168,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "must contain VAT declared where no payment is due heading if there were negative totals after corrections" in {
         val answers = completeUserAnswers
+          .set(CorrectPreviousReturnPage, true).success.value
           .set(CorrectionReturnPeriodPage(index), period).success.value
           .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
           .set(CountryVatCorrectionPage(index, index), BigDecimal(-1000)).success.value
@@ -350,7 +374,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .overrides(bind[VatReturnConnector].toInstance(vatReturnConnector))
             .build()
 
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right((vatReturn)))
+        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         running(app) {
 

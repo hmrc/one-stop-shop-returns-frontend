@@ -25,6 +25,7 @@ import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeri
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionReturnSinglePeriodView
 
@@ -41,24 +42,29 @@ class CorrectionReturnSinglePeriodController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
         case Right(returnStatuses) =>
-          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-          periods.size match {
-            case 0 => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+          val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
+          val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+
+          val uncompletedCorrectionPeriods = allPeriods.diff(completedCorrectionPeriods).distinct
+
+          uncompletedCorrectionPeriods.size match {
+            case 0 => Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(request.userAnswers.period))
             case 1 =>
-              val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage) match {
+              val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage(index)) match {
                 case None => form
                 case Some(value) => form.fill(value)
               }
 
-              Ok(view(preparedForm, mode, period, periods.head.displayText))
+              Ok(view(preparedForm, mode, period, uncompletedCorrectionPeriods.head.displayText, index))
             case _ => Redirect(
-              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0))
+              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, period, index)
             )
           }
         case Left(value) =>
@@ -67,32 +73,36 @@ class CorrectionReturnSinglePeriodController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
       returnStatusConnector.listStatuses(request.registration.commencementDate).flatMap {
         case Right(returnStatuses) =>
-          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-          periods.size match {
+          val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
+          val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+
+          val uncompletedCorrectionPeriods = allPeriods.diff(completedCorrectionPeriods).distinct
+
+          uncompletedCorrectionPeriods.size match {
             case 0 => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             case 1 => {
               form.bindFromRequest().fold(
                 formWithErrors => {
-                  Future.successful(BadRequest(view(formWithErrors, mode, period, periods.head.displayText)))
+                  Future.successful(BadRequest(view(formWithErrors, mode, period, uncompletedCorrectionPeriods.head.displayText, index)))
                 },
-
                 value =>
                   for {
-                    updatedAnswers1 <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage, value))
-                    updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(CorrectionReturnPeriodPage(Index(0)), periods.head))
+                    updatedAnswers1 <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
+                    updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
                     _              <- cc.sessionRepository.set(updatedAnswers2)
-                  } yield Redirect(CorrectionReturnSinglePeriodPage.navigate(mode, updatedAnswers2))
+                  } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigateInNormalMode(updatedAnswers2))
               )
 
             }
             case _ => Future.successful(Redirect(
-              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0))
+              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, period, index)
             ))
           }
 

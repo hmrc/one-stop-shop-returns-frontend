@@ -27,6 +27,7 @@ import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.responses.ConflictFound
 import models.{NormalMode, Period}
 import pages.CheckYourAnswersPage
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.EmailConfirmationQuery
@@ -92,7 +93,7 @@ class CheckYourAnswersController @Inject()(
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
 
-      val summaryLists = if(config.correctionToggle){
+      val summaryLists = if(config.correctionToggle && request.userAnswers.get(CorrectPreviousReturnPage).isDefined){
         val correctionsSummaryList = SummaryListViewModel(
           rows = Seq(
             CorrectPreviousReturnSummary.row(request.userAnswers),

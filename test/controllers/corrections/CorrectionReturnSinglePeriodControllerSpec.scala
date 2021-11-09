@@ -44,7 +44,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
   private val formProvider = new CorrectionReturnSinglePeriodFormProvider()
   private val form = formProvider()
 
-  private lazy val correctionReturnSinglePeriodRoute = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
+  private lazy val correctionReturnSinglePeriodRoute = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period, Index(0)).url
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -72,7 +72,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         status(result) mustEqual OK
         contentAsString(result).mustEqual(
-          view(form, NormalMode, period, period.displayText)(request, messages(application)).toString
+          view(form, NormalMode, period, period.displayText, Index(0))(request, messages(application)).toString
         )
       }
     }
@@ -114,7 +114,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          controllers.routes.JourneyRecoveryController.onPageLoad().url
+          controllers.routes.CheckYourAnswersController.onPageLoad(period).url
         )
       }
     }
@@ -126,7 +126,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
           PeriodWithStatus(period, Complete)
         ))))
 
-      val userAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage, true).success.value
+      val userAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(Index(0)), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
@@ -140,7 +140,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         status(result) mustEqual OK
         contentAsString(result).mustEqual(
-          view(form.fill(true), NormalMode, period, period.displayText)(request, messages(application)).toString
+          view(form.fill(true), NormalMode, period, period.displayText,Index(0))(request, messages(application)).toString
         )
       }
     }
@@ -168,12 +168,12 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
         val expectedAnswers = emptyUserAnswers
-          .set(CorrectionReturnSinglePeriodPage, true).success.value
+          .set(CorrectionReturnSinglePeriodPage(Index(0)), true).success.value
           .set(CorrectionReturnPeriodPage(Index(0)), period).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          CorrectionReturnSinglePeriodPage.navigate(NormalMode, expectedAnswers).url
+          CorrectionReturnSinglePeriodPage(Index(0)).navigate(NormalMode, expectedAnswers).url
         )
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
@@ -202,7 +202,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result).mustEqual(
-          view(boundForm, NormalMode, period, period.displayText)(request, messages(application)).toString
+          view(boundForm, NormalMode, period, period.displayText, Index(0))(request, messages(application)).toString
         )
       }
     }

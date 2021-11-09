@@ -22,7 +22,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.TryValues
 import pages._
-import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage, RemovePeriodCorrectionPage, UndeclaredCountryCorrectionPage, VatCorrectionsListPage, VatPayableForCountryPage, VatPeriodCorrectionsListPage}
+import pages.corrections._
 import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersGenerator extends TryValues {
@@ -30,7 +30,7 @@ trait UserAnswersGenerator extends TryValues {
 
   val generators: Seq[Gen[(QuestionPage[_], JsValue)]] =
     arbitrary[(VatPayableForCountryPage.type, JsValue)] ::
-    arbitrary[(CorrectionReturnSinglePeriodPage.type, JsValue)] ::
+    arbitrary[(VatPeriodCorrectionsListPage.type, JsValue)] ::
     arbitrary[(UndeclaredCountryCorrectionPage, JsValue)] ::
     arbitrary[(RemovePeriodCorrectionPage.type, JsValue)] ::
     arbitrary[(RemoveCountryCorrectionPage.type, JsValue)] ::

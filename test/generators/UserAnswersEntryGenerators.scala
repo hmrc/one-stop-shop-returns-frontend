@@ -17,10 +17,10 @@
 package generators
 
 import models._
-import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 import pages._
-import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage, RemovePeriodCorrectionPage, UndeclaredCountryCorrectionPage, VatCorrectionsListPage, VatPayableForCountryPage, VatPeriodCorrectionsListPage}
+import pages.corrections._
 import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
@@ -29,14 +29,6 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
     Arbitrary {
       for {
         page  <- arbitrary[VatPayableForCountryPage.type]
-        value <- arbitrary[Boolean].map(Json.toJson(_))
-      } yield (page, value)
-    }
-
-  implicit lazy val arbitraryCorrectionReturnSinglePeriodUserAnswersEntry: Arbitrary[(CorrectionReturnSinglePeriodPage.type, JsValue)] =
-    Arbitrary {
-      for {
-        page  <- arbitrary[CorrectionReturnSinglePeriodPage.type]
         value <- arbitrary[Boolean].map(Json.toJson(_))
       } yield (page, value)
     }

@@ -348,6 +348,7 @@ correctionReturnPeriod.period1 = 1 January to 31 March 2022
 correctionReturnPeriod.period2 = 1 October to 31 December 2021
 correctionReturnPeriod.checkYourAnswersLabel = Which return period do you want to correct?
 correctionReturnPeriod.error.required = Select which period you want to correct
+correctionReturnPeriod.error.duplicate = You selected this period already. Select a different one.
 correctionReturnPeriod.change.hidden = CorrectionReturnPeriod
 
 countryVatCorrection.title = What is your correction for the VAT payable to {0}?
@@ -396,11 +397,16 @@ vatCorrectionsList.error.required = Select yes if vatCorrectionsList
 vatCorrectionsList.change.hidden = VatCorrectionsList
 vatCorrectionsList.remove.hidden = VatCorrectionsList
 
-vatPeriodCorrectionsList.title = vatPeriodCorrectionsList
-vatPeriodCorrectionsList.heading = vatPeriodCorrectionsList
+vatPeriodCorrectionsList.title = You have corrected the VAT amount for {0} return periods
+vatPeriodCorrectionsList.title.empty = You have not corrected the VAT amount for any return periods
+vatPeriodCorrectionsList.title.singular = You have corrected the VAT amount for one return period
+
 vatPeriodCorrectionsList.checkYourAnswersLabel = vatPeriodCorrectionsList
-vatPeriodCorrectionsList.error.required = Select yes if vatPeriodCorrectionsList
-vatPeriodCorrectionsList.change.hidden = VatPeriodCorrectionsList
+
+vatPeriodCorrectionsList.addAnother = Add corrections to VAT for another return period?
+vatPeriodCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another return period
+vatPeriodCorrectionsList.change.hidden = Change
+vatPeriodCorrectionsList.remove.hidden = Remove
 
 correctionReturnSinglePeriod.title = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in your {0} return?

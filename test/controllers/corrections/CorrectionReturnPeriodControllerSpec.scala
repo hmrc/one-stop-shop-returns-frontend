@@ -21,7 +21,7 @@ import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.Quarter._
 import models.SubmissionStatus.Complete
-import models.{Index, NormalMode, Period, PeriodWithStatus}
+import models.{Index, NormalMode, Period, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
@@ -42,7 +42,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
   private lazy val correctionReturnPeriodRoute = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(0)).url
 
   private val formProvider = new CorrectionReturnPeriodFormProvider()
-  private val form = formProvider()
+  private val form = formProvider(index, testPeriodsList, Seq.empty)
 
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
@@ -97,7 +97,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
+          controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period, Index(0)).url
         )
       }
     }
@@ -136,6 +136,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
       val mockSessionRepository = mock[SessionRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), SubmissionStatus.Complete)))))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
@@ -209,7 +210,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period).url
+          controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period, Index(0)).url
         )
       }
     }

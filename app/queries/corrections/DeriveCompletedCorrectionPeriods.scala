@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package pages
+package queries.corrections
 
-object PageConstants {
+import models.Period
+import models.corrections.PeriodWithCorrections
+import pages.PageConstants
+import play.api.libs.json.{JsObject, JsPath}
+import queries.Derivable
 
-  val salesFromNi: String = "salesFromNi"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val salesFromEu: String = "salesFromEu"
-  val salesFromCountry: String = "salesFromCountry"
-  val vatRates: String = "vatRates"
-  val netValueOfSales: String = "netValueOfSales"
-  val vatOnSales: String = "vatOnSales"
-  val corrections: String = "corrections"
-  val correctionToCountry: String = "correctionToCountry"
-  val correctionReturnPeriod: String = "correctionReturnPeriod"
-  val correctionPeriod: String = "correctionPeriod"
+case object DeriveCompletedCorrectionPeriods extends Derivable[List[JsObject], List[Period]] {
+
+  override val derive: List[JsObject] => List[Period] = _.flatMap(_.asOpt[PeriodWithCorrections]).map(_.correctionReturnPeriod)
+
+  override def path: JsPath = JsPath \ PageConstants.corrections
 }

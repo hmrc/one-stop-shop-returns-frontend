@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package pages
+package queries.corrections
 
-object PageConstants {
+import pages.PageConstants
+import play.api.libs.json.{JsObject, JsPath}
+import queries.Derivable
 
-  val salesFromNi: String = "salesFromNi"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val salesFromEu: String = "salesFromEu"
-  val salesFromCountry: String = "salesFromCountry"
-  val vatRates: String = "vatRates"
-  val netValueOfSales: String = "netValueOfSales"
-  val vatOnSales: String = "vatOnSales"
-  val corrections: String = "corrections"
-  val correctionToCountry: String = "correctionToCountry"
-  val correctionReturnPeriod: String = "correctionReturnPeriod"
-  val correctionPeriod: String = "correctionPeriod"
+case object DeriveNumberOfCorrectionPeriods extends Derivable[List[JsObject], Int] {
+
+  override val derive: List[JsObject] => Int = _.size
+
+  override def path: JsPath = JsPath \ PageConstants.corrections
 }
