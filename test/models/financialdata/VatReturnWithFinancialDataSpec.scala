@@ -64,8 +64,8 @@ class VatReturnWithFinancialDataSpec extends AnyFreeSpec
         }
 
         "and there is no initial charge" in {
-          val payedCharge = Charge(completeVatReturn.period, BigDecimal(0), BigDecimal(0), BigDecimal(0))
-          val returnWithData = VatReturnWithFinancialData(completeVatReturn, Some(payedCharge), Some(0L))
+          val noCharge = Charge(emptyVatReturn.period, BigDecimal(0), BigDecimal(0), BigDecimal(0))
+          val returnWithData = VatReturnWithFinancialData(emptyVatReturn, Some(noCharge), Some(0L))
           returnWithData.showPayNow mustBe false
           returnWithData.paymentState mustBe NoneDue
         }

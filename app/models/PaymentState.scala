@@ -16,12 +16,7 @@
 
 package models
 
-import models.Quarter.values
-
-import java.time.Month
-
-sealed trait PaymentState {
-}
+sealed trait PaymentState
 
 object PaymentState extends Enumerable.Implicits {
 
@@ -33,8 +28,5 @@ object PaymentState extends Enumerable.Implicits {
 
   implicit val enumerable: Enumerable[PaymentState] =
     Enumerable(values.map(v => v.toString -> v): _*)
-
-
-
 }
 
