@@ -61,7 +61,6 @@ class CorrectionReturnSinglePeriodController @Inject()(
                 case None => form
                 case Some(value) => form.fill(value)
               }
-
               Ok(view(preparedForm, mode, period, uncompletedCorrectionPeriods.head.displayText, index))
             case _ => Redirect(
               controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, period, index)
@@ -88,12 +87,16 @@ class CorrectionReturnSinglePeriodController @Inject()(
           uncompletedCorrectionPeriods.size match {
             case 0 => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             case 1 => {
+
               form.bindFromRequest().fold(
                 formWithErrors => {
                   Future.successful(BadRequest(view(formWithErrors, mode, period, uncompletedCorrectionPeriods.head.displayText, index)))
                 },
                 value =>
                   for {
+
+                    // TODO: Do not save this answer, won't be replayed through CYA
+
                     updatedAnswers1 <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
                     updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
                     _              <- cc.sessionRepository.set(updatedAnswers2)
