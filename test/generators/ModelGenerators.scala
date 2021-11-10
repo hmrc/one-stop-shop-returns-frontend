@@ -57,10 +57,10 @@ trait ModelGenerators {
   implicit def arbitraryVatRate: Arbitrary[VatRate] =
     Arbitrary {
       for {
-        rate <- Gen.choose[BigDecimal](BigDecimal(0.1), BigDecimal(100))
+        rate <- Gen.choose[BigDecimal](BigDecimal(1), BigDecimal(100))
         rateType <- Gen.oneOf(VatRateType.values)
         validFrom <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2100, 1, 1))
-      } yield VatRate(rate, rateType, validFrom)
+      } yield VatRate(rate.setScale(2, RoundingMode.HALF_EVEN), rateType, validFrom)
     }
 
   implicit val arbitraryPeriod: Arbitrary[Period] =
@@ -246,7 +246,12 @@ trait ModelGenerators {
         originalAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
         outstandingAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
         clearedAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
-      } yield Charge(period, originalAmount, outstandingAmount, clearedAmount)
+      } yield Charge(
+        period,
+        originalAmount.setScale(2, RoundingMode.HALF_EVEN),
+        outstandingAmount.setScale(2, RoundingMode.HALF_EVEN),
+        clearedAmount.setScale(2, RoundingMode.HALF_EVEN)
+      )
     }
 
   implicit val arbitraryReturnReference: Arbitrary[ReturnReference] =
