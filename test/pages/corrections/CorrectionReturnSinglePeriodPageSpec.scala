@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{Index, NormalMode, Period}
+import models.{CheckMode, Index, NormalMode, Period}
 import pages.behaviours.PageBehaviours
 
 class CorrectionReturnSinglePeriodPageSpec extends PageBehaviours {
@@ -51,6 +51,31 @@ class CorrectionReturnSinglePeriodPageSpec extends PageBehaviours {
       "to Journey recovery page when answer is invalid" in {
 
         CorrectionReturnSinglePeriodPage(Index(0)).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to Which country would you like to correct page when answer is true" in {
+
+        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(Index(0)), true).success.value
+
+        CorrectionReturnSinglePeriodPage(Index(0)).navigate(CheckMode, answers)
+          .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, Index(0), Index(0)))
+      }
+
+      "to Which country would you like to correct page when answer is false" in {
+
+        val answers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(Index(0)), false).success.value
+
+        CorrectionReturnSinglePeriodPage(Index(0)).navigate(CheckMode, answers)
+          .mustEqual(controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(answers.period))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        CorrectionReturnSinglePeriodPage(Index(0)).navigate(CheckMode, emptyUserAnswers)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }

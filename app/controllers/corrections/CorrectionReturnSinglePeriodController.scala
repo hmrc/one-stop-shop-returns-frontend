@@ -97,7 +97,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
                     updatedAnswers1 <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
                     updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
                     _              <- cc.sessionRepository.set(updatedAnswers2)
-                  } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigateInNormalMode(updatedAnswers2))
+                  } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(mode, updatedAnswers2))
               )
 
             }

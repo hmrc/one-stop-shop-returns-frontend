@@ -56,7 +56,7 @@ class CorrectionReturnPeriodController @Inject()(
 
             if(uncompletedCorrectionPeriods.size < 2) {
               Redirect(
-                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period, index)
+                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, period, index)
               )
             } else {
               val form = formProvider(index, allPeriods, request.userAnswers
