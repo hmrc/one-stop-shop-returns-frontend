@@ -205,14 +205,14 @@
                                             <p class="govuk-body">
                                                 @Html(messages(
                                                     "index.payment.overdueAmountOwed",
-                                                    currencyFormat(vatOwed),
+                                                    currencyFormat(BigDecimal(vatOwed) / 100),
                                                     vatReturnWithFinancialData.vatReturn.period.displayText,
                                                     vatReturnWithFinancialData.vatReturn.period.paymentDeadlineDisplay
                                                 ))
                                             </p>
                                             <p class="govuk-body">
                                                 <a class="govuk-link"
-                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatOwed * 100L)">
+                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatOwed)">
                                                     @messages("index.payment.makeAPayment")
                                                 </a>
                                             </p>
