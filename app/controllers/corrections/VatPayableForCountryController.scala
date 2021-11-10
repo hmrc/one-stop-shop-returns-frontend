@@ -24,7 +24,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.VatPayableForCountryView
+import views.html.corrections.VatPayableForCountryView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,14 +51,14 @@ class VatPayableForCountryController @Inject()(
           for {
             vatOwedToCountryOnPrevReturn <- vatReturnService.getVatOwedToCountryOnReturn(country, correctionPeriod)
           } yield {
-            val preparedForm = request.userAnswers.get(VatPayableForCountryPage(Index(0), Index(0))) match {
+            val preparedForm = request.userAnswers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
             }
 
             val newAmount = vatOwedToCountryOnPrevReturn + amount
 
-            Ok(view(preparedForm, mode, period, periodIndex, countryIndex, country, newAmount))
+            Ok(view(preparedForm, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))
           }
       }
   }
@@ -78,13 +78,12 @@ class VatPayableForCountryController @Inject()(
 
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, countryIndex, country, newAmount))),
+                  Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))),
 
                 value =>
                   for {
-                    updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(Index(0), Index(0)), value))
-                    _ <- cc.sessionRepository.set(updatedAnswers)
-                  } yield Redirect(VatPayableForCountryPage(Index(0), Index(0)).navigate(mode, updatedAnswers))
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(periodIndex, countryIndex), value))
+                  } yield Redirect(VatPayableForCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
               )
             }
           }

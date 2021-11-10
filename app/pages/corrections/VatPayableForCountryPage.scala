@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{Index, NormalMode, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -30,8 +30,15 @@ case class VatPayableForCountryPage(periodIndex: Index, countryIndex: Index) ext
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, periodIndex)
+      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
       case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  override def navigateInCheckMode(answers: UserAnswers): Call =
+    answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
+      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
+      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 }

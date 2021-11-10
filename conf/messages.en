@@ -356,13 +356,13 @@ countryVatCorrection.heading = What is your correction for the VAT payable to {0
 countryVatCorrection.caption = Correction period: {0}
 countryVatCorrection.hint = Enter a minus value if you declared too much in your previous return.
 countryVatCorrection.previous-amount.hint = Your most recent declaration for this period is {0}.
-countryVatCorrection.checkYourAnswersLabel = CountryVatCorrection
+countryVatCorrection.checkYourAnswersLabel = Correction amount
 countryVatCorrection.error.nonNumeric = Enter your correction for the total VAT payable to {0} using numbers
 countryVatCorrection.error.required = Enter your correction for the total VAT payable to {0}
 countryVatCorrection.error.wholeNumber = Enter your correction for the total VAT payable to {0} using whole numbers
 countryVatCorrection.error.outOfRange = Correction for the total VAT payable must be between {0} and {1}
 countryVatCorrection.error.nonZero = Correction for the total VAT payable must not be zero
-countryVatCorrection.change.hidden = CountryVatCorrection
+countryVatCorrection.change.hidden = Correction amount
 
 removeCountryCorrection.title =  Are you sure you want to remove this correction?
 removeCountryCorrection.heading =  Are you sure you want to remove this correction?
@@ -418,13 +418,15 @@ noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other 
 noOtherCorrectionPeriodsAvailable.heading = You cannot make a correction to other VAT One Stop Shop periods
 noOtherCorrectionPeriodsAvailable.paragraph = You can only make corrections for periods that have ended.
 
-checkVatPayableAmount.title = checkVatPayableAmount
-checkVatPayableAmount.heading = checkVatPayableAmount
-
+checkVatPayableAmount.title = Check your answers
+checkVatPayableAmount.heading = Check your answers
+checkVatPayableAmount.caption = {0}: {1}
+previousVatTotal.checkYourAnswersLabel = Previous VAT total declared
+newVatTotal.checkYourAnswersLabel = New VAT total
 vatPayableForCountry.title = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.caption = Correction period: {0}
-vatPayableForCountry.hint = We've calculated this total based on your most recent declaration and the correction amount.
+vatPayableForCountry.hint = We''ve calculated this total based on your most recent declaration and the correction amount.
 vatPayableForCountry.checkYourAnswersLabel = vatPayableForCountry
 vatPayableForCountry.error.required = Select yes if vatPayableForCountry
 vatPayableForCountry.change.hidden = VatPayableForCountry

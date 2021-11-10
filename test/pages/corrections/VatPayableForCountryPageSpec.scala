@@ -31,12 +31,12 @@ class VatPayableForCountryPageSpec extends PageBehaviours {
 
     "must navigate in Normal mode" - {
 
-      "to VatCorrectionsList page when answer is true" in {
+      "to CheckVatPayableAmount page when answer is true" in {
 
         val answers = emptyUserAnswers.set(VatPayableForCountryPage(index, index), true).success.value
 
         VatPayableForCountryPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, index))
+          .mustEqual(controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
       "to CountryVatCorrection page when answer is false" in {

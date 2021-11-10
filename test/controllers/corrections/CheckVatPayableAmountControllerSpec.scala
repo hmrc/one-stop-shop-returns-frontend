@@ -17,27 +17,44 @@
 package controllers.corrections
 
 import base.SpecBase
+import models.{Country, NormalMode}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.MockitoSugar.when
+import org.scalatestplus.mockito.MockitoSugar.mock
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.CheckVatPayableAmountView
+import services.VatReturnService
+import views.html.corrections.CheckVatPayableAmountView
+
+import scala.concurrent.Future
 
 class CheckVatPayableAmountControllerSpec extends SpecBase {
 
   "CheckVatPayableAmount Controller" - {
 
     "must return OK and the correct view for a GET" in {
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val mockService = mock[VatReturnService]
+      when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(20))
+      val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(bind[VatReturnService].toInstance(mockService))
+        .build()
 
       running(application) {
-        val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(period).url)
-
+        val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index).url)
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[CheckVatPayableAmountView]
 
+
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(period)(request, messages(application)).toString
+        contentAsString(result).contains("Correction amount") mustBe true
+        contentAsString(result).contains("Previous VAT total declared") mustBe true
+        contentAsString(result).contains("New VAT total") mustBe true
       }
     }
   }

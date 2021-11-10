@@ -19,16 +19,15 @@ package controllers.corrections
 import base.SpecBase
 import forms.VatPayableForCountryFormProvider
 import models.{Country, Index, NormalMode}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, VatPayableForCountryPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
 import services.VatReturnService
-import views.html.VatPayableForCountryView
+import views.html.corrections.VatPayableForCountryView
 
 import scala.concurrent.Future
 
@@ -64,7 +63,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatPayableForCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), BigDecimal(2000))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), period, BigDecimal(2000))(request, messages(application)).toString
       }
     }
 
@@ -90,25 +89,21 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), BigDecimal(2000))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), period, BigDecimal(2000))(request, messages(application)).toString
       }
     }
 
-    "must save the answer and redirect to the next page when valid data is submitted" in {
-
-      val mockSessionRepository = mock[SessionRepository]
+    "must redirect to the next page when valid data is submitted" in {
 
       val userAnswers = emptyUserAnswers
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(1000))
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatReturnService].toInstance(mockService))
           .build()
 
@@ -122,7 +117,6 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual VatPayableForCountryPage(Index(0), Index(0)).navigate(NormalMode, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 
@@ -152,7 +146,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), BigDecimal(2000))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), period, BigDecimal(2000))(request, messages(application)).toString
       }
     }
 

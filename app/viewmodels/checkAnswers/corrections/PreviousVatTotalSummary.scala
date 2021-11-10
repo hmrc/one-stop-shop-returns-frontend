@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, Index, UserAnswers}
+import models.{Index, UserAnswers}
 import pages.corrections.CountryVatCorrectionPage
 import play.api.i18n.Messages
 import play.twirl.api.Html
@@ -26,19 +26,14 @@ import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object CountryVatCorrectionSummary {
+object PreviousVatTotalSummary {
 
-  def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)).map {
-      answer =>
+  def row(originalAmount: BigDecimal)(implicit messages: Messages): SummaryListRow =
 
-        SummaryListRowViewModel(
-          key = "countryVatCorrection.checkYourAnswersLabel",
-          value = ValueViewModel(HtmlContent(Html(currencyFormat(answer)))),
-          actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex).url)
-              .withVisuallyHiddenText(messages("countryVatCorrection.change.hidden"))
+    SummaryListRowViewModel(
+          key = "previousVatTotal.checkYourAnswersLabel",
+          value = ValueViewModel(HtmlContent(Html(currencyFormat(originalAmount)))),
+          actions = Seq.empty
           )
-        )
-    }
+
 }
