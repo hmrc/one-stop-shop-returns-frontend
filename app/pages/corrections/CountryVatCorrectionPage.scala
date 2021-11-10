@@ -37,7 +37,7 @@ case class CountryVatCorrectionPage(periodIndex: Index, countryIndex: Index) ext
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)) match {
-      case Some(vatAmount) => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckMode, answers.period, periodIndex)
+      case Some(vatAmount) => controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 }

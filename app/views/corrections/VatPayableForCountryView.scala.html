@@ -24,7 +24,7 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, selectedCountry: Country, newAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount)))) {
 
@@ -34,18 +34,13 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <header class="hmrc-page-heading">
-            <h1 class="govuk-heading-xl">@messages("vatPayableForCountry.heading", selectedCountry.name, currencyFormat(newAmount))</h1>
-            <p class="govuk-caption-xl hmrc-caption-xl">@messages("vatPayableForCountry.caption", "Hello")</p>
-        </header>
-
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(
-                    content = messages("vatPayableForCountry.heading", selectedCountry.name, currencyFormat(newAmount))
-                )
-            ).withHint(HintViewModel(HtmlContent(Html(messages("vatPayableForCountry.caption", "Hello")))))
+                legend = HmrcPageHeadingLegend(content = HtmlContent(Html(messages("vatPayableForCountry.heading", selectedCountry.name, currencyFormat(newAmount)))),
+                                caption = messages("vatPayableForCountry.caption", correctionPeriod.displayText))
+
+            ).withHint(HintViewModel(HtmlContent(Html(messages("vatPayableForCountry.hint")))))
         )
 
         @govukButton(

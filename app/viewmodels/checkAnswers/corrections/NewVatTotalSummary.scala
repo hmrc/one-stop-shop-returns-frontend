@@ -26,19 +26,16 @@ import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object CountryVatCorrectionSummary {
+object NewVatTotalSummary {
 
-  def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index, originalAmount: BigDecimal)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)).map {
       answer =>
 
         SummaryListRowViewModel(
-          key = "countryVatCorrection.checkYourAnswersLabel",
-          value = ValueViewModel(HtmlContent(Html(currencyFormat(answer)))),
-          actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex).url)
-              .withVisuallyHiddenText(messages("countryVatCorrection.change.hidden"))
+          key = "newVatTotal.checkYourAnswersLabel",
+          value = ValueViewModel(HtmlContent(Html(currencyFormat(answer + originalAmount)))),
+          actions = Seq.empty
           )
-        )
     }
 }

@@ -17,23 +17,48 @@
 package controllers.corrections
 
 import controllers.actions._
-import models.Period
+import models.{Index, Mode, Period}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.CheckVatPayableAmountView
+import viewmodels.checkAnswers.corrections.{CountryVatCorrectionSummary, NewVatTotalSummary, PreviousVatTotalSummary}
+import viewmodels.govuk.summarylist._
+import views.html.corrections.CheckVatPayableAmountView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class CheckVatPayableAmountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
-                                       view: CheckVatPayableAmountView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                       view: CheckVatPayableAmountView,
+                                       service: VatReturnService
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      Ok(view(period))
+      val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
+
+      (correctionPeriod, selectedCountry) match {
+        case (Some(correctionPeriod), Some(country)) =>
+          for {
+            originalAmount <- service.getVatOwedToCountryOnReturn(country, correctionPeriod)
+          } yield {
+
+            val summaryList = SummaryListViewModel(
+              rows = Seq(
+                Some(PreviousVatTotalSummary.row(originalAmount)),
+                CountryVatCorrectionSummary.row(request.userAnswers, periodIndex, countryIndex),
+                NewVatTotalSummary.row(request.userAnswers, periodIndex, countryIndex, originalAmount)
+              ).flatten
+            ).withCssClass("govuk-!-margin-bottom-9")
+
+            Ok(view(period, summaryList, country, mode, correctionPeriod, periodIndex))
+          }
+      }
   }
 }

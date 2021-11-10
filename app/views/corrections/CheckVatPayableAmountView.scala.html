@@ -15,13 +15,23 @@
  *@
 
 @this(
-        layout: templates.Layout,
-        govukButton: GovukButton
+    layout: templates.Layout,
+    govukSummaryList: GovukSummaryList,
+    govukButton: GovukButton
 )
 
-@(period: Period)(implicit request: Request[_], messages: Messages)
+@(period: Period, summaryList: SummaryList, country: Country, mode: Mode, correctionPeriod: Period, periodIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title"))) {
-
+   <header class="hmrc-page-heading">
     <h1 class="govuk-heading-xl">@messages("checkVatPayableAmount.heading")</h1>
+    <p class="govuk-caption-xl hmrc-caption-xl">@messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)</p>
+   </header>
+
+   @govukSummaryList(summaryList)
+
+
+   <p class="govuk-!-margin-bottom-9" style="margin-top:50px;">
+    <a class="govuk-button" href="@controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, period, periodIndex)">@messages("site.continue")</a>
+   </p>
 }
