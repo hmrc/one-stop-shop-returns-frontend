@@ -28,7 +28,7 @@ import viewmodels.govuk.summarylist._
 import views.html.corrections.CheckVatPayableAmountView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class CheckVatPayableAmountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -59,6 +59,7 @@ class CheckVatPayableAmountController @Inject()(
 
             Ok(view(period, summaryList, country, mode, correctionPeriod, periodIndex))
           }
+        case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 }
