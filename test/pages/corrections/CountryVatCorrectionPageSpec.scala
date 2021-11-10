@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.NormalMode
+import models.{CheckMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class CountryVatCorrectionPageSpec extends PageBehaviours {
@@ -43,6 +43,23 @@ class CountryVatCorrectionPageSpec extends PageBehaviours {
       "to Journey recovery page when answer is invalid" in {
 
         CountryVatCorrectionPage(index, index).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to VatPayableForCountry page when answer is valid" in {
+
+        val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
+
+        CountryVatCorrectionPage(index, index).navigate(CheckMode, answers)
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckMode, answers.period, index, index))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        CountryVatCorrectionPage(index, index).navigate(CheckMode, emptyUserAnswers)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }

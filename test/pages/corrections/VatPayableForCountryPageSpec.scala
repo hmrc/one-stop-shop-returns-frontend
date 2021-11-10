@@ -16,7 +16,7 @@
 
 package pages.corrections
 
-import models.{Index, NormalMode}
+import models.{CheckMode, Index, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class VatPayableForCountryPageSpec extends PageBehaviours {
@@ -50,6 +50,31 @@ class VatPayableForCountryPageSpec extends PageBehaviours {
       "to Journey recovery page when answer is invalid" in {
 
         CountryVatCorrectionPage(index, index).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(controllers.routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to CheckVatPayableAmount page when answer is true" in {
+
+        val answers = emptyUserAnswers.set(VatPayableForCountryPage(index, index), true).success.value
+
+        VatPayableForCountryPage(index, index).navigate(CheckMode, answers)
+          .mustEqual(controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckMode, answers.period, index, index))
+      }
+
+      "to CountryVatCorrection page when answer is false" in {
+
+        val answers = emptyUserAnswers.set(VatPayableForCountryPage(index, index), false).success.value
+
+        VatPayableForCountryPage(index, index).navigate(CheckMode, answers)
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        CountryVatCorrectionPage(index, index).navigate(CheckMode, emptyUserAnswers)
           .mustEqual(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
     }

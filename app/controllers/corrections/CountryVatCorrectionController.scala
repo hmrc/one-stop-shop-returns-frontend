@@ -59,6 +59,7 @@ class CountryVatCorrectionController @Inject()(
             }
             Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn))
           }
+        case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 
@@ -83,6 +84,7 @@ class CountryVatCorrectionController @Inject()(
               )
 
           }
+        case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
 
       }
   }

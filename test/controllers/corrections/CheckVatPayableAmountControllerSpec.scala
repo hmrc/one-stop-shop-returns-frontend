@@ -57,5 +57,19 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
         contentAsString(result).contains("New VAT total") mustBe true
       }
     }
+
+    "must redirect to Journey Recovery if no correction period or country found in user answers" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index).url)
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
   }
 }

@@ -60,6 +60,7 @@ class VatPayableForCountryController @Inject()(
 
             Ok(view(preparedForm, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))
           }
+        case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 
@@ -86,6 +87,7 @@ class VatPayableForCountryController @Inject()(
                   } yield Redirect(VatPayableForCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
               )
             }
+        case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
           }
       }
 }
