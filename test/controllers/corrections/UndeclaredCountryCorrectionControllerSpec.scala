@@ -87,17 +87,11 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
       }
     }
 
-    "must save the answer and redirect to the next page when valid data is submitted" in {
-
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
+    "must redirect to the next page when valid data is submitted" in {
       val mockVatReturnConnector = mock[VatReturnConnector]
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
-        .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
         .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
         .build()
 
@@ -111,7 +105,6 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual UndeclaredCountryCorrectionPage(index, index).navigate(NormalMode, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 

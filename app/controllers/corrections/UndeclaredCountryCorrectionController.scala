@@ -67,7 +67,6 @@ class UndeclaredCountryCorrectionController @Inject()(
             value =>
               for {
                 updatedAnswers <- Future.fromTry(request.userAnswers.set(UndeclaredCountryCorrectionPage(periodIndex, countryIndex), value))
-                _ <- cc.sessionRepository.set(updatedAnswers)
               } yield Redirect(UndeclaredCountryCorrectionPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
           )
       }
