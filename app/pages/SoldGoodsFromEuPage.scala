@@ -18,12 +18,11 @@ package pages
 
 import config.FrontendAppConfig
 import controllers.routes
-import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
+import models.{CheckMode, Index, Mode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.AllSalesFromEuQuery
 
-import javax.inject.Inject
 import scala.util.Try
 
 case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {

@@ -16,18 +16,27 @@
 
 package pages.corrections
 
-import controllers.routes
-import models.UserAnswers
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.corrections.DeriveNumberOfCorrectionPeriods
 
-case object RemovePeriodCorrectionPage extends QuestionPage[Boolean] {
+case class RemovePeriodCorrectionPage(periodIndex: Index) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "removePeriodCorrection"
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+    answers.get(DeriveNumberOfCorrectionPeriods) match {
+      case Some(n) if n > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, answers.period)
+      case _ => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, answers.period)
+    }
+
+  override def navigateInCheckMode(answers: UserAnswers): Call =
+    answers.get(DeriveNumberOfCorrectionPeriods) match {
+      case Some(n) if n > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period)
+      case _ => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(CheckMode, answers.period)
+    }
 }
