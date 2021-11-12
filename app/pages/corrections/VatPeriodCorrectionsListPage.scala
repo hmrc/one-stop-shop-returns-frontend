@@ -31,7 +31,7 @@ case object VatPeriodCorrectionsListPage extends Page {
       answers.get(DeriveNumberOfCorrectionPeriods) match {
         case Some(size) =>
           correctionRoutes.CorrectionReturnPeriodController.onPageLoad(mode, answers.period, Index(size))
-        case None => //routes.JourneyRecoveryController.onPageLoad()
+        case None =>
           correctionRoutes.CorrectionReturnPeriodController.onPageLoad(mode, answers.period, Index(0))
       }
     } else {

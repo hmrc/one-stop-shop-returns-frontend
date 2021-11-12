@@ -17,11 +17,11 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, UserAnswers}
+import models.{CheckMode, Index, Mode, Period, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.corrections.{AllCorrectionPeriodsQuery, DeriveNumberOfCorrections}
+import queries.corrections.{AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods, DeriveNumberOfCorrections}
 
 import scala.util.Try
 
@@ -31,28 +31,22 @@ case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
 
   override def toString: String = "correctPreviousReturn"
 
-  def navigate(mode: Mode, answers: UserAnswers, period: Int): Call = {
+  def navigate(mode: Mode, answers: UserAnswers, uncorrectedPeriods: Int): Call = {
+
+    val correctedPeriods: Int = answers.get(DeriveCompletedCorrectionPeriods).map(_.size).getOrElse(0)
+
     answers.get(CorrectPreviousReturnPage) match {
-
-      // TODO: "Period" here seems to be the total number of completed returns. Should be number of uncorrected periods.
-      // TODO: For CheckMode YES to YES, want to check for number of corrections, and if non-zero then return to CYA page (if zero then is NO to YES)
-      // TODO: For CheckMode NO to YES, carry on through full journey
-      // TODO: For CheckMode YES to NO, wipe data and return to CYA
-      // TODO: Add tests for this navigation
-
-      case Some(true) if (period > 1 && mode == CheckMode) =>
+      case Some(true) if correctedPeriods > 1 && mode == CheckMode =>
         routes.CheckYourAnswersController.onPageLoad(answers.period)
-      case Some(true) => if (period > 1) {
+      case Some(true) => if (uncorrectedPeriods > 1) {
         controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, answers.period, Index(0))
       } else {
         controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, answers.period, Index(0))
       }
-      case Some(false) =>  {
+      case Some(false) =>
         routes.CheckYourAnswersController.onPageLoad(answers.period)
-      }
-      case _ => {
+      case _ =>
         routes.JourneyRecoveryController.onPageLoad()
-      }
     }
   }
 

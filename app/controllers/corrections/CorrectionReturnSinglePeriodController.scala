@@ -56,12 +56,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
           uncompletedCorrectionPeriods.size match {
             case 0 => Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(request.userAnswers.period))
-            case 1 =>
-              val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage(index)) match {
-                case None => form
-                case Some(value) => form.fill(value)
-              }
-              Ok(view(preparedForm, mode, period, uncompletedCorrectionPeriods.head.displayText, index))
+            case 1 => Ok(view(form, mode, period, uncompletedCorrectionPeriods.head.displayText, index))
             case _ => Redirect(
               controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, period, index)
             )
@@ -86,27 +81,17 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
           uncompletedCorrectionPeriods.size match {
             case 0 => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-            case 1 => {
-
-              form.bindFromRequest().fold(
+            case 1 => form.bindFromRequest().fold(
                 formWithErrors => {
                   Future.successful(BadRequest(view(formWithErrors, mode, period, uncompletedCorrectionPeriods.head.displayText, index)))
                 },
                 value =>
                   for {
-
-                    // TODO: Do not save this answer, won't be replayed through CYA
-
-                    updatedAnswers1 <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
-                    updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
-                    _              <- cc.sessionRepository.set(updatedAnswers2)
-                  } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigateInNormalMode(updatedAnswers2))
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
+                    _              <- cc.sessionRepository.set(updatedAnswers)
+                  } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(mode, updatedAnswers, value))
               )
-
-            }
-            case _ => Future.successful(Redirect(
-              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, period, index)
-            ))
+            case _ => Future.successful(Redirect(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, period, index)))
           }
 
         case Left(value) =>

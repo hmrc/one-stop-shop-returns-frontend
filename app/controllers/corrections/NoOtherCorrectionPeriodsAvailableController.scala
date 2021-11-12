@@ -17,9 +17,13 @@
 package controllers.corrections
 
 import controllers.actions._
+import controllers.{routes => baseRoutes}
+import logging.Logging
 import models.Period
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.NoOtherCorrectionPeriodsAvailableView
 
@@ -28,12 +32,26 @@ import javax.inject.Inject
 class NoOtherCorrectionPeriodsAvailableController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: NoOtherCorrectionPeriodsAvailableView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                     ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
       Ok(view(period))
+  }
+
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+    implicit request =>
+      val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
+      if(completedCorrectionPeriods.isEmpty) {
+        val cleanUp = request.userAnswers.remove(CorrectPreviousReturnPage)
+        if (cleanUp.isFailure) {
+          logger.error("Could not remove answer for CorrectPreviousReturnPage")
+        }
+      }
+
+      Redirect(baseRoutes.CheckYourAnswersController.onPageLoad(period))
   }
 }
