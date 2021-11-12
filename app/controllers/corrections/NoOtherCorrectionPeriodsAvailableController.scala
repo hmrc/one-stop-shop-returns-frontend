@@ -20,7 +20,7 @@ import controllers.actions._
 import controllers.{routes => baseRoutes}
 import logging.Logging
 import models.Period
-import pages.corrections.CorrectPreviousReturnPage
+import pages.corrections.{CorrectPreviousReturnPage, CountryVatCorrectionPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.DeriveCompletedCorrectionPeriods
@@ -28,11 +28,13 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.NoOtherCorrectionPeriodsAvailableView
 
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class NoOtherCorrectionPeriodsAvailableController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: NoOtherCorrectionPeriodsAvailableView
-                                     ) extends FrontendBaseController with I18nSupport with Logging {
+                                     )(implicit val ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -41,17 +43,23 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
       Ok(view(period))
   }
 
-  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
+
       val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
       if(completedCorrectionPeriods.isEmpty) {
-        val cleanUp = request.userAnswers.remove(CorrectPreviousReturnPage)
-        if (cleanUp.isFailure) {
-          logger.error("Could not remove answer for CorrectPreviousReturnPage")
-        }
-      }
+        val cleanup = for {
+          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage, false))
+          _              <- cc.sessionRepository.set(updatedAnswers)
+        } yield Redirect(baseRoutes.CheckYourAnswersController.onPageLoad(period))
 
-      Redirect(baseRoutes.CheckYourAnswersController.onPageLoad(period))
+        cleanup.onComplete {
+          case Failure(exception) => logger.error(s"Could not perform cleanup: ${exception.getLocalizedMessage}")
+        }
+        cleanup
+      } else {
+        Future.successful(Redirect(baseRoutes.CheckYourAnswersController.onPageLoad(period)))
+      }
   }
 }

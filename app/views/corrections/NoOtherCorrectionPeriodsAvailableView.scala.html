@@ -14,8 +14,11 @@
  * limitations under the License.
  *@
 
+@import controllers.corrections.{ routes => correctionRoutes }
+
 @this(
         layout: templates.Layout,
+        formHelper: FormWithCSRF,
         govukButton: GovukButton
 )
 
@@ -23,11 +26,14 @@
 
 @layout(pageTitle = titleNoForm(messages("noOtherCorrectionPeriodsAvailable.title"))) {
 
+@formHelper(action = correctionRoutes.NoOtherCorrectionPeriodsAvailableController.onSubmit(period), 'autoComplete -> "off") {
+
     <h1 class="govuk-heading-xl">@messages("noOtherCorrectionPeriodsAvailable.heading")</h1>
 
     <p class="govuk-body">@messages("noOtherCorrectionPeriodsAvailable.paragraph")</p>
 
-<p class="govuk-!-margin-bottom-9" style="margin-top:50px;">
-    <a class="govuk-button" href="@routes.NoOtherCorrectionPeriodsAvailableController.onSubmit(period)">@messages("site.continue")</a>
-</p>
+    @govukButton(
+    ButtonViewModel(messages("site.continue"))
+    )
+}
 }

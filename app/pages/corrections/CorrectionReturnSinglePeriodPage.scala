@@ -16,15 +16,11 @@
 
 package pages.corrections
 
-import controllers.routes
-import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import models.{Index, Mode, UserAnswers}
+import pages.Page
 import play.api.mvc.Call
 
-case class CorrectionReturnSinglePeriodPage(index: Index) extends QuestionPage[Boolean] {
-
-  override def path: JsPath = JsPath \ toString
+case class CorrectionReturnSinglePeriodPage(index: Index) extends Page {
 
   override def toString: String = "correctionReturnSinglePeriod"
 

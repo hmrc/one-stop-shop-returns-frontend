@@ -109,7 +109,6 @@ GET         /past-returns                                                       
 GET         /past-returns/:period                                                                            controllers.PreviousReturnController.onPageLoad(period: Period)
 
 GET         /no-other-periods-available                                                                      controllers.NoOtherPeriodsAvailableController.onPageLoad()
-POST        /:period/no-other-periods-available                                                              controllers.NoOtherPeriodsAvailableController.onSubmit(period: Period)
 
 GET         /:period/eu-sales-from-northern-ireland/:countryIndex/:vatRateIndex                              controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, countryIndex: Index, vatRateIndex: Index)
 POST        /:period/eu-sales-from-northern-ireland/:countryIndex/:vatRateIndex                              controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, countryIndex: Index, vatRateIndex: Index)
@@ -161,6 +160,7 @@ GET         /:period/changeCorrectionReturnSinglePeriod/:index                  
 POST        /:period/changeCorrectionReturnSinglePeriod/:index                                               controllers.corrections.CorrectionReturnSinglePeriodController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
 
 GET         /:period/noOtherCorrectionPeriodsAvailable                                                       controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onPageLoad(period: Period)
+POST        /:period/noOtherCorrectionPeriodsAvailable                                                       controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onSubmit(period: Period)
 
 GET         /:period/countryVatCorrection/:periodIndex/:countryIndex                                         controllers.corrections.CountryVatCorrectionController.onPageLoad(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index)
 POST        /:period/countryVatCorrection/:periodIndex/:countryIndex                                         controllers.corrections.CountryVatCorrectionController.onSubmit(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index)

@@ -36,7 +36,7 @@ case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
     val correctedPeriods: Int = answers.get(DeriveCompletedCorrectionPeriods).map(_.size).getOrElse(0)
 
     answers.get(CorrectPreviousReturnPage) match {
-      case Some(true) if correctedPeriods > 1 && mode == CheckMode =>
+      case Some(true) if correctedPeriods > 0 && mode == CheckMode =>
         routes.CheckYourAnswersController.onPageLoad(answers.period)
       case Some(true) => if (uncorrectedPeriods > 1) {
         controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, answers.period, Index(0))

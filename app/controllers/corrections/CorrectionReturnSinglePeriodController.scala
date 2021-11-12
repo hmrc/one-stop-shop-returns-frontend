@@ -86,10 +86,15 @@ class CorrectionReturnSinglePeriodController @Inject()(
                   Future.successful(BadRequest(view(formWithErrors, mode, period, uncompletedCorrectionPeriods.head.displayText, index)))
                 },
                 value =>
-                  for {
-                    updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
-                    _              <- cc.sessionRepository.set(updatedAnswers)
-                  } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(mode, updatedAnswers, value))
+                  if(value) {
+                    for {
+                      updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
+                      _              <- cc.sessionRepository.set(updatedAnswers)
+                    } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(mode, updatedAnswers, value))
+                  } else {
+                    Future.successful(Redirect(CorrectionReturnSinglePeriodPage(index).navigate(mode, request.userAnswers, value)))
+                  }
+
               )
             case _ => Future.successful(Redirect(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, period, index)))
           }
