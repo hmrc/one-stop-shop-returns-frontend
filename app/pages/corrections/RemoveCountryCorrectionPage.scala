@@ -16,8 +16,7 @@
 
 package pages.corrections
 
-import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers}
+import models.{CheckLoopMode, CheckMode, Index, NormalMode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -46,6 +45,4 @@ case class RemoveCountryCorrectionPage(periodIndex: Index) extends QuestionPage[
         case _ => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(CheckMode, answers.period)
       }
     }
-
-
 }

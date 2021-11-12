@@ -19,10 +19,10 @@ package controllers.corrections
 import controllers.actions._
 import forms.corrections.RemoveCountryCorrectionFormProvider
 import models.{Index, Mode, Period}
-import pages.corrections.{CorrectionCountryPage, RemoveCountryCorrectionPage}
+import pages.corrections.RemoveCountryCorrectionPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.corrections.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery, CorrectionToCountryQuery, DeriveNumberOfCorrectionPeriods, DeriveNumberOfCorrections}
+import queries.corrections._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.RemoveCountryCorrectionView
 
@@ -63,14 +63,14 @@ class RemoveCountryCorrectionController @Inject()(
                 if (updatedAnswers.get(DeriveNumberOfCorrections(periodIndex)).getOrElse(0) == 0) {
                   Future.fromTry(updatedAnswers.remove(CorrectionPeriodQuery(periodIndex))).flatMap{
                     answersWithRemovedPeriod =>
-                      if(answersWithRemovedPeriod.get(DeriveNumberOfCorrectionPeriods).getOrElse(0) == 0){
+                      if (answersWithRemovedPeriod.get(DeriveNumberOfCorrectionPeriods).getOrElse(0) == 0) {
                         for {
                           answersWithRemovedCorrections <- Future.fromTry(answersWithRemovedPeriod.remove(AllCorrectionPeriodsQuery))
                           _ <- cc.sessionRepository.set(answersWithRemovedCorrections)
                         } yield {
                           Redirect(RemoveCountryCorrectionPage(periodIndex).navigate(mode, answersWithRemovedCorrections))
                         }
-                      } else{
+                      } else {
                         for {
                           _ <- cc.sessionRepository.set(answersWithRemovedPeriod)
                         } yield {
@@ -86,7 +86,7 @@ class RemoveCountryCorrectionController @Inject()(
                   }
                 }
             }
-          }else {
+          } else {
               Future.successful( Redirect(RemoveCountryCorrectionPage(periodIndex).navigate(mode, request.userAnswers)))
             }
       )
