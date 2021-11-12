@@ -40,7 +40,8 @@
                 label = HmrcPageHeadingLabel(
                     content = messages("countryVatCorrection.heading", country.name),
                     caption = messages("countryVatCorrection.caption", correctionPeriod.displayText)))
-            .asNumeric().withWidth(Fixed10).withCssClass("govuk-currency-input__inner__input")
+            .withWidth(Fixed10)
+            .withCssClass("govuk-currency-input__inner__input")
             .withPrefix(PrefixOrSuffix(content = Text("£")))
             .withHint(HintViewModel(messages("countryVatCorrection.hint")))
         )
