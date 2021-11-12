@@ -69,3 +69,15 @@ html[data-useragent*='MSIE 10.0'] .flex-container .tile {
     word-wrap: break-word; /* old version of overflow-wrap for IE and Edge and FF < 49*/
     overflow-wrap: anywhere; /* modern, tries to fit word on a new line rather than fitting on remnants of the current line */
 }
+
+th.return-period-column {
+    width: 45%;
+}
+
+th.amount-left-column {
+    width: 30%;
+}
+
+th.payment-column {
+    width: 25%;
+}

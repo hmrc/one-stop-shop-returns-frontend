@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{Country, NormalMode}
+import models.{CheckMode, Country, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -57,6 +57,36 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
       "to Journey recovery page when answer is invalid" in {
 
         UndeclaredCountryCorrectionPage(index, index).navigate(NormalMode, emptyUserAnswers)
+          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
+
+    "must navigate in Check mode" - {
+
+      "to What is your correction for the total VAT payable page when answer is yes" in {
+
+        val country  = arbitrary[Country].sample.value
+        val countries = Seq(country)
+
+        val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
+
+        UndeclaredCountryCorrectionPage(index, index).navigate(CheckMode, answers)
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
+      }
+
+      "to Correction country page when answer is no" in {
+
+        val country  = arbitrary[Country].sample.value
+
+        val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), false).success.value
+
+        UndeclaredCountryCorrectionPage(index, index).navigate(CheckMode, answers)
+          .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, index, index))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        UndeclaredCountryCorrectionPage(index, index).navigate(CheckMode, emptyUserAnswers)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }
