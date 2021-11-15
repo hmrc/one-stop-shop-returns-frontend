@@ -18,11 +18,11 @@ package controllers.corrections
 
 import base.SpecBase
 import forms.corrections.RemoveCountryCorrectionFormProvider
-import models.NormalMode
+import models.{Country, Index, NormalMode, Period}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.RemoveCountryCorrectionPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -36,7 +36,7 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new RemoveCountryCorrectionFormProvider()
   private val form = formProvider()
 
-  private lazy val removeCountryCorrectionRoute = controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(NormalMode, period).url
+  private lazy val removeCountryCorrectionRoute = controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(NormalMode, period, index, index).url
 
   "RemoveCountryCorrection Controller" - {
 
@@ -52,13 +52,13 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[RemoveCountryCorrectionView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(RemoveCountryCorrectionPage, true).success.value
+      val userAnswers = emptyUserAnswers.set(RemoveCountryCorrectionPage(index), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -70,18 +70,23 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
-    "must save the answer and redirect to the next page when valid data is submitted" in {
+    "must save the answer and redirect to the next page when true is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+        .set(CorrectionCountryPage(index, Index(1)), Country("BE", "Belgium")).success.value
+        .set(CountryVatCorrectionPage(index, Index(1)), BigDecimal(10)).success.value
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(answers))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
@@ -91,11 +96,41 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(RemoveCountryCorrectionPage, true).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+          .set(CorrectionCountryPage(index, index), Country("BE", "Belgium")).success.value
+          .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual RemoveCountryCorrectionPage.navigate(NormalMode, expectedAnswers).url
+        redirectLocation(result).value mustEqual RemoveCountryCorrectionPage(index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+      }
+    }
+
+    "must not change the answer and redirect to the next page when false is submitted" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+
+      val application =
+        applicationBuilder(userAnswers = Some(answers))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, removeCountryCorrectionRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+        val expectedAnswers = answers
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual RemoveCountryCorrectionPage(index).navigate(NormalMode, expectedAnswers).url
+        verify(mockSessionRepository, never()).set(any())
       }
     }
 
@@ -115,7 +150,7 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, index, index)(request, messages(application)).toString
       }
     }
 
