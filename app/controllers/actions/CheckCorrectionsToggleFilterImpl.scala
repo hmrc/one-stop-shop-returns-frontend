@@ -18,10 +18,9 @@ package controllers.actions
 
 import config.FrontendAppConfig
 import controllers.routes
-import models.requests.{DataRequest, OptionalDataRequest}
+import models.requests.DataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
-import services.PeriodService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 

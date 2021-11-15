@@ -16,7 +16,7 @@
 
 package pages.corrections
 
-import models.{CheckLoopMode, CheckMode, Index, NormalMode, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
