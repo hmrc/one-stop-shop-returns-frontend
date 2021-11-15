@@ -20,39 +20,21 @@ import controllers.corrections.routes
 import models.{CheckMode, Index, Mode, UserAnswers}
 import play.api.i18n.Messages
 import queries.corrections.AllCorrectionCountriesQuery
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
-import utils.CurrencyFormatter.currencyFormat
-import viewmodels.TitledSummaryList
+import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object VatCorrectionsListSummary {
 
-  def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index)(implicit messages: Messages): List[TitledSummaryList] =
+  def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index)(implicit messages: Messages): Seq[ListItem] =
     answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.map {
       case (correctionToCountry, countryIndex) =>
-
-        val row = SummaryListRowViewModel(
-          key = messages("vatCorrectionsList.correctionAmount"),
-          value = ValueViewModel(HtmlContent(currencyFormat(correctionToCountry.countryVatCorrection))),
-          actions = Seq(
-            ActionItemViewModel(
-              content = "site.change",
-              href = routes.CountryVatCorrectionController.onPageLoad(
-                currentMode,
-                answers.period,
-                periodIndex,
-                Index(countryIndex)).url
-            ).withVisuallyHiddenText(messages("vatCorrectionsList.change.hidden"))
-          )
-        )
-
-        TitledSummaryList(
-          title = correctionToCountry.correctionCountry.name,
-          list = SummaryListViewModel(
-            rows = Seq(row)
-          )
+        ListItem(
+          name      = correctionToCountry.correctionCountry.name,
+          changeUrl = routes.CountryVatCorrectionController.onPageLoad(
+            CheckMode,
+            answers.period,
+            periodIndex,
+            Index(countryIndex)).url,
+          removeUrl = routes.RemoveCountryCorrectionController.onPageLoad(currentMode, answers.period, periodIndex, Index(countryIndex)).url
         )
     }
 }
