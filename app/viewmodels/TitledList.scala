@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-package queries.corrections
+package viewmodels
 
-import models.Index
-import models.corrections.CorrectionToCountry
-import pages.PageConstants._
-import play.api.libs.json.JsPath
-import queries.{Gettable, Settable}
+import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
-case class AllCorrectionCountriesQuery(periodIndex: Index) extends Gettable[List[CorrectionToCountry]] with Settable[List[CorrectionToCountry]] {
-
-  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionToCountry
-
-}
-
+case class TitledList(title: String, list: Seq[ListItem])

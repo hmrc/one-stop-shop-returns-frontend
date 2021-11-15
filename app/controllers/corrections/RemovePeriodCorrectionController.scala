@@ -22,6 +22,7 @@ import models.{Index, Mode, Period}
 import pages.corrections.RemovePeriodCorrectionPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery, DeriveNumberOfCorrectionPeriods}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.RemovePeriodCorrectionView
 
@@ -40,7 +41,7 @@ class RemovePeriodCorrectionController @Inject()(
   def onPageLoad(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(RemovePeriodCorrectionPage) match {
+      val preparedForm = request.userAnswers.get(RemovePeriodCorrectionPage(periodIndex)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -56,10 +57,27 @@ class RemovePeriodCorrectionController @Inject()(
           Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex))),
 
         value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(RemovePeriodCorrectionPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(RemovePeriodCorrectionPage.navigate(mode, updatedAnswers))
+          if (value) {
+            Future.fromTry(request.userAnswers.remove(CorrectionPeriodQuery(periodIndex))).flatMap {
+              updatedAnswers =>
+                if (updatedAnswers.get(DeriveNumberOfCorrectionPeriods).getOrElse(0) == 0) {
+                  for {
+                    answersWithRemovedPeriods <- Future.fromTry(updatedAnswers.remove(AllCorrectionPeriodsQuery))
+                    _ <- cc.sessionRepository.set(answersWithRemovedPeriods)
+                  } yield {
+                    Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(mode, answersWithRemovedPeriods))
+                  }
+                } else {
+                    for {
+                      _ <- cc.sessionRepository.set(updatedAnswers)
+                    } yield {
+                      Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(mode, request.userAnswers))
+                    }
+                  }
+            }
+          } else {
+              Future.successful(Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(mode, request.userAnswers)))
+          }
       )
   }
 }

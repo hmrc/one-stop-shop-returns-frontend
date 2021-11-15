@@ -19,7 +19,7 @@ package controllers.corrections
 import controllers.actions._
 import forms.corrections.VatCorrectionsListFormProvider
 import models.{Country, Index, Mode, Period}
-import pages.corrections.{CorrectionReturnPeriodPage, VatCorrectionsListPage}
+import pages.corrections.VatCorrectionsListPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -27,7 +27,7 @@ import viewmodels.checkAnswers.corrections.VatCorrectionsListSummary
 import views.html.corrections.VatCorrectionsListView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class VatCorrectionsListController @Inject()(
                                               cc: AuthenticatedControllerComponents,

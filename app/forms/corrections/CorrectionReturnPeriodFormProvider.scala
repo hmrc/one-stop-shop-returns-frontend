@@ -17,7 +17,7 @@
 package forms.corrections
 
 import forms.mappings.Mappings
-import models.{Country, Index, Period}
+import models.{Index, Period}
 import play.api.data.Form
 
 import javax.inject.Inject
