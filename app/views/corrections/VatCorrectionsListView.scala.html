@@ -15,7 +15,7 @@
  *@
 
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
-@import viewmodels.{LegendSize, TitledSummaryList}
+@import viewmodels.LegendSize
 @import controllers.corrections.{ routes => correctionRoutes }
 
 @this(
@@ -24,10 +24,10 @@
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
     govukButton: GovukButton,
-    govukSummaryList: GovukSummaryList
+    addToList: components.addToSimpleList
 )
 
-@(form: Form[_], mode: Mode, list: List[TitledSummaryList], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
 
 @defining(if(list.size == 1) ".singular" else "") { messageSuffix =>
     @layout(pageTitle = title(
@@ -42,22 +42,9 @@
                 @govukErrorSummary(ErrorSummaryViewModel(form))
             }
 
-            <header class="hmrc-page-heading">
-                <h1 class="govuk-heading-xl">@messages("vatCorrectionsList.heading" + messageSuffix, list.size)</h1>
-                <p class="govuk-caption-xl hmrc-caption-xl">@messages("vatCorrectionsList.section", correctionPeriod.displayText)</p>
-            </header>
 
-            @for(item <- list) {
-                <h2 class="govuk-heading-m">@{
-                    item.title
-                }</h2>
+            @addToList(list, itemSize = Long, "vatCorrectionsList.change.hidden", "vatCorrectionsList.remove.hidden")
 
-                @govukSummaryList(item.list)
-
-                <p class="govuk-body govuk-!-margin-bottom-8">
-                    <a class="govuk-link" href="@correctionRoutes.RemoveCountryCorrectionController.onPageLoad(mode, period)">@messages("site.remove") <span class="govuk-visually-hidden">@messages("vatCorrectionsList.remove.hidden")</span></a>
-                </p>
-            }
 
             @if(canAddCountries) {
                 @govukRadios(
