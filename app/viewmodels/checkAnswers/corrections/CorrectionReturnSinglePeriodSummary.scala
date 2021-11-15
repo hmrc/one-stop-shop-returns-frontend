@@ -16,7 +16,6 @@
 
 package viewmodels.checkAnswers.corrections
 
-import controllers.routes
 import models.{CheckMode, Index, UserAnswers}
 import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.i18n.Messages

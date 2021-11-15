@@ -19,13 +19,11 @@ package controllers.corrections
 import connectors.VatReturnConnector
 import controllers.actions._
 import forms.corrections.CorrectionCountryFormProvider
-import models.Quarter.Q3
 import models.{Index, Mode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.I18nSupport
 import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.AllSalesFromEuQuery
 import queries.corrections.AllCorrectionCountriesQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionCountryView
