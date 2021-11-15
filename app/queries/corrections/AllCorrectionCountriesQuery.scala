@@ -24,7 +24,7 @@ import queries.{Gettable, Settable}
 
 case class AllCorrectionCountriesQuery(periodIndex: Index) extends Gettable[List[CorrectionToCountry]] with Settable[List[CorrectionToCountry]] {
 
-  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionToCountry
+  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry
 
 }
 

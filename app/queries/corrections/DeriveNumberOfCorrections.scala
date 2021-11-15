@@ -25,5 +25,5 @@ case class DeriveNumberOfCorrections(periodIndex: Index) extends Derivable[List[
 
   override val derive: List[JsObject] => Int = _.size
 
-  override def path: JsPath = JsPath \ PageConstants.corrections \ periodIndex.position \ PageConstants.correctionToCountry
+  override def path: JsPath = JsPath \ PageConstants.corrections \ periodIndex.position \ PageConstants.correctionsToCountry
 }

@@ -276,8 +276,8 @@ trait ModelGenerators {
       for {
         correctionPeriod <- arbitrary[Period]
         amount <- Gen.choose(1, 30)
-        correctionToCountries <- Gen.listOfN(amount, arbitrary[CorrectionToCountry])
-      } yield PeriodWithCorrections(correctionPeriod, correctionToCountries)
+        correctionsToCountry <- Gen.listOfN(amount, arbitrary[CorrectionToCountry])
+      } yield PeriodWithCorrections(correctionPeriod, correctionsToCountry)
     }
 
   implicit val arbitraryCorrectionPayload: Arbitrary[CorrectionPayload] =
