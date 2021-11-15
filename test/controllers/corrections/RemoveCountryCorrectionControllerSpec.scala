@@ -106,6 +106,105 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "must save the answer and redirect to VatCorrectionsList page when true is submitted and there are already corrections" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+        .set(CorrectionCountryPage(index, Index(1)), Country("BE", "Belgium")).success.value
+        .set(CountryVatCorrectionPage(index, Index(1)), BigDecimal(10)).success.value
+        .set(CorrectionReturnPeriodPage(Index(1)), period).success.value
+        .set(CorrectionCountryPage(Index(1), index), Country("ES", "Spain")).success.value
+        .set(CountryVatCorrectionPage(Index(1), index), BigDecimal(10)).success.value
+
+      val application =
+        applicationBuilder(userAnswers = Some(answers))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, removeCountryCorrectionRoute)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+          .set(CorrectionCountryPage(index, index), Country("BE", "Belgium")).success.value
+          .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+          .set(CorrectionReturnPeriodPage(Index(1)), period).success.value
+          .set(CorrectionCountryPage(Index(1), index), Country("ES", "Spain")).success.value
+          .set(CountryVatCorrectionPage(Index(1), index), BigDecimal(10)).success.value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual RemoveCountryCorrectionPage(index).navigate(NormalMode, expectedAnswers).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+      }
+    }
+
+    "must save the answer and redirect to VatPeriodCorrectionsList page when true is submitted and there are multiple periods" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+        .set(CorrectionReturnPeriodPage(Index(1)), period).success.value
+        .set(CorrectionCountryPage(Index(1), index), Country("ES", "Spain")).success.value
+        .set(CountryVatCorrectionPage(Index(1), index), BigDecimal(10)).success.value
+
+      val application =
+        applicationBuilder(userAnswers = Some(answers))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, removeCountryCorrectionRoute)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+          .set(CorrectionCountryPage(index, index), Country("ES", "Spain")).success.value
+          .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual RemoveCountryCorrectionPage(index).navigate(NormalMode, expectedAnswers).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+      }
+    }
+
+    "must save the answer and redirect to CorrectPreviousReturn page when true is submitted with a single correction in a single period" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+
+      val application =
+        applicationBuilder(userAnswers = Some(answers))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, removeCountryCorrectionRoute)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+        val expectedAnswers = emptyUserAnswers
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual RemoveCountryCorrectionPage(index).navigate(NormalMode, expectedAnswers).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+      }
+    }
+
     "must not change the answer and redirect to the next page when false is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]

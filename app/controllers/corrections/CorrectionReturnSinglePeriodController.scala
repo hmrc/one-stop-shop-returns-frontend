@@ -20,7 +20,7 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.SubmissionStatus.Complete
-import models.{Index, Mode, NormalMode, Period}
+import models.{Index, Mode, Period}
 import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
 import play.api.Logging
 import play.api.i18n.I18nSupport
