@@ -9,7 +9,7 @@ import models.Quarter.{Q1, Q2}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
+import pages.corrections._
 
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
@@ -49,7 +49,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
           corrections = List(
             PeriodWithCorrections(
               correctionReturnPeriod = correctionPeriod,
-              correctionToCountry = List(
+              correctionsToCountry = List(
                 CorrectionToCountry(
                   correctionCountry = country,
                   countryVatCorrection = correctionAmount
@@ -92,7 +92,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
           corrections = List(
             PeriodWithCorrections(
               correctionReturnPeriod = correctionPeriod1,
-              correctionToCountry = List(
+              correctionsToCountry = List(
                 CorrectionToCountry(
                   correctionCountry = country1,
                   countryVatCorrection = correctionAmount1
@@ -101,7 +101,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
             ),
             PeriodWithCorrections(
               correctionReturnPeriod = correctionPeriod2,
-              correctionToCountry = List(
+              correctionsToCountry = List(
                 CorrectionToCountry(
                   correctionCountry = country2,
                   countryVatCorrection = correctionAmount2
