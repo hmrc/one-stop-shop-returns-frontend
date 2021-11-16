@@ -16,7 +16,6 @@
 
 package queries.corrections
 
-import models.Period
 import models.corrections.PeriodWithCorrections
 import pages.PageConstants._
 import play.api.libs.json.JsPath

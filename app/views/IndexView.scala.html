@@ -204,8 +204,7 @@
                                         case Some(vatOwed) => {
                                             <p class="govuk-body">
                                                 @Html(messages(
-                                                    "index.payment.overdueAmountOwed",
-                                                    currencyFormat(BigDecimal(vatOwed) / 100),
+                                                    "index.payment.overdueAmountMaybeOwed",
                                                     vatReturnWithFinancialData.vatReturn.period.displayText,
                                                     vatReturnWithFinancialData.vatReturn.period.paymentDeadlineDisplay
                                                 ))

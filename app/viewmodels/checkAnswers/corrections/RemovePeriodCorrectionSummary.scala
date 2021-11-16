@@ -26,7 +26,7 @@ import viewmodels.implicits._
 object RemovePeriodCorrectionSummary {
 
   def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(RemovePeriodCorrectionPage).map {
+    answers.get(RemovePeriodCorrectionPage(index)).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"

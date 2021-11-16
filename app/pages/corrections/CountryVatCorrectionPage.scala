@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers}
+import models.{Index, Mode, UserAnswers}
 import pages.PageConstants.{correctionToCountry, corrections}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
@@ -29,15 +29,9 @@ case class CountryVatCorrectionPage(periodIndex: Index, countryIndex: Index) ext
 
   override def toString: String = "countryVatCorrection"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
+  override def navigate(mode: Mode, answers: UserAnswers): Call =
     answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)) match {
-      case Some(vatAmount) => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, periodIndex)
-      case _ => routes.JourneyRecoveryController.onPageLoad()
-    }
-
-  override def navigateInCheckMode(answers: UserAnswers): Call =
-    answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)) match {
-      case Some(vatAmount) => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckMode, answers.period, periodIndex)
+      case Some(vatAmount) => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, answers.period, periodIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 }

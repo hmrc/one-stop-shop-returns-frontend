@@ -394,7 +394,7 @@ vatCorrectionsList.addAnother = Add corrections to VAT for another EU country?
 vatCorrectionsList.maximumReached = You have added corrections to every EU country
 vatCorrectionsList.correctionAmount = Correction amount
 vatCorrectionsList.checkYourAnswersLabel = vatCorrectionsList
-vatCorrectionsList.error.required = Select yes if vatCorrectionsList
+vatCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another EU country
 vatCorrectionsList.change.hidden = VatCorrectionsList
 vatCorrectionsList.remove.hidden = VatCorrectionsList
 

@@ -37,5 +37,4 @@ case class VatCorrectionsListPage(periodIndex: Index) extends Page {
       correctionRoutes.VatPeriodCorrectionsListController.onPageLoad(mode, answers.period)
     }
   }
-
 }
