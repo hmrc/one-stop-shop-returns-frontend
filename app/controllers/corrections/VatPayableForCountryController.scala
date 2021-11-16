@@ -18,7 +18,7 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.VatPayableForCountryFormProvider
-import models.{Index, Mode, Period}
+import models.{CheckMode, Index, Mode, NormalMode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, VatPayableForCountryPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -39,7 +39,7 @@ class VatPayableForCountryController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
@@ -58,19 +58,18 @@ class VatPayableForCountryController @Inject()(
 
             val newAmount = vatOwedToCountryOnPrevReturn + amount
 
-            Ok(view(preparedForm, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))
+            Ok(view(preparedForm, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount, completeJourney))
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetData(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
       val correctionAmount = request.userAnswers.get(CountryVatCorrectionPage(periodIndex, countryIndex))
-
       (correctionPeriod, selectedCountry, correctionAmount) match {
         case (Some(correctionPeriod), Some(country), Some(amount)) =>
             vatReturnService.getVatOwedToCountryOnReturn(country, correctionPeriod).flatMap {
@@ -79,12 +78,12 @@ class VatPayableForCountryController @Inject()(
 
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))),
+                  Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount, completeJourney))),
 
                 value =>
                   for {
                     updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(periodIndex, countryIndex), value))
-                  } yield Redirect(VatPayableForCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
+                  } yield Redirect(VatPayableForCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, completeJourney))
               )
             }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

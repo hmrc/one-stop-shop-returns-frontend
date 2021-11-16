@@ -17,7 +17,7 @@
 package controllers.corrections
 
 import controllers.actions._
-import models.{Index, Mode, Period}
+import models.{Index, Mode, Period, NormalMode, CheckMode}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -38,10 +38,11 @@ class CheckVatPayableAmountController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
+      val previousMode = if(completeJourney){CheckMode}else{NormalMode}
 
       (correctionPeriod, selectedCountry) match {
         case (Some(correctionPeriod), Some(country)) =>
@@ -52,12 +53,12 @@ class CheckVatPayableAmountController @Inject()(
             val summaryList = SummaryListViewModel(
               rows = Seq(
                 Some(PreviousVatTotalSummary.row(originalAmount)),
-                CountryVatCorrectionSummary.row(request.userAnswers, periodIndex, countryIndex),
+                CountryVatCorrectionSummary.row(request.userAnswers, periodIndex, countryIndex, completeJourney),
                 NewVatTotalSummary.row(request.userAnswers, periodIndex, countryIndex, originalAmount)
               ).flatten
             ).withCssClass("govuk-!-margin-bottom-9")
 
-            Ok(view(period, summaryList, country, mode, correctionPeriod, periodIndex))
+            Ok(view(period, summaryList, country, previousMode, correctionPeriod, periodIndex))
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }

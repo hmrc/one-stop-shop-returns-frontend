@@ -18,7 +18,7 @@ package viewmodels.checkAnswers.corrections
 
 import base.SpecBase
 import controllers.routes
-import models.{CheckMode, Country}
+import models.{CheckLoopMode, CheckMode, Country}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
@@ -31,7 +31,7 @@ class CountryVatCorrectionSummarySpec extends SpecBase {
   implicit val m: Messages = stubMessages()
 
   private val expectedAction = Seq(
-    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, period, index, index).url)
+    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, period, index, index, true).url)
       .withVisuallyHiddenText("countryVatCorrection.change.hidden")
   )
 
@@ -43,7 +43,7 @@ class CountryVatCorrectionSummarySpec extends SpecBase {
 
     "must show summary when CountryVatCorrection exists" in {
 
-      val result = CountryVatCorrectionSummary.row(answers, index, index)
+      val result = CountryVatCorrectionSummary.row(answers, index, index, true)
 
       val expectedResult = SummaryListRowViewModel(
         "countryVatCorrection.checkYourAnswersLabel",
@@ -56,7 +56,7 @@ class CountryVatCorrectionSummarySpec extends SpecBase {
 
     "must not show summary when CountryVatCorrection doesn't exist" in {
 
-      val result = CountryVatCorrectionSummary.row(completeUserAnswers, index, index)
+      val result = CountryVatCorrectionSummary.row(completeUserAnswers, index, index, false)
 
       result mustBe None
     }

@@ -20,7 +20,7 @@ import connectors.VatReturnConnector
 import controllers.actions._
 import forms.corrections.CountryVatCorrectionFormProvider
 import models.domain.{SalesToCountry, VatReturn}
-import models.{Country, Index, Mode, Period}
+import models.{CheckMode, Country, Index, Mode, NormalMode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.I18nSupport
 import play.api.i18n.Lang.logger
@@ -42,7 +42,7 @@ class CountryVatCorrectionController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
@@ -57,30 +57,29 @@ class CountryVatCorrectionController @Inject()(
               case None => form
               case Some(value) => form.fill(value)
             }
-            Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn))
+            Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn, completeJourney))
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
-
       (correctionPeriod, selectedCountry) match {
         case (Some(correctionPeriod), Some(country)) =>
           service.getVatOwedToCountryOnReturn(country, correctionPeriod).flatMap { vatOwedToCountryOnPrevReturn =>
               val form = formProvider(country.name)
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn))),
+                  Future.successful(BadRequest(view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn, completeJourney))),
 
                 value =>
                   for {
                     updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryVatCorrectionPage(periodIndex, countryIndex), value))
                     _              <- cc.sessionRepository.set(updatedAnswers)
-                  } yield Redirect(CountryVatCorrectionPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
+                  } yield Redirect(CountryVatCorrectionPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, completeJourney))
               )
 
           }

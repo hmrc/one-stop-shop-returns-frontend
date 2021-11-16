@@ -24,11 +24,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal, completeJourney: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount)))) {
 
-    @formHelper(action = controllers.corrections.routes.VatPayableForCountryController.onSubmit(mode, period, periodIndex, countryIndex), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.VatPayableForCountryController.onSubmit(mode, period, periodIndex, countryIndex, completeJourney), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

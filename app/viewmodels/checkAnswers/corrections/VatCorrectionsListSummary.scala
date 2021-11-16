@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers.corrections
 
 import controllers.corrections.routes
-import models.{CheckMode, Index, Mode, UserAnswers}
+import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
 import play.api.i18n.Messages
 import queries.corrections.AllCorrectionCountriesQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
@@ -27,13 +27,15 @@ object VatCorrectionsListSummary {
   def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index)(implicit messages: Messages): Seq[ListItem] =
     answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.map {
       case (correctionToCountry, countryIndex) =>
+        val completeJourney = !(currentMode == NormalMode)
         ListItem(
           name      = correctionToCountry.correctionCountry.name,
-          changeUrl = routes.CountryVatCorrectionController.onPageLoad(
+          changeUrl = routes.CheckVatPayableAmountController.onPageLoad(
             CheckMode,
             answers.period,
             periodIndex,
-            Index(countryIndex)).url,
+            Index(countryIndex),
+            completeJourney).url,
           removeUrl = routes.RemoveCountryCorrectionController.onPageLoad(currentMode, answers.period, periodIndex, Index(countryIndex)).url
         )
     }

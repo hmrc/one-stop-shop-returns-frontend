@@ -41,7 +41,7 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
 
         UndeclaredCountryCorrectionPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index, false))
       }
 
       "to Correction country page when answer is no" in {
@@ -71,7 +71,7 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
 
         UndeclaredCountryCorrectionPage(index, index).navigate(CheckMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, index, index, true))
       }
 
       "to Correction country page when answer is no" in {

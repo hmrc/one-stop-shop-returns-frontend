@@ -31,14 +31,14 @@ case class UndeclaredCountryCorrectionPage(periodIndex: Index, countryIndex: Ind
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
+      case Some(true) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex, false)
       case Some(false) =>  controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     answers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
+      case Some(true) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex, true)
       case Some(false) =>  controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }

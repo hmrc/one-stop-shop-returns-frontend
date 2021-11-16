@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, NormalMode}
+import models.{CheckLoopMode, CheckMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class CountryVatCorrectionPageSpec extends PageBehaviours {
@@ -36,13 +36,13 @@ class CountryVatCorrectionPageSpec extends PageBehaviours {
 
         val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
 
-        CountryVatCorrectionPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(NormalMode, answers.period, index, index))
+        CountryVatCorrectionPage(index, index).navigate(NormalMode, answers, false)
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(NormalMode, answers.period, index, index, false))
       }
 
       "to Journey recovery page when answer is invalid" in {
 
-        CountryVatCorrectionPage(index, index).navigate(NormalMode, emptyUserAnswers)
+        CountryVatCorrectionPage(index, index).navigate(NormalMode, emptyUserAnswers, false)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }
@@ -53,13 +53,38 @@ class CountryVatCorrectionPageSpec extends PageBehaviours {
 
         val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
 
-        CountryVatCorrectionPage(index, index).navigate(CheckMode, answers)
-          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckMode, answers.period, index, index))
+        CountryVatCorrectionPage(index, index).navigate(CheckMode, answers, true)
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckMode, answers.period, index, index, true))
       }
 
       "to Journey recovery page when answer is invalid" in {
 
-        CountryVatCorrectionPage(index, index).navigate(CheckMode, emptyUserAnswers)
+        CountryVatCorrectionPage(index, index).navigate(CheckMode, emptyUserAnswers, true)
+          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
+
+    "must navigate in CheckLoop mode" - {
+
+      "to VatPayableForCountry page when answer is valid and journey is not complete" in {
+
+        val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
+
+        CountryVatCorrectionPage(index, index).navigate(CheckLoopMode, answers, false)
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckLoopMode, answers.period, index, index, false))
+      }
+
+      "to VatPayableForCountry page when answer is valid and journey is complete" in {
+
+        val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
+
+        CountryVatCorrectionPage(index, index).navigate(CheckLoopMode, answers, true)
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckLoopMode, answers.period, index, index, true))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        CountryVatCorrectionPage(index, index).navigate(CheckLoopMode, emptyUserAnswers, true)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }
