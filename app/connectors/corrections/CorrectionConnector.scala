@@ -19,7 +19,6 @@ package connectors.corrections
 import config.Service
 import connectors.corrections.CorrectionHttpParser._
 import models.Period
-import models.requests.corrections.CorrectionRequest
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
@@ -30,12 +29,6 @@ class CorrectionConnector @Inject()(config: Configuration, httpClient: HttpClien
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
-
-  def submit(correctionRequest: CorrectionRequest)(implicit hc: HeaderCarrier): Future[CorrectionResponse] = {
-    val url = s"$baseUrl/corrections"
-
-    httpClient.POST[CorrectionRequest, CorrectionResponse](url, correctionRequest)
-  }
 
   def get(period: Period)(implicit hc: HeaderCarrier): Future[CorrectionResponse] = {
     val url = s"$baseUrl/corrections/${period.toString}"

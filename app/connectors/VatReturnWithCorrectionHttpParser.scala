@@ -16,24 +16,24 @@
 
 package connectors
 
+import logging.Logging
+import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.responses._
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
-import logging.Logging
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
+object VatReturnWithCorrectionHttpParser extends Logging {
 
-object VatReturnHttpParser extends Logging {
+  type VatReturnWithCorrectionResponse = Either[ErrorResponse, (VatReturn, CorrectionPayload)]
 
-  type VatReturnResponse = Either[ErrorResponse, VatReturn]
-
-  implicit object VatReturnReads extends HttpReads[VatReturnResponse] {
-    override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {
+  implicit object VatReturnWithCorrectionReads extends HttpReads[VatReturnWithCorrectionResponse] {
+    override def read(method: String, url: String, response: HttpResponse): VatReturnWithCorrectionResponse = {
       response.status match {
         case OK | CREATED =>
-          response.json.validate[VatReturn] match {
-            case JsSuccess(vatReturn, _) => Right(vatReturn)
+          response.json.validate[(VatReturn, CorrectionPayload)] match {
+            case JsSuccess(vatReturnWithCorrection, _) => Right(vatReturnWithCorrection)
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
               Left(InvalidJson)

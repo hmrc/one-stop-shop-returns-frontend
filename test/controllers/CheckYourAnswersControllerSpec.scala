@@ -251,7 +251,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
             verify(vatReturnConnector, times(1)).submit(any())(any())
-            verify(correctionConnector, times(0)).submit(any())(any())
           }
         }
 
@@ -319,8 +318,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .set(SoldGoodsFromEuPage, false).success.value
               .set(CorrectPreviousReturnPage, false).success.value
 
-          when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
-          when(correctionConnector.submit(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
 
@@ -339,8 +337,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
-            verify(vatReturnConnector, times(1)).submit(any())(any())
-            verify(correctionConnector, times(1)).submit(any())(any())
+            verify(vatReturnConnector, times(1)).submitWithCorrection(any())(any())
           }
         }
       }

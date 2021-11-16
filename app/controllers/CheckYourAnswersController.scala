@@ -16,6 +16,7 @@
 
 package controllers
 
+import cats.data.EitherT
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
 import config.FrontendAppConfig
@@ -25,18 +26,21 @@ import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.{NormalMode, Period}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
+import models.corrections.CorrectionPayload
+import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.DataRequest
+import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.ConflictFound
 import pages.CheckYourAnswersPage
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import queries.EmailConfirmationQuery
 import queries.corrections.AllCorrectionPeriodsQuery
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import services.corrections.CorrectionService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
@@ -157,59 +161,21 @@ class CheckYourAnswersController @Inject()(
       val vatReturnRequest =
         vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
 
-      val correctionFuture = if (config.correctionToggle) {
+      if (config.correctionToggle) {
         val correctionRequest =
           correctionService.fromUserAnswers(request.userAnswers, request.vrn, period)
 
-        correctionRequest match {
-          case Valid(corrRequest) =>
-            correctionConnector.submit(corrRequest)
-          case Invalid(errors) =>
-            val errorList = errors.toChain.toList
-            val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-            logger.error(s"Unable to create a Corrections request from user answers: $errorMessages")
-
-            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-        }
-      } else {
-        Future.successful()
-      }
-
-      correctionFuture.flatMap { _ =>
-        vatReturnRequest match {
-          case Valid(returnRequest) =>
-            vatReturnConnector.submit(returnRequest).flatMap {
-              case Right(vatReturn) =>
-
-                auditService.audit(ReturnsAuditModel.build(
-                  returnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), request
-                ))
-
-                auditService.audit(ReturnForDataEntryAuditModel(returnRequest, vatReturn.reference, vatReturn.paymentReference))
-
-                emailService.sendConfirmationEmail(
-                  request.registration.contactDetails.fullName,
-                  request.registration.registeredCompanyName,
-                  request.registration.contactDetails.emailAddress,
-                  service.getTotalVatOwedAfterCorrections(request.userAnswers),
-                  period
-                ) flatMap {
-                  emailConfirmationResult =>
-                    val emailSent = EMAIL_ACCEPTED == emailConfirmationResult
-
-                    for {
-                      updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
-                      _ <- cc.sessionRepository.set(updatedAnswers)
-                    } yield {
-                      Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
-                    }
-                }
+        (vatReturnRequest, correctionRequest) match {
+          case (Valid(returnRequest), Valid(corrRequest)) =>
+            val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(returnRequest, corrRequest)
+            vatReturnConnector.submitWithCorrection(vatReturnWithCorrectionRequest).flatMap {
+              case Right((vatReturn: VatReturn, correctionPayload: CorrectionPayload)) =>
+                auditEmailAndRedirect(returnRequest, vatReturn, period)
               case Left(ConflictFound) =>
                 auditService.audit(ReturnsAuditModel.build(
                   returnRequest, SubmissionResult.Duplicate, None, None, request
                 ))
                 Redirect(routes.YourAccountController.onPageLoad()).toFuture
-
               case Left(e) =>
                 logger.error(s"Unexpected result on submit: ${e.toString}")
                 auditService.audit(ReturnsAuditModel.build(
@@ -218,6 +184,44 @@ class CheckYourAnswersController @Inject()(
                 Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
             }
 
+          case (Invalid(vatReturnErrors), Invalid(correctionErrors)) =>
+            val errors = vatReturnErrors ++ correctionErrors
+            val errorList = errors.toChain.toList
+            val errorMessages = errorList.map(_.errorMessage).mkString("\n")
+            logger.error(s"Unable to create a vat return and correction request from user answers: $errorMessages")
+
+            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+          case (Invalid(errors), _) =>
+            val errorList = errors.toChain.toList
+            val errorMessages = errorList.map(_.errorMessage).mkString("\n")
+            logger.error(s"Unable to create a vat return request from user answers: $errorMessages")
+
+            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+          case (_, Invalid(errors)) =>
+            val errorList = errors.toChain.toList
+            val errorMessages = errorList.map(_.errorMessage).mkString("\n")
+            logger.error(s"Unable to create a Corrections request from user answers: $errorMessages")
+
+            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+        }
+      } else {
+        vatReturnRequest match {
+          case Valid(returnRequest) =>
+            vatReturnConnector.submit(returnRequest).flatMap {
+              case Right(vatReturn: VatReturn) =>
+                auditEmailAndRedirect(returnRequest, vatReturn, period)
+              case Left(ConflictFound) =>
+                auditService.audit(ReturnsAuditModel.build(
+                  returnRequest, SubmissionResult.Duplicate, None, None, request
+                ))
+                Redirect(routes.YourAccountController.onPageLoad()).toFuture
+              case Left(e) =>
+                logger.error(s"Unexpected result on submit: ${e.toString}")
+                auditService.audit(ReturnsAuditModel.build(
+                  returnRequest, SubmissionResult.Failure, None, None, request
+                ))
+                Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+            }
           case Invalid(errors) =>
             val errorList = errors.toChain.toList
             val errorMessages = errorList.map(_.errorMessage).mkString("\n")
@@ -226,5 +230,32 @@ class CheckYourAnswersController @Inject()(
             Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
         }
       }
+
+  }
+
+  private def auditEmailAndRedirect(returnRequest: VatReturnRequest, vatReturn: VatReturn, period: Period)(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
+    auditService.audit(ReturnsAuditModel.build(
+      returnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), request
+    ))
+
+    auditService.audit(ReturnForDataEntryAuditModel(returnRequest, vatReturn.reference, vatReturn.paymentReference))
+
+    emailService.sendConfirmationEmail(
+      request.registration.contactDetails.fullName,
+      request.registration.registeredCompanyName,
+      request.registration.contactDetails.emailAddress,
+      service.getTotalVatOwedAfterCorrections(request.userAnswers),
+      period
+    ) flatMap {
+      emailConfirmationResult =>
+        val emailSent = EMAIL_ACCEPTED == emailConfirmationResult
+
+        for {
+          updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
+          _ <- cc.sessionRepository.set(updatedAnswers)
+        } yield {
+          Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
+        }
+    }
   }
 }

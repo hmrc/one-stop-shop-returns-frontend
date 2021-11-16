@@ -19,9 +19,11 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.domain.VatReturn
-import models.requests.VatReturnRequest
+import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
 import models.{PaymentReference, ReturnReference}
+import models.corrections.CorrectionPayload
+import models.requests.corrections.CorrectionRequest
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
@@ -95,6 +97,80 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
 
         val result = connector.submit(vatReturnRequest).futureValue
+
+        result.left.value mustBe an[UnexpectedResponseStatus]
+      }
+    }
+  }
+
+  ".submitWithCorrection" - {
+
+    val url = "/one-stop-shop-returns/vat-return-with-corrections"
+
+    "must return Right(VatReturn) when the server responds with CREATED" in {
+
+      running(application) {
+        val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
+        val correctionRequest = CorrectionRequest(vrn, period, List.empty)
+        val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
+        val ref = ReturnReference(vrn, period)
+        val payRef = PaymentReference(vrn, period)
+        val expectedVatReturn = VatReturn(
+          vrn, period, ref, payRef, None,
+          None, List.empty, List.empty,
+          Instant.now(stubClockAtArbitraryDate), Instant.now(stubClockAtArbitraryDate)
+        )
+        val expectedCorrection = CorrectionPayload(
+          vrn,
+          period,
+          List.empty,
+          Instant.now(stubClockAtArbitraryDate),
+          Instant.now(stubClockAtArbitraryDate)
+        )
+        val expectedVatReturnWithCorrection = (expectedVatReturn, expectedCorrection)
+        val responseJson = Json.toJson(expectedVatReturnWithCorrection)
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(
+          post(urlEqualTo(url))
+            .willReturn(aResponse().withStatus(CREATED).withBody(responseJson.toString()))
+        )
+
+        val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
+
+        result.value mustEqual expectedVatReturn
+      }
+    }
+
+    "must return Left(ConflictFound) when the server response with CONFLICT" in {
+
+      running(application) {
+        val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
+        val correctionRequest = CorrectionRequest(vrn, period, List.empty)
+        val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(CONFLICT)))
+
+        val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
+
+        result.left.value mustEqual ConflictFound
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server response with an error code" in {
+
+      running(application) {
+        val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
+        val correctionRequest = CorrectionRequest(vrn, period, List.empty)
+        val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
+
+        val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
 
         result.left.value mustBe an[UnexpectedResponseStatus]
       }

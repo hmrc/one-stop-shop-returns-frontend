@@ -42,65 +42,6 @@ class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherVa
       .configure("microservice.services.one-stop-shop-returns.port" -> server.port)
       .build()
 
-  ".submit" - {
-
-    "must return Right(Correction) when the server responds with CREATED" in {
-
-      running(application) {
-        val correctionRequest = CorrectionRequest(vrn, period, List.empty)
-        val expectedCorrection =
-          CorrectionPayload(
-            vrn = vrn,
-            period = period,
-            corrections = List.empty,
-            submissionReceived = Instant.now(stubClockAtArbitraryDate),
-            lastUpdated = Instant.now(stubClockAtArbitraryDate)
-          )
-        val responseJson = Json.toJson(expectedCorrection)
-        val connector = application.injector.instanceOf[CorrectionConnector]
-
-        server.stubFor(
-          post(urlEqualTo(url))
-            .willReturn(aResponse().withStatus(CREATED).withBody(responseJson.toString()))
-        )
-
-        val result = connector.submit(correctionRequest).futureValue
-
-        result.value mustEqual expectedCorrection
-      }
-    }
-
-    "must return Left(ConflictFound) when the server response with CONFLICT" in {
-
-      running(application) {
-        val correctionRequest = CorrectionRequest(vrn, period, List.empty)
-
-        val connector = application.injector.instanceOf[CorrectionConnector]
-
-        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(CONFLICT)))
-
-        val result = connector.submit(correctionRequest).futureValue
-
-        result.left.value mustEqual ConflictFound
-      }
-    }
-
-    "must return Left(UnexpectedResponseStatus) when the server response with an error code" in {
-
-      running(application) {
-        val correctionRequest = CorrectionRequest(vrn, period, List.empty)
-
-        val connector = application.injector.instanceOf[CorrectionConnector]
-
-        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
-
-        val result = connector.submit(correctionRequest).futureValue
-
-        result.left.value mustBe an[UnexpectedResponseStatus]
-      }
-    }
-  }
-
   ".get" - {
 
     val correctionPayload = arbitrary[CorrectionPayload].sample.value
