@@ -395,8 +395,8 @@ vatCorrectionsList.maximumReached = You have added corrections to every EU count
 vatCorrectionsList.correctionAmount = Correction amount
 vatCorrectionsList.checkYourAnswersLabel = vatCorrectionsList
 vatCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another EU country
-vatCorrectionsList.change.hidden = VatCorrectionsList
-vatCorrectionsList.remove.hidden = VatCorrectionsList
+vatCorrectionsList.change.hidden = Change {0}
+vatCorrectionsList.remove.hidden = Remove {0}
 
 vatPeriodCorrectionsList.title = You have corrected the VAT amount for {0} return periods
 vatPeriodCorrectionsList.title.empty = You have not corrected the VAT amount for any return periods
