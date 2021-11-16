@@ -17,11 +17,11 @@
 package pages.corrections
 
 import controllers.routes
-import models.{Index, Mode, UserAnswers}
+import models.{CheckMode, Index, Mode, Period, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.corrections.AllCorrectionPeriodsQuery
+import queries.corrections.{AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods, DeriveNumberOfCorrections}
 
 import scala.util.Try
 
@@ -31,17 +31,38 @@ case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
 
   override def toString: String = "correctPreviousReturn"
 
-  def navigate(mode: Mode, answers: UserAnswers, period: Int): Call =
+  def navigate(mode: Mode, answers: UserAnswers, uncorrectedPeriods: Int): Call = {
+
+    val correctedPeriods: Int = answers.get(DeriveCompletedCorrectionPeriods).map(_.size).getOrElse(0)
+
     answers.get(CorrectPreviousReturnPage) match {
-      case Some(true) => if(period > 1) {
+      case Some(true) if correctedPeriods > 0 && mode == CheckMode =>
+        routes.CheckYourAnswersController.onPageLoad(answers.period)
+      case Some(true) => if (uncorrectedPeriods > 1) {
         controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(mode, answers.period, Index(0))
       } else {
         controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, answers.period, Index(0))
       }
-      case Some(false) =>  routes.CheckYourAnswersController.onPageLoad(answers.period)
-      case _ => routes.JourneyRecoveryController.onPageLoad()
+      case Some(false) =>
+        routes.CheckYourAnswersController.onPageLoad(answers.period)
+      case _ =>
+        routes.JourneyRecoveryController.onPageLoad()
+    }
+  }
+
+  override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
+
+    val changedFromYesToNo:Option[Boolean] = for {
+      currentAnswer <- value
+      previousAnswer <- userAnswers.get(AllCorrectionPeriodsQuery).map(_.nonEmpty)
+    } yield {
+      previousAnswer && !currentAnswer
     }
 
-  override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] =
-    userAnswers.remove(AllCorrectionPeriodsQuery)
+    if(changedFromYesToNo.getOrElse(false)) {
+      userAnswers.remove(AllCorrectionPeriodsQuery)
+    } else {
+      Try(userAnswers)
+    }
+  }
 }

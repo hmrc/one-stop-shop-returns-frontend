@@ -16,29 +16,20 @@
 
 package pages.corrections
 
-import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers}
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import models.{Index, Mode, UserAnswers}
+import pages.Page
 import play.api.mvc.Call
 
-case class CorrectionReturnSinglePeriodPage(index: Index) extends QuestionPage[Boolean] {
-
-  override def path: JsPath = JsPath \ toString
+case class CorrectionReturnSinglePeriodPage(index: Index) extends Page {
 
   override def toString: String = "correctionReturnSinglePeriod"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    answers.get(this) match {
-      case Some(true) => controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, index, Index(0))
-      case Some(false) => controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(answers.period)
-      case _ => routes.JourneyRecoveryController.onPageLoad()
-    }
+  def navigate(mode: Mode, answers: UserAnswers, addOnlyPeriod: Boolean): Call = {
+      if (addOnlyPeriod) {
+        controllers.corrections.routes.CorrectionCountryController.onPageLoad(mode, answers.period, index, Index(0))
+      } else {
+        controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(answers.period)
+      }
 
-  override def navigateInCheckMode(answers: UserAnswers): Call =
-    answers.get(CorrectionReturnSinglePeriodPage(index)) match {
-      case Some(true) => controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, Index(0), Index(0))
-      case Some(false) => controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(answers.period)
-      case _ => routes.JourneyRecoveryController.onPageLoad()
-    }
+  }
 }

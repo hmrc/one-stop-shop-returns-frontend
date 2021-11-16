@@ -61,6 +61,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         ))))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("bootstrap.filters.csrf.enabled" -> false)
         .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
         .build()
 
@@ -119,45 +120,16 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
       }
     }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
+    "must redirect to the next page when valid data is submitted" in {
 
-      when(returnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(period, Complete)
-        ))))
 
-      val userAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(Index(0)), true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
-        .build()
-
-      running(application) {
-        implicit val msgs: Messages = messages(application)
-        val request = FakeRequest(GET, correctionReturnSinglePeriodRoute)
-        val view = application.injector.instanceOf[CorrectionReturnSinglePeriodView]
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result).mustEqual(
-          view(form.fill(true), NormalMode, period, period.displayText,Index(0))(request, messages(application)).toString
-        )
-      }
-    }
-
-    "must save the answer and redirect to the next page when valid data is submitted" in {
-
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(returnStatusConnector.listStatuses(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
           PeriodWithStatus(period, Complete)
         ))))
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+        applicationBuilder(userAnswers = Some(completeUserAnswers))
           .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
           .build()
 
@@ -167,15 +139,12 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers
-          .set(CorrectionReturnSinglePeriodPage(Index(0)), true).success.value
-          .set(CorrectionReturnPeriodPage(Index(0)), period).success.value
+
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value.mustEqual(
-          CorrectionReturnSinglePeriodPage(Index(0)).navigate(NormalMode, expectedAnswers).url
+          CorrectionReturnSinglePeriodPage(Index(0)).navigate(NormalMode, completeUserAnswers, true).url
         )
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 
