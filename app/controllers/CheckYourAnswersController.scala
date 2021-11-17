@@ -157,28 +157,28 @@ class CheckYourAnswersController @Inject()(
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
-      val vatReturnRequest =
+      val validatedVatReturnRequest =
         vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
 
       if (config.correctionToggle) {
-        val correctionRequest =
+        val validatedCorrectionRequest =
           correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate)
 
-        (vatReturnRequest, correctionRequest) match {
-          case (Valid(returnRequest), Valid(corrRequest)) =>
-            val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(returnRequest, corrRequest)
+        (validatedVatReturnRequest, validatedCorrectionRequest) match {
+          case (Valid(vatReturnRequest), Valid(correctionRequest)) =>
+            val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
             vatReturnConnector.submitWithCorrection(vatReturnWithCorrectionRequest).flatMap {
               case Right((vatReturn: VatReturn, correctionPayload: CorrectionPayload)) =>
-                auditEmailAndRedirect(returnRequest, vatReturn, period)
+                auditEmailAndRedirect(vatReturnRequest, vatReturn, period)
               case Left(ConflictFound) =>
                 auditService.audit(ReturnsAuditModel.build(
-                  returnRequest, SubmissionResult.Duplicate, None, None, request
+                  vatReturnRequest, SubmissionResult.Duplicate, None, None, request
                 ))
                 Redirect(routes.YourAccountController.onPageLoad()).toFuture
               case Left(e) =>
                 logger.error(s"Unexpected result on submit: ${e.toString}")
                 auditService.audit(ReturnsAuditModel.build(
-                  returnRequest, SubmissionResult.Failure, None, None, request
+                  vatReturnRequest, SubmissionResult.Failure, None, None, request
                 ))
                 Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
             }
@@ -204,20 +204,20 @@ class CheckYourAnswersController @Inject()(
             Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
         }
       } else {
-        vatReturnRequest match {
-          case Valid(returnRequest) =>
-            vatReturnConnector.submit(returnRequest).flatMap {
+        validatedVatReturnRequest match {
+          case Valid(vatReturnRequest) =>
+            vatReturnConnector.submit(vatReturnRequest).flatMap {
               case Right(vatReturn: VatReturn) =>
-                auditEmailAndRedirect(returnRequest, vatReturn, period)
+                auditEmailAndRedirect(vatReturnRequest, vatReturn, period)
               case Left(ConflictFound) =>
                 auditService.audit(ReturnsAuditModel.build(
-                  returnRequest, SubmissionResult.Duplicate, None, None, request
+                  vatReturnRequest, SubmissionResult.Duplicate, None, None, request
                 ))
                 Redirect(routes.YourAccountController.onPageLoad()).toFuture
               case Left(e) =>
                 logger.error(s"Unexpected result on submit: ${e.toString}")
                 auditService.audit(ReturnsAuditModel.build(
-                  returnRequest, SubmissionResult.Failure, None, None, request
+                  vatReturnRequest, SubmissionResult.Failure, None, None, request
                 ))
                 Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
             }
