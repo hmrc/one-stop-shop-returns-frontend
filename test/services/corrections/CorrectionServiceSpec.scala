@@ -58,7 +58,6 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
         private val answers =
           emptyUserAnswers
             .set(CorrectPreviousReturnPage, true).success.value
-            .set(CorrectionReturnSinglePeriodPage(index), true).success.value
             .set(CorrectionReturnPeriodPage(index), correctionPeriod).success.value
             .set(CorrectionCountryPage(index, index), country).success.value
             .set(CountryVatCorrectionPage(index, index), correctionAmount).success.value
@@ -98,7 +97,6 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
         private val answers =
           emptyUserAnswers
             .set(CorrectPreviousReturnPage, true).success.value
-            .set(CorrectionReturnSinglePeriodPage(index), true).success.value
             .set(CorrectionReturnPeriodPage(index), correctionPeriod1).success.value
             .set(CorrectionCountryPage(index, index), country1).success.value
             .set(CountryVatCorrectionPage(index, index), correctionAmount1).success.value
