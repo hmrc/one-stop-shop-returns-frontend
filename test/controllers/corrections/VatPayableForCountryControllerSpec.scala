@@ -38,7 +38,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
   private val mockService = mock[VatReturnService]
 
-  private lazy val vatPayableForCountryRoute = controllers.corrections.routes.VatPayableForCountryController.onPageLoad(NormalMode, period, Index(0), Index(0), false).url
+  private lazy val vatPayableForCountryRoute = controllers.corrections.routes.VatPayableForCountryController.onPageLoad(NormalMode, period, Index(0), Index(0)).url
 
   "VatPayableForCountry Controller" - {
 
@@ -63,7 +63,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatPayableForCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), period, BigDecimal(2000), false)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), period, BigDecimal(2000))(request, messages(application)).toString
       }
     }
 
@@ -89,7 +89,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), period, BigDecimal(2000), false)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), period, BigDecimal(2000))(request, messages(application)).toString
       }
     }
 
@@ -116,7 +116,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val expectedAnswers = userAnswers.set(VatPayableForCountryPage(Index(0), Index(0)), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatPayableForCountryPage(Index(0), Index(0)).navigate(NormalMode, expectedAnswers, false).url
+        redirectLocation(result).value mustEqual VatPayableForCountryPage(Index(0), Index(0)).navigate(NormalMode, expectedAnswers).url
       }
     }
 
@@ -146,7 +146,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), period, BigDecimal(2000), false)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, Index(0), Index(0), Country("DE", "Germany"), period, BigDecimal(2000))(request, messages(application)).toString
       }
     }
 

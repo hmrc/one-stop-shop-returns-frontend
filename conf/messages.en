@@ -403,7 +403,8 @@ vatCorrectionsList.remove.hidden = VatCorrectionsList
 vatPeriodCorrectionsList.title = You have corrected the VAT amount for {0} return periods
 vatPeriodCorrectionsList.title.empty = You have not corrected the VAT amount for any return periods
 vatPeriodCorrectionsList.title.singular = You have corrected the VAT amount for one return period
-
+vatPeriodCorrectionsList.change.hidden = Change {0}
+vatPeriodCorrectionsList.remove.hidden = Remove {0}
 vatPeriodCorrectionsList.checkYourAnswersLabel = vatPeriodCorrectionsList
 
 vatPeriodCorrectionsList.addAnother = Add corrections to VAT for another return period?

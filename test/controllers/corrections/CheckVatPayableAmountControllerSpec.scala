@@ -45,7 +45,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
         .build()
 
       running(application) {
-        val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index, false).url)
+        val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index).url)
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[CheckVatPayableAmountView]
@@ -64,7 +64,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
         .build()
 
       running(application) {
-        val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index, false).url)
+        val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index).url)
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER

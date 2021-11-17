@@ -16,7 +16,7 @@
 
 package pages
 
-import models.{CheckLoopMode, CheckMode, Mode, NormalMode, UserAnswers}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Mode, NormalMode, UserAnswers}
 import play.api.mvc.Call
 
 import scala.language.implicitConversions
@@ -27,6 +27,8 @@ trait Page {
     case NormalMode        => navigateInNormalMode(answers)
     case CheckMode         => navigateInCheckMode(answers)
     case CheckLoopMode     => navigateInCheckLoopMode(answers)
+    case CheckSecondLoopMode    => navigateInCheckSecondLoopMode(answers)
+    case CheckThirdLoopMode    => navigateInCheckThirdLoopMode(answers)
   }
 
   protected def navigateInNormalMode(answers: UserAnswers): Call =
@@ -36,7 +38,13 @@ trait Page {
     throw new NotImplementedError("navigateInCheckMode is not implemented on this page")
 
   protected def navigateInCheckLoopMode(answers: UserAnswers): Call =
-    throw new NotImplementedError("navigateInCheckMode is not implemented on this page")
+    throw new NotImplementedError("navigateInCheckLoopMode is not implemented on this page")
+
+  protected def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
+    throw new NotImplementedError("navigateInCheckSecondLoopMode is not implemented on this page")
+
+  protected def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+    throw new NotImplementedError("navigateInCheckThirdLoopMode is not implemented on this page")
 }
 
 object Page {

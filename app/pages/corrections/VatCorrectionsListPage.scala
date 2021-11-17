@@ -18,7 +18,7 @@ package pages.corrections
 
 import controllers.corrections.{routes => correctionRoutes}
 import controllers.routes
-import models.{Index, Mode, UserAnswers}
+import models.{CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers}
 import pages.Page
 import play.api.mvc.Call
 import queries.corrections.DeriveNumberOfCorrections
@@ -33,7 +33,12 @@ case class VatCorrectionsListPage(periodIndex: Index) extends Page {
         case None => routes.JourneyRecoveryController.onPageLoad()
       }
     } else {
-      correctionRoutes.VatPeriodCorrectionsListController.onPageLoad(mode, answers.period)
+      if(mode == CheckThirdLoopMode){
+        correctionRoutes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, answers.period)
+      }else{
+        correctionRoutes.VatPeriodCorrectionsListController.onPageLoad(mode, answers.period)
+      }
+
     }
   }
 }

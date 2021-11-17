@@ -26,7 +26,9 @@ import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.DeriveCompletedCorrectionPeriods
+import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import viewmodels.checkAnswers.corrections.VatPeriodCorrectionsListSummary
 import views.html.corrections.VatPeriodAvailableCorrectionsListView
 
 import javax.inject.Inject
@@ -63,10 +65,12 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
 
             val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
 
+            val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
+
             if(uncompletedCorrectionPeriods.isEmpty) {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
             } else {
-              Ok(view(preparedForm, mode, period, completedCorrectionPeriods))
+              Ok(view(preparedForm, mode, period, completedCorrectionPeriodsModel))
             }
           }
         case Left(value) =>
@@ -91,13 +95,14 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
             .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
 
           val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
+          val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
 
           if(uncompletedCorrectionPeriods.isEmpty) {
             Future.successful(Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period)))
           } else {
             form.bindFromRequest().fold(
               formWithErrors =>
-                Future.successful(BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriods))),
+                Future.successful(BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriodsModel))),
               value =>
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPeriodCorrectionsListPage, value))

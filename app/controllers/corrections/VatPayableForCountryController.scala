@@ -39,7 +39,7 @@ class VatPayableForCountryController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
@@ -58,13 +58,13 @@ class VatPayableForCountryController @Inject()(
 
             val newAmount = vatOwedToCountryOnPrevReturn + amount
 
-            Ok(view(preparedForm, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount, completeJourney))
+            Ok(view(preparedForm, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetData(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
@@ -78,12 +78,12 @@ class VatPayableForCountryController @Inject()(
 
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount, completeJourney))),
+                  Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))),
 
                 value =>
                   for {
                     updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(periodIndex, countryIndex), value))
-                  } yield Redirect(VatPayableForCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, completeJourney))
+                  } yield Redirect(VatPayableForCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
               )
             }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

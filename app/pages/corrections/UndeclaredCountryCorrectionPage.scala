@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers}
+import models.{CheckMode, CheckThirdLoopMode, Index, NormalMode, UserAnswers}
 import pages.PageConstants.{correctionToCountry, corrections}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
@@ -31,15 +31,22 @@ case class UndeclaredCountryCorrectionPage(periodIndex: Index, countryIndex: Ind
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex, false)
+      case Some(true) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
       case Some(false) =>  controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     answers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex, true)
+      case Some(true) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
       case Some(false) =>  controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+    answers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
+      case Some(true) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, periodIndex, countryIndex)
+      case Some(false) =>  controllers.corrections.routes.CorrectionCountryController.onPageLoad(CheckThirdLoopMode, answers.period, periodIndex, countryIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 }

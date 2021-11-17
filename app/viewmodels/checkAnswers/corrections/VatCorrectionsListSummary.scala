@@ -17,26 +17,27 @@
 package viewmodels.checkAnswers.corrections
 
 import controllers.corrections.routes
-import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
+import models.{CheckMode, CheckSecondLoopMode, Index, Mode, NormalMode, UserAnswers}
 import play.api.i18n.Messages
 import queries.corrections.AllCorrectionCountriesQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object VatCorrectionsListSummary {
 
-  def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index)(implicit messages: Messages): Seq[ListItem] =
+  def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index)(implicit messages: Messages): Seq[ListItem] ={
+    val newMode = if(currentMode == NormalMode){CheckSecondLoopMode}else{currentMode}
+
     answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.map {
-      case (correctionToCountry, countryIndex) =>
-        val completeJourney = !(currentMode == NormalMode)
-        ListItem(
-          name      = correctionToCountry.correctionCountry.name,
-          changeUrl = routes.CheckVatPayableAmountController.onPageLoad(
-            CheckMode,
-            answers.period,
-            periodIndex,
-            Index(countryIndex),
-            completeJourney).url,
-          removeUrl = routes.RemoveCountryCorrectionController.onPageLoad(currentMode, answers.period, periodIndex, Index(countryIndex)).url
-        )
-    }
+        case (correctionToCountry, countryIndex) =>
+          ListItem(
+            name      = correctionToCountry.correctionCountry.name,
+            changeUrl = routes.CheckVatPayableAmountController.onPageLoad(
+              newMode,
+              answers.period,
+              periodIndex,
+              Index(countryIndex)).url,
+            removeUrl = routes.RemoveCountryCorrectionController.onPageLoad(currentMode, answers.period, periodIndex, Index(countryIndex)).url
+          )
+      }
+  }
 }

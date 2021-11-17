@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.ReturnStatusConnector
 import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.Complete
-import models.{Country, Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
+import models.{CheckThirdLoopMode, Country, Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -31,6 +31,7 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Cou
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import views.html.corrections.{VatPeriodAvailableCorrectionsListView, VatPeriodCorrectionsListView}
 
 import scala.concurrent.Future
@@ -87,6 +88,24 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         Period(2022, Q1)
       )
 
+      val allPeriodsModel = Seq(
+        ListItem(
+          name = "1 July to 30 September 2021",
+          changeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckThirdLoopMode, period, index).url,
+          removeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, index).url
+        ),
+        ListItem(
+          name = "1 October to 31 December 2021",
+          changeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckThirdLoopMode, period, Index(1)).url,
+          removeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, Index(1)).url
+        ),
+        ListItem(
+          name = "1 January to 31 March 2022",
+          changeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckThirdLoopMode, period, Index(2)).url,
+          removeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, Index(2)).url
+        )
+      )
+
       "and there are uncompleted correction periods must redirect to page with form" in {
 
         when(mockReturnStatusConnector.listStatuses(any())(any()))
@@ -130,10 +149,10 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
           val doc = Jsoup.parse(responseString)
           doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
-          doc.getElementsByClass("govuk-table__row").size() mustEqual expectedTableRows
+          doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
-          responseString mustEqual view(NormalMode, period, allPeriods)(request, messages(application)).toString
+          responseString mustEqual view(NormalMode, period, allPeriodsModel)(request, messages(application)).toString
         }
       }
     }

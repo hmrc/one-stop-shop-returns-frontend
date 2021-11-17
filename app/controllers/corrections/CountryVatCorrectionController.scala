@@ -42,7 +42,7 @@ class CountryVatCorrectionController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
@@ -57,13 +57,13 @@ class CountryVatCorrectionController @Inject()(
               case None => form
               case Some(value) => form.fill(value)
             }
-            Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn, completeJourney))
+            Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn))
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
@@ -73,13 +73,13 @@ class CountryVatCorrectionController @Inject()(
               val form = formProvider(country.name)
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn, completeJourney))),
+                  Future.successful(BadRequest(view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn))),
 
                 value =>
                   for {
                     updatedAnswers <- Future.fromTry(request.userAnswers.set(CountryVatCorrectionPage(periodIndex, countryIndex), value))
                     _              <- cc.sessionRepository.set(updatedAnswers)
-                  } yield Redirect(CountryVatCorrectionPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, completeJourney))
+                  } yield Redirect(CountryVatCorrectionPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
               )
 
           }

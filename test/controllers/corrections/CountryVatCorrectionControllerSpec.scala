@@ -45,7 +45,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
   private val validAnswer = BigDecimal(10)
 
-  private lazy val countryVatCorrectionRoute = controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, period, index, index, false).url
+  private lazy val countryVatCorrectionRoute = controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, period, index, index).url
 
   "CountryVatCorrection Controller" - {
 
@@ -70,7 +70,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CountryVatCorrectionView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period, selectedCountry, period, index, index, validAnswer, false)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, selectedCountry, period, index, index, validAnswer)(request, messages(application)).toString
       }
     }
 
@@ -100,7 +100,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(validAnswer), NormalMode, period, selectedCountry, period, index, index, validAnswer, false)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(validAnswer), NormalMode, period, selectedCountry, period, index, index, validAnswer)(request, messages(application)).toString
       }
     }
 
@@ -127,7 +127,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val expectedAnswers = userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CountryVatCorrectionPage(index, index).navigate(NormalMode, expectedAnswers, false).url
+        redirectLocation(result).value mustEqual CountryVatCorrectionPage(index, index).navigate(NormalMode, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -159,7 +159,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period, selectedCountry, period, index, index, validAnswer, false)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, selectedCountry, period, index, index, validAnswer)(request, messages(application)).toString
       }
     }
 

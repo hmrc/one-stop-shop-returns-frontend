@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckLoopMode, CheckMode, Index, Mode, UserAnswers}
+import models.{CheckLoopMode, CheckMode, Index, Mode, NormalMode, UserAnswers}
 import pages.corrections.CountryVatCorrectionPage
 import play.api.i18n.Messages
 import play.twirl.api.Html
@@ -28,16 +28,17 @@ import viewmodels.implicits._
 
 object CountryVatCorrectionSummary {
 
-  def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index, completeJourney: Boolean)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index, currentMode: Mode)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)).map {
       answer =>
+        val newMode = if(currentMode == NormalMode){CheckLoopMode}else{currentMode}
 
         SummaryListRowViewModel(
           key = "countryVatCorrection.checkYourAnswersLabel",
           value = ValueViewModel(HtmlContent(Html(currencyFormat(answer)))),
           actions = Seq(
             ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController
-              .onPageLoad(CheckLoopMode, answers.period, periodIndex, countryIndex, completeJourney).url)
+              .onPageLoad(newMode, answers.period, periodIndex, countryIndex).url)
               .withVisuallyHiddenText(messages("countryVatCorrection.change.hidden"))
           )
         )

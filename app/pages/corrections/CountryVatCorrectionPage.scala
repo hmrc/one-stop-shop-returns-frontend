@@ -29,12 +29,10 @@ case class CountryVatCorrectionPage(periodIndex: Index, countryIndex: Index) ext
 
   override def toString: String = "countryVatCorrection"
 
-  def navigate(mode: Mode, answers: UserAnswers, completeJourney: Boolean): Call =
-    (answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)), mode) match {
-      case (Some(vatAmount), NormalMode) =>
-        controllers.corrections.routes.VatPayableForCountryController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex, false)
-      case (Some(vatAmount), _) =>
-          controllers.corrections.routes.VatPayableForCountryController.onPageLoad(mode, answers.period, periodIndex, countryIndex, completeJourney)
+  override def navigate(mode: Mode, answers: UserAnswers): Call =
+    answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)) match {
+      case Some(vatAmount) =>
+        controllers.corrections.routes.VatPayableForCountryController.onPageLoad(mode, answers.period, periodIndex, countryIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 }

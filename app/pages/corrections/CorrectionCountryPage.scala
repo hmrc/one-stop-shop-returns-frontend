@@ -33,7 +33,7 @@ case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) extend
     answers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
       case Some(country) =>
         if(countries.contains(country)){
-          controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(mode, answers.period, periodIndex, countryIndex, !(mode == NormalMode))
+          controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(mode, answers.period, periodIndex, countryIndex)
         }else{
           controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(mode, answers.period, periodIndex, countryIndex)}
       case _ => routes.JourneyRecoveryController.onPageLoad()
