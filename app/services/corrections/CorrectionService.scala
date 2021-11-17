@@ -66,15 +66,17 @@ class CorrectionService @Inject()(
         periodWithCorrections.zipWithIndex.map {
           case (_, index) =>
             processCorrectionsToCountry(answers, Index(index))
+        }.sequence.map{ _ =>
+          periodWithCorrections
         }
-        periodWithCorrections.validNec
       case _ =>
         DataMissingError(AllCorrectionPeriodsQuery).invalidNec
     }
   }
 
   private def processCorrectionsToCountry(answers: UserAnswers, periodIndex: Index): ValidationResult[List[CorrectionToCountry]] = {
-    answers.get(AllCorrectionCountriesQuery(periodIndex)) match {
+    val test = answers.get(AllCorrectionCountriesQuery(periodIndex))
+    test match {
       case Some(value) if value.nonEmpty =>
         value.zipWithIndex.map {
           case (_, index) =>
