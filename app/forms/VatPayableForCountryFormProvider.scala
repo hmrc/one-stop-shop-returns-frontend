@@ -17,14 +17,15 @@
 package forms
 
 import javax.inject.Inject
-
 import forms.mappings.Mappings
+import models.Country
 import play.api.data.Form
+import utils.CurrencyFormatter.currencyFormat
 
 class VatPayableForCountryFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(country: Country, amount: BigDecimal): Form[Boolean] =
     Form(
-      "value" -> boolean("vatPayableForCountry.error.required")
+      "value" -> boolean("vatPayableForCountry.error.required", args = Seq(country.name, currencyFormat(amount)))
     )
 }

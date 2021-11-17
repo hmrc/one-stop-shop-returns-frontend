@@ -36,7 +36,6 @@ class VatPayableForCountryController @Inject()(
                                        view: VatPayableForCountryView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
@@ -51,6 +50,7 @@ class VatPayableForCountryController @Inject()(
           for {
             vatOwedToCountryOnPrevReturn <- vatReturnService.getVatOwedToCountryOnReturn(country, correctionPeriod)
           } yield {
+            val form = formProvider(country, amount)
             val preparedForm = request.userAnswers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
@@ -75,7 +75,7 @@ class VatPayableForCountryController @Inject()(
             vatReturnService.getVatOwedToCountryOnReturn(country, correctionPeriod).flatMap {
               vatOwedToCountryOnPrevReturn =>
               val newAmount = vatOwedToCountryOnPrevReturn + amount
-
+              val form = formProvider(country, amount)
               form.bindFromRequest().fold(
                 formWithErrors =>
                   Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))),

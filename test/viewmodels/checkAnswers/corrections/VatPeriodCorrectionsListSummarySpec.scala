@@ -34,10 +34,10 @@ class VatPeriodCorrectionsListSummarySpec extends SpecBase {
     .set(CorrectionReturnPeriodPage(index), period).success.value
     .set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
 
-  private def expectedResult(mode: Mode) = ListItem(
+  private def expectedResult(mode: Mode, currentMode: Mode) = ListItem(
     name = "1 July site.to 30 September 2021",
     changeUrl = controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, period, index).url,
-    removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, index).url
+    removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(currentMode, period, index).url
   )
 
   "VatPeriodCorrectionsListSummary" - {
@@ -46,14 +46,14 @@ class VatPeriodCorrectionsListSummarySpec extends SpecBase {
 
       val result = VatPeriodCorrectionsListSummary.getCompletedRows(answers, NormalMode)
 
-      result mustBe Seq(expectedResult(CheckThirdLoopMode))
+      result mustBe Seq(expectedResult(CheckThirdLoopMode, NormalMode))
     }
 
     "must show summary when completed periods exist when in Check Mode" in {
 
       val result = VatPeriodCorrectionsListSummary.getCompletedRows(answers, CheckMode)
 
-      result mustBe Seq(expectedResult(CheckMode))
+      result mustBe Seq(expectedResult(CheckMode, CheckMode))
     }
 
     "must not show summary when completed periods don't exist" in {

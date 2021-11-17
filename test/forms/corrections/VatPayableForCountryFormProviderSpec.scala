@@ -18,14 +18,16 @@ package forms.corrections
 
 import forms.VatPayableForCountryFormProvider
 import forms.behaviours.BooleanFieldBehaviours
+import models.Country
+import org.scalacheck.{Arbitrary, Gen}
 import play.api.data.FormError
 
 class VatPayableForCountryFormProviderSpec extends BooleanFieldBehaviours {
 
   val requiredKey = "vatPayableForCountry.error.required"
   val invalidKey = "error.boolean"
-
-  val form = new VatPayableForCountryFormProvider()()
+  val form = new VatPayableForCountryFormProvider()(Country("DE", "Germany"), BigDecimal(10))
+  val errorArgs = Seq("Germany", "&pound;10")
 
   ".value" - {
 
@@ -34,13 +36,13 @@ class VatPayableForCountryFormProviderSpec extends BooleanFieldBehaviours {
     behave like booleanField(
       form,
       fieldName,
-      invalidError = FormError(fieldName, invalidKey)
+      invalidError = FormError(fieldName, invalidKey, errorArgs)
     )
 
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, requiredKey)
+      requiredError = FormError(fieldName, requiredKey, errorArgs)
     )
   }
 }
