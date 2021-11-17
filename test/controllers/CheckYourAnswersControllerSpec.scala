@@ -354,6 +354,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val app =
           applicationBuilder(Some(answers))
+            .configure("features.corrections-toggle" -> false)
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
@@ -389,6 +390,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val app =
           applicationBuilder(Some(answers))
+            .configure("features.corrections-toggle" -> false)
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),

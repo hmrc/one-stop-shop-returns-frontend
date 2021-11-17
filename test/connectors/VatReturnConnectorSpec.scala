@@ -107,7 +107,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
     val url = "/one-stop-shop-returns/vat-return-with-corrections"
 
-    "must return Right(VatReturn) when the server responds with CREATED" in {
+    "must return Right(VatReturn, Correction) when the server responds with CREATED" in {
 
       running(application) {
         val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
@@ -138,7 +138,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
         val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
 
-        result.value mustEqual expectedVatReturn
+        result.value mustEqual expectedVatReturnWithCorrection
       }
     }
 
