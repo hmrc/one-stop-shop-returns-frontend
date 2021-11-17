@@ -17,11 +17,11 @@
 package services.corrections
 
 import cats.implicits._
-import models.{DataMissingError, Period, UserAnswers, ValidationResult}
-import models.corrections.PeriodWithCorrections
+import models.{DataMissingError, Index, Period, UserAnswers, ValidationResult}
+import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
 import models.requests.corrections.CorrectionRequest
 import pages.corrections.CorrectPreviousReturnPage
-import queries.corrections.AllCorrectionPeriodsQuery
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import services.PeriodService
 import uk.gov.hmrc.domain.Vrn
 
@@ -62,10 +62,35 @@ class CorrectionService @Inject()(
 
   private def processCorrections(answers: UserAnswers): ValidationResult[List[PeriodWithCorrections]] = {
     answers.get(AllCorrectionPeriodsQuery) match {
-      case Some(value) if value.nonEmpty =>
-        value.validNec
+      case Some(periodWithCorrections) if periodWithCorrections.nonEmpty =>
+        periodWithCorrections.zipWithIndex.map {
+          case (_, index) =>
+            processCorrectionsToCountry(answers, Index(index))
+        }
+        periodWithCorrections.validNec
       case _ =>
         DataMissingError(AllCorrectionPeriodsQuery).invalidNec
+    }
+  }
+
+  private def processCorrectionsToCountry(answers: UserAnswers, periodIndex: Index): ValidationResult[List[CorrectionToCountry]] = {
+    answers.get(AllCorrectionCountriesQuery(periodIndex)) match {
+      case Some(value) if value.nonEmpty =>
+        value.zipWithIndex.map {
+          case (_, index) =>
+            processCorrectionToCountry(answers, periodIndex, Index(index))
+        }.sequence
+      case _ =>
+        DataMissingError(AllCorrectionCountriesQuery(periodIndex)).invalidNec
+    }
+  }
+
+  private def processCorrectionToCountry(answers: UserAnswers, periodIndex: Index, countryIndex: Index): ValidationResult[CorrectionToCountry] = {
+    answers.get(CorrectionToCountryQuery(periodIndex, countryIndex)) match {
+      case Some(value) =>
+        value.validNec
+      case _ =>
+        DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
     }
   }
 
