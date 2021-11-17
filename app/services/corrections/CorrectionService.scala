@@ -75,8 +75,7 @@ class CorrectionService @Inject()(
   }
 
   private def processCorrectionsToCountry(answers: UserAnswers, periodIndex: Index): ValidationResult[List[CorrectionToCountry]] = {
-    val test = answers.get(AllCorrectionCountriesQuery(periodIndex))
-    test match {
+    answers.get(AllCorrectionCountriesQuery(periodIndex)) match {
       case Some(value) if value.nonEmpty =>
         value.zipWithIndex.map {
           case (_, index) =>
