@@ -18,14 +18,14 @@ package pages.corrections
 
 import controllers.routes
 import models.{CheckMode, Index, NormalMode, UserAnswers}
-import pages.PageConstants.{correctionToCountry, corrections}
+import pages.PageConstants.{correctionsToCountry, corrections}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
 case class UndeclaredCountryCorrectionPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
 
-  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionToCountry \ countryIndex.position \ toString
+  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry \ countryIndex.position \ toString
 
   override def toString: String = "undeclaredCountryCorrection"
 

@@ -18,8 +18,9 @@ package connectors
 
 import config.Service
 import connectors.VatReturnHttpParser._
+import connectors.VatReturnWithCorrectionHttpParser._
 import models.Period
-import models.requests.VatReturnRequest
+import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
@@ -35,6 +36,12 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
     val url = s"$baseUrl/vat-returns"
 
     httpClient.POST[VatReturnRequest, VatReturnResponse](url, vatReturnRequest)
+  }
+
+  def submitWithCorrection(vatReturnRequest: VatReturnWithCorrectionRequest)(implicit hc: HeaderCarrier): Future[VatReturnWithCorrectionResponse] = {
+    val url = s"$baseUrl/vat-return-with-corrections"
+
+    httpClient.POST[VatReturnWithCorrectionRequest, VatReturnWithCorrectionResponse](url, vatReturnRequest)
   }
 
   def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
