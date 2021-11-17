@@ -16,7 +16,6 @@
 
 package controllers
 
-import cats.data.EitherT
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
 import config.FrontendAppConfig
@@ -163,7 +162,7 @@ class CheckYourAnswersController @Inject()(
 
       if (config.correctionToggle) {
         val correctionRequest =
-          correctionService.fromUserAnswers(request.userAnswers, request.vrn, period)
+          correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate)
 
         (vatReturnRequest, correctionRequest) match {
           case (Valid(returnRequest), Valid(corrRequest)) =>

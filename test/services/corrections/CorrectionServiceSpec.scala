@@ -26,6 +26,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections._
+import services.PeriodService
 
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
@@ -41,7 +42,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
         private val expectedResult = CorrectionRequest(vrn, period, List.empty)
 
-        service.fromUserAnswers(answers, vrn, period) mustEqual Valid(expectedResult)
+        service.fromUserAnswers(answers, vrn, period, registration.commencementDate) mustEqual Valid(expectedResult)
 
       }
 
@@ -74,7 +75,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
             )
           ))
 
-        service.fromUserAnswers(answers, vrn, period) mustEqual Valid(expectedResult)
+        service.fromUserAnswers(answers, vrn, period, registration.commencementDate) mustEqual Valid(expectedResult)
 
       }
 
@@ -130,7 +131,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
             )
           ))
 
-        service.fromUserAnswers(answers, vrn, period) mustEqual Valid(expectedResult)
+        service.fromUserAnswers(answers, vrn, period, registration.commencementDate) mustEqual Valid(expectedResult)
 
       }
 
@@ -140,7 +141,8 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
   trait Fixture {
 
-    protected val service = new CorrectionService()
+    protected val periodService: PeriodService = mock[PeriodService]
+    protected val service = new CorrectionService(periodService)
 
   }
 

@@ -22,16 +22,29 @@ import models.corrections.PeriodWithCorrections
 import models.requests.corrections.CorrectionRequest
 import pages.corrections.CorrectPreviousReturnPage
 import queries.corrections.AllCorrectionPeriodsQuery
+import services.PeriodService
 import uk.gov.hmrc.domain.Vrn
 
+import java.time.LocalDate
 import javax.inject.Inject
 
-class CorrectionService @Inject()() {
+class CorrectionService @Inject()(
+                                 periodService: PeriodService
+                                 ) {
 
-  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): ValidationResult[CorrectionRequest] =
-    getCorrections(answers).map { corrections =>
-      CorrectionRequest(vrn, period, corrections)
+  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, commencementDate: LocalDate): ValidationResult[CorrectionRequest] = {
+
+    if(firstPeriod(period, commencementDate)) {
+      CorrectionRequest(vrn, period, List.empty).validNec
+    } else {
+      getCorrections(answers).map { corrections =>
+        CorrectionRequest(vrn, period, corrections)
+      }
     }
+  }
+
+  private def firstPeriod(period: Period, commencementDate: LocalDate): Boolean =
+    periodService.getReturnPeriods(commencementDate).head == period
 
   private def getCorrections(answers: UserAnswers): ValidationResult[List[PeriodWithCorrections]] =
     answers.get(CorrectPreviousReturnPage) match {
