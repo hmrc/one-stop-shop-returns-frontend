@@ -29,12 +29,12 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 class CorrectionService @Inject()(
-                                 periodService: PeriodService
+                                   periodService: PeriodService
                                  ) {
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, commencementDate: LocalDate): ValidationResult[CorrectionRequest] = {
 
-    if(firstPeriod(period, commencementDate)) {
+    if (firstPeriod(period, commencementDate)) {
       CorrectionRequest(vrn, period, List.empty).validNec
     } else {
       getCorrections(answers).map { corrections =>
@@ -43,8 +43,12 @@ class CorrectionService @Inject()(
     }
   }
 
-  private def firstPeriod(period: Period, commencementDate: LocalDate): Boolean =
-    periodService.getReturnPeriods(commencementDate).head == period
+  private def firstPeriod(period: Period, commencementDate: LocalDate): Boolean = {
+    periodService.getReturnPeriods(commencementDate).headOption match {
+      case Some(firstAvailableReturnPeriod) => firstAvailableReturnPeriod == period
+      case _ => false
+    }
+  }
 
   private def getCorrections(answers: UserAnswers): ValidationResult[List[PeriodWithCorrections]] =
     answers.get(CorrectPreviousReturnPage) match {

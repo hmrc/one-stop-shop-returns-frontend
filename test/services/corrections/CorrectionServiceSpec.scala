@@ -27,6 +27,8 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections._
 import services.PeriodService
+import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
@@ -42,8 +44,9 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
         private val expectedResult = CorrectionRequest(vrn, period, List.empty)
 
-        service.fromUserAnswers(answers, vrn, period, registration.commencementDate) mustEqual Valid(expectedResult)
+        when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
 
+        service.fromUserAnswers(answers, vrn, period, registration.commencementDate) mustEqual Valid(expectedResult)
       }
 
       "when the user has made a correction to a single period" in new Fixture {
@@ -74,6 +77,8 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
               )
             )
           ))
+
+        when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
 
         service.fromUserAnswers(answers, vrn, period, registration.commencementDate) mustEqual Valid(expectedResult)
 
@@ -130,6 +135,8 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
               )
             )
           ))
+
+        when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
 
         service.fromUserAnswers(answers, vrn, period, registration.commencementDate) mustEqual Valid(expectedResult)
 
