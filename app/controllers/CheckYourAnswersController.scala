@@ -100,7 +100,7 @@ class CheckYourAnswersController @Inject()(
                                   businessSummaryList: SummaryList,
                                   salesFromNiSummaryList: SummaryList,
                                   salesFromEuSummaryList: SummaryList
-                                )(implicit messages: Messages) = {
+                                )(implicit messages: Messages) =
     if (config.correctionToggle && request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(

@@ -19,6 +19,7 @@ package controllers.corrections
 import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectPreviousReturnFormProvider
+import models.SubmissionStatus.Complete
 import models.{Mode, Period}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.I18nSupport
