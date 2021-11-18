@@ -47,7 +47,7 @@ class CheckVatPayableAmountController @Inject()(
       (correctionPeriod, selectedCountry) match {
         case (Some(correctionPeriod), Some(country)) =>
           for {
-            originalAmount <- service.getVatOwedToCountryOnReturn(country, correctionPeriod)
+            originalAmount <- service.getLatestVatAmountForPeriodAndCountry(country, correctionPeriod)
           } yield {
 
             val summaryList = SummaryListViewModel(

@@ -26,13 +26,14 @@ import models.requests.VatReturnRequest
 import pages._
 import play.api.i18n.Lang.logger
 import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery, EuSalesAtVatRateQuery, NiSalesAtVatRateQuery}
+import services.corrections.CorrectionService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class VatReturnService @Inject()(connector: VatReturnConnector) {
+class VatReturnService @Inject()(connector: VatReturnConnector, correctionService: CorrectionService) {
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, registration: Registration): ValidationResult[VatReturnRequest] =
     (
@@ -57,6 +58,15 @@ class VatReturnService @Inject()(connector: VatReturnConnector) {
         logger.error(s"there was an error $value")
         throw new Exception(value.toString)
   }}
+
+  def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+    for {
+      vatOwedToCountryOnPrevReturn <- getVatOwedToCountryOnReturn(country, period)
+      correctionsForPeriod <- correctionService.getCorrectionsForPeriod(period)
+    }yield{
+      val correctionsToCountry = correctionsForPeriod.filter(_.correctionCountry == country).map{_.countryVatCorrection}.sum
+      vatOwedToCountryOnPrevReturn + correctionsToCountry
+    }
 
   private def getSalesFromNi(answers: UserAnswers): ValidationResult[List[SalesToCountry]] =
     answers.get(SoldGoodsFromNiPage) match {
