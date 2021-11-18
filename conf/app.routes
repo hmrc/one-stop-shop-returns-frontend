@@ -160,6 +160,7 @@ GET         /:period/changeCorrectionReturnSinglePeriod/:index                  
 POST        /:period/changeCorrectionReturnSinglePeriod/:index                                               controllers.corrections.CorrectionReturnSinglePeriodController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
 
 GET         /:period/noOtherCorrectionPeriodsAvailable                                                       controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onPageLoad(period: Period)
+POST        /:period/noOtherCorrectionPeriodsAvailable                                                       controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onSubmit(period: Period)
 
 GET         /:period/countryVatCorrection/:periodIndex/:countryIndex                                         controllers.corrections.CountryVatCorrectionController.onPageLoad(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean = false)
 POST        /:period/countryVatCorrection/:periodIndex/:countryIndex                                         controllers.corrections.CountryVatCorrectionController.onSubmit(mode: Mode = NormalMode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean = false)

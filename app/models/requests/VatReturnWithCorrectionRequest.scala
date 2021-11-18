@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package pages.corrections
+package models.requests
 
-import pages.behaviours.PageBehaviours
+import models.requests.corrections.CorrectionRequest
+import play.api.libs.json.{Json, OFormat}
 
-class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
+case class VatReturnWithCorrectionRequest(
+                          vatReturnRequest: VatReturnRequest,
+                          correctionRequest: CorrectionRequest
+                        )
 
-  "VatPeriodCorrectionsListPage" - {
+object VatReturnWithCorrectionRequest {
 
-    beRetrievable[Boolean](VatPeriodCorrectionsListPage)
-
-    beSettable[Boolean](VatPeriodCorrectionsListPage)
-
-    beRemovable[Boolean](VatPeriodCorrectionsListPage)
-  }
+  implicit val format: OFormat[VatReturnWithCorrectionRequest] = Json.format[VatReturnWithCorrectionRequest]
 }
+
+
+

@@ -14,38 +14,37 @@
  * limitations under the License.
  */
 
-package connectors
+package connectors.corrections
 
-import models.domain.VatReturn
+import logging.Logging
+import models.corrections.CorrectionPayload
 import models.responses._
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
-import logging.Logging
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
+object CorrectionHttpParser extends Logging {
 
-object VatReturnHttpParser extends Logging {
+  type CorrectionResponse = Either[ErrorResponse, CorrectionPayload]
 
-  type VatReturnResponse = Either[ErrorResponse, VatReturn]
-
-  implicit object VatReturnReads extends HttpReads[VatReturnResponse] {
-    override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {
+  implicit object CorrectionReads extends HttpReads[CorrectionResponse] {
+    override def read(method: String, url: String, response: HttpResponse): CorrectionResponse = {
       response.status match {
         case OK | CREATED =>
-          response.json.validate[VatReturn] match {
-            case JsSuccess(vatReturn, _) => Right(vatReturn)
+          response.json.validate[CorrectionPayload] match {
+            case JsSuccess(correctionPayload, _) => Right(correctionPayload)
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
               Left(InvalidJson)
           }
         case NOT_FOUND =>
-          logger.warn("Received NotFound from vat return")
+          logger.warn("Received NotFound from correction")
           Left(NotFound)
         case CONFLICT =>
-          logger.warn("Received NotFound from vat return")
+          logger.warn("Received NotFound from correction")
           Left(ConflictFound)
-        case status   =>
-          logger.warn("Received unexpected error from vat return")
+        case status =>
+          logger.warn("Received unexpected error from correction")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }
     }

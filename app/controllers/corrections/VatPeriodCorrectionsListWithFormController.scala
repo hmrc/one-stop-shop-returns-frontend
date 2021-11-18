@@ -45,11 +45,6 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(VatPeriodCorrectionsListPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
-
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
         case Right(returnStatuses) =>
           val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
@@ -66,7 +61,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
             if(uncompletedCorrectionPeriods.isEmpty) {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
             } else {
-              Ok(view(preparedForm, mode, period, completedCorrectionPeriods))
+              Ok(view(form, mode, period, completedCorrectionPeriods))
             }
           }
         case Left(value) =>
@@ -96,13 +91,8 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
             Future.successful(Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period)))
           } else {
             form.bindFromRequest().fold(
-              formWithErrors =>
-                Future.successful(BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriods))),
-              value =>
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPeriodCorrectionsListPage, value))
-                  _              <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(VatPeriodCorrectionsListPage.navigate(mode, updatedAnswers, value))
+              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriods))),
+              value => Future.successful(Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, value)))
             )
           }
         case Left(value) =>

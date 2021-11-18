@@ -25,6 +25,7 @@ import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.I18nSupport
 import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectPreviousReturnView
 
@@ -65,8 +66,14 @@ class CorrectPreviousReturnController @Inject()(
         _ <- cc.sessionRepository.set(updatedAnswers)
         periods <- returnStatusConnector.listStatuses(request.registration.commencementDate)
       } yield {
+
         periods match {
-          case Right(periods) =>Redirect(CorrectPreviousReturnPage.navigate(mode, updatedAnswers, periods.size))
+          case Right(periods) => {
+            val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+            val allPeriods = periods.filter(_.status.equals(Complete)).map(_.period)
+            val uncompletedCorrectionPeriods = allPeriods.diff(completedCorrectionPeriods).distinct
+            Redirect(CorrectPreviousReturnPage.navigate(mode, updatedAnswers, uncompletedCorrectionPeriods.size))
+          }
           case Left(value) =>
             logger.error(s"there was an error $value")
             Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())

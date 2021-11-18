@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-package queries.corrections
+package models.requests.corrections
 
-import models.Index
-import pages.PageConstants
-import play.api.libs.json.{JsObject, JsPath}
-import queries.Derivable
+import models.Period
+import models.corrections.PeriodWithCorrections
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.domain.Vrn
 
-case class DeriveNumberOfCorrections(periodIndex: Index) extends Derivable[List[JsObject], Int] {
+case class CorrectionRequest(
+                              vrn: Vrn,
+                              period: Period,
+                              corrections: List[PeriodWithCorrections]
+                            )
 
-  override val derive: List[JsObject] => Int = _.size
+object CorrectionRequest {
 
-  override def path: JsPath = JsPath \ PageConstants.corrections \ periodIndex.position \ PageConstants.correctionsToCountry
+  implicit val format: OFormat[CorrectionRequest] = Json.format[CorrectionRequest]
+
 }
