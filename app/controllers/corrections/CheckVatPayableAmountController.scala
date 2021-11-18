@@ -17,7 +17,7 @@
 package controllers.corrections
 
 import controllers.actions._
-import models.{Index, Mode, Period, NormalMode, CheckMode}
+import models.{CheckSecondLoopMode, Index, Mode, NormalMode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -38,12 +38,11 @@ class CheckVatPayableAmountController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, completeJourney: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
-      val previousMode = if(completeJourney){CheckMode}else{NormalMode}
-
+      val newMode = if(mode == CheckSecondLoopMode){NormalMode} else {mode}
       (correctionPeriod, selectedCountry) match {
         case (Some(correctionPeriod), Some(country)) =>
           for {
@@ -53,12 +52,12 @@ class CheckVatPayableAmountController @Inject()(
             val summaryList = SummaryListViewModel(
               rows = Seq(
                 Some(PreviousVatTotalSummary.row(originalAmount)),
-                CountryVatCorrectionSummary.row(request.userAnswers, periodIndex, countryIndex, completeJourney),
+                CountryVatCorrectionSummary.row(request.userAnswers, periodIndex, countryIndex, mode),
                 NewVatTotalSummary.row(request.userAnswers, periodIndex, countryIndex, originalAmount)
               ).flatten
             ).withCssClass("govuk-!-margin-bottom-9")
 
-            Ok(view(period, summaryList, country, previousMode, correctionPeriod, periodIndex))
+            Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex))
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }

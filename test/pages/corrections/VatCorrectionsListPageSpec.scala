@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.corrections.routes
-import models.{CheckMode, Country, Index, NormalMode}
+import models.{CheckMode, CheckThirdLoopMode, Country, Index, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -74,6 +74,33 @@ class VatCorrectionsListPageSpec extends PageBehaviours {
 
           VatCorrectionsListPage(index).navigate(emptyUserAnswers, CheckMode, addAnother = false)
             .mustEqual(routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, emptyUserAnswers.period))
+        }
+      }
+    }
+
+    "must navigate in CheckThirdLoop mode" - {
+
+      "when the answer is yes" - {
+
+        "to Correction Country with an index equal to the number of countries we have details for" in {
+
+          val country = arbitrary[Country].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CorrectionCountryPage(index, Index(0)), country).success.value
+
+          VatCorrectionsListPage(index).navigate(answers, CheckThirdLoopMode, addAnother = true)
+            .mustEqual(routes.CorrectionCountryController.onPageLoad(CheckThirdLoopMode, answers.period, index, Index(1)))
+        }
+      }
+
+      "when the answer is no" - {
+
+        "to Vat period corrections list page" in {
+
+          VatCorrectionsListPage(index).navigate(emptyUserAnswers, CheckThirdLoopMode, addAnother = false)
+            .mustEqual(routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, emptyUserAnswers.period))
         }
       }
     }

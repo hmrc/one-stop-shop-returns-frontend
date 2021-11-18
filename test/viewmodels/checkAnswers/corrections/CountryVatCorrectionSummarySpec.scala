@@ -18,7 +18,7 @@ package viewmodels.checkAnswers.corrections
 
 import base.SpecBase
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, Country}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, Country, NormalMode}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
@@ -30,8 +30,18 @@ class CountryVatCorrectionSummarySpec extends SpecBase {
 
   implicit val m: Messages = stubMessages()
 
-  private val expectedAction = Seq(
-    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, period, index, index, true).url)
+  private val expectedActionCheckLoop = Seq(
+    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, period, index, index).url)
+      .withVisuallyHiddenText("countryVatCorrection.change.hidden")
+  )
+
+  private val expectedActionCheckSecondLoop = Seq(
+    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckSecondLoopMode, period, index, index).url)
+      .withVisuallyHiddenText("countryVatCorrection.change.hidden")
+  )
+
+  private val expectedActionCheckMode = Seq(
+    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, period, index, index).url)
       .withVisuallyHiddenText("countryVatCorrection.change.hidden")
   )
 
@@ -41,14 +51,40 @@ class CountryVatCorrectionSummarySpec extends SpecBase {
 
   "CountryVatCorrectionSummary" - {
 
-    "must show summary when CountryVatCorrection exists" in {
+    "must show summary when CountryVatCorrection exists when in Normal Mode" in {
 
-      val result = CountryVatCorrectionSummary.row(answers, index, index, true)
+      val result = CountryVatCorrectionSummary.row(answers, index, index, NormalMode)
 
       val expectedResult = SummaryListRowViewModel(
         "countryVatCorrection.checkYourAnswersLabel",
         ValueViewModel(HtmlContent("&pound;100")),
-        expectedAction
+        expectedActionCheckLoop
+      )
+
+      result mustBe Some(expectedResult)
+    }
+
+    "must show summary when CountryVatCorrection exists when in Check Mode" in {
+
+      val result = CountryVatCorrectionSummary.row(answers, index, index, CheckMode)
+
+      val expectedResult = SummaryListRowViewModel(
+        "countryVatCorrection.checkYourAnswersLabel",
+        ValueViewModel(HtmlContent("&pound;100")),
+        expectedActionCheckMode
+      )
+
+      result mustBe Some(expectedResult)
+    }
+
+    "must show summary when CountryVatCorrection exists when in Check Second Loop Mode" in {
+
+      val result = CountryVatCorrectionSummary.row(answers, index, index, CheckSecondLoopMode)
+
+      val expectedResult = SummaryListRowViewModel(
+        "countryVatCorrection.checkYourAnswersLabel",
+        ValueViewModel(HtmlContent("&pound;100")),
+        expectedActionCheckSecondLoop
       )
 
       result mustBe Some(expectedResult)
@@ -56,7 +92,7 @@ class CountryVatCorrectionSummarySpec extends SpecBase {
 
     "must not show summary when CountryVatCorrection doesn't exist" in {
 
-      val result = CountryVatCorrectionSummary.row(completeUserAnswers, index, index, false)
+      val result = CountryVatCorrectionSummary.row(completeUserAnswers, index, index, NormalMode)
 
       result mustBe None
     }

@@ -38,7 +38,7 @@ class CheckSubmittedReturnsFilterImpl(connector: ReturnStatusConnector)
     connector.listStatuses(request.registration.commencementDate) flatMap {
       case Right(previousPeriods) => if(previousPeriods.filter(p => p.status == SubmissionStatus.Complete).nonEmpty) {
         Future.successful(None)
-      }else{
+      } else {
         Future(Some(Redirect(routes.CheckYourAnswersController.onPageLoad(request.userAnswers.period))))
       }
       case _    => Future(Some(Redirect(routes.CheckYourAnswersController.onPageLoad(request.userAnswers.period))))
