@@ -28,6 +28,7 @@ import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, Submission
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
+import models.requests.corrections.CorrectionRequest
 import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.ConflictFound
 import pages.CheckYourAnswersPage
@@ -43,7 +44,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -58,7 +59,6 @@ class CheckYourAnswersController @Inject()(
                                             auditService: AuditService,
                                             emailService: EmailService,
                                             vatReturnConnector: VatReturnConnector,
-                                            correctionConnector: CorrectionConnector,
                                             config: FrontendAppConfig
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -169,16 +169,16 @@ class CheckYourAnswersController @Inject()(
             val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
             vatReturnConnector.submitWithCorrection(vatReturnWithCorrectionRequest).flatMap {
               case Right((vatReturn: VatReturn, correctionPayload: CorrectionPayload)) =>
-                auditEmailAndRedirect(vatReturnRequest, vatReturn, period)
+                auditEmailAndRedirect(vatReturnRequest, Some(correctionRequest), vatReturn, period)
               case Left(ConflictFound) =>
                 auditService.audit(ReturnsAuditModel.build(
-                  vatReturnRequest, SubmissionResult.Duplicate, None, None, request
+                  vatReturnRequest, Some(correctionRequest), SubmissionResult.Duplicate, None, None, request
                 ))
                 Redirect(routes.YourAccountController.onPageLoad()).toFuture
               case Left(e) =>
                 logger.error(s"Unexpected result on submit: ${e.toString}")
                 auditService.audit(ReturnsAuditModel.build(
-                  vatReturnRequest, SubmissionResult.Failure, None, None, request
+                  vatReturnRequest, Some(correctionRequest), SubmissionResult.Failure, None, None, request
                 ))
                 Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
             }
@@ -208,16 +208,16 @@ class CheckYourAnswersController @Inject()(
           case Valid(vatReturnRequest) =>
             vatReturnConnector.submit(vatReturnRequest).flatMap {
               case Right(vatReturn: VatReturn) =>
-                auditEmailAndRedirect(vatReturnRequest, vatReturn, period)
+                auditEmailAndRedirect(vatReturnRequest, None, vatReturn, period)
               case Left(ConflictFound) =>
                 auditService.audit(ReturnsAuditModel.build(
-                  vatReturnRequest, SubmissionResult.Duplicate, None, None, request
+                  vatReturnRequest, None, SubmissionResult.Duplicate, None, None, request
                 ))
                 Redirect(routes.YourAccountController.onPageLoad()).toFuture
               case Left(e) =>
                 logger.error(s"Unexpected result on submit: ${e.toString}")
                 auditService.audit(ReturnsAuditModel.build(
-                  vatReturnRequest, SubmissionResult.Failure, None, None, request
+                  vatReturnRequest, None, SubmissionResult.Failure, None, None, request
                 ))
                 Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
             }
@@ -232,12 +232,12 @@ class CheckYourAnswersController @Inject()(
 
   }
 
-  private def auditEmailAndRedirect(returnRequest: VatReturnRequest, vatReturn: VatReturn, period: Period)(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
+  private def auditEmailAndRedirect(returnRequest: VatReturnRequest, correctionRequest: Option[CorrectionRequest], vatReturn: VatReturn, period: Period)(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
     auditService.audit(ReturnsAuditModel.build(
-      returnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), request
+      returnRequest, correctionRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), request
     ))
 
-    auditService.audit(ReturnForDataEntryAuditModel(returnRequest, vatReturn.reference, vatReturn.paymentReference))
+    auditService.audit(ReturnForDataEntryAuditModel(returnRequest, correctionRequest, vatReturn.reference, vatReturn.paymentReference))
 
     emailService.sendConfirmationEmail(
       request.registration.contactDetails.fullName,
