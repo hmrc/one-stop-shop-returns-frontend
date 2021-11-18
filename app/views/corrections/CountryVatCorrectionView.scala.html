@@ -48,7 +48,7 @@
                 if(vatOwedPrevReturn != BigDecimal(0)){
                 s"<p>${Html(messages("countryVatCorrection.hint"))}</p>" +
                 s"<p>${Html(messages("countryVatCorrection.previous-amount.hint", currencyFormat(vatOwedPrevReturn)))}</p>"}
-                else{
+                else {
                     s"<p>${Html(messages("countryVatCorrection.hint"))}</p>"
                 }
             )))

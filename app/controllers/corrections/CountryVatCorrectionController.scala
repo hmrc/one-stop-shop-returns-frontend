@@ -16,14 +16,11 @@
 
 package controllers.corrections
 
-import connectors.VatReturnConnector
 import controllers.actions._
 import forms.corrections.CountryVatCorrectionFormProvider
-import models.domain.{SalesToCountry, VatReturn}
-import models.{CheckMode, Country, Index, Mode, NormalMode, Period}
+import models.{Index, Mode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.I18nSupport
-import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -73,7 +70,8 @@ class CountryVatCorrectionController @Inject()(
               val form = formProvider(country.name)
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn))),
+                  Future.successful(BadRequest(
+                    view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn))),
 
                 value =>
                   for {

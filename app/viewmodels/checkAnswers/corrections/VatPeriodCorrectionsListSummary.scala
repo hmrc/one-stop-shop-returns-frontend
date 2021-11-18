@@ -24,7 +24,7 @@ import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 object VatPeriodCorrectionsListSummary {
 
   def getCompletedRows(answers: UserAnswers, currentMode: Mode)(implicit messages: Messages): Seq[ListItem] = {
-    val mode = if(currentMode == NormalMode){CheckThirdLoopMode}else currentMode
+    val mode = if(currentMode == NormalMode) CheckThirdLoopMode else currentMode
     answers
       .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).zipWithIndex.map{
       case (correctionPeriod, index) =>

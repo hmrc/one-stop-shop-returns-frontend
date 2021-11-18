@@ -17,7 +17,7 @@
 package controllers.corrections
 
 import controllers.actions._
-import models.{CheckMode, CheckSecondLoopMode, Index, Mode, NormalMode, Period}
+import models.{CheckSecondLoopMode, Index, Mode, NormalMode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}

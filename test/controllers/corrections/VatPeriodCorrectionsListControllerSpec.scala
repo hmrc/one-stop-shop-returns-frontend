@@ -53,6 +53,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
   private val mockReturnStatusConnector = mock[ReturnStatusConnector]
 
+  private def vatCorrectionsListUrl(index: Index) = controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckThirdLoopMode, period, index).url
+  private def removePeriodCorrectionUrl(index: Index) = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, index).url
   override def beforeEach(): Unit = {
     super.beforeEach()
     Mockito.reset(mockReturnStatusConnector)
@@ -91,18 +93,18 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
       val allPeriodsModel = Seq(
         ListItem(
           name = "1 July to 30 September 2021",
-          changeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckThirdLoopMode, period, index).url,
-          removeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, index).url
+          changeUrl = vatCorrectionsListUrl(index),
+          removeUrl = removePeriodCorrectionUrl(index)
         ),
         ListItem(
           name = "1 October to 31 December 2021",
-          changeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckThirdLoopMode, period, Index(1)).url,
-          removeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, Index(1)).url
+          changeUrl = vatCorrectionsListUrl(Index(1)),
+          removeUrl = removePeriodCorrectionUrl(Index(1))
         ),
         ListItem(
           name = "1 January to 31 March 2022",
-          changeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckThirdLoopMode, period, Index(2)).url,
-          removeUrl = "/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments" + controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, Index(2)).url
+          changeUrl = vatCorrectionsListUrl(Index(2)),
+          removeUrl = removePeriodCorrectionUrl(Index(2))
         )
       )
 

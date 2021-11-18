@@ -81,7 +81,7 @@ class SalesAtVatRateService @Inject()(config: FrontendAppConfig) {
         periodWithCorrections <- allCorrectionPeriods
         countryCorrection <- periodWithCorrections.correctionToCountry
       } yield TotalVatToCountry(countryCorrection.correctionCountry, countryCorrection.countryVatCorrection)
-    }else{List.empty}
+    } else List.empty
 
     val vatOwedToEuCountries =
       vatOwedToEuCountriesFromEu ++ vatOwedToEuCountriesFromNI ++ correctionCountriesAmount

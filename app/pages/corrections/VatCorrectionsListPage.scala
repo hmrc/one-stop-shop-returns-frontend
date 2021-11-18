@@ -35,7 +35,7 @@ case class VatCorrectionsListPage(periodIndex: Index) extends Page {
     } else {
       if(mode == CheckThirdLoopMode){
         correctionRoutes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, answers.period)
-      }else{
+      } else {
         correctionRoutes.VatPeriodCorrectionsListController.onPageLoad(mode, answers.period)
       }
 

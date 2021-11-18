@@ -18,7 +18,7 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.VatPayableForCountryFormProvider
-import models.{CheckMode, Index, Mode, NormalMode, Period}
+import models.{Index, Mode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, VatPayableForCountryPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}

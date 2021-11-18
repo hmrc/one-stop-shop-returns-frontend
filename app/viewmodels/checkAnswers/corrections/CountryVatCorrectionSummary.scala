@@ -31,7 +31,7 @@ object CountryVatCorrectionSummary {
   def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index, currentMode: Mode)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)).map {
       answer =>
-        val newMode = if(currentMode == NormalMode){CheckLoopMode}else{currentMode}
+        val newMode = if(currentMode == NormalMode) CheckLoopMode else currentMode
 
         SummaryListRowViewModel(
           key = "countryVatCorrection.checkYourAnswersLabel",

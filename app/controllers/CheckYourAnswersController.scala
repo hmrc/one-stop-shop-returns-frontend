@@ -88,7 +88,7 @@ class CheckYourAnswersController @Inject()(
         service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
       val noPaymentDueCountries = if(config.correctionToggle) {
         service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
-      }else{List.empty}
+      } else List.empty
       val totalVatOnSales =
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
@@ -105,7 +105,7 @@ class CheckYourAnswersController @Inject()(
         (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
         (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
         (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
-      )}else{
+      )} else {
         Seq(
           (None, businessSummaryList),
           (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
