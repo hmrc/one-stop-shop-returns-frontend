@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -28,12 +28,39 @@ case class VatPayableForCountryPage(periodIndex: Index, countryIndex: Index) ext
 
   override def toString: String = "vatPayableForCountry"
 
-  def navigate(mode: Mode, answers: UserAnswers, completeJourney: Boolean): Call =
-    (answers.get(VatPayableForCountryPage(periodIndex, countryIndex)), mode) match {
-      case (Some(true), NormalMode) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex, completeJourney)
-      case (Some(true), _) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex, completeJourney)
-      case (Some(false), NormalMode) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex, completeJourney)
-      case (Some(false), _) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(mode, answers.period, periodIndex, countryIndex, completeJourney)
+  override def navigateInNormalMode(answers: UserAnswers): Call =
+    answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
+      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
+      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
+
+  override def navigateInCheckMode(answers: UserAnswers): Call =
+    answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
+      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
+      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  override def navigateInCheckLoopMode(answers: UserAnswers): Call =
+    answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
+      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
+      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, answers.period, periodIndex, countryIndex)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
+    answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
+      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckSecondLoopMode, answers.period, periodIndex, countryIndex)
+      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckSecondLoopMode, answers.period, periodIndex, countryIndex)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+    answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
+      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckThirdLoopMode, answers.period, periodIndex, countryIndex)
+      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, periodIndex, countryIndex)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
+
 }

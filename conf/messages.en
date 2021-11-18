@@ -403,7 +403,8 @@ vatCorrectionsList.remove.hidden = Remove {0}
 vatPeriodCorrectionsList.title = You have corrected the VAT amount for {0} return periods
 vatPeriodCorrectionsList.title.empty = You have not corrected the VAT amount for any return periods
 vatPeriodCorrectionsList.title.singular = You have corrected the VAT amount for one return period
-
+vatPeriodCorrectionsList.change.hidden = Change {0}
+vatPeriodCorrectionsList.remove.hidden = Remove {0}
 vatPeriodCorrectionsList.checkYourAnswersLabel = vatPeriodCorrectionsList
 
 vatPeriodCorrectionsList.addAnother = Add corrections to VAT for another return period?
@@ -431,5 +432,5 @@ vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.caption = Correction period: {0}
 vatPayableForCountry.hint = We''ve calculated this total based on your most recent declaration and the correction amount.
 vatPayableForCountry.checkYourAnswersLabel = vatPayableForCountry
-vatPayableForCountry.error.required = Select yes if vatPayableForCountry
+vatPayableForCountry.error.required = Select yes if the total VAT payable for {0} is {1}
 vatPayableForCountry.change.hidden = VatPayableForCountry

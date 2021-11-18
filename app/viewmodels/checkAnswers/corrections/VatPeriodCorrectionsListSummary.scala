@@ -16,23 +16,24 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, Period, UserAnswers}
+import models.{CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers}
 import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import queries.corrections.DeriveCompletedCorrectionPeriods
+import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object VatPeriodCorrectionsListSummary {
 
-  def row(answers: UserAnswers, correctionPeriod: Period)(implicit messages: Messages): SummaryListRow =
-      SummaryListRowViewModel(
-        key = "vatPeriodCorrectionsList.checkYourAnswersLabel",
-        value = ValueViewModel(correctionPeriod.displayText),
-        actions = Seq(
-          ActionItemViewModel("site.change", controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period).url)
-            .withVisuallyHiddenText(messages("vatPeriodCorrectionsList.change.hidden")),
-          ActionItemViewModel("site.remove", controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period).url)
-            .withVisuallyHiddenText(messages("vatPeriodCorrectionsList.remove.hidden"))
+  def getCompletedRows(answers: UserAnswers, currentMode: Mode)(implicit messages: Messages): Seq[ListItem] = {
+    val mode = if(currentMode == NormalMode) CheckThirdLoopMode else currentMode
+    answers
+      .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).zipWithIndex.map{
+      case (correctionPeriod, index) =>
+        ListItem(
+          name = correctionPeriod.displayText,
+          changeUrl = controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, answers.period, Index(index)).url,
+          removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(currentMode, answers.period, Index(index)).url
         )
-      )
+    }
+  }
+
 }

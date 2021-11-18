@@ -16,7 +16,7 @@
 
 package pages.corrections
 
-import models.{CheckMode, Index, NormalMode, UserAnswers}
+import models.{CheckMode, CheckThirdLoopMode, Index, NormalMode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -30,19 +30,28 @@ case class RemoveCountryCorrectionPage(periodIndex: Index) extends QuestionPage[
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(DeriveNumberOfCorrections(periodIndex)) match {
-      case Some(n) if n > 0 => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, periodIndex)
+      case Some(numberOfCorrections) if numberOfCorrections > 0 => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, periodIndex)
       case _ => answers.get(DeriveNumberOfCorrectionPeriods) match {
-        case Some(x) if x > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, answers.period)
+        case Some(numberOfPeriods) if numberOfPeriods > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, answers.period)
         case _ => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, answers.period)
       }
     }
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     answers.get(DeriveNumberOfCorrections(periodIndex)) match {
-      case Some(n) if n > 0 => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckMode, answers.period, periodIndex)
+      case Some(numberOfCorrections) if numberOfCorrections > 0 => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckMode, answers.period, periodIndex)
       case _ => answers.get(DeriveNumberOfCorrectionPeriods) match {
-        case Some(x) if x > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period)
+        case Some(numberOfPeriods) if numberOfPeriods > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period)
         case _ => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(CheckMode, answers.period)
+      }
+    }
+
+  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+    answers.get(DeriveNumberOfCorrections(periodIndex)) match {
+      case Some(numberOfCorrections) if numberOfCorrections > 0 => controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckThirdLoopMode, answers.period, periodIndex)
+      case _ => answers.get(DeriveNumberOfCorrectionPeriods) match {
+        case Some(numberOfPeriods) if numberOfPeriods > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, answers.period)
+        case _ => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, answers.period)
       }
     }
 }

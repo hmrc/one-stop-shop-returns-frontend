@@ -30,13 +30,13 @@ case class RemovePeriodCorrectionPage(periodIndex: Index) extends QuestionPage[B
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(DeriveNumberOfCorrectionPeriods) match {
-      case Some(n) if n > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, answers.period)
+      case Some(numberOfPeriods) if numberOfPeriods > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, answers.period)
       case _ => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, answers.period)
     }
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     answers.get(DeriveNumberOfCorrectionPeriods) match {
-      case Some(n) if n > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period)
+      case Some(numberOfPeriods) if numberOfPeriods > 0 => controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(CheckMode, answers.period)
       case _ => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(CheckMode, answers.period)
     }
 }

@@ -23,6 +23,8 @@ sealed trait Mode
 case object CheckMode extends Mode
 case object NormalMode extends Mode
 case object CheckLoopMode extends Mode
+case object CheckSecondLoopMode extends Mode
+case object CheckThirdLoopMode extends Mode
 
 object Mode {
 
@@ -31,6 +33,8 @@ object Mode {
       case NormalMode => "NormalMode"
       case CheckMode => "CheckMode"
       case CheckLoopMode => "CheckLoopMode"
+      case CheckSecondLoopMode => "CheckSecondLoopMode"
+      case CheckThirdLoopMode => "CheckThirdLoopMode"
     }
   }
 }
