@@ -53,8 +53,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
   private val mockReturnStatusConnector = mock[ReturnStatusConnector]
 
-  private def vatCorrectionsListUrl(index: Index) = controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckThirdLoopMode, period, index).url
-  private def removePeriodCorrectionUrl(index: Index) = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(NormalMode, period, index).url
+  private def vatCorrectionsListUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/2021-Q3/third-changeVatCorrectionsList/$index"
+  private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/2021-Q3/removePeriodCorrection/$index"
   override def beforeEach(): Unit = {
     super.beforeEach()
     Mockito.reset(mockReturnStatusConnector)
@@ -93,18 +93,18 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
       val allPeriodsModel = Seq(
         ListItem(
           name = "1 July to 30 September 2021",
-          changeUrl = vatCorrectionsListUrl(index),
-          removeUrl = removePeriodCorrectionUrl(index)
+          changeUrl = vatCorrectionsListUrl(1),
+          removeUrl = removePeriodCorrectionUrl(1)
         ),
         ListItem(
           name = "1 October to 31 December 2021",
-          changeUrl = vatCorrectionsListUrl(Index(1)),
-          removeUrl = removePeriodCorrectionUrl(Index(1))
+          changeUrl = vatCorrectionsListUrl(2),
+          removeUrl = removePeriodCorrectionUrl(2)
         ),
         ListItem(
           name = "1 January to 31 March 2022",
-          changeUrl = vatCorrectionsListUrl(Index(2)),
-          removeUrl = removePeriodCorrectionUrl(Index(2))
+          changeUrl = vatCorrectionsListUrl(3),
+          removeUrl = removePeriodCorrectionUrl(3)
         )
       )
 
