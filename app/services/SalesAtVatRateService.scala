@@ -79,7 +79,7 @@ class SalesAtVatRateService @Inject()(config: FrontendAppConfig) {
       for {
         allCorrectionPeriods <- userAnswers.get(AllCorrectionPeriodsQuery).toSeq
         periodWithCorrections <- allCorrectionPeriods
-        countryCorrection <- periodWithCorrections.correctionToCountry
+        countryCorrection <- periodWithCorrections.correctionsToCountry
       } yield TotalVatToCountry(countryCorrection.correctionCountry, countryCorrection.countryVatCorrection)
     } else List.empty
 

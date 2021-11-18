@@ -23,6 +23,7 @@ import pages.Page
 import play.api.mvc.Call
 import queries.corrections.DeriveNumberOfCorrections
 
+
 case class VatCorrectionsListPage(periodIndex: Index) extends Page {
 
   def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call = {

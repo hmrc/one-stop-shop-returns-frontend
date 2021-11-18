@@ -18,6 +18,7 @@ package generators
 
 import models.VatOnSalesChoice.Standard
 import models.{domain, _}
+import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.financialdata.Charge
 import models.registration._
@@ -260,5 +261,33 @@ trait ModelGenerators {
         vrn <- arbitrary[Vrn]
         period <- arbitrary[Period]
       } yield ReturnReference(vrn, period)
+    }
+
+  implicit val arbitraryCorrectionToCountry: Arbitrary[CorrectionToCountry] =
+    Arbitrary {
+      for {
+        country <- arbitrary[Country]
+        countryVatCorrection <- Gen.choose(BigDecimal(1), BigDecimal(999999))
+      } yield CorrectionToCountry(country, countryVatCorrection.setScale(2, RoundingMode.HALF_UP))
+    }
+
+  implicit val arbitraryCorrection: Arbitrary[PeriodWithCorrections] =
+    Arbitrary {
+      for {
+        correctionPeriod <- arbitrary[Period]
+        amount <- Gen.choose(1, 30)
+        correctionsToCountry <- Gen.listOfN(amount, arbitrary[CorrectionToCountry])
+      } yield PeriodWithCorrections(correctionPeriod, correctionsToCountry)
+    }
+
+  implicit val arbitraryCorrectionPayload: Arbitrary[CorrectionPayload] =
+    Arbitrary {
+      for {
+        vrn <- arbitrary[Vrn]
+        period <- arbitrary[Period]
+        amount <- Gen.choose(1, 30)
+        corrections <- Gen.listOfN(amount, arbitrary[PeriodWithCorrections])
+        now = Instant.now
+      } yield CorrectionPayload(vrn, period, corrections, now, now)
     }
 }

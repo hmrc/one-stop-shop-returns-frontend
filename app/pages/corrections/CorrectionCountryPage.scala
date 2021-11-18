@@ -25,7 +25,7 @@ import play.api.mvc.Call
 
 case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Country] {
 
-  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionToCountry \ countryIndex.position \ toString
+  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry \ countryIndex.position \ toString
 
   override def toString: String = "correctionCountry"
 
