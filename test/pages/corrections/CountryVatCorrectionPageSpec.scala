@@ -17,8 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Country, NormalMode}
-import org.scalacheck.Arbitrary.arbitrary
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class CountryVatCorrectionPageSpec extends PageBehaviours {
@@ -33,12 +32,12 @@ class CountryVatCorrectionPageSpec extends PageBehaviours {
 
     "must navigate in Normal mode" - {
 
-      "to Check your answers page when answer is valid" in {
+      "to VatPayableForCountry page when answer is valid" in {
 
         val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
 
         CountryVatCorrectionPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, answers.period, index))
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
       "to Journey recovery page when answer is invalid" in {
@@ -50,17 +49,68 @@ class CountryVatCorrectionPageSpec extends PageBehaviours {
 
     "must navigate in Check mode" - {
 
-      "to Check your answers page when answer is valid" in {
+      "to VatPayableForCountry page when answer is valid" in {
 
         val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
 
         CountryVatCorrectionPage(index, index).navigate(CheckMode, answers)
-          .mustEqual(controllers.corrections.routes.VatCorrectionsListController.onPageLoad(CheckMode, answers.period, index))
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckMode, answers.period, index, index))
       }
 
       "to Journey recovery page when answer is invalid" in {
 
         CountryVatCorrectionPage(index, index).navigate(CheckMode, emptyUserAnswers)
+          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
+
+    "must navigate in CheckLoop mode" - {
+
+      "to VatPayableForCountry page when answer is valid" in {
+
+        val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
+
+        CountryVatCorrectionPage(index, index).navigate(CheckLoopMode, answers)
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckLoopMode, answers.period, index, index))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        CountryVatCorrectionPage(index, index).navigate(CheckLoopMode, emptyUserAnswers)
+          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
+
+    "must navigate in CheckSecondLoop mode" - {
+
+      "to VatPayableForCountry page when answer is valid" in {
+
+        val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
+
+        CountryVatCorrectionPage(index, index).navigate(CheckSecondLoopMode, answers)
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckSecondLoopMode, answers.period, index, index))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        CountryVatCorrectionPage(index, index).navigate(CheckSecondLoopMode, emptyUserAnswers)
+          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+      }
+    }
+
+    "must navigate in CheckThirdLoop mode" - {
+
+      "to VatPayableForCountry page when answer is valid" in {
+
+        val answers = emptyUserAnswers.set(CountryVatCorrectionPage(index, index), BigDecimal(100)).success.value
+
+        CountryVatCorrectionPage(index, index).navigate(CheckThirdLoopMode, answers)
+          .mustEqual(controllers.corrections.routes.VatPayableForCountryController.onPageLoad(CheckThirdLoopMode, answers.period, index, index))
+      }
+
+      "to Journey recovery page when answer is invalid" in {
+
+        CountryVatCorrectionPage(index, index).navigate(CheckThirdLoopMode, emptyUserAnswers)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }

@@ -15,6 +15,7 @@
  *@
 
 @import viewmodels.InputWidth._
+@import utils.CurrencyFormatter.currencyFormat
 
 @this(
     layout: templates.Layout,
@@ -24,7 +25,7 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period, country: Country, correctionPeriod:Period, periodIndex: Index, countryIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, country: Country, correctionPeriod:Period, periodIndex: Index, countryIndex: Index, vatOwedPrevReturn: BigDecimal)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("countryVatCorrection.title", country.name))) {
 
@@ -43,7 +44,14 @@
             .withWidth(Fixed10)
             .withCssClass("govuk-currency-input__inner__input")
             .withPrefix(PrefixOrSuffix(content = Text("£")))
-            .withHint(HintViewModel(messages("countryVatCorrection.hint")))
+            .withHint(HintViewModel(HtmlContent(
+                if(vatOwedPrevReturn != BigDecimal(0)){
+                s"<p>${Html(messages("countryVatCorrection.hint"))}</p>" +
+                s"<p>${Html(messages("countryVatCorrection.previous-amount.hint", currencyFormat(vatOwedPrevReturn)))}</p>"}
+                else {
+                    s"<p>${Html(messages("countryVatCorrection.hint"))}</p>"
+                }
+            )))
         )
 
         @govukButton(

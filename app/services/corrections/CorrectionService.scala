@@ -17,19 +17,24 @@
 package services.corrections
 
 import cats.implicits._
+import connectors.corrections.CorrectionConnector
 import models.{DataMissingError, Index, Period, UserAnswers, ValidationResult}
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
 import models.requests.corrections.CorrectionRequest
 import pages.corrections.CorrectPreviousReturnPage
+import play.api.i18n.Lang.logger
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import services.PeriodService
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDate
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionService @Inject()(
-                                   periodService: PeriodService
+                                   periodService: PeriodService,
+                                   connector: CorrectionConnector
                                  ) {
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, commencementDate: LocalDate): ValidationResult[CorrectionRequest] = {
@@ -92,6 +97,18 @@ class CorrectionService @Inject()(
         value.validNec
       case _ =>
         DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
+    }
+  }
+
+  def getCorrectionsForPeriod(period: Period)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Seq[CorrectionToCountry]] = {
+    connector.getForCorrectionPeriod(period).map{
+      response => response match {
+        case Right(payloads) => {
+          payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry}}}
+        case Left(error) =>
+          logger.error(s"there was an error when getting corrections for period: $error")
+          throw new Exception(error.toString)
+      }
     }
   }
 

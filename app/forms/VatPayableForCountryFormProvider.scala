@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package viewmodels
+package forms
 
-import play.api.data.Field
-import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.{HtmlContent, Text}
-import uk.gov.hmrc.govukfrontend.views.viewmodels.errormessage.ErrorMessage
+import javax.inject.Inject
+import forms.mappings.Mappings
+import models.Country
+import play.api.data.Form
+import utils.CurrencyFormatter.currencyFormat
 
-trait ErrorMessageAwareness {
+class VatPayableForCountryFormProvider @Inject() extends Mappings {
 
-  def errorMessage(field: Field)(implicit messages: Messages): Option[ErrorMessage] =
-    field.error
-      .map {
-        err =>
-          ErrorMessage(content = HtmlContent(messages(err.message, err.args: _*)))
-      }
+  def apply(country: Country, amount: BigDecimal): Form[Boolean] =
+    Form(
+      "value" -> boolean("vatPayableForCountry.error.required", args = Seq(country.name, currencyFormat(amount)))
+    )
 }

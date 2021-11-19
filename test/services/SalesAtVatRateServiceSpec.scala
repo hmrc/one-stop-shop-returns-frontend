@@ -16,12 +16,12 @@
 
 package services
 
-import config.FrontendAppConfig
 import base.SpecBase
+import config.FrontendAppConfig
 import models.VatOnSalesChoice.Standard
 import models.{Country, Index, TotalVatToCountry, VatOnSales, VatRate, VatRateType}
 import org.mockito.Mockito
-import org.mockito.Mockito.{doNothing, times, verify, when}
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages._

@@ -79,9 +79,7 @@ class CheckYourAnswersController @Inject()(
         service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
       val noPaymentDueCountries = if (config.correctionToggle) {
         service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
-      } else {
-        List.empty
-      }
+      } else List.empty
       val totalVatOnSales =
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
@@ -102,7 +100,7 @@ class CheckYourAnswersController @Inject()(
                                   businessSummaryList: SummaryList,
                                   salesFromNiSummaryList: SummaryList,
                                   salesFromEuSummaryList: SummaryList
-                                )(implicit messages: Messages) = {
+                                )(implicit messages: Messages) =
     if (config.correctionToggle && request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
@@ -115,15 +113,13 @@ class CheckYourAnswersController @Inject()(
         (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
         (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
         (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
-      )
-    } else {
-      Seq(
-        (None, businessSummaryList),
-        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
-      )
-    }
-  }
+      )} else {
+        Seq(
+          (None, businessSummaryList),
+          (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
+          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
+        )
+      }
 
   private def getSalesFromEuSummaryList(request: DataRequest[AnyContent])(implicit messages: Messages) = {
     SummaryListViewModel(

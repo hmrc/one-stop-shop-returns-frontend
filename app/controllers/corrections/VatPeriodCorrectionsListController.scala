@@ -25,7 +25,9 @@ import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.DeriveCompletedCorrectionPeriods
+import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import viewmodels.checkAnswers.corrections.VatPeriodCorrectionsListSummary
 import views.html.corrections.VatPeriodCorrectionsListView
 
 import javax.inject.Inject
@@ -55,9 +57,10 @@ class VatPeriodCorrectionsListController @Inject()(
               .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
 
             val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
+            val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
 
             if(uncompletedCorrectionPeriods.isEmpty) {
-              Ok(view(mode, period, completedCorrectionPeriods))
+              Ok(view(mode, period, completedCorrectionPeriodsModel))
             } else {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period))
             }

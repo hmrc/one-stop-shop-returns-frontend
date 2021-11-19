@@ -26,6 +26,7 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 object CorrectionHttpParser extends Logging {
 
   type CorrectionResponse = Either[ErrorResponse, CorrectionPayload]
+  type CorrectionsForPeriodResponse = Either[ErrorResponse, Seq[CorrectionPayload]]
 
   implicit object CorrectionReads extends HttpReads[CorrectionResponse] {
     override def read(method: String, url: String, response: HttpResponse): CorrectionResponse = {
@@ -49,4 +50,27 @@ object CorrectionHttpParser extends Logging {
       }
     }
   }
+
+  implicit object CorrectionsForPeriod extends HttpReads[CorrectionsForPeriodResponse] {
+    override def read(method: String, url: String, response: HttpResponse): CorrectionsForPeriodResponse = {
+      response.status match {
+        case OK | CREATED =>
+          response.json.validate[Seq[CorrectionPayload]] match {
+            case JsSuccess(correctionPayload, _) => Right(correctionPayload)
+            case JsError(errors) =>
+              logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
+              Left(InvalidJson)
+          }
+        case NOT_FOUND =>
+          Right(Seq.empty)
+        case CONFLICT =>
+          logger.warn("Received NotFound from correction")
+          Left(ConflictFound)
+        case status =>
+          logger.warn("Received unexpected error from correction")
+          Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
+      }
+    }
+  }
+
 }

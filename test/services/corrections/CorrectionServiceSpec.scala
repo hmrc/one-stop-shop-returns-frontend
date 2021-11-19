@@ -17,11 +17,13 @@
 package services.corrections
 
 import base.SpecBase
+import connectors.corrections.CorrectionConnector
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import models.requests.corrections.CorrectionRequest
+import models.responses.UnexpectedResponseStatus
+import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.{Country, DataMissingError, Period}
-import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
 import models.Quarter.{Q1, Q2}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
@@ -30,9 +32,14 @@ import pages.corrections._
 import services.PeriodService
 import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import uk.gov.hmrc.http.HeaderCarrier
+
+import scala.concurrent.{ExecutionContext, Future}
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery}
 
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   ".fromUserAnswers" - {
 
@@ -198,10 +205,26 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
   }
 
+  ".getCorrectionsForPeriod" - {
+    "must return list of corrections" in new Fixture {
+      val correctionPayload = arbitrary[CorrectionPayload].sample.value
+      when(connector.getForCorrectionPeriod(any())(any())) thenReturn Future.successful(Right(Seq(correctionPayload)))
+      service.getCorrectionsForPeriod(period)(ExecutionContext.global, hc).futureValue mustBe correctionPayload.corrections.flatMap(_.correctionsToCountry)
+    }
+
+    "must throw if connector returns an error" in new Fixture {
+      val correctionPayload = arbitrary[CorrectionPayload].sample.value
+      when(connector.getForCorrectionPeriod(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
+      val result = service.getCorrectionsForPeriod(period)(ExecutionContext.global, hc)
+      whenReady(result.failed) { exp => exp mustBe a[Exception] }
+    }
+  }
+
   trait Fixture {
 
     protected val periodService: PeriodService = mock[PeriodService]
-    protected val service = new CorrectionService(periodService)
+    protected val connector: CorrectionConnector = mock[CorrectionConnector]
+    protected val service = new CorrectionService(periodService, connector)
 
   }
 
