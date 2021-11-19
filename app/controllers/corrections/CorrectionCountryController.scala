@@ -25,6 +25,7 @@ import play.api.i18n.I18nSupport
 import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.AllCorrectionCountriesQuery
+import services.corrections.CorrectionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionCountryView
 
@@ -35,7 +36,8 @@ class CorrectionCountryController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: CorrectionCountryFormProvider,
                                         vatReturnConnector: VatReturnConnector,
-                                        view: CorrectionCountryView
+                                        view: CorrectionCountryView,
+                                        correctionService: CorrectionService
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
@@ -78,12 +80,13 @@ class CorrectionCountryController @Inject()(
                           updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
                           _              <- cc.sessionRepository.set(updatedAnswers)
                           vatReturnResult <- vatReturnConnector.get(correctionPeriod)
+                          correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionPeriod)
                         } yield {
                 vatReturnResult match {
                   case Right(vatReturn) => {
                     val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
                     val countriesFromEU = vatReturn.salesFromEu.map(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption)).flatten
-                    val allRecipientCountries = (countriesFromNi ::: countriesFromEU).distinct
+                    val allRecipientCountries = (countriesFromNi ::: countriesFromEU ::: correctionsForPeriod.map(_.correctionCountry).toList).distinct
 
                     Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, allRecipientCountries))
                   }

@@ -49,7 +49,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
 
-      when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(1000))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(1000))
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(bind[VatReturnService].toInstance(mockService))
@@ -75,7 +75,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
 
-      when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(1000))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(1000))
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(bind[VatReturnService].toInstance(mockService))
@@ -100,7 +100,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
 
-      when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(1000))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(1000))
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
@@ -128,7 +128,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
 
-      when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(1000))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(1000))
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(bind[VatReturnService].toInstance(mockService))

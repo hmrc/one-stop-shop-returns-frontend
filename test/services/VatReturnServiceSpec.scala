@@ -20,6 +20,7 @@ import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import connectors.VatReturnConnector
+import models.corrections.CorrectionToCountry
 import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
@@ -32,6 +33,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
 import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery}
+import services.corrections.CorrectionService
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -305,7 +307,8 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     "must return a valid amount when connector returns a VatReturnResponse" in {
 
       val vatReturnConnector = mock[VatReturnConnector]
-      val vatReturnService = new VatReturnService(vatReturnConnector)
+      val correctionService = mock[CorrectionService]
+      val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(simpleCompleteVatReturn))
 
@@ -319,7 +322,8 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     "must return an exception when connector returns a ErrorResponse" in {
 
       val vatReturnConnector = mock[VatReturnConnector]
-      val vatReturnService = new VatReturnService(vatReturnConnector)
+      val correctionService = mock[CorrectionService]
+      val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
 
@@ -329,10 +333,43 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     }
   }
 
+  "getLatestVatAmountForPeriodAndCountry" - {
+
+    "must return a valid amount when connector returns a VatReturnResponse and the service returns a list of corrections" in {
+
+      val vatReturnConnector = mock[VatReturnConnector]
+      val correctionService = mock[CorrectionService]
+      val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(simpleCompleteVatReturn))
+      when(correctionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(Seq(CorrectionToCountry(Country("LT", "Lithuania"), BigDecimal(10))))
+
+      val result = vatReturnService.getLatestVatAmountForPeriodAndCountry(Country("LT", "Lithuania"), period)
+
+      val expected = BigDecimal(1810.00)
+
+      assert(result.futureValue == expected)
+    }
+
+    "must return an exception when connector returns a ErrorResponse" in {
+
+      val vatReturnConnector = mock[VatReturnConnector]
+      val correctionService = mock[CorrectionService]
+      val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
+      when(correctionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(Seq(CorrectionToCountry(Country("LT", "Lithuania"), BigDecimal(10))))
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      val result = vatReturnService.getLatestVatAmountForPeriodAndCountry(Country("LT", "Lithuania"), period)
+
+      whenReady(result.failed) { exp => exp mustBe a[Exception] }
+    }
+  }
+
   trait Fixture {
     protected val connector = mock[VatReturnConnector]
+    protected val correctionService = mock[CorrectionService]
 
-    protected val service = new VatReturnService(connector)
+    protected val service = new VatReturnService(connector, correctionService)
 
     protected val country1: Country             = arbitrary[Country].sample.value
     protected val country2: Country             = arbitrary[Country].sample.value

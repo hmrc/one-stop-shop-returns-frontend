@@ -36,7 +36,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET" in {
       val mockService = mock[VatReturnService]
-      when(mockService.getVatOwedToCountryOnReturn(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(20))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(20))
       val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value

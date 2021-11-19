@@ -77,4 +77,40 @@ class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherVa
       }
     }
   }
+
+  ".getForCorrectionPeriod" - {
+    val url = "/one-stop-shop-returns/corrections-for-period"
+    val correctionPayload = arbitrary[CorrectionPayload].sample.value
+    val responseJson = Json.toJson(List(correctionPayload))
+
+    "must return Right(List(Correction)) when the server responds with OK" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getForCorrectionPeriod(period).futureValue mustBe Right(List(correctionPayload))
+      }
+    }
+
+    "must return an empty list when the server responds with NOT_FOUND" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(NOT_FOUND)
+            ))
+
+        connector.getForCorrectionPeriod(period).futureValue mustBe Right(List.empty)
+      }
+    }
+  }
 }
