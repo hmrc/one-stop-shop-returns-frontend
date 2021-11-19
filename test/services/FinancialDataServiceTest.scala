@@ -21,6 +21,7 @@ import models.domain.VatReturn
 import models.financialdata.{Charge, VatReturnWithFinancialData}
 import models.Period
 import models.Quarter.Q3
+import models.corrections.CorrectionPayload
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.Mockito._
@@ -31,6 +32,8 @@ class FinancialDataServiceTest extends SpecBase with MockitoSugar {
   private val financialDataService = new FinancialDataService(mockVatReturnSalesService)
 
   private val vatReturn = arbitrary[VatReturn].sample.value
+  private val correctionPayload = arbitrary[CorrectionPayload].sample.value
+
   private val fullyPaidCharge = Charge(
     period = Period(2021, Q3),
     originalAmount = BigDecimal(1000),
@@ -48,20 +51,31 @@ class FinancialDataServiceTest extends SpecBase with MockitoSugar {
 
     "passing 1 and return 1 when" - {
 
-      "no charge exists and has vat owed" in {
+      "no charge exists and has vat owed and no correction" in {
 
         val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, None, None)
 
-        when(mockVatReturnSalesService.getTotalVatOnSales(vatReturn)) thenReturn BigDecimal(1000)
+        when(mockVatReturnSalesService.getTotalVatOnSales(vatReturn, None)) thenReturn BigDecimal(1000)
 
-        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData)) mustBe Seq(vatReturnWithFinancialData)
+        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData), None) mustBe Seq(vatReturnWithFinancialData)
+        verify(mockVatReturnSalesService, times(1)).getTotalVatOnSales(vatReturn, None)
+      }
+
+      "no charge exists and has vat owed with correction" in {
+
+        val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, None, None)
+
+        when(mockVatReturnSalesService.getTotalVatOnSales(vatReturn, Some(correctionPayload))) thenReturn BigDecimal(1000)
+
+        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData), None) mustBe Seq(vatReturnWithFinancialData)
+        verify(mockVatReturnSalesService, times(1)).getTotalVatOnSales(vatReturn, Some(correctionPayload))
       }
 
       "charge exists with outstanding amount" in {
 
         val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, Some(notPaidCharge), None)
 
-        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData)) mustBe Seq(vatReturnWithFinancialData)
+        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData), None) mustBe Seq(vatReturnWithFinancialData)
       }
 
     }
@@ -74,7 +88,7 @@ class FinancialDataServiceTest extends SpecBase with MockitoSugar {
         val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, Some(fullyPaidCharge), Some(0L))
         val vatReturnWithFinancialData2 = VatReturnWithFinancialData(vatReturn2, Some(fullyPaidCharge), Some(0L))
 
-        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData, vatReturnWithFinancialData2)) mustBe Seq.empty
+        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData, vatReturnWithFinancialData2), None) mustBe Seq.empty
 
       }
 
@@ -86,14 +100,14 @@ class FinancialDataServiceTest extends SpecBase with MockitoSugar {
 
         val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, Some(fullyPaidCharge), Some(0))
 
-        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData)) mustBe Seq.empty
+        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData), None) mustBe Seq.empty
       }
 
       "no charge exists and does not have vat owed" in {
 
         val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, Some(fullyPaidCharge), Some(0))
 
-        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData)) mustBe Seq.empty
+        financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData), None) mustBe Seq.empty
       }
 
     }

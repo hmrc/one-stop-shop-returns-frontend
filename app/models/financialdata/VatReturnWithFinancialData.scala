@@ -18,6 +18,7 @@ package models.financialdata
 
 import models.PaymentState
 import models.PaymentState.{NoneDue, Paid, PaymentDue}
+import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import play.api.libs.json.{Format, Json}
 

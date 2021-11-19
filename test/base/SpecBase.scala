@@ -21,6 +21,7 @@ import generators.Generators
 import models.VatOnSalesChoice.Standard
 import models.PaymentReference
 import models.Quarter.{Q1, Q2, Q3, Q4}
+import models.corrections.CorrectionPayload
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
@@ -148,6 +149,15 @@ trait SpecBase
       None,
       None,
       List.empty,
+      List.empty,
+      Instant.ofEpochSecond(1630670836),
+      Instant.ofEpochSecond(1630670836)
+    )
+
+  val emptyCorrectionPayload: CorrectionPayload =
+    CorrectionPayload(
+      Vrn("063407423"),
+      Period("2086", "Q3").get,
       List.empty,
       Instant.ofEpochSecond(1630670836),
       Instant.ofEpochSecond(1630670836)

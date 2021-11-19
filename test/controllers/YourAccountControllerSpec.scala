@@ -509,7 +509,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(Right(Seq(vatReturnWithFinancialData)))
 
-        when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn
+        when(vatReturnSalesService.getTotalVatOnSales(any(), any())) thenReturn
           vatOwed
 
         running(application) {

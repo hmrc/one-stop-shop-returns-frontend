@@ -57,12 +57,12 @@ class YourAccountController @Inject()(
       results.map {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData)) =>
           val filteredPeriodsWithOutstandingAmounts = financialDataService
-            .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData)
+            .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData, None)
             .map(vatReturnWithfinancialData => vatReturnWithfinancialData.vatOwed match {
               case Some(vatOwed) => vatReturnWithfinancialData.copy(vatOwed = Some(vatOwed))
               case _ =>
                 vatReturnWithfinancialData.copy(
-                  vatOwed = Some((vatReturnSalesService.getTotalVatOnSales(vatReturnWithfinancialData.vatReturn) * 100).toLong)
+                  vatOwed = Some((vatReturnSalesService.getTotalVatOnSales(vatReturnWithfinancialData.vatReturn, None) * 100).toLong)
                 )
             })
           val paymentError = filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty)

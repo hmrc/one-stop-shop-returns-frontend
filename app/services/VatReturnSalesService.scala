@@ -16,17 +16,22 @@
 
 package services
 
+import models.corrections.{CorrectionPayload, PeriodWithCorrections}
 import models.domain.{SalesFromEuCountry, SalesToCountry, VatReturn}
 
 import javax.inject.Inject
 
 class VatReturnSalesService @Inject()() {
 
-  def getTotalVatOnSales(vatReturn: VatReturn): BigDecimal = {
+  def getTotalVatOnSales(vatReturn: VatReturn, maybeCorrectionPayload: Option[CorrectionPayload]): BigDecimal = {
     val niVat = getTotalVatOnSalesToCountry(vatReturn.salesFromNi)
     val euVat = getEuTotalVatOnSales(vatReturn.salesFromEu)
+    val correction = maybeCorrectionPayload.map {
+      correctionPayload =>
+        getCorrectionAmount(correctionPayload.corrections)
+    }.getOrElse(BigDecimal(0))
 
-    niVat + euVat
+    niVat + euVat + correction
   }
 
   def getEuTotalVatOnSales(allSalesFromEu: List[SalesFromEuCountry]): BigDecimal = {
@@ -51,6 +56,19 @@ class VatReturnSalesService @Inject()() {
     allSales.map(salesToCountry =>
       salesToCountry.amounts.map(_.netValueOfSales).sum
     ).sum
+  }
+
+  def getCorrectionAmount(periodWithCorrections: List[PeriodWithCorrections]): BigDecimal = {
+    periodWithCorrections.map { periodWithCorrection =>
+      periodWithCorrection.correctionsToCountry.map {
+        correctionToCountry =>
+          if (correctionToCountry.countryVatCorrection < 0) {
+            BigDecimal(0)
+          } else {
+            correctionToCountry.countryVatCorrection
+          }
+      }.sum
+    }.sum
   }
 
 }
