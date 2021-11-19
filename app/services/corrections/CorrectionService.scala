@@ -71,8 +71,9 @@ class CorrectionService @Inject()(
         periodWithCorrections.zipWithIndex.map {
           case (_, index) =>
             processCorrectionsToCountry(answers, Index(index))
+        }.sequence.map{ _ =>
+          periodWithCorrections
         }
-        periodWithCorrections.validNec
       case _ =>
         DataMissingError(AllCorrectionPeriodsQuery).invalidNec
     }

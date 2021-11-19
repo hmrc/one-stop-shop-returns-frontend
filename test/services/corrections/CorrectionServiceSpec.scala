@@ -17,12 +17,13 @@
 package services.corrections
 
 import base.SpecBase
-import cats.data.Validated.Valid
 import connectors.corrections.CorrectionConnector
+import cats.data.NonEmptyChain
+import cats.data.Validated.{Invalid, Valid}
 import models.requests.corrections.CorrectionRequest
-import models.{Country, Period}
 import models.responses.UnexpectedResponseStatus
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
+import models.{Country, DataMissingError, Period}
 import models.Quarter.{Q1, Q2}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
@@ -34,6 +35,7 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery}
 
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
@@ -145,6 +147,58 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
         service.fromUserAnswers(answers, vrn, period, registration.commencementDate) mustEqual Valid(expectedResult)
 
+      }
+
+    }
+
+    "must return Invalid" - {
+
+      "when user is expected to make correction and doesn't" in new Fixture {
+
+        private val answers =
+          emptyUserAnswers
+            .set(CorrectPreviousReturnPage, true).success.value
+
+        when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
+
+        private val result = service.fromUserAnswers(answers, vrn, period, registration.commencementDate)
+
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllCorrectionPeriodsQuery)))
+      }
+
+      "when user is expected adds a correction period but doesn't add anything else" in new Fixture {
+
+        private val correctionPeriod = Period(2021, Q1)
+
+        private val answers =
+          emptyUserAnswers
+            .set(CorrectPreviousReturnPage, true).success.value
+            .set(CorrectionReturnPeriodPage(index), correctionPeriod).success.value
+            .set(AllCorrectionCountriesQuery(index), List.empty).success.value
+
+        when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
+
+        private val result = service.fromUserAnswers(answers, vrn, period, registration.commencementDate)
+
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllCorrectionCountriesQuery(index))))
+      }
+
+      "when user is expected adds a correction period and country but not the amount" in new Fixture {
+
+        private val country1 = arbitrary[Country].sample.value
+        private val correctionPeriod1 = Period(2021, Q1)
+
+        private val answers =
+          emptyUserAnswers
+            .set(CorrectPreviousReturnPage, true).success.value
+            .set(CorrectionReturnPeriodPage(index), correctionPeriod1).success.value
+            .set(CorrectionCountryPage(index, index), country1).success.value
+
+        when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
+
+        private val result = service.fromUserAnswers(answers, vrn, period, registration.commencementDate)
+
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllCorrectionPeriodsQuery)))
       }
 
     }
