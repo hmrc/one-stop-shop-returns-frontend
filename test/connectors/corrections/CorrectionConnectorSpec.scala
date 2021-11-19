@@ -112,5 +112,35 @@ class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherVa
         connector.getForCorrectionPeriod(period).futureValue mustBe Right(List.empty)
       }
     }
+
+    "must return unexpected response when response is not OK" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(123).withBody("")
+            ))
+
+        connector.getForCorrectionPeriod(period).futureValue mustBe Left(UnexpectedResponseStatus(123, "Unexpected response, status 123 returned"))
+      }
+    }
+
+    "must return unexpected response when response is CONFLICT" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(CONFLICT).withBody("")
+            ))
+
+        connector.getForCorrectionPeriod(period).futureValue mustBe Left(ConflictFound)
+      }
+    }
   }
 }

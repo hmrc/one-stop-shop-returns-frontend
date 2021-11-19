@@ -48,14 +48,14 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
     connector.get(period).map {
       case Right(vatReturn) =>
         val sumFromNiToSelectedCountry = vatReturn.salesFromNi.filter(_.countryOfConsumption.code == country.code)
-          .flatMap(x => x.amounts.map(_.vatOnSales.amount)).sum
+          .flatMap(sales => sales.amounts.map(_.vatOnSales.amount)).sum
         val salesFromEU = vatReturn.salesFromEu.flatMap(_.sales)
         val sumFromEUToSelectedCountry = salesFromEU.filter(_.countryOfConsumption.code == country.code)
-          .flatMap(x => x.amounts.map(_.vatOnSales.amount)).sum
+          .flatMap(sales => sales.amounts.map(_.vatOnSales.amount)).sum
         val vatOwedToCountryOnPrevReturn = sumFromEUToSelectedCountry + sumFromNiToSelectedCountry
         vatOwedToCountryOnPrevReturn
       case Left(value) =>
-        logger.error(s"there was an error $value")
+        logger.error(s"there was an error getting the vat return: $value")
         throw new Exception(value.toString)
   }}
 

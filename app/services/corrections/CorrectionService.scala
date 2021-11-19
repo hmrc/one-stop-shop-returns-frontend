@@ -106,7 +106,7 @@ class CorrectionService @Inject()(
         case Right(payloads) => {
           payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry}}}
         case Left(error) =>
-          logger.error(s"there was an error $error")
+          logger.error(s"there was an error when getting corrections for period: $error")
           throw new Exception(error.toString)
       }
     }
