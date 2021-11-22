@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers, VatRate}
+import models.{CheckLoopMode, CheckMode, Index, NormalMode, UserAnswers, VatRate}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.AllSalesFromNiAtVatRateQuery
@@ -35,6 +35,9 @@ case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRate]] 
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, answers.period, index, Index(0))
+
+  override def navigateInCheckLoopMode(answers: UserAnswers): Call =
+    routes.NetValueOfSalesFromNiController.onPageLoad(CheckLoopMode, answers.period, index, Index(0))
 
   override def cleanup(value: Option[List[VatRate]], userAnswers: UserAnswers): Try[UserAnswers] =
     userAnswers.remove(AllSalesFromNiAtVatRateQuery(index))

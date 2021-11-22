@@ -57,6 +57,8 @@ GET         /:period/eu-vat-rates-from-northern-ireland/:index                  
 POST        /:period/eu-vat-rates-from-northern-ireland/:index                                               controllers.VatRatesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)
 GET         /:period/check-eu-vat-rates-from-northern-ireland/:index                                         controllers.VatRatesFromNiController.onPageLoad(mode: Mode = CheckMode, period: Period, index: Index)
 POST        /:period/check-eu-vat-rates-from-northern-ireland/:index                                         controllers.VatRatesFromNiController.onSubmit(mode: Mode = CheckMode, period: Period, index: Index)
+GET         /:period/first-check-eu-vat-rates-from-northern-ireland/:index                                   controllers.VatRatesFromNiController.onPageLoad(mode: Mode = CheckLoopMode, period: Period, index: Index)
+POST        /:period/first-check-eu-vat-rates-from-northern-ireland/:index                                   controllers.VatRatesFromNiController.onSubmit(mode: Mode = CheckLoopMode, period: Period, index: Index)
 
 GET         /:period/eu-country-sold-to/:countryFromIndex/:countryToIndex                                    controllers.CountryOfConsumptionFromEuController.onPageLoad(mode: Mode = NormalMode, period: Period, countryFromIndex: Index, countryToIndex: Index)
 POST        /:period/eu-country-sold-to/:countryFromIndex/:countryToIndex                                    controllers.CountryOfConsumptionFromEuController.onSubmit(mode: Mode = NormalMode, period: Period, countryFromIndex: Index, countryToIndex: Index)

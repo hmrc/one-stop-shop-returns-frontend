@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, NormalMode, UserAnswers, VatOnSales}
+import models.{CheckLoopMode, CheckMode, Index, Mode, NormalMode, UserAnswers, VatOnSales}
 import pages.PageConstants.{salesAtVatRate, salesFromNi, vatOnSales}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -36,8 +36,12 @@ case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extend
 
   override def navigateInCheckLoopMode(answers: UserAnswers): Call =
     answers.get(VatRatesFromNiPage(countryIndex)).map {
-      _ =>
-        routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex)
+      rates =>
+        if (rates.size > vatRateIndex.position + 1) {
+          routes.NetValueOfSalesFromNiController.onPageLoad(CheckLoopMode, answers.period, countryIndex, vatRateIndex + 1)
+        } else {
+          routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex)
+        }
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 
   private def commonNavigate(mode: Mode, answers: UserAnswers): Call = {
