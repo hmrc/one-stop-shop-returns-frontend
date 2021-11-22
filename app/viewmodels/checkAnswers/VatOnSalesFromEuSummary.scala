@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckLoopMode, Index, UserAnswers, VatRate}
+import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers, VatRate}
 import pages.VatOnSalesFromEuPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
@@ -28,9 +28,10 @@ import viewmodels.implicits._
 
 object VatOnSalesFromEuSummary  {
 
-  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index, vatRate: VatRate)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index, vatRate: VatRate, currentMode: Mode)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).map {
       answer =>
+        val newMode = if(currentMode == NormalMode) CheckLoopMode else currentMode
 
         SummaryListRowViewModel(
           key     = "vatOnSalesFromEu.checkYourAnswersLabel",
@@ -38,7 +39,7 @@ object VatOnSalesFromEuSummary  {
           actions = Seq(
             ActionItemViewModel(
               "site.change",
-              routes.VatOnSalesFromEuController.onPageLoad(CheckLoopMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
+              routes.VatOnSalesFromEuController.onPageLoad(newMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
             )
             .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden", vatRate.rateForDisplay))
           )

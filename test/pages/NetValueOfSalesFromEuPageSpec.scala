@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.VatOnSalesChoice.Standard
-import models.{CheckLoopMode, CheckMode, NormalMode, VatOnSales, VatRate}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
@@ -54,7 +54,24 @@ class NetValueOfSalesFromEuPageSpec extends PageBehaviours {
       }
     }
 
+    "must navigate in Check Second Loop mode" - {
 
+      "to VAT on sales from EU" in {
+
+        NetValueOfSalesFromEuPage(index, index, index).navigate(CheckSecondLoopMode, emptyUserAnswers)
+          .mustEqual(routes.VatOnSalesFromEuController.onPageLoad(CheckSecondLoopMode, period, index, index, index))
+      }
+    }
+
+    "must navigate in Check Third Loop mode" - {
+
+      "to VAT on sales from EU" in {
+
+        NetValueOfSalesFromEuPage(index, index, index).navigate(CheckThirdLoopMode, emptyUserAnswers)
+          .mustEqual(routes.VatOnSalesFromEuController.onPageLoad(CheckThirdLoopMode, period, index, index, index))
+      }
+    }
+    
     "must remove VAT on sales for the same index when set" in {
 
       val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value

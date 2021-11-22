@@ -84,7 +84,17 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoS
           .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0)))
       }
 
-      "to Check your answers when the answer is no" in {
+      "to Check your answers when the answer is no and correction toggle is false" in {
+        when(mockAppConfig.correctionToggle).thenReturn(false)
+
+        val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
+
+        SoldGoodsFromEuPage.navigate(CheckMode, answers)
+          .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
+      }
+
+      "to Check your answers when the answer is no and correction toggle is true" in {
+        when(mockAppConfig.correctionToggle).thenReturn(true)
 
         val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
 

@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers}
+import models.{CheckMode, CheckThirdLoopMode, Index, NormalMode, UserAnswers}
 import PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -39,6 +39,12 @@ case class DeleteSalesToEuPage(countryFromIndex: Index, countryToIndex: Index) e
     answers.get(DeriveNumberOfSalesToEu(countryFromIndex)) match {
       case Some(n) if n > 0 => routes.SalesToEuListController.onPageLoad(CheckMode, answers.period, countryFromIndex)
       case _                => routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, Index(0))
+    }
+
+  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+    answers.get(DeriveNumberOfSalesToEu(countryFromIndex)) match {
+      case Some(n) if n > 0 => routes.SalesToEuListController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex)
+      case _                => routes.CountryOfConsumptionFromEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, Index(0))
     }
 
 }

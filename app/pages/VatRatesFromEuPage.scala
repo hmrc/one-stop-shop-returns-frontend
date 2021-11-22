@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, CheckMode, UserAnswers, VatRate}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Index, NormalMode, UserAnswers, VatRate}
 import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -33,4 +33,13 @@ case class VatRatesFromEuPage(countryFromIndex: Index, countryToIndex: Index) ex
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, Index(0))
+
+  override def navigateInCheckLoopMode(answers: UserAnswers): Call =
+    routes.NetValueOfSalesFromEuController.onPageLoad(CheckLoopMode, answers.period, countryFromIndex, countryToIndex, Index(0))
+
+  override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
+    routes.NetValueOfSalesFromEuController.onPageLoad(CheckSecondLoopMode, answers.period, countryFromIndex, countryToIndex, Index(0))
+
+  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+    routes.NetValueOfSalesFromEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex, Index(0))
 }

@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, Index, NormalMode, UserAnswers}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Index, NormalMode, UserAnswers}
 import pages.PageConstants.{netValueOfSales, salesAtVatRate, salesFromCountry, salesFromEu}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -39,6 +39,12 @@ case class NetValueOfSalesFromEuPage(countryFromIndex: Index, countryToIndex: In
 
   override def navigateInCheckLoopMode(answers: UserAnswers): Call =
     routes.VatOnSalesFromEuController.onPageLoad(CheckLoopMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex)
+
+  override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
+    routes.VatOnSalesFromEuController.onPageLoad(CheckSecondLoopMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex)
+
+  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+    routes.VatOnSalesFromEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex)
 
   override def cleanup(value: Option[BigDecimal], userAnswers: UserAnswers): Try[UserAnswers] =
     userAnswers.remove(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex))

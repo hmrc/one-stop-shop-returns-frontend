@@ -35,7 +35,11 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
     answers.get(SoldGoodsFromEuPage) match {
       case Some(true)  => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
       case Some(false) => if(config.correctionToggle) {
-        controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
+        if(mode == CheckMode){
+          routes.CheckYourAnswersController.onPageLoad(answers.period)
+        }else{
+          controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
+        }
       } else {
         routes.CheckYourAnswersController.onPageLoad(answers.period)
       }

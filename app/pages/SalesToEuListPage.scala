@@ -17,20 +17,22 @@
 package pages
 
 import controllers.routes
-import models.{Index, Mode, UserAnswers}
+import models.{CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers}
 import play.api.mvc.Call
 import queries.DeriveNumberOfSalesToEu
 
 case class SalesToEuListPage(index: Index) extends Page {
 
   // TODO: This navigation will need to change when we wire up the CountryOfEstablishment page etc.
-  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call =
+  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call = {
+    val newMode = if(mode == CheckThirdLoopMode) NormalMode else mode
     if (addAnother) {
       answers.get(DeriveNumberOfSalesToEu(index)) match {
         case Some(size) => routes.CountryOfConsumptionFromEuController.onPageLoad(mode, answers.period, index, Index(size))
         case None       => routes.JourneyRecoveryController.onPageLoad()
       }
     } else {
-      routes.SalesFromEuListController.onPageLoad(mode, answers.period)
+      routes.SalesFromEuListController.onPageLoad(newMode, answers.period)
     }
+  }
 }
