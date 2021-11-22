@@ -16,6 +16,7 @@
 
 package models.audit
 
+import models.requests.corrections.CorrectionRequest
 import models.{PaymentReference, ReturnReference}
 import models.requests.{DataRequest, VatReturnRequest}
 import play.api.libs.json.{JsObject, JsValue, Json}
@@ -24,6 +25,7 @@ case class ReturnsAuditModel(
                               credId: String,
                               userAgent: String,
                               vatReturnRequest: VatReturnRequest,
+                              correctionRequest: Option[CorrectionRequest],
                               reference: Option[ReturnReference],
                               paymentReference: Option[PaymentReference],
                               result: SubmissionResult
@@ -70,30 +72,46 @@ case class ReturnsAuditModel(
     startDate ++
     endDate
 
+  private val correctionDetail: JsObject = {
+    correctionRequest match {
+      case Some(corrRequest) =>
+        Json.obj(
+          "correctionDetails" -> Json.obj(
+            "vatRegistrationNumber" -> corrRequest.vrn,
+            "period" -> Json.toJson(corrRequest.period),
+            "corrections" -> Json.toJson(corrRequest.corrections)
+          )
+        )
+      case _ => Json.obj()
+    }
+  }
+
   override val detail: JsValue = Json.obj(
     "credId" -> credId,
     "browserUserAgent" -> userAgent,
     "submissionResult" -> Json.toJson(result),
     "returnDetails" -> returnDetail
-  )
+  ) ++ correctionDetail
 }
 
 object ReturnsAuditModel {
 
   def build(
-    vatReturnRequest: VatReturnRequest,
-    result: SubmissionResult,
-    reference: Option[ReturnReference],
-    paymentReference: Option[PaymentReference],
-    request: DataRequest[_]
-  ): ReturnsAuditModel = {
+             vatReturnRequest: VatReturnRequest,
+             correctionRequest: Option[CorrectionRequest],
+             result: SubmissionResult,
+             reference: Option[ReturnReference],
+             paymentReference: Option[PaymentReference],
+             request: DataRequest[_]
+           ): ReturnsAuditModel = {
     ReturnsAuditModel(
-      credId           = request.credentials.providerId,
-      userAgent        = request.headers.get("user-agent").getOrElse(""),
+      credId = request.credentials.providerId,
+      userAgent = request.headers.get("user-agent").getOrElse(""),
       vatReturnRequest = vatReturnRequest,
-      reference        = reference,
+      correctionRequest = correctionRequest,
+      reference = reference,
       paymentReference = paymentReference,
-      result           = result
+      result = result
     )
   }
 }

@@ -18,10 +18,12 @@ package models.audit
 
 import models.{PaymentReference, ReturnReference}
 import models.requests.VatReturnRequest
+import models.requests.corrections.CorrectionRequest
 import play.api.libs.json.{JsObject, JsValue, Json}
 
 case class ReturnForDataEntryAuditModel(
                                          vatReturnRequest: VatReturnRequest,
+                                         correctionRequest: Option[CorrectionRequest],
                                          reference: ReturnReference,
                                          paymentReference: PaymentReference
                                        ) extends JsonAuditModel {
@@ -74,6 +76,36 @@ case class ReturnForDataEntryAuditModel(
     }
   }
 
+  private def periodsWithCorrections(correctionRequest: CorrectionRequest): List[JsObject] = {
+    correctionRequest.corrections.map {
+      correctionsToCountry =>
+
+        val correctionToCountry = correctionsToCountry.correctionsToCountry.map {
+          correctionCountry =>
+            Json.obj(
+              "correctionCountry" -> Json.toJson(correctionCountry.correctionCountry.name),
+              "countryVatCorrectionAmount" -> correctionCountry.countryVatCorrection
+            )
+        }
+
+        Json.obj(
+          "correctionPeriod" -> correctionsToCountry.correctionReturnPeriod,
+          "correctionToCountry" -> correctionToCountry
+        )
+    }
+  }
+
+  private val corrections: JsObject = {
+    correctionRequest match {
+      case Some(corrRequest) =>
+        Json.obj(
+          "corrections" -> periodsWithCorrections(corrRequest)
+        )
+      case _ => Json.obj()
+    }
+
+  }
+
   override val detail: JsValue = Json.obj(
     "vatRegistrationNumber" -> vatReturnRequest.vrn.vrn,
     "period"                -> Json.toJson(vatReturnRequest.period),
@@ -81,5 +113,6 @@ case class ReturnForDataEntryAuditModel(
     "paymentReference"      -> Json.toJson(paymentReference),
     "salesFromNi"           -> salesFromNi,
     "salesFromEu"           -> salesFromEu
-  )
+  ) ++ corrections
+
 }

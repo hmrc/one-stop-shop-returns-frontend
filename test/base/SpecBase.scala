@@ -24,6 +24,7 @@ import models.Quarter.{Q1, Q2, Q3, Q4}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
+import models.requests.corrections.CorrectionRequest
 import models.{Country, Index, Period, Quarter, ReturnReference, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -208,6 +209,13 @@ trait SpecBase
       Some(LocalDate.now()),
       Some(LocalDate.now().plusDays(1)),
       List.empty,
+      List.empty
+    )
+
+  val correctionRequest: CorrectionRequest =
+    CorrectionRequest(
+      Vrn("063407423"),
+      Period(2086, Q3),
       List.empty
     )
 

@@ -35,13 +35,14 @@ import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import pages.{CheckYourAnswersPage, SoldGoodsFromEuPage, SoldGoodsFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.EmailConfirmationQuery
 import repositories.SessionRepository
+import services.corrections.CorrectionService
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import viewmodels.govuk.SummaryListFluency
 
@@ -52,6 +53,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val vatReturnConnector = mock[VatReturnConnector]
   private val correctionConnector = mock[CorrectionConnector]
   private val vatReturnService = mock[VatReturnService]
+  private val correctionService = mock[CorrectionService]
   private val auditService = mock[AuditService]
   private val salesAtVatRateService = mock[SalesAtVatRateService]
   private val emailService =  mock[EmailService]
@@ -285,9 +287,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val result = route(application, request).value
             val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
             val expectedAuditEvent = ReturnsAuditModel.build(
-              vatReturnRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
+              vatReturnRequest, None, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
             )
-            val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, vatReturn.reference, vatReturn.paymentReference)
+            val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, None, vatReturn.reference, vatReturn.paymentReference)
 
             val userAnswersWithEmailConfirmation = completeUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
 
@@ -340,6 +342,61 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             verify(vatReturnConnector, times(1)).submitWithCorrection(any())(any())
           }
         }
+
+        "must audit the event and redirect to the next page and successfully send email confirmation" in {
+          val mockSessionRepository = mock[SessionRepository]
+
+          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
+          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
+          when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
+            .thenReturn(Future.successful(EMAIL_ACCEPTED))
+
+          val totalVatOnSales = BigDecimal(100)
+          when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
+          doNothing().when(auditService).audit(any())(any(), any())
+
+          val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+            .configure("features.corrections-toggle" -> true)
+            .overrides(
+              bind[VatReturnService].toInstance(vatReturnService),
+              bind[CorrectionService].toInstance(correctionService),
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[CorrectionConnector].toInstance(correctionConnector),
+              bind[SalesAtVatRateService].toInstance(salesAtVatRateService),
+              bind[AuditService].toInstance(auditService),
+              bind[EmailService].toInstance(emailService),
+              bind[SessionRepository].toInstance(mockSessionRepository),
+            )
+            .build()
+
+          running(application) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period).url)
+            val result = route(application, request).value
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+            val expectedAuditEvent = ReturnsAuditModel.build(
+              vatReturnRequest, Some(correctionRequest), SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
+            )
+            val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, Some(correctionRequest), vatReturn.reference, vatReturn.paymentReference)
+
+            val userAnswersWithEmailConfirmation = completeUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswersWithEmailConfirmation).url
+
+            verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+            verify(auditService, times(1)).audit(eqTo(expectedAuditEventForDataEntry))(any(), any())
+            verify(emailService, times(1))
+              .sendConfirmationEmail(eqTo(registration.contactDetails.fullName),
+                eqTo(registration.registeredCompanyName),
+                eqTo(registration.contactDetails.emailAddress),
+                eqTo(totalVatOnSales),
+                eqTo(vatReturnRequest.period)
+              )(any(), any())
+            verify(mockSessionRepository, times(1)).set(eqTo(userAnswersWithEmailConfirmation))
+          }
+        }
       }
     }
 
@@ -370,7 +427,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val result = route(app, request).value
           val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
           val expectedAuditEvent =
-            ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Duplicate, None, None, dataRequest)
+            ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Duplicate, None, None, dataRequest)
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad().url
@@ -406,7 +463,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val result = route(app, request).value
           val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
           val expectedAuditEvent =
-            ReturnsAuditModel.build(vatReturnRequest, SubmissionResult.Failure, None, None, dataRequest)
+            ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Failure, None, None, dataRequest)
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url

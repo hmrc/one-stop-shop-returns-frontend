@@ -17,9 +17,12 @@
 package models.audit
 
 import base.SpecBase
+import models.Quarter.{Q2, Q4}
 import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.requests.VatReturnRequest
 import models._
+import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
+import models.requests.corrections.CorrectionRequest
 import org.scalacheck.Arbitrary.arbitrary
 import play.api.libs.json.Json
 
@@ -33,7 +36,7 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
       val returnReference  = ReturnReference(vrn, period)
       val paymentReference = PaymentReference(vrn, period)
 
-      val auditModel = ReturnForDataEntryAuditModel(vatReturnRequest, returnReference, paymentReference)
+      val auditModel = ReturnForDataEntryAuditModel(vatReturnRequest, None, returnReference, paymentReference)
 
       auditModel.detail mustEqual Json.obj(
         "vatRegistrationNumber" -> vrn.vrn,
@@ -45,7 +48,7 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
       )
     }
 
-    "must be a valid structure when there are sales from NI and the EU" in new Fixture {
+    "must be a valid structure when there are sales from NI and the EU without corrections" in new Fixture {
 
       private val salesFromNi = List(
         SalesToCountry(
@@ -101,7 +104,7 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
       private val returnReference  = ReturnReference(vrn, period)
       private val paymentReference = PaymentReference(vrn, period)
 
-      private val auditModel = ReturnForDataEntryAuditModel(vatReturnRequest, returnReference, paymentReference)
+      private val auditModel = ReturnForDataEntryAuditModel(vatReturnRequest, None, returnReference, paymentReference)
 
       auditModel.detail mustEqual Json.obj(
         "vatRegistrationNumber" -> vrn.vrn,
@@ -169,6 +172,319 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
         )
       )
     }
+
+    "must be a valid structure when there are sales from NI and the EU with corrections" in new Fixture {
+
+      private val salesFromNi = List(
+        SalesToCountry(
+          countryOfConsumption = country1,
+          amounts = List(
+            SalesDetails(domainVatRate1, netSales1, vatOnSales1),
+            SalesDetails(domainVatRate2, netSales2, vatOnSales2)
+          )
+        ),
+        SalesToCountry(
+          countryOfConsumption = country2,
+          amounts = List(
+            SalesDetails(domainVatRate3, netSales3, vatOnSales3)
+          )
+        )
+      )
+
+      private val salesFromEu = List(
+        SalesFromEuCountry(
+          countryOfSale = country1,
+          taxIdentifier = None,
+          sales = List(
+            SalesToCountry(
+              countryOfConsumption = country2,
+              amounts = List(
+                SalesDetails(domainVatRate1, netSales1, vatOnSales1),
+                SalesDetails(domainVatRate2, netSales2, vatOnSales2)
+              )
+            ),
+            SalesToCountry(
+              countryOfConsumption = country3,
+              amounts = List(
+                SalesDetails(domainVatRate3, netSales3, vatOnSales3)
+              )
+            )
+          )
+        ),
+        SalesFromEuCountry(
+          countryOfSale = country3,
+          taxIdentifier = Some(taxIdentifier),
+          sales = List(
+            SalesToCountry(
+              countryOfConsumption = country4,
+              amounts = List(
+                SalesDetails(domainVatRate1, netSales1, vatOnSales1)
+              )
+            )
+          )
+        )
+      )
+
+      private val corrections = List(PeriodWithCorrections(
+        correctionPeriod1,
+        List(CorrectionToCountry(
+          country3,
+          correctionAmount
+        ))
+      ))
+
+      private val vatReturnRequest = VatReturnRequest(vrn, period, None, None, salesFromNi, salesFromEu)
+      private val correctionRequest = CorrectionRequest(vrn, period, corrections)
+      private val returnReference  = ReturnReference(vrn, period)
+      private val paymentReference = PaymentReference(vrn, period)
+
+      private val auditModel = ReturnForDataEntryAuditModel(vatReturnRequest, Some(correctionRequest), returnReference, paymentReference)
+
+      auditModel.detail mustEqual Json.obj(
+        "vatRegistrationNumber" -> vrn.vrn,
+        "period"                -> Json.toJson(period),
+        "returnReference"       -> Json.toJson(returnReference),
+        "paymentReference"      -> Json.toJson(paymentReference),
+        "salesFromNi"           -> Json.arr(
+          Json.obj(
+            "countryOfConsumption" -> country1.name,
+            "vatRate"              -> domainVatRate1.rate,
+            "vatRateType"          -> domainVatRate1.rateType,
+            "netValueOfSales"      -> netSales1,
+            "vatOnSales"           -> vatOnSales1.amount
+          ),
+          Json.obj(
+            "countryOfConsumption" -> country1.name,
+            "vatRate"              -> domainVatRate2.rate,
+            "vatRateType"          -> domainVatRate2.rateType,
+            "netValueOfSales"      -> netSales2,
+            "vatOnSales"           -> vatOnSales2.amount
+          ),
+          Json.obj(
+            "countryOfConsumption" -> country2.name,
+            "vatRate"              -> domainVatRate3.rate,
+            "vatRateType"          -> domainVatRate3.rateType,
+            "netValueOfSales"      -> netSales3,
+            "vatOnSales"           -> vatOnSales3.amount
+          )
+        ),
+        "salesFromEu" -> Json.arr(
+          Json.obj(
+            "countryOfSale"        -> country1.name,
+            "countryOfConsumption" -> country2.name,
+            "vatRate"              -> domainVatRate1.rate,
+            "vatRateType"          -> domainVatRate1.rateType,
+            "netValueOfSales"      -> netSales1,
+            "vatOnSales"           -> vatOnSales1.amount
+          ),
+          Json.obj(
+            "countryOfSale"        -> country1.name,
+            "countryOfConsumption" -> country2.name,
+            "vatRate"              -> domainVatRate2.rate,
+            "vatRateType"          -> domainVatRate2.rateType,
+            "netValueOfSales"      -> netSales2,
+            "vatOnSales"           -> vatOnSales2.amount
+          ),
+          Json.obj(
+            "countryOfSale"        -> country1.name,
+            "countryOfConsumption" -> country3.name,
+            "vatRate"              -> domainVatRate3.rate,
+            "vatRateType"          -> domainVatRate3.rateType,
+            "netValueOfSales"      -> netSales3,
+            "vatOnSales"           -> vatOnSales3.amount
+          ),
+          Json.obj(
+            "countryOfSale"        -> country3.name,
+            "countryOfConsumption" -> country4.name,
+            "vatRate"              -> domainVatRate1.rate,
+            "vatRateType"          -> domainVatRate1.rateType,
+            "netValueOfSales"      -> netSales1,
+            "vatOnSales"           -> vatOnSales1.amount,
+            "taxIdentifierType"    -> taxIdentifier.identifierType.toString,
+            "taxIdentifier"        -> taxIdentifier.value
+          )
+        ),
+        "corrections" -> Json.arr(
+          Json.obj(
+            "correctionPeriod" -> correctionPeriod1,
+            "correctionToCountry" -> Json.arr(
+              Json.obj(
+                "correctionCountry" -> country3.name,
+                "countryVatCorrectionAmount" -> correctionAmount
+              )
+            )
+          )
+        )
+      )
+    }
+
+    "must be a valid structure when there are sales from NI and the EU with multiple corrections" in new Fixture {
+
+      private val salesFromNi = List(
+        SalesToCountry(
+          countryOfConsumption = country1,
+          amounts = List(
+            SalesDetails(domainVatRate1, netSales1, vatOnSales1),
+            SalesDetails(domainVatRate2, netSales2, vatOnSales2)
+          )
+        ),
+        SalesToCountry(
+          countryOfConsumption = country2,
+          amounts = List(
+            SalesDetails(domainVatRate3, netSales3, vatOnSales3)
+          )
+        )
+      )
+
+      private val salesFromEu = List(
+        SalesFromEuCountry(
+          countryOfSale = country1,
+          taxIdentifier = None,
+          sales = List(
+            SalesToCountry(
+              countryOfConsumption = country2,
+              amounts = List(
+                SalesDetails(domainVatRate1, netSales1, vatOnSales1),
+                SalesDetails(domainVatRate2, netSales2, vatOnSales2)
+              )
+            ),
+            SalesToCountry(
+              countryOfConsumption = country3,
+              amounts = List(
+                SalesDetails(domainVatRate3, netSales3, vatOnSales3)
+              )
+            )
+          )
+        ),
+        SalesFromEuCountry(
+          countryOfSale = country3,
+          taxIdentifier = Some(taxIdentifier),
+          sales = List(
+            SalesToCountry(
+              countryOfConsumption = country4,
+              amounts = List(
+                SalesDetails(domainVatRate1, netSales1, vatOnSales1)
+              )
+            )
+          )
+        )
+      )
+
+      private val corrections = List(
+        PeriodWithCorrections(
+          correctionPeriod1,
+          List(
+            CorrectionToCountry(
+            country3,
+            correctionAmount
+            )
+          )
+        ),
+        PeriodWithCorrections(
+          correctionPeriod2,
+          List(
+            CorrectionToCountry(
+              country4,
+              correctionAmount
+            )
+          )
+        )
+      )
+
+      private val vatReturnRequest = VatReturnRequest(vrn, period, None, None, salesFromNi, salesFromEu)
+      private val correctionRequest = CorrectionRequest(vrn, period, corrections)
+      private val returnReference  = ReturnReference(vrn, period)
+      private val paymentReference = PaymentReference(vrn, period)
+
+      private val auditModel = ReturnForDataEntryAuditModel(vatReturnRequest, Some(correctionRequest), returnReference, paymentReference)
+
+      auditModel.detail mustEqual Json.obj(
+        "vatRegistrationNumber" -> vrn.vrn,
+        "period"                -> Json.toJson(period),
+        "returnReference"       -> Json.toJson(returnReference),
+        "paymentReference"      -> Json.toJson(paymentReference),
+        "salesFromNi"           -> Json.arr(
+          Json.obj(
+            "countryOfConsumption" -> country1.name,
+            "vatRate"              -> domainVatRate1.rate,
+            "vatRateType"          -> domainVatRate1.rateType,
+            "netValueOfSales"      -> netSales1,
+            "vatOnSales"           -> vatOnSales1.amount
+          ),
+          Json.obj(
+            "countryOfConsumption" -> country1.name,
+            "vatRate"              -> domainVatRate2.rate,
+            "vatRateType"          -> domainVatRate2.rateType,
+            "netValueOfSales"      -> netSales2,
+            "vatOnSales"           -> vatOnSales2.amount
+          ),
+          Json.obj(
+            "countryOfConsumption" -> country2.name,
+            "vatRate"              -> domainVatRate3.rate,
+            "vatRateType"          -> domainVatRate3.rateType,
+            "netValueOfSales"      -> netSales3,
+            "vatOnSales"           -> vatOnSales3.amount
+          )
+        ),
+        "salesFromEu" -> Json.arr(
+          Json.obj(
+            "countryOfSale"        -> country1.name,
+            "countryOfConsumption" -> country2.name,
+            "vatRate"              -> domainVatRate1.rate,
+            "vatRateType"          -> domainVatRate1.rateType,
+            "netValueOfSales"      -> netSales1,
+            "vatOnSales"           -> vatOnSales1.amount
+          ),
+          Json.obj(
+            "countryOfSale"        -> country1.name,
+            "countryOfConsumption" -> country2.name,
+            "vatRate"              -> domainVatRate2.rate,
+            "vatRateType"          -> domainVatRate2.rateType,
+            "netValueOfSales"      -> netSales2,
+            "vatOnSales"           -> vatOnSales2.amount
+          ),
+          Json.obj(
+            "countryOfSale"        -> country1.name,
+            "countryOfConsumption" -> country3.name,
+            "vatRate"              -> domainVatRate3.rate,
+            "vatRateType"          -> domainVatRate3.rateType,
+            "netValueOfSales"      -> netSales3,
+            "vatOnSales"           -> vatOnSales3.amount
+          ),
+          Json.obj(
+            "countryOfSale"        -> country3.name,
+            "countryOfConsumption" -> country4.name,
+            "vatRate"              -> domainVatRate1.rate,
+            "vatRateType"          -> domainVatRate1.rateType,
+            "netValueOfSales"      -> netSales1,
+            "vatOnSales"           -> vatOnSales1.amount,
+            "taxIdentifierType"    -> taxIdentifier.identifierType.toString,
+            "taxIdentifier"        -> taxIdentifier.value
+          )
+        ),
+        "corrections" -> Json.arr(
+          Json.obj(
+            "correctionPeriod" -> correctionPeriod1,
+            "correctionToCountry" -> Json.arr(
+              Json.obj(
+                "correctionCountry" -> country3.name,
+                "countryVatCorrectionAmount" -> correctionAmount
+              )
+            )
+          ),
+          Json.obj(
+            "correctionPeriod" -> correctionPeriod2,
+            "correctionToCountry" -> Json.arr(
+              Json.obj(
+                "correctionCountry" -> country4.name,
+                "countryVatCorrectionAmount" -> correctionAmount
+              )
+            )
+          )
+        )
+      )
+    }
+
   }
 
   trait Fixture {
@@ -189,6 +505,9 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
     protected val netSales1: BigDecimal          = arbitrary[BigDecimal].sample.value
     protected val netSales2: BigDecimal          = arbitrary[BigDecimal].sample.value
     protected val netSales3: BigDecimal          = arbitrary[BigDecimal].sample.value
+    protected val correctionPeriod1: Period      = arbitrary[Period].sample.value
+    protected val correctionPeriod2: Period      = arbitrary[Period].sample.value
+    protected val correctionAmount: BigDecimal   = arbitrary[BigDecimal].sample.value
     protected val taxIdentifier: EuTaxIdentifier = arbitrary[EuTaxIdentifier].sample.value
 
     private def toDomainVatRate(vatRate: VatRate): DomainVatRate = {
