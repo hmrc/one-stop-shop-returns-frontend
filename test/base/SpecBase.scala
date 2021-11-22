@@ -167,7 +167,7 @@ trait SpecBase
   val correctionRequest: CorrectionRequest =
     CorrectionRequest(
       Vrn("063407423"),
-      Period("2086", "Q3").get,
+      Period(2086, Q3),
       List.empty
     )
 

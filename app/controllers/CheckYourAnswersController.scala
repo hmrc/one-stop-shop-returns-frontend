@@ -20,7 +20,6 @@ import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.VatReturnConnector
-import connectors.corrections.CorrectionConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.{NormalMode, Period}
@@ -168,7 +167,7 @@ class CheckYourAnswersController @Inject()(
           case (Valid(vatReturnRequest), Valid(correctionRequest)) =>
             val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
             vatReturnConnector.submitWithCorrection(vatReturnWithCorrectionRequest).flatMap {
-              case Right((vatReturn: VatReturn, correctionPayload: CorrectionPayload)) =>
+              case Right((vatReturn: VatReturn, _)) =>
                 auditEmailAndRedirect(vatReturnRequest, Some(correctionRequest), vatReturn, period)
               case Left(ConflictFound) =>
                 auditService.audit(ReturnsAuditModel.build(
@@ -232,12 +231,31 @@ class CheckYourAnswersController @Inject()(
 
   }
 
-  private def auditEmailAndRedirect(returnRequest: VatReturnRequest, correctionRequest: Option[CorrectionRequest], vatReturn: VatReturn, period: Period)(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
-    auditService.audit(ReturnsAuditModel.build(
-      returnRequest, correctionRequest, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), request
-    ))
+  private def auditEmailAndRedirect(
+   returnRequest: VatReturnRequest,
+   correctionRequest: Option[CorrectionRequest],
+   vatReturn: VatReturn,
+   period: Period
+  )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
+    auditService.audit(
+      ReturnsAuditModel.build(
+        returnRequest,
+        correctionRequest,
+        SubmissionResult.Success,
+        Some(vatReturn.reference),
+        Some(vatReturn.paymentReference),
+        request
+      )
+    )
 
-    auditService.audit(ReturnForDataEntryAuditModel(returnRequest, correctionRequest, vatReturn.reference, vatReturn.paymentReference))
+    auditService.audit(
+      ReturnForDataEntryAuditModel(
+        returnRequest,
+        correctionRequest,
+        vatReturn.reference,
+        vatReturn.paymentReference
+      )
+    )
 
     emailService.sendConfirmationEmail(
       request.registration.contactDetails.fullName,
