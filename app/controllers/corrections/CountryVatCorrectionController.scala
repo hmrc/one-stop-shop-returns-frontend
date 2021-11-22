@@ -48,8 +48,7 @@ class CountryVatCorrectionController @Inject()(
           for{
             vatOwedToCountryOnPrevReturn <- service.getLatestVatAmountForPeriodAndCountry(country, correctionPeriod)
           }yield{
-            val form = formProvider(country.name)
-
+            val form = formProvider(country.name, -vatOwedToCountryOnPrevReturn)
             val preparedForm = request.userAnswers.get(CountryVatCorrectionPage(periodIndex, countryIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
@@ -67,7 +66,7 @@ class CountryVatCorrectionController @Inject()(
       (correctionPeriod, selectedCountry) match {
         case (Some(correctionPeriod), Some(country)) =>
           service.getLatestVatAmountForPeriodAndCountry(country, correctionPeriod).flatMap { vatOwedToCountryOnPrevReturn =>
-              val form = formProvider(country.name)
+              val form = formProvider(country.name, -vatOwedToCountryOnPrevReturn)
               form.bindFromRequest().fold(
                 formWithErrors =>
                   Future.successful(BadRequest(
