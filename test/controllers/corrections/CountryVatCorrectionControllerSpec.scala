@@ -209,13 +209,11 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
 
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(previousVatReturn))
       when(mockCorrectionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(List(previousCorrection))
-//      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(validAnswer)
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
         .overrides(
           bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-          bind[CorrectionService].toInstance(mockCorrectionService),
-//          bind[VatReturnService].toInstance(mockService)
+          bind[CorrectionService].toInstance(mockCorrectionService)
         )
         .build()
 
