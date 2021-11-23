@@ -26,7 +26,6 @@ import models.SubmissionStatus
 import models.financialdata.VatReturnWithFinancialData
 import models.requests.RegistrationRequest
 import play.api.i18n.I18nSupport
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{FinancialDataService, VatReturnSalesService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController

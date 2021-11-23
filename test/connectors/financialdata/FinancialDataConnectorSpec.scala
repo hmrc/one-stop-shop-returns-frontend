@@ -22,16 +22,18 @@ import connectors.WireMockHelper
 import formats.Format
 import models.Period
 import models.Quarter.Q3
-import models.financialdata.{Charge, PeriodWithOutstandingAmount}
+import models.financialdata.{Charge, PeriodWithOutstandingAmount, VatReturnWithFinancialData}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
-import org.scalatest.EitherValues
+import org.scalatest.{EitherValues, ScalaTestVersion}
 import play.api.Application
 import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDate
+import java.time.{LocalDate, ZoneId}
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 
@@ -149,6 +151,69 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
             ))
 
         connector.getPeriodsAndOutstandingAmounts().futureValue mustBe Left(UnexpectedResponseStatus(BAD_REQUEST, ""))
+      }
+    }
+  }
+
+  ".getVatReturnWithFinancialData" - {
+    val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+      .withLocale(Locale.UK)
+      .withZone(ZoneId.systemDefault())
+
+    val commencementDate = LocalDate.now()
+    val url = s"$baseUrl/charge-history/${dateTimeFormatter.format(commencementDate)}"
+
+    val vatReturnWithFinancialData =
+      VatReturnWithFinancialData(
+        completeVatReturn,
+        Some(Charge(period, BigDecimal(100), BigDecimal(100), BigDecimal(100))),
+        Some(100L)
+      )
+    val responseJson = Json.toJson(Seq(vatReturnWithFinancialData))
+
+    "must return a Some(vatReturnWithFinancialData) when successful" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getVatReturnWithFinancialData(commencementDate).futureValue mustBe Right(ScalaTestVersion(vatReturnWithFinancialData))
+      }
+    }
+
+    "must return invalid response when invlaid json returned" in {
+      val responseJson = Json.toJson(Period(2021, Q3))
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getVatReturnWithFinancialData(commencementDate).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return unexpected response if response code is not OK" in {
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(CREATED)
+            ))
+
+        connector.getVatReturnWithFinancialData(commencementDate).futureValue
+          .mustBe(Left(UnexpectedResponseStatus(CREATED, "")))
       }
     }
   }

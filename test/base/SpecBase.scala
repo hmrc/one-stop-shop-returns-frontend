@@ -97,7 +97,7 @@ trait SpecBase
         Vrn("063407423"),
         Period("2086", "Q3").get,
         ReturnReference("XI/XI063407423/Q3.2086"),
-        PaymentReference("XI063407423Q386"),
+        PaymentReference("NI063407423Q386"),
         None,
         None,
         List(SalesToCountry(Country("LT",
