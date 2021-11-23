@@ -38,6 +38,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def requireData: DataRequiredAction
   def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
   def checkCorrectionsToggle: CheckCorrectionsToggleFilterProvider
+  def checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -46,7 +47,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     auth andThen getRegistration
 
   def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
-    auth andThen getRegistration andThen getData(period) andThen checkCommencementDate() andThen checkReturn(period)
+    auth andThen getRegistration andThen getData(period) andThen checkCommencementDate() andThen checkReturn(period) andThen checkMostOverdueReturn(period)
 
   def authAndGetData(period: Period): ActionBuilder[DataRequest, AnyContent] =
     authAndGetOptionalData(period) andThen requireData
@@ -71,5 +72,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,
                                                                requirePreviousReturns:  CheckSubmittedReturnsFilterProvider,
-                                                               checkCorrectionsToggle: CheckCorrectionsToggleFilterProvider
-                                                             ) extends AuthenticatedControllerComponents
+                                                               checkCorrectionsToggle: CheckCorrectionsToggleFilterProvider,
+                                                               checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider
+                                                            ) extends AuthenticatedControllerComponents
