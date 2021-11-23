@@ -17,11 +17,14 @@
 package controllers
 
 import connectors.ReturnStatusConnector
+import connectors.ReturnStatusesHttpParser.ReturnStatusesResponse
 import connectors.financialdata.FinancialDataConnector
+import connectors.financialdata.VatReturnWithFinancialDataHttpParser.VatReturnWithFinancialDataResponse
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.SubmissionStatus
 import models.financialdata.VatReturnWithFinancialData
+import models.requests.RegistrationRequest
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -31,8 +34,9 @@ import views.html.IndexView
 
 import java.time.Clock
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
+//noinspection ScalaStyle
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        returnStatusConnector: ReturnStatusConnector,
@@ -48,26 +52,17 @@ class YourAccountController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-
-      val results = for {
-        availablePeriodsWithStatus <- returnStatusConnector.listStatuses(request.registration.commencementDate)
-        vatReturnsWithFinancialData <- financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate)
-      } yield (availablePeriodsWithStatus, vatReturnsWithFinancialData)
+      val results = getPeriodsAndFinancialData()
 
       results.map {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData)) =>
-          val filteredPeriodsWithOutstandingAmounts = financialDataService
-            .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData, None)
-            .map(vatReturnWithfinancialData => vatReturnWithfinancialData.vatOwed match {
-              case Some(vatOwed) => vatReturnWithfinancialData.copy(vatOwed = Some(vatOwed))
-              case _ =>
-                vatReturnWithfinancialData.copy(
-                  vatOwed = Some((vatReturnSalesService.getTotalVatOnSales(vatReturnWithfinancialData.vatReturn, None) * 100).toLong)
-                )
-            })
-          val paymentError = filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty)
-          val duePeriodsWithOutstandingAmounts = filteredPeriodsWithOutstandingAmounts.filterNot(_.vatReturn.period.isOverdue(clock))
-          val overduePeriodsWithOutstandingAmounts = filteredPeriodsWithOutstandingAmounts.filter(_.vatReturn.period.isOverdue(clock))
+          val filteredPeriodsWithOutstandingAmounts =
+            getFilteredPeriodsWithOutstandingAmounts(vatReturnsWithFinancialData)
+          val duePeriodsWithOutstandingAmounts =
+            filteredPeriodsWithOutstandingAmounts.filterNot(_.vatReturn.period.isOverdue(clock))
+          val overduePeriodsWithOutstandingAmounts =
+            filteredPeriodsWithOutstandingAmounts.filter(_.vatReturn.period.isOverdue(clock))
+
           Ok(view(
             request.registration.registeredCompanyName,
             request.vrn.vrn,
@@ -79,7 +74,7 @@ class YourAccountController @Inject()(
               .map(_.period),
             duePeriodsWithOutstandingAmounts,
             overduePeriodsWithOutstandingAmounts,
-            paymentError = paymentError
+            filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty)
           ))
         case (Right(availablePeriodsWithStatus), Left(error)) =>
           logger.warn(s"There was an error with getting payment information $error")
@@ -106,6 +101,28 @@ class YourAccountController @Inject()(
           logger.error(s"there was an error getting periods with outstanding amounts $error")
           throw new Exception(error.toString)
       }
+  }
 
+  private def getFilteredPeriodsWithOutstandingAmounts(vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData]) = {
+    financialDataService
+      .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData, None)
+      .map(vatReturnWithFinancialData =>
+        vatReturnWithFinancialData.vatOwed match {
+          case Some(_) => vatReturnWithFinancialData //.copy(vatOwed = Some(vatOwed)) don't think we need this.
+          case _ =>
+            vatReturnWithFinancialData.copy(
+              vatOwed = Some(
+                (vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, None) * 100).toLong
+              )
+            )
+        }
+      )
+  }
+
+  private def getPeriodsAndFinancialData()(implicit request: RegistrationRequest[AnyContent] ) = {
+    for {
+      availablePeriodsWithStatus <- returnStatusConnector.listStatuses(request.registration.commencementDate)
+      vatReturnsWithFinancialData <- financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate)
+    } yield (availablePeriodsWithStatus, vatReturnsWithFinancialData)
   }
 }

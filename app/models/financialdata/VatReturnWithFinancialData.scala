@@ -42,7 +42,6 @@ case class VatReturnWithFinancialData(vatReturn: VatReturn, charge: Option[Charg
 
 object VatReturnWithFinancialData {
   implicit val format: Format[VatReturnWithFinancialData] = Json.format[VatReturnWithFinancialData]
-
 }
 
 
