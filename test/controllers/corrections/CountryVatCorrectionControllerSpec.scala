@@ -237,7 +237,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
 
         val error = doc.getElementsByClass("govuk-error-summary__body")
         error.size() mustEqual 1
-        error.get(0).text() mustEqual "The correction value must be more than £-300"
+        error.get(0).text() mustEqual "The correction value cannot be less than £-300"
       }
     }
 
