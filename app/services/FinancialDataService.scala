@@ -27,13 +27,15 @@ class FinancialDataService @Inject()(vatReturnSalesService: VatReturnSalesServic
                                     vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData],
                                     maybeCorrectionPayload: Option[CorrectionPayload]
                                   ): Seq[VatReturnWithFinancialData] = {
-    vatReturnsWithFinancialData.filter { vatReturnWithFinancialData =>
-      val hasChargeWithOutstanding = vatReturnWithFinancialData.charge.exists(_.outstandingAmount > 0)
-      val expectingCharge = vatReturnWithFinancialData.charge.isEmpty &&
-        vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, maybeCorrectionPayload) > 0
+    vatReturnsWithFinancialData.filter {
+      vatReturnWithFinancialData =>
+        val hasChargeWithOutstanding =
+          vatReturnWithFinancialData.charge.exists(_.outstandingAmount > 0)
+        val expectingCharge =
+          vatReturnWithFinancialData.charge.isEmpty &&
+          vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, maybeCorrectionPayload) > 0
 
-      hasChargeWithOutstanding || expectingCharge
+        hasChargeWithOutstanding || expectingCharge
     }
   }
-
 }
