@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers, VatRate}
+import models.{CheckFinalInnerLoopMode, CheckInnerLoopMode, CheckMode, CheckSecondInnerLoopMode, CheckSecondLoopMode, CheckThirdInnerLoopMode, CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers, VatRate}
 import pages.VatOnSalesFromEuPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
@@ -31,18 +31,22 @@ object VatOnSalesFromEuSummary  {
   def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index, vatRate: VatRate, currentMode: Mode)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).map {
       answer =>
-        val newMode = if(currentMode == NormalMode) CheckLoopMode else currentMode
-
+        val newMode = currentMode match {
+          case NormalMode => CheckInnerLoopMode
+          case CheckSecondLoopMode => CheckSecondInnerLoopMode
+          case CheckThirdLoopMode => CheckThirdInnerLoopMode
+          case CheckMode => CheckFinalInnerLoopMode
+        }
         SummaryListRowViewModel(
-          key     = "vatOnSalesFromEu.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(answer.amount))),
-          actions = Seq(
-            ActionItemViewModel(
-              "site.change",
-              routes.VatOnSalesFromEuController.onPageLoad(newMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
-            )
-            .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden", vatRate.rateForDisplay))
-          )
-        )
+                key     = "vatOnSalesFromEu.checkYourAnswersLabel",
+                value   = ValueViewModel(HtmlContent(currencyFormat(answer.amount))),
+                actions = Seq(
+                  ActionItemViewModel(
+                    "site.change",
+                    routes.VatOnSalesFromEuController.onPageLoad(newMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
+                  )
+                  .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden", vatRate.rateForDisplay))
+                )
+              )
     }
 }

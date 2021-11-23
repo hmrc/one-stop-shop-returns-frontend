@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.VatOnSalesChoice.Standard
-import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, NormalMode, VatOnSales, VatRate}
+import models.{CheckFinalInnerLoopMode, CheckInnerLoopMode, CheckLoopMode, CheckMode, CheckSecondInnerLoopMode, CheckSecondLoopMode, CheckThirdInnerLoopMode, CheckThirdLoopMode, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
@@ -71,7 +71,43 @@ class NetValueOfSalesFromEuPageSpec extends PageBehaviours {
           .mustEqual(routes.VatOnSalesFromEuController.onPageLoad(CheckThirdLoopMode, period, index, index, index))
       }
     }
-    
+
+    "must navigate in Check Inner Loop mode" - {
+
+      "to VAT on sales from EU" in {
+
+        NetValueOfSalesFromEuPage(index, index, index).navigate(CheckInnerLoopMode, emptyUserAnswers)
+          .mustEqual(routes.VatOnSalesFromEuController.onPageLoad(CheckInnerLoopMode, period, index, index, index))
+      }
+    }
+
+    "must navigate in Check Second Inner Loop mode" - {
+
+      "to VAT on sales from EU" in {
+
+        NetValueOfSalesFromEuPage(index, index, index).navigate(CheckSecondInnerLoopMode, emptyUserAnswers)
+          .mustEqual(routes.VatOnSalesFromEuController.onPageLoad(CheckSecondInnerLoopMode, period, index, index, index))
+      }
+    }
+
+    "must navigate in Check Third Inner Loop mode" - {
+
+      "to VAT on sales from EU" in {
+
+        NetValueOfSalesFromEuPage(index, index, index).navigate(CheckThirdInnerLoopMode, emptyUserAnswers)
+          .mustEqual(routes.VatOnSalesFromEuController.onPageLoad(CheckThirdInnerLoopMode, period, index, index, index))
+      }
+    }
+
+    "must navigate in Check Final Inner Loop mode" - {
+
+      "to VAT on sales from EU" in {
+
+        NetValueOfSalesFromEuPage(index, index, index).navigate(CheckFinalInnerLoopMode, emptyUserAnswers)
+          .mustEqual(routes.VatOnSalesFromEuController.onPageLoad(CheckFinalInnerLoopMode, period, index, index, index))
+      }
+    }
+
     "must remove VAT on sales for the same index when set" in {
 
       val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value

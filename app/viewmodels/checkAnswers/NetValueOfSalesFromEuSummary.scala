@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers, VatRate}
+import models.{CheckFinalInnerLoopMode, CheckInnerLoopMode, CheckMode, CheckSecondInnerLoopMode, CheckSecondLoopMode, CheckThirdInnerLoopMode, CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers, VatRate}
 import pages.NetValueOfSalesFromEuPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -31,7 +31,12 @@ object NetValueOfSalesFromEuSummary  {
   def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index, vatRate: VatRate, currentMode: Mode)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(NetValueOfSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).map {
       answer =>
-        val newMode = if(currentMode == NormalMode) CheckLoopMode else currentMode
+        val newMode = currentMode match {
+          case NormalMode => CheckInnerLoopMode
+          case CheckSecondLoopMode => CheckSecondInnerLoopMode
+          case CheckThirdLoopMode => CheckThirdInnerLoopMode
+          case CheckMode => CheckFinalInnerLoopMode
+        }
         SummaryListRowViewModel(
           key     = "netValueOfSalesFromEu.checkYourAnswersLabel",
           value   = ValueViewModel(HtmlContent(currencyFormat(answer))),

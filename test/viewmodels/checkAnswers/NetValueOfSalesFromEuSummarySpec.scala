@@ -18,10 +18,9 @@ package viewmodels.checkAnswers
 
 import base.SpecBase
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Country, Mode, NormalMode, VatRate}
+import models.{CheckFinalInnerLoopMode, CheckInnerLoopMode, CheckMode, CheckSecondInnerLoopMode, CheckSecondLoopMode, CheckThirdInnerLoopMode, CheckThirdLoopMode, Mode, NormalMode, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.NetValueOfSalesFromEuPage
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -50,7 +49,7 @@ class NetValueOfSalesFromEuSummarySpec extends SpecBase {
       val expectedResult = SummaryListRowViewModel(
         "netValueOfSalesFromEu.checkYourAnswersLabel",
         ValueViewModel(HtmlContent("&pound;100")),
-        expectedActionWithMode(CheckLoopMode)
+        expectedActionWithMode(CheckInnerLoopMode)
       )
 
       result mustBe Some(expectedResult)
@@ -63,7 +62,7 @@ class NetValueOfSalesFromEuSummarySpec extends SpecBase {
       val expectedResult = SummaryListRowViewModel(
         "netValueOfSalesFromEu.checkYourAnswersLabel",
         ValueViewModel(HtmlContent("&pound;100")),
-        expectedActionWithMode(CheckMode)
+        expectedActionWithMode(CheckFinalInnerLoopMode)
       )
 
       result mustBe Some(expectedResult)
@@ -76,7 +75,7 @@ class NetValueOfSalesFromEuSummarySpec extends SpecBase {
       val expectedResult = SummaryListRowViewModel(
         "netValueOfSalesFromEu.checkYourAnswersLabel",
         ValueViewModel(HtmlContent("&pound;100")),
-        expectedActionWithMode(CheckSecondLoopMode)
+        expectedActionWithMode(CheckSecondInnerLoopMode)
       )
 
       result mustBe Some(expectedResult)
@@ -89,7 +88,7 @@ class NetValueOfSalesFromEuSummarySpec extends SpecBase {
       val expectedResult = SummaryListRowViewModel(
         "netValueOfSalesFromEu.checkYourAnswersLabel",
         ValueViewModel(HtmlContent("&pound;100")),
-        expectedActionWithMode(CheckThirdLoopMode)
+        expectedActionWithMode(CheckThirdInnerLoopMode)
       )
 
       result mustBe Some(expectedResult)

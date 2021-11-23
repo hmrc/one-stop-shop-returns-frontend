@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.VatOnSalesChoice.Standard
-import models.{CheckMode, Index, NormalMode, VatOnSales, VatRate}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, Index, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
@@ -50,6 +50,24 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
           .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, emptyUserAnswers.period, index, Index(0)))
       }
     }
+
+    "must navigate in Check Loop mode" - {
+
+        "to Net Value of Sales" in {
+
+          VatRatesFromNiPage(index).navigate(CheckLoopMode, emptyUserAnswers)
+            .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckLoopMode, emptyUserAnswers.period, index, Index(0)))
+        }
+      }
+
+    "must navigate in Check Second Loop mode" - {
+
+        "to Net Value of Sales" in {
+
+          VatRatesFromNiPage(index).navigate(CheckSecondLoopMode, emptyUserAnswers)
+            .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckSecondLoopMode, emptyUserAnswers.period, index, Index(0)))
+        }
+      }
 
     "cleanup" - {
       val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
