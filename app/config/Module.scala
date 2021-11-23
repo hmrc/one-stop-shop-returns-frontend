@@ -19,18 +19,13 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions._
 
-import java.time.{Clock, Instant, ZoneId, ZoneOffset}
+import java.time.{Clock, ZoneOffset}
 
 class Module extends AbstractModule {
 
   override def configure(): Unit = {
     bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(
-      Clock.fixed(
-        Instant.parse("2022-10-07T12:00:00.00Z"),
-        ZoneId.of("Australia/Melbourne")
-      )
-    )
+    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
     bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
   }
 }
