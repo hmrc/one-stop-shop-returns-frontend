@@ -48,7 +48,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   private val vatOwed = (charge.outstandingAmount * 100).toLong
   private val vatOwed2 = (charge2.outstandingAmount * 100).toLong
 
-  private val vatReturnWithFinancialData = VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed))
+  private val vatReturnWithFinancialData = VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed), None)
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
@@ -74,7 +74,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed))),
+          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed), None)),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -140,7 +140,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, None, Some(66666))),
+          Seq(VatReturnWithFinancialData(completeVatReturn, None, Some(66666), None)),
           displayBanner = true
         )(request, messages(application)).toString
       }
@@ -167,7 +167,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, None, Some(0))),
+          Seq(VatReturnWithFinancialData(completeVatReturn, None, Some(0), None)),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -185,7 +185,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
           vatReturnWithFinancialData,
-          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), Some(vatOwed2))
+          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), Some(vatOwed2), None)
         ))))
 
       running(application) {
@@ -195,8 +195,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         val vatReturnsWithFinancialData = List(
-          VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed)),
-          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), Some(vatOwed2))
+          VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed), None),
+          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), Some(vatOwed2), None)
         )
 
         status(result) mustEqual OK

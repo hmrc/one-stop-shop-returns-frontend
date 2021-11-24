@@ -17,9 +17,7 @@
 package controllers
 
 import connectors.ReturnStatusConnector
-import connectors.ReturnStatusesHttpParser.ReturnStatusesResponse
 import connectors.financialdata.FinancialDataConnector
-import connectors.financialdata.VatReturnWithFinancialDataHttpParser.VatReturnWithFinancialDataResponse
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.SubmissionStatus
@@ -33,7 +31,7 @@ import views.html.IndexView
 
 import java.time.Clock
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 //noinspection ScalaStyle
 class YourAccountController @Inject()(
@@ -111,7 +109,7 @@ class YourAccountController @Inject()(
           case _ =>
             vatReturnWithFinancialData.copy(
               vatOwed = Some(
-                (vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, None) * 100).toLong
+                (vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, vatReturnWithFinancialData.corrections) * 100).toLong
               )
             )
         }

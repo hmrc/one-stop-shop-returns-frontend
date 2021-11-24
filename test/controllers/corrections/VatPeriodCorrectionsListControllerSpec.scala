@@ -31,7 +31,7 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Cou
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.corrections.{VatPeriodAvailableCorrectionsListView, VatPeriodCorrectionsListView}
+import views.html.corrections.VatPeriodCorrectionsListView
 
 import scala.concurrent.Future
 

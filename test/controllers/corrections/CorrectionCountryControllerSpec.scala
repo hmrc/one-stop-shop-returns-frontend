@@ -19,8 +19,7 @@ package controllers.corrections
 import base.SpecBase
 import connectors.VatReturnConnector
 import forms.corrections.CorrectionCountryFormProvider
-import models.Quarter.Q3
-import models.{Country, NormalMode, Period, UserAnswers}
+import models.{Country, NormalMode}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary

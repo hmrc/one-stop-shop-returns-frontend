@@ -18,9 +18,9 @@ package services
 
 import base.SpecBase
 import models.VatOnSalesChoice.Standard
-import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
+import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
+import models.domain._
 import models.{Country, VatOnSales}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate, VatRateType}
 
 class VatReturnSalesServiceSpec extends SpecBase {
 

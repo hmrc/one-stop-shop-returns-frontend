@@ -17,7 +17,6 @@
 package controllers
 
 import base.SpecBase
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import models.ReturnReference

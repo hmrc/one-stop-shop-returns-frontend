@@ -17,8 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Country, NormalMode}
-import org.scalacheck.Arbitrary.arbitrary
+import models.{CheckMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
@@ -35,9 +34,6 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
 
       "to What is your correction for the total VAT payable page when answer is yes" in {
 
-        val country  = arbitrary[Country].sample.value
-        val countries = Seq(country)
-
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
 
         UndeclaredCountryCorrectionPage(index, index).navigate(NormalMode, answers)
@@ -45,8 +41,6 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
       }
 
       "to Correction country page when answer is no" in {
-
-        val country  = arbitrary[Country].sample.value
 
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), false).success.value
 
@@ -65,9 +59,6 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
 
       "to What is your correction for the total VAT payable page when answer is yes" in {
 
-        val country  = arbitrary[Country].sample.value
-        val countries = Seq(country)
-
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
 
         UndeclaredCountryCorrectionPage(index, index).navigate(CheckMode, answers)
@@ -75,8 +66,6 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
       }
 
       "to Correction country page when answer is no" in {
-
-        val country  = arbitrary[Country].sample.value
 
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), false).success.value
 

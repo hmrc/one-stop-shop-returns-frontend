@@ -18,10 +18,16 @@ package models.financialdata
 
 import models.PaymentState
 import models.PaymentState.{NoneDue, Paid, PaymentDue}
+import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import play.api.libs.json.{Json, OFormat}
 
-case class VatReturnWithFinancialData(vatReturn: VatReturn, charge: Option[Charge], vatOwed: Option[Long]){
+case class VatReturnWithFinancialData(
+                                       vatReturn: VatReturn,
+                                       charge: Option[Charge],
+                                       vatOwed: Option[Long],
+                                       corrections: Option[CorrectionPayload]
+                                     ){
 
   val showPayNow: Boolean = (vatOwed.isDefined && vatOwed.getOrElse(0L) > 0L) &&
     (charge.isEmpty || charge.exists(c => c.outstandingAmount > 0))

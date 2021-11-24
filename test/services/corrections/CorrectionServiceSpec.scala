@@ -19,18 +19,18 @@ package services.corrections
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
+import models.Quarter.{Q1, Q2}
+import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
 import models.requests.corrections.CorrectionRequest
 import models.{Country, DataMissingError, Period}
-import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
-import models.Quarter.{Q1, Q2}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections._
-import services.PeriodService
-import org.mockito.Mockito._
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery}
+import services.PeriodService
 
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 

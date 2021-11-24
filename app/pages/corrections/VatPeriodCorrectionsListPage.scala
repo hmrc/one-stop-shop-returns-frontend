@@ -19,8 +19,7 @@ package pages.corrections
 import controllers.corrections.{routes => correctionRoutes}
 import controllers.routes
 import models.{Index, Mode, UserAnswers}
-import pages.{Page, QuestionPage}
-import play.api.libs.json.JsPath
+import pages.Page
 import play.api.mvc.Call
 import queries.corrections.DeriveNumberOfCorrectionPeriods
 

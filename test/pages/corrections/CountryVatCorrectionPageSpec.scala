@@ -17,8 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Country, NormalMode}
-import org.scalacheck.Arbitrary.arbitrary
+import models.{CheckMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class CountryVatCorrectionPageSpec extends PageBehaviours {

@@ -18,16 +18,15 @@ package controllers
 
 import base.SpecBase
 import cats.data.Validated.Valid
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
+import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.DataRequest
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import models.{Country, NormalMode, TotalVatToCountry}
-import models.corrections.CorrectionPayload
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -35,7 +34,7 @@ import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import pages.{CheckYourAnswersPage, SoldGoodsFromEuPage, SoldGoodsFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
