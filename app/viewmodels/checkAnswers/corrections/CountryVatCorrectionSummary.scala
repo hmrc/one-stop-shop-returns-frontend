@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckLoopMode, CheckMode, Index, Mode, NormalMode, UserAnswers}
+import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers}
 import pages.corrections.CountryVatCorrectionPage
 import play.api.i18n.Messages
 import play.twirl.api.Html
@@ -40,6 +40,7 @@ object CountryVatCorrectionSummary {
             ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController
               .onPageLoad(newMode, answers.period, periodIndex, countryIndex).url)
               .withVisuallyHiddenText(messages("countryVatCorrection.change.hidden"))
+              .withAttribute(("id", "change-correction-amount"))
           )
         )
     }

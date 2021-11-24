@@ -34,6 +34,8 @@ class TotalEUNetValueOfSalesSummarySpec extends SpecBase {
       "site.change",
       routes.SalesFromEuListController.onPageLoad(CheckMode, completeUserAnswers.period).url)
       .withVisuallyHiddenText("soldGoodsFromEu.changeEUSales.hidden")
+      .withAttribute(("id", "change-sales-excluding-vat-eu"))
+
   )
 
   "TotalEUNetValueOfSalesSummary" - {
