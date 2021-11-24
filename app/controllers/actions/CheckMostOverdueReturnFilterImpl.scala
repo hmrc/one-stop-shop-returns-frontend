@@ -40,11 +40,15 @@ class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusCo
     connector.listStatuses(request.registration.commencementDate) flatMap {
       case Right(previousPeriods) =>
          val dueReturns = previousPeriods.filter(p => p.status != SubmissionStatus.Complete).sortBy(_.period.firstDay)
-        if(dueReturns.head.period == period) {
-        Future.successful(None)
+        if(dueReturns.nonEmpty){
+          if(dueReturns.head.period == period) {
+          Future.successful(None)
+          } else {
+            Future(Some(Redirect(routes.CannotStartReturnController.onPageLoad())))
+          }
         } else {
-          Future(Some(Redirect(routes.CannotStartReturnController.onPageLoad())))
-      }
+            Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())))
+        }
       case _    => Future.successful(Some(Redirect(routes.JourneyRecoveryController.onPageLoad())))
     }
   }

@@ -113,6 +113,29 @@ class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with B
         result.value mustEqual Redirect(routes.CannotStartReturnController.onPageLoad())
       }
     }
+
+    "must redirect to NoOtherPeriodsAvailable if there are no returns due" in {
+
+      when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
+        PeriodWithStatus(Period("2021", "Q2").success.value, SubmissionStatus.Complete),
+        PeriodWithStatus(Period("2021", "Q3").success.value, SubmissionStatus.Complete),
+        PeriodWithStatus(Period("2021", "Q4").success.value, SubmissionStatus.Complete),
+        PeriodWithStatus(Period("2022", "Q1").success.value, SubmissionStatus.Complete)
+      )))
+
+      val app = applicationBuilder(None)
+        .overrides(bind[ReturnStatusConnector].toInstance(mockConnector))
+        .build()
+
+      running(app) {
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(emptyUserAnswers))
+        val controller = new Harness(mockConnector)
+
+        val result = controller.callFilter(request).futureValue
+
+        result.value mustEqual Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())
+      }
+    }
   }
 
 }

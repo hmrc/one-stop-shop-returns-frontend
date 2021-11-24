@@ -328,7 +328,7 @@ vatOnSalesFromEu.hint = For example, £600 or £193.54.
 noOtherPeriodsAvailable.title = You cannot start returns for other periods yet
 noOtherPeriodsAvailable.heading = You cannot start returns for other periods yet
 noOtherPeriodsAvailable.label = You can only start returns for periods that have ended.
-noOtherPeriodsAvailable.submit = Back to your accountnoOtherPeriodsAvailable.title = You cannot start returns for other periods yet
+noOtherPeriodsAvailable.submit = Back to your account
 
 cannotStartReturn.title = You cannot start this return yet
 cannotStartReturn.heading = You cannot start this return yet
