@@ -36,6 +36,7 @@ object TotalNIVatOnSalesSummary extends CurrencyFormatter {
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period).url)
               .withVisuallyHiddenText(messages("soldGoodsFromNi.changeNIVAT.hidden"))
+              .withAttribute(("id", "change-vat-charged-ni"))
           )
         )
     }

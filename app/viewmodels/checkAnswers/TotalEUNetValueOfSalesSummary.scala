@@ -36,6 +36,8 @@ object TotalEUNetValueOfSalesSummary extends CurrencyFormatter {
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesFromEuListController.onPageLoad(CheckMode, answers.period).url)
               .withVisuallyHiddenText(messages("soldGoodsFromEu.changeEUSales.hidden"))
+              .withAttribute(("id", "change-sales-excluding-vat-eu"))
+
           )
         )
     }

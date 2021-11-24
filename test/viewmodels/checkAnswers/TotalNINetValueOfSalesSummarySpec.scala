@@ -34,6 +34,7 @@ class TotalNINetValueOfSalesSummarySpec extends SpecBase {
       "site.change",
       routes.SalesFromNiListController.onPageLoad(CheckMode, completeSalesFromNIUserAnswers.period).url)
       .withVisuallyHiddenText("soldGoodsFromNi.changeNISales.hidden")
+      .withAttribute(("id", "change-sales-excluding-vat-ni"))
   )
 
   "TotalNetValueOfSalesFromNiSummary" - {

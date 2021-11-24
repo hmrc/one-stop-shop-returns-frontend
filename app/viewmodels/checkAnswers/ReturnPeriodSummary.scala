@@ -33,6 +33,7 @@ object ReturnPeriodSummary {
       actions = Seq(
         ActionItemViewModel("site.change", routes.StartReturnController.onPageLoad(userAnswers.period).url)
           .withVisuallyHiddenText(messages("startReturn.change.hidden"))
+          .withAttribute(("id", "change-return-period"))
       )))
   }
 }

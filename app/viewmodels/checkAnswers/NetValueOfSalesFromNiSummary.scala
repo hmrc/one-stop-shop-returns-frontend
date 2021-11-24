@@ -38,6 +38,7 @@ object NetValueOfSalesFromNiSummary  {
           actions = Seq(
             ActionItemViewModel("site.change", routes.NetValueOfSalesFromNiController.onPageLoad(CheckLoopMode, answers.period, countryIndex, vatRateIndex).url)
               .withVisuallyHiddenText(messages("netValueOfSalesFromNi.change.hidden", vatRate.rateForDisplay))
+              .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent"))
           )
         )
     }
