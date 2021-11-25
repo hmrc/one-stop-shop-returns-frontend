@@ -32,7 +32,8 @@ class VatReturnWithFinancialDataSpec extends AnyFreeSpec
     "is true when" - {
 
       "the return is not nil and there is an outstanding charge" in {
-        val returnWithData = VatReturnWithFinancialData(completeVatReturn, Some(outstandingCharge), Some(vatAmount), None)
+        val returnWithData = VatReturnWithFinancialData(
+          completeVatReturn, Some(outstandingCharge), Some(vatAmount), None)
         returnWithData.showPayNow mustBe true
         returnWithData.paymentState mustBe PaymentDue
       }
@@ -44,7 +45,9 @@ class VatReturnWithFinancialDataSpec extends AnyFreeSpec
       }
 
       "the return is not nil and there is an outstanding charge and a correction" in {
-        val returnWithData = VatReturnWithFinancialData(completeVatReturn, Some(outstandingCharge), Some(vatAmount), None)
+        val returnWithData = VatReturnWithFinancialData(
+          completeVatReturn, Some(outstandingCharge), Some(vatAmount), Some(emptyCorrectionPayload)
+        )
         returnWithData.showPayNow mustBe true
         returnWithData.paymentState mustBe PaymentDue
       }
@@ -74,7 +77,7 @@ class VatReturnWithFinancialDataSpec extends AnyFreeSpec
         }
       }
 
-      "the vat owed is none and there is no outstanding charge" in {
+      "the vat owed is none and there is no outstanding charge and no correction" in {
         val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, None, None)
         returnWithData.showPayNow mustBe false
         returnWithData.paymentState mustBe NoneDue
