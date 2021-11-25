@@ -517,7 +517,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             Seq.empty,
             Some(secondPeriod),
-            Seq(vatReturnWithFinancialData),
+            Seq(vatReturnWithFinancialData.copy(vatOwed = Some(100000L))),
             Seq.empty,
             paymentError = true
           )(request, messages(application)).toString
