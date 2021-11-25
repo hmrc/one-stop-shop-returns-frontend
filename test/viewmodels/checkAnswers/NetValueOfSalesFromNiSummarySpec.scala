@@ -37,7 +37,8 @@ class NetValueOfSalesFromNiSummarySpec extends SpecBase {
     ActionItemViewModel(
       "site.change",
       routes.NetValueOfSalesFromNiController.onPageLoad(mode, answers.period, index, index).url
-    ).withVisuallyHiddenText("netValueOfSalesFromNi.change.hidden"))
+    ).withVisuallyHiddenText("netValueOfSalesFromNi.change.hidden")
+    .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent")))
 
 
   "NetValueOfSalesFromNiSummary" - {

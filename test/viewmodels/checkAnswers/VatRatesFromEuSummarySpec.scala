@@ -18,9 +18,9 @@ package viewmodels.checkAnswers
 
 import base.SpecBase
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Mode, NormalMode, VatOnSales, VatOnSalesChoice, VatRate}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Mode, NormalMode, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
-import pages.{VatOnSalesFromEuPage, VatRatesFromEuPage}
+import pages.VatRatesFromEuPage
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -36,6 +36,8 @@ class VatRatesFromEuSummarySpec extends SpecBase {
   private def expectedActionWithMode(mode: Mode) = Seq(
     ActionItemViewModel("site.change", routes.VatRatesFromEuController.onPageLoad(mode, answers.period, index, index).url)
       .withVisuallyHiddenText("vatRatesFromEu.change.hidden")
+      .withAttribute(("id", "change-vat-rates"))
+
   )
 
 

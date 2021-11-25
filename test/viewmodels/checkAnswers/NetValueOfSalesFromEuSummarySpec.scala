@@ -37,7 +37,9 @@ class NetValueOfSalesFromEuSummarySpec extends SpecBase {
     ActionItemViewModel(
       "site.change",
       routes.NetValueOfSalesFromEuController.onPageLoad(mode, answers.period, index, index, index).url
-    ).withVisuallyHiddenText("netValueOfSalesFromEu.change.hidden"))
+    ).withVisuallyHiddenText("netValueOfSalesFromEu.change.hidden")
+      .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent"))
+  )
 
 
   "NetValueOfSalesFromEuSummary" - {

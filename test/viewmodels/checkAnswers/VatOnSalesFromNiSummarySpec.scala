@@ -37,7 +37,9 @@ class VatOnSalesFromNiSummarySpec extends SpecBase {
     ActionItemViewModel(
       "site.change",
       routes.VatOnSalesFromNiController.onPageLoad(mode, answers.period, index, index).url
-    ).withVisuallyHiddenText("vatOnSalesFromNi.change.hidden"))
+    ).withVisuallyHiddenText("vatOnSalesFromNi.change.hidden")
+      .withAttribute(("id", s"change-vat-on-sales-${vatRate.rate}-percent"))
+  )
 
 
   "VatOnSalesFromNiSummary" - {
