@@ -42,6 +42,7 @@ object VatOnSalesFromNiSummary  {
           actions = Seq(
             ActionItemViewModel("site.change", routes.VatOnSalesFromNiController.onPageLoad(newMode, answers.period, countryIndex, vatRateIndex).url)
               .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden", vatRate.rateForDisplay))
+              .withAttribute(("id", s"change-vat-on-sales-${vatRate.rate}-percent"))
           )
         )
     }

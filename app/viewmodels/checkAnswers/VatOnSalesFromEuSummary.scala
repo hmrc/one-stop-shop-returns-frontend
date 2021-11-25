@@ -46,6 +46,7 @@ object VatOnSalesFromEuSummary  {
                     routes.VatOnSalesFromEuController.onPageLoad(newMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
                   )
                   .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden", vatRate.rateForDisplay))
+                    .withAttribute(("id", s"change-vat-on-sales-${vatRate.rate}-percent"))
                 )
               )
     }

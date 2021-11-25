@@ -48,6 +48,7 @@ object VatRatesFromEuSummary  {
           actions = Seq(
             ActionItemViewModel("site.change", routes.VatRatesFromEuController.onPageLoad(newMode, answers.period, countryFromIndex, countryToIndex).url)
               .withVisuallyHiddenText(messages("vatRatesFromEu.change.hidden"))
+              .withAttribute(("id", "change-vat-rates"))
           )
         )
     }

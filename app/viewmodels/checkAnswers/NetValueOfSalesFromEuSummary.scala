@@ -46,6 +46,7 @@ object NetValueOfSalesFromEuSummary  {
               routes.NetValueOfSalesFromEuController.onPageLoad(newMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
             )
             .withVisuallyHiddenText(messages("netValueOfSalesFromEu.change.hidden", vatRate.rateForDisplay))
+              .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent"))
           )
         )
     }

@@ -88,14 +88,14 @@
                     }
                     case (Some(period), 0) => {
                         <p class="govuk-body">
-                            <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url">
+                            <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url" id="start-your-return">
                             @messages("index.yourReturns.startReturn")
                             </a>
                         </p>
                     }
                     case _ => {
                         <p class="govuk-body">
-                            <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(overduePeriods.head).url">
+                            <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(overduePeriods.head).url" id="start-your-return">
                             @messages("index.yourReturns.startReturn")
                             </a>
                         </p>
@@ -137,7 +137,7 @@
                                     </p>
                                     <p class="govuk-body">
                                         <a class="govuk-link"
-                                          href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, (charge.outstandingAmount * 100).toLong)">
+                                          href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, (charge.outstandingAmount * 100).toLong)" id="make-a-payment">
                                             @messages("index.payment.makeAPayment")
                                         </a>
                                     </p>
@@ -153,7 +153,7 @@
                                             </p>
                                             <p class="govuk-body">
                                                 <a class="govuk-link"
-                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatOwed)">
+                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatOwed)" id="make-a-payment">
                                                     @messages("index.payment.makeAPayment")
                                                 </a>
                                             </p>
@@ -167,7 +167,7 @@
                                             </p>
                                             <p class="govuk-body">
                                                 <a class="govuk-link"
-                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, 0L)">
+                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, 0L)" id="make-a-payment">
                                                     @messages("index.payment.makeAPayment")
                                                 </a>
                                             </p>
@@ -194,7 +194,7 @@
                                     </p>
                                     <p class="govuk-body">
                                         <a class="govuk-link"
-                                          href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, (charge.outstandingAmount * 100).toLong)">
+                                          href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, (charge.outstandingAmount * 100).toLong)" id="make-a-payment">
                                             @messages("index.payment.makeAPayment")
                                         </a>
                                     </p>
@@ -211,7 +211,7 @@
                                             </p>
                                             <p class="govuk-body">
                                                 <a class="govuk-link"
-                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatOwed)">
+                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatOwed)" id="make-a-payment">
                                                     @messages("index.payment.makeAPayment")
                                                 </a>
                                             </p>
@@ -226,7 +226,7 @@
                                             </p>
                                             <p class="govuk-body">
                                                 <a class="govuk-link"
-                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, 0L)">
+                                                  href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, 0L)" id="make-a-payment">
                                                     @messages("index.payment.makeAPayment")
                                                 </a>
                                             </p>
@@ -245,7 +245,7 @@
                 <h2 class="govuk-heading-m">@messages("index.history")</h2>
 
                 <p class="govuk-body">
-                    <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url">
+                    <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url" id="view-past-returns">
                     @messages("index.history.previousReturns")
                     </a>
                 </p>
