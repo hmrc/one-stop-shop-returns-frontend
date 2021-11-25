@@ -102,7 +102,7 @@ class YourAccountController @Inject()(
 
   private def getFilteredPeriodsWithOutstandingAmounts(vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData]) = {
     financialDataService
-      .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData, None)
+      .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData)
       .map(vatReturnWithFinancialData =>
         vatReturnWithFinancialData.vatOwed match {
           case Some(_) => vatReturnWithFinancialData //.copy(vatOwed = Some(vatOwed)) don't think we need this.

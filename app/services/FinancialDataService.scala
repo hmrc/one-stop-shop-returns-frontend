@@ -24,8 +24,7 @@ import javax.inject.Inject
 class FinancialDataService @Inject()(vatReturnSalesService: VatReturnSalesService) {
 
   def filterIfPaymentIsOutstanding(
-                                    vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData],
-                                    maybeCorrectionPayload: Option[CorrectionPayload]
+                                    vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData]
                                   ): Seq[VatReturnWithFinancialData] = {
     vatReturnsWithFinancialData.filter {
       vatReturnWithFinancialData =>
@@ -33,7 +32,10 @@ class FinancialDataService @Inject()(vatReturnSalesService: VatReturnSalesServic
           vatReturnWithFinancialData.charge.exists(_.outstandingAmount > 0)
         val expectingCharge =
           vatReturnWithFinancialData.charge.isEmpty &&
-          vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, maybeCorrectionPayload) > 0
+          vatReturnSalesService.getTotalVatOnSales(
+            vatReturnWithFinancialData.vatReturn,
+            vatReturnWithFinancialData.corrections
+          ) > 0
 
         hasChargeWithOutstanding || expectingCharge
     }

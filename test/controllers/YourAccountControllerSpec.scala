@@ -29,6 +29,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
@@ -450,7 +451,79 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false
           )(request, messages(application)).toString
 
-          verify(vatReturnSalesService, times(1)).getTotalVatOnSales(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
+          verify(vatReturnSalesService, times(1))
+            .getTotalVatOnSales(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
+        }
+      }
+
+      "when there is 1 nil return completed and payment is outstanding from a correction" in {
+
+        val instant = Instant.parse("2021-10-25T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService)
+          ).build()
+
+        val firstPeriod = Period(2021, Q3)
+        val secondPeriod = Period(2021, Q4)
+        val vatReturn = emptyVatReturn.copy(period = firstPeriod)
+
+        val completedCorrectionPayload: CorrectionPayload =
+          CorrectionPayload(
+            Vrn("063407423"),
+            Period("2086", "Q3").get,
+            List(PeriodWithCorrections(
+              firstPeriod,
+              List(Arbitrary.arbitrary[CorrectionToCountry].sample.value)
+            )),
+            Instant.ofEpochSecond(1630670836),
+            Instant.ofEpochSecond(1630670836)
+          )
+        val vatReturnWithFinancialData = VatReturnWithFinancialData(
+          vatReturn = vatReturn,
+          charge = None,
+          vatOwed = None,
+          corrections = Some(completedCorrectionPayload)
+        )
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
+            )))
+
+
+        when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
+          .thenReturn(Future.successful(Right(Seq(vatReturnWithFinancialData))))
+
+        when(vatReturnSalesService.getTotalVatOnSales(any(), any())) thenReturn BigDecimal(1000)
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq.empty,
+            Some(secondPeriod),
+            Seq(vatReturnWithFinancialData),
+            Seq.empty,
+            paymentError = true
+          )(request, messages(application)).toString
+
+          verify(vatReturnSalesService, times(2))
+            .getTotalVatOnSales(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
         }
       }
 

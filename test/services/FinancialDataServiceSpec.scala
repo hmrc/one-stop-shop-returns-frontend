@@ -59,7 +59,7 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
         "when no charge exists and has vat owed with no correction" in {
           when(mockVatReturnSalesService.getTotalVatOnSales(vatReturn, None)).thenReturn(vatOnSales)
 
-          val result = financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData), None)
+          val result = financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData))
 
           result mustBe Seq(vatReturnWithFinancialData)
           verify(mockVatReturnSalesService, times(1)).getTotalVatOnSales(vatReturn, None)
@@ -69,9 +69,11 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
           when(mockVatReturnSalesService.getTotalVatOnSales(vatReturn, Some(correctionPayload)))
             .thenReturn(vatOnSales)
 
+          val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, None, None, Some(correctionPayload))
+
           val result =
             financialDataService.filterIfPaymentIsOutstanding(
-              Seq(vatReturnWithFinancialData), Some(correctionPayload)
+              Seq(vatReturnWithFinancialData)
             )
 
           result mustBe Seq(vatReturnWithFinancialData)
@@ -81,7 +83,7 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
 
         "when charge exists with outstanding amount" in {
           val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, Some(notPaidCharge), None, None)
-          val result = financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData), None)
+          val result = financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData))
 
           result mustBe Seq(vatReturnWithFinancialData)
         }
@@ -95,13 +97,9 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
         val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, Some(fullyPaidCharge), Some(0L), None)
         val vatReturnWithFinancialData2 = VatReturnWithFinancialData(vatReturn2, Some(fullyPaidCharge), Some(0L), None)
 
-        val result =
-          financialDataService.filterIfPaymentIsOutstanding(
-            Seq(vatReturnWithFinancialData, vatReturnWithFinancialData2),
-            None
-          )
-
-        result mustBe Seq.empty
+        financialDataService.filterIfPaymentIsOutstanding(
+          Seq(vatReturnWithFinancialData, vatReturnWithFinancialData2)
+        ) mustBe Seq.empty
       }
 
       "should return all vatReturnWithFinancialDatas with outstanding amounts" in {
@@ -109,13 +107,9 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
         val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, Some(notPaidCharge), Some(1000L), None)
         val vatReturnWithFinancialData2 = VatReturnWithFinancialData(vatReturn2, Some(notPaidCharge), Some(1000L), None)
 
-        val result =
-          financialDataService.filterIfPaymentIsOutstanding(
-            Seq(vatReturnWithFinancialData, vatReturnWithFinancialData2),
-            None
-          )
-
-        result mustBe Seq(vatReturnWithFinancialData, vatReturnWithFinancialData2)
+        financialDataService.filterIfPaymentIsOutstanding(
+          Seq(vatReturnWithFinancialData, vatReturnWithFinancialData2)
+        ) mustBe Seq(vatReturnWithFinancialData, vatReturnWithFinancialData2)
       }
     }
 
@@ -124,7 +118,7 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
       "charge has been fully paid" in {
         val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, Some(fullyPaidCharge), Some(0), None)
 
-        val result = financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData), None)
+        val result = financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData))
 
         result mustBe Seq.empty
       }
@@ -132,7 +126,7 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
       "no charge exists and does not have vat owed" in {
         val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, Some(fullyPaidCharge), Some(0), None)
 
-        val result = financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData), None)
+        val result = financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData))
 
         result mustBe Seq.empty
       }

@@ -29,7 +29,7 @@ class Module extends AbstractModule {
     bind(classOf[Clock]).toInstance(
       Clock.fixed(
         ZonedDateTime.of(
-          2022, 4, 1, 1, 0, 0, 0, ZoneOffset.UTC
+          2022, 1, 1, 1, 0, 0, 0, ZoneOffset.UTC
         ).toInstant,
         ZoneId.of("Australia/Melbourne")
       )
