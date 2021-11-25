@@ -53,8 +53,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
   private val mockReturnStatusConnector = mock[ReturnStatusConnector]
 
-  private def vatCorrectionsListUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/2021-Q3/third-changeVatCorrectionsList/$index"
-  private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/2021-Q3/removePeriodCorrection/$index"
+  private def vatCorrectionsListUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/2021-Q3/third-change-vat-correction-list/$index"
+  private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/2021-Q3/remove-period-correction/$index"
   override def beforeEach(): Unit = {
     super.beforeEach()
     Mockito.reset(mockReturnStatusConnector)
