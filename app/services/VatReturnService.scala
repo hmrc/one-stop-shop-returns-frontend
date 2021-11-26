@@ -64,7 +64,7 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
       vatOwedToCountryOnPrevReturn <- getVatOwedToCountryOnReturn(country, period)
       correctionsForPeriod <- correctionService.getCorrectionsForPeriod(period)
     }yield{
-      val correctionsToCountry = correctionsForPeriod.filter(_.correctionCountry == country).map{_.countryVatCorrection}.sum
+      val correctionsToCountry = correctionsForPeriod.filter(_.correctionCountry == country).map{_.countryVatCorrection.getOrElse(BigDecimal(0))}.sum
       vatOwedToCountryOnPrevReturn + correctionsToCountry
     }
 

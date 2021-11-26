@@ -342,7 +342,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(simpleCompleteVatReturn))
-      when(correctionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(Seq(CorrectionToCountry(Country("LT", "Lithuania"), BigDecimal(10))))
+      when(correctionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(Seq(CorrectionToCountry(Country("LT", "Lithuania"), Some(BigDecimal(10)))))
 
       val result = vatReturnService.getLatestVatAmountForPeriodAndCountry(Country("LT", "Lithuania"), period)
 
@@ -356,7 +356,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       val vatReturnConnector = mock[VatReturnConnector]
       val correctionService = mock[CorrectionService]
       val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
-      when(correctionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(Seq(CorrectionToCountry(Country("LT", "Lithuania"), BigDecimal(10))))
+      when(correctionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(Seq(CorrectionToCountry(Country("LT", "Lithuania"), Some(BigDecimal(10)))))
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
 
       val result = vatReturnService.getLatestVatAmountForPeriodAndCountry(Country("LT", "Lithuania"), period)

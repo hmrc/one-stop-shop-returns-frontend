@@ -79,8 +79,8 @@ class SalesAtVatRateService @Inject()(config: FrontendAppConfig) {
       for {
         allCorrectionPeriods <- userAnswers.get(AllCorrectionPeriodsQuery).toSeq
         periodWithCorrections <- allCorrectionPeriods
-        countryCorrection <- periodWithCorrections.correctionsToCountry
-      } yield TotalVatToCountry(countryCorrection.correctionCountry, countryCorrection.countryVatCorrection)
+        countryCorrection <- periodWithCorrections.correctionsToCountry.filter(_.countryVatCorrection.isDefined)
+      } yield TotalVatToCountry(countryCorrection.correctionCountry, countryCorrection.countryVatCorrection.get)
     } else List.empty
 
     val vatOwedToEuCountries =

@@ -268,7 +268,7 @@ trait ModelGenerators {
       for {
         country <- arbitrary[Country]
         countryVatCorrection <- Gen.choose(BigDecimal(1), BigDecimal(999999))
-      } yield CorrectionToCountry(country, countryVatCorrection.setScale(2, RoundingMode.HALF_UP))
+      } yield CorrectionToCountry(country, Some(countryVatCorrection.setScale(2, RoundingMode.HALF_UP)))
     }
 
   implicit val arbitraryCorrection: Arbitrary[PeriodWithCorrections] =

@@ -229,7 +229,7 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
         correctionPeriod1,
         List(CorrectionToCountry(
           country3,
-          correctionAmount
+          Some(correctionAmount)
         ))
       ))
 
@@ -376,7 +376,7 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
           List(
             CorrectionToCountry(
             country3,
-            correctionAmount
+              Some(correctionAmount)
             )
           )
         ),
@@ -385,7 +385,7 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
           List(
             CorrectionToCountry(
               country4,
-              correctionAmount
+              Some(correctionAmount)
             )
           )
         )
