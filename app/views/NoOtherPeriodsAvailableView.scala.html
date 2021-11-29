@@ -30,5 +30,6 @@
     @govukButton(
         ButtonViewModel(messages("noOtherPeriodsAvailable.submit"))
                 .asLink(routes.YourAccountController.onPageLoad().url)
+                .withAttribute(("id", "back-to-your-account"))
     )
 }

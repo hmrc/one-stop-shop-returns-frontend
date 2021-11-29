@@ -34,6 +34,7 @@ class TotalEUVatOnSalesSummarySpec extends SpecBase {
       "site.change",
       routes.SalesFromEuListController.onPageLoad(CheckMode, completeUserAnswers.period).url)
       .withVisuallyHiddenText("soldGoodsFromEu.changeEUVAT.hidden")
+      .withAttribute(("id", "change-vat-charged-eu"))
   )
 
   "TotalEUVatOnSalesSummary" - {

@@ -25,6 +25,7 @@ import models.corrections.CorrectionPayload
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
+import models.requests.corrections.CorrectionRequest
 import models.{Country, Index, Period, Quarter, ReturnReference, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -140,6 +141,54 @@ trait SpecBase
         Instant.ofEpochSecond(1630670836),
         Instant.ofEpochSecond(1630670836))
 
+  val simpleCompleteVatReturn: VatReturn =
+    VatReturn(
+      Vrn("063407423"),
+      Period("2086", "Q3").get,
+      ReturnReference("XI/XI063407423/Q3.2086"),
+      PaymentReference("XI063407423Q386"),
+      None,
+      None,
+      List(SalesToCountry(Country("LT",
+        "Lithuania"),
+        List(SalesDetails(DomainVatRate(45.54,
+          DomainVatRateType.Reduced),
+          306338.71,
+          VatOnSales(Standard, 1000.00)),
+          SalesDetails(DomainVatRate(98.54,
+            DomainVatRateType.Reduced),
+            295985.50,
+            VatOnSales(Standard, 800.00)))),
+        SalesToCountry(Country("MT",
+          "Malta"),
+          List(SalesDetails(DomainVatRate(80.28,
+            DomainVatRateType.Standard),
+            357873.00,
+            VatOnSales(Standard, 191855.64))))),
+      List(SalesFromEuCountry(Country("DE", "Germany"),
+        Some(EuTaxIdentifier(EuTaxIdentifierType.Vat, "-1")),
+        List(SalesToCountry(Country("FI",
+          "Finland"),
+          List(SalesDetails(DomainVatRate(56.02,
+            DomainVatRateType.Standard),
+            543742.51,
+            VatOnSales(Standard, 801143.05)))))),
+        SalesFromEuCountry(Country("IE",
+          "Ireland"),
+          Some(EuTaxIdentifier(EuTaxIdentifierType.Other, "-2147483648")),
+          List(SalesToCountry(Country("CY",
+            "Republic of Cyprus"),
+            List(SalesDetails(DomainVatRate(98.97,
+              DomainVatRateType.Reduced),
+              356270.07,
+              VatOnSales(Standard, 24080.60)),
+              SalesDetails(DomainVatRate(98.92,
+                DomainVatRateType.Reduced),
+                122792.32,
+                VatOnSales(Standard, 554583.78))))))),
+      Instant.ofEpochSecond(1630670836),
+      Instant.ofEpochSecond(1630670836))
+
   val emptyVatReturn: VatReturn =
     VatReturn(
       Vrn("063407423"),
@@ -170,6 +219,13 @@ trait SpecBase
       Some(LocalDate.now()),
       Some(LocalDate.now().plusDays(1)),
       List.empty,
+      List.empty
+    )
+
+  val correctionRequest: CorrectionRequest =
+    CorrectionRequest(
+      Vrn("063407423"),
+      Period(2086, Q3),
       List.empty
     )
 

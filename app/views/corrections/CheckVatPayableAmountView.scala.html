@@ -1,0 +1,37 @@
+@*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this(
+    layout: templates.Layout,
+    govukSummaryList: GovukSummaryList,
+    govukButton: GovukButton
+)
+
+@(period: Period, summaryList: SummaryList, country: Country, mode: Mode, correctionPeriod: Period, periodIndex: Index)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title"))) {
+   <header class="hmrc-page-heading">
+    <h1 class="govuk-heading-xl">@messages("checkVatPayableAmount.heading")</h1>
+    <p class="govuk-caption-xl hmrc-caption-xl">@messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)</p>
+   </header>
+
+   @govukSummaryList(summaryList)
+
+
+   <p class="govuk-!-margin-bottom-9" style="margin-top:50px;">
+    <a class="govuk-button" href="@controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, period, periodIndex)" id="continue">@messages("site.continue")</a>
+   </p>
+}

@@ -14,33 +14,28 @@
  * limitations under the License.
  */
 
-package viewmodels.checkAnswers
+package viewmodels.checkAnswers.corrections
 
-import controllers.routes
 import models.{CheckMode, Index, UserAnswers}
-import pages.CountryOfConsumptionFromEuPage
+import pages.corrections.CountryVatCorrectionPage
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
+import play.twirl.api.Html
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object CountryOfConsumptionFromEuSummary  {
+object NewVatTotalSummary {
 
-  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CountryOfConsumptionFromEuPage(countryFromIndex, countryToIndex)).map {
+  def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index, originalAmount: BigDecimal)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)).map {
       answer =>
 
         SummaryListRowViewModel(
-          key     = "countryOfConsumptionFromEu.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlFormat.escape(answer.name).toString),
-          actions = Seq(
-            ActionItemViewModel(
-              "site.change",
-              routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex).url
-            )
-            .withVisuallyHiddenText(messages("countryOfConsumptionFromEu.change.hidden"))
+          key = "newVatTotal.checkYourAnswersLabel",
+          value = ValueViewModel(HtmlContent(Html(currencyFormat(answer + originalAmount)))),
+          actions = Seq.empty
           )
-        )
     }
 }

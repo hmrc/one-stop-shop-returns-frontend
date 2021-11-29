@@ -16,28 +16,24 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, Index, UserAnswers}
-import pages.corrections.RemovePeriodCorrectionPage
+import models.{Index, UserAnswers}
+import pages.corrections.CountryVatCorrectionPage
 import play.api.i18n.Messages
+import play.twirl.api.Html
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object RemovePeriodCorrectionSummary {
+object PreviousVatTotalSummary {
 
-  def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(RemovePeriodCorrectionPage(index)).map {
-      answer =>
+  def row(originalAmount: BigDecimal)(implicit messages: Messages): SummaryListRow =
 
-        val value = if (answer) "site.yes" else "site.no"
-
-        SummaryListRowViewModel(
-          key = "removePeriodCorrection.checkYourAnswersLabel",
-          value = ValueViewModel(value),
-          actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(CheckMode, answers.period, index).url)
-              .withVisuallyHiddenText(messages("removePeriodCorrection.change.hidden"))
+    SummaryListRowViewModel(
+          key = "previousVatTotal.checkYourAnswersLabel",
+          value = ValueViewModel(HtmlContent(Html(currencyFormat(originalAmount)))),
+          actions = Seq.empty
           )
-        )
-    }
+
 }

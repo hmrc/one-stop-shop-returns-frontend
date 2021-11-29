@@ -38,6 +38,7 @@ object SoldGoodsFromNiSummary  {
           actions = Seq(
             ActionItemViewModel("site.change", routes.SoldGoodsFromNiController.onPageLoad(CheckMode, answers.period).url)
               .withVisuallyHiddenText(messages("soldGoodsFromNi.changeSalesFromNI.hidden"))
+              .withAttribute(("id", "change-sales-made-from-ni"))
           )
         )
     }

@@ -18,8 +18,8 @@ package pages.corrections
 
 import controllers.routes
 import models.{Country, Index, Mode, UserAnswers}
-import pages.QuestionPage
 import pages.PageConstants._
+import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -32,9 +32,9 @@ case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) extend
    def navigate(mode: Mode, answers: UserAnswers, countries: Seq[Country]): Call = {
     answers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
       case Some(country) =>
-        if(countries.contains(country)){
+        if(countries.contains(country)) {
           controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(mode, answers.period, periodIndex, countryIndex)
-        }else{
+        } else {
           controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(mode, answers.period, periodIndex, countryIndex)}
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }

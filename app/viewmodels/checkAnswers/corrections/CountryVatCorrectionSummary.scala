@@ -16,25 +16,31 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, Index, UserAnswers}
+import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers}
 import pages.corrections.CountryVatCorrectionPage
 import play.api.i18n.Messages
+import play.twirl.api.Html
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
 object CountryVatCorrectionSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CountryVatCorrectionPage(Index(0), Index(0))).map {
+  def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index, currentMode: Mode)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(CountryVatCorrectionPage(periodIndex, countryIndex)).map {
       answer =>
+        val newMode = if(currentMode == NormalMode) CheckLoopMode else currentMode
 
         SummaryListRowViewModel(
           key = "countryVatCorrection.checkYourAnswersLabel",
-          value = ValueViewModel(answer.toString),
+          value = ValueViewModel(HtmlContent(Html(currencyFormat(answer)))),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, Index(0), Index(0)).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController
+              .onPageLoad(newMode, answers.period, periodIndex, countryIndex).url)
               .withVisuallyHiddenText(messages("countryVatCorrection.change.hidden"))
+              .withAttribute(("id", "change-correction-amount"))
           )
         )
     }

@@ -40,7 +40,7 @@
                 items = Country.euCountrySelectItems,
                 label = HmrcPageHeadingLabel(
                     content = messages("correctionCountry.heading"),
-                    caption = correctionPeriod.displayText
+                    caption = messages("correctionCountry.caption", correctionPeriod.displayText)
                 )
             )
             .withCssClass(Fixed20.toString)

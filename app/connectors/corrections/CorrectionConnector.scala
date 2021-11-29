@@ -35,4 +35,10 @@ class CorrectionConnector @Inject()(config: Configuration, httpClient: HttpClien
 
     httpClient.GET[CorrectionResponse](url)
   }
+
+  def getForCorrectionPeriod(period: Period)(implicit hc: HeaderCarrier): Future[CorrectionsForPeriodResponse] = {
+    val url = s"$baseUrl/corrections-for-period/${period.toString}"
+
+    httpClient.GET[CorrectionsForPeriodResponse](url)
+  }
 }

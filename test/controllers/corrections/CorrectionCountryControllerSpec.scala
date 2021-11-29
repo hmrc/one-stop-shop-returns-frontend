@@ -29,6 +29,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.corrections.CorrectionService
 import views.html.corrections.CorrectionCountryView
 
 import scala.concurrent.Future
@@ -83,7 +84,12 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CorrectionCountryPage(index, index), country).success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val mockService = mock[CorrectionService]
+      when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(bind[CorrectionService].toInstance(mockService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, correctionCountryRoute)
@@ -101,7 +107,9 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
+      val mockService = mock[CorrectionService]
 
+      when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
       val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
@@ -110,6 +118,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         applicationBuilder(userAnswers = Some(expectedAnswers2))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[CorrectionService].toInstance(mockService))
           .build()
 
       running(application) {
