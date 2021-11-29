@@ -20,7 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.WireMockHelper
 import models.corrections.CorrectionPayload
-import models.responses.NotFound
+import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
