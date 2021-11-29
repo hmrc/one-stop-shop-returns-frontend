@@ -16,7 +16,6 @@
 
 package services
 
-import models.corrections.CorrectionPayload
 import models.financialdata.VatReturnWithFinancialData
 
 import javax.inject.Inject
