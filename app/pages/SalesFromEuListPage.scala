@@ -24,7 +24,6 @@ import queries.DeriveNumberOfSalesFromEu
 
 case object SalesFromEuListPage extends Page {
 
-  // TODO: This navigation will need to change when we wire up the CountryOfEstablishment page etc.
   def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean, config: FrontendAppConfig): Call =
     if (addAnother) {
       answers.get(DeriveNumberOfSalesFromEu) match {

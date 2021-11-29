@@ -23,7 +23,6 @@ import queries.DeriveNumberOfSalesToEu
 
 case class SalesToEuListPage(index: Index) extends Page {
 
-  // TODO: This navigation will need to change when we wire up the CountryOfEstablishment page etc.
   def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call = {
     val newMode = if(mode == CheckThirdLoopMode) NormalMode else mode
     if (addAnother) {
