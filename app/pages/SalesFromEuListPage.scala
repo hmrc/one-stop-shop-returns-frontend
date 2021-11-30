@@ -18,13 +18,12 @@ package pages
 
 import config.FrontendAppConfig
 import controllers.routes
-import models.{Index, Mode, UserAnswers}
+import models.{CheckMode, Index, Mode, UserAnswers}
 import play.api.mvc.Call
 import queries.DeriveNumberOfSalesFromEu
 
 case object SalesFromEuListPage extends Page {
 
-  // TODO: This navigation will need to change when we wire up the CountryOfEstablishment page etc.
   def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean, config: FrontendAppConfig): Call =
     if (addAnother) {
       answers.get(DeriveNumberOfSalesFromEu) match {
@@ -33,7 +32,12 @@ case object SalesFromEuListPage extends Page {
       }
     } else {
       config.correctionToggle match {
-        case true => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
+        case true =>
+          if(mode == CheckMode){
+            routes.CheckYourAnswersController.onPageLoad(answers.period)
+          } else {
+            controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
+          }
         case _ => routes.CheckYourAnswersController.onPageLoad(answers.period)
       }
     }

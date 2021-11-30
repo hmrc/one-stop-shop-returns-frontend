@@ -19,21 +19,14 @@ package controllers.corrections
 import base.SpecBase
 import forms.corrections.VatCorrectionsListFormProvider
 import models.{Country, NormalMode}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatCorrectionsListPage}
 import play.api.i18n.Messages
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
 import viewmodels.checkAnswers.corrections.VatCorrectionsListSummary
 import views.html.corrections.VatCorrectionsListView
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
 

@@ -18,16 +18,15 @@ package controllers
 
 import base.SpecBase
 import cats.data.Validated.Valid
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
+import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.DataRequest
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import models.{Country, NormalMode, TotalVatToCountry}
-import models.corrections.CorrectionPayload
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito

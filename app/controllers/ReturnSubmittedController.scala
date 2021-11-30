@@ -16,7 +16,9 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
+import connectors.corrections.CorrectionConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.{Period, ReturnReference}
@@ -36,7 +38,9 @@ class ReturnSubmittedController @Inject()(
                                            cc: AuthenticatedControllerComponents,
                                            view: ReturnSubmittedView,
                                            vatReturnConnector: VatReturnConnector,
+                                           correctionConnector: CorrectionConnector,
                                            vatReturnSalesService: VatReturnSalesService,
+                                           frontendAppConfig: FrontendAppConfig,
                                            clock: Clock
                                          )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
@@ -47,9 +51,22 @@ class ReturnSubmittedController @Inject()(
     (cc.actionBuilder andThen cc.identify andThen cc.getRegistration andThen cc.getData(period) andThen cc.requireData).async {
     implicit request =>
 
-      vatReturnConnector.get(period).map {
-        case Right(vatReturn) =>
-          val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn)
+      (for {
+         vatReturnResponse <- vatReturnConnector.get(period)
+         correctionResponse <- correctionConnector.get(period)
+       } yield (vatReturnResponse, correctionResponse)).map {
+        case (Right(vatReturn), correctionResponse) =>
+
+          val maybeCorrectionPayload = if(frontendAppConfig.correctionToggle) {
+            correctionResponse match {
+              case Right(correctionPayload) => Some(correctionPayload)
+              case _ => None
+            }
+          } else {
+            None
+          }
+
+          val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn, maybeCorrectionPayload)
           val returnReference = ReturnReference(request.vrn, period)
           val email = request.registration.contactDetails.emailAddress
           val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)

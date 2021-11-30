@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers}
+import models.{CheckMode, CheckThirdLoopMode, Index, NormalMode, UserAnswers}
 import play.api.mvc.Call
 
 case class CheckSalesToEuPage(index: Index) extends Page {
@@ -27,4 +27,10 @@ case class CheckSalesToEuPage(index: Index) extends Page {
 
   override protected def navigateInCheckMode(answers: UserAnswers): Call =
     routes.SalesToEuListController.onPageLoad(CheckMode, answers.period, index)
+
+  override protected def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
+    routes.SalesToEuListController.onPageLoad(NormalMode, answers.period, index)
+
+  override protected def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+    routes.SalesToEuListController.onPageLoad(CheckThirdLoopMode, answers.period, index)
 }

@@ -18,10 +18,10 @@ package pages
 
 import config.FrontendAppConfig
 import controllers.routes
-import models.{CheckMode, Index, Mode, UserAnswers}
+import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.AllSalesFromEuQuery
+import queries.{AllSalesFromEuQuery, DeriveNumberOfSalesFromEu}
 
 import scala.util.Try
 
@@ -31,24 +31,20 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
 
   override def toString: String = "soldGoodsFromEu"
 
-  def navigate(mode: Mode, answers: UserAnswers, config: FrontendAppConfig): Call =
-    answers.get(SoldGoodsFromEuPage) match {
-      case Some(true)  => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
-      case Some(false) => if(config.correctionToggle) {
-        controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
-      } else {
-        routes.CheckYourAnswersController.onPageLoad(answers.period)
-      }
-      case None        => routes.JourneyRecoveryController.onPageLoad()
-    }
+  def navigate(mode: Mode, answers: UserAnswers, config: FrontendAppConfig): Call = {
+    val salesFromEu = answers.get(DeriveNumberOfSalesFromEu).getOrElse(0)
 
-  override protected def navigateInCheckMode(answers: UserAnswers): Call = {
-    answers.get(SoldGoodsFromEuPage) match {
-      case Some(true)  => routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0))
-      case Some(false) => routes.CheckYourAnswersController.onPageLoad(answers.period)
-      case None        => routes.JourneyRecoveryController.onPageLoad()
+    (mode, answers.get(SoldGoodsFromEuPage)) match {
+      case (CheckMode, Some(true)) if salesFromEu > 0 => routes.CheckYourAnswersController.onPageLoad(answers.period)
+      case (CheckMode, Some(true)) => routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0))
+      case (NormalMode, Some(true))  => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
+      case (CheckMode, Some(false)) => routes.CheckYourAnswersController.onPageLoad(answers.period)
+      case (NormalMode, Some(false)) if(config.correctionToggle) => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
+      case (NormalMode, Some(false)) if(!config.correctionToggle) => routes.CheckYourAnswersController.onPageLoad(answers.period)
+      case _        => routes.JourneyRecoveryController.onPageLoad()
     }
   }
+
 
   override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
     value match {

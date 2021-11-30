@@ -16,7 +16,9 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
+import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
@@ -40,8 +42,10 @@ class PreviousReturnController @Inject()(
                                           cc: AuthenticatedControllerComponents,
                                           view: PreviousReturnView,
                                           vatReturnConnector: VatReturnConnector,
+                                          correctionConnector: CorrectionConnector,
                                           vatReturnSalesService: VatReturnSalesService,
-                                          financialDataConnector: FinancialDataConnector
+                                          financialDataConnector: FinancialDataConnector,
+                                          appConfig: FrontendAppConfig
   )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -53,12 +57,24 @@ class PreviousReturnController @Inject()(
         for {
           vatReturnResult <- vatReturnConnector.get(period)
           getChargeResult <- financialDataConnector.getCharge(period)
-        } yield (vatReturnResult, getChargeResult)
+          correctionPayload <- correctionConnector.get(period)
+        } yield (vatReturnResult, getChargeResult, correctionPayload)
       }.map {
-        case (Right(vatReturn), chargeResponse) =>
+        case (Right(vatReturn), chargeResponse, correctionPayload) =>
+          val maybeCorrectionPayload = if(appConfig.correctionToggle) {
+            correctionPayload match {
+              case Right(correction) => Some(correction)
+              case _ => None
+            }
+          } else {
+            None
+          }
+
+          val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn, maybeCorrectionPayload)
+
           val (charge, displayBanner) = chargeResponse match {
             case Right(chargeOption) =>
-              val hasVatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn) > 0
+              val hasVatOwed = vatOwed > 0
               (chargeOption, chargeOption.isEmpty && hasVatOwed)
             case _ => (None, true)
           }
@@ -66,7 +82,6 @@ class PreviousReturnController @Inject()(
           val clearedAmount = charge.map(_.clearedAmount)
           val amountOutstanding = charge.map(_.outstandingAmount)
 
-          val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn)
           val mainList =
             SummaryListViewModel(rows = PreviousReturnSummary.rows(vatReturn, vatOwed, clearedAmount, amountOutstanding))
           val displayPayNow = vatOwed > 0 && amountOutstanding.forall(outstanding => outstanding > 0)
@@ -83,9 +98,9 @@ class PreviousReturnController @Inject()(
             displayBanner
           ))
 
-        case (Left(NotFoundResponse), _) =>
+        case (Left(NotFoundResponse), _, _) =>
           Redirect(routes.YourAccountController.onPageLoad())
-        case (Left(e), _) =>
+        case (Left(e), _, _) =>
           logger.error(s"Unexpected result from api while getting return: $e")
           Redirect(routes.JourneyRecoveryController.onPageLoad())
 

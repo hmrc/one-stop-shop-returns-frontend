@@ -20,7 +20,6 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.WireMockHelper
 import models.corrections.CorrectionPayload
-import models.requests.corrections.CorrectionRequest
 import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
@@ -29,8 +28,6 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
-
-import java.time.Instant
 
 class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 

@@ -78,7 +78,6 @@ class SalesFromEuListPageSpec extends SpecBase with MockitoSugar with BeforeAndA
       "when the answer is yes" - {
 
         "to Country of Sale with an index equal to the number of countries we have details for" in {
-
           val country = arbitrary[Country].sample.value
 
           val answers =
@@ -88,12 +87,20 @@ class SalesFromEuListPageSpec extends SpecBase with MockitoSugar with BeforeAndA
           SalesFromEuListPage.navigate(answers, CheckMode, addAnother = true, mockAppConfig)
             .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(1)))
         }
+
       }
 
       "when the answer is no" - {
 
-        "to Check your answers" in {
+        "to Check your answers if correction toggle is false" in {
+          when(mockAppConfig.correctionToggle).thenReturn(false)
+          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false, mockAppConfig)
+            .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
+        }
 
+        "to CheckYourAnswers and correction toggle is true" in {
+          when(mockAppConfig.correctionToggle).thenReturn(true)
+          val country = arbitrary[Country].sample.value
           SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false, mockAppConfig)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }

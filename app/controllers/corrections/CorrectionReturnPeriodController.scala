@@ -20,13 +20,12 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.SubmissionStatus.Complete
-import models.{Index, Mode, NormalMode, Period}
+import models.{Index, Mode, Period}
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery}
-import queries.corrections.DeriveCompletedCorrectionPeriods
+import queries.corrections.{AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionReturnPeriodView
 

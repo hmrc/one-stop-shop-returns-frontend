@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Country, Index, NormalMode, VatOnSales, VatRate}
+import models.{CheckMode, CheckThirdLoopMode, Country, Index, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -109,6 +109,47 @@ class DeleteSalesToEuPageSpec extends PageBehaviours {
 
           DeleteSalesToEuPage(index, index).navigate(CheckMode, answers)
             .mustEqual(routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, answers.period, index, Index(0)))
+        }
+      }
+    }
+
+    "must navigate in CheckThirdLoop mode" - {
+
+      "when there are sales from at least one EU country in user answers" - {
+
+        "to Sales from EU list" in {
+
+          val countryFrom  = arbitrary[Country].sample.value
+          val countryTo    = arbitrary[Country].sample.value
+          val vatRate      = arbitrary[VatRate].sample.value
+          val netSales     = arbitrary[BigDecimal].sample.value
+          val vatOnSales   = arbitrary[VatOnSales].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+              .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+              .set(VatRatesFromEuPage(index, index), List(vatRate)).success.value
+              .set(NetValueOfSalesFromEuPage(index, index, index), netSales).success.value
+              .set(VatOnSalesFromEuPage(index ,index, index), vatOnSales).success.value
+
+          DeleteSalesToEuPage(index, index).navigate(CheckThirdLoopMode, answers)
+            .mustEqual(routes.SalesToEuListController.onPageLoad(CheckThirdLoopMode, answers.period, index))
+        }
+      }
+
+      "when there are no sales to EU countries in user answers" - {
+
+        "to Country of Consumption from EU" in {
+
+          val countryFrom = arbitrary[Country].sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+
+          DeleteSalesToEuPage(index, index).navigate(CheckThirdLoopMode, answers)
+            .mustEqual(routes.CountryOfConsumptionFromEuController.onPageLoad(CheckThirdLoopMode, answers.period, index, Index(0)))
         }
       }
     }

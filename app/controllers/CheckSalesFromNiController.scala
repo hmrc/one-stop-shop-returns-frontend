@@ -44,7 +44,7 @@ class CheckSalesFromNiController @Inject()(
           val messages = messagesApi.preferred(request)
 
           val mainList = SummaryListViewModel(
-            rows = Seq(VatRatesFromNiSummary.row(request.userAnswers, index)).flatten
+            rows = Seq(VatRatesFromNiSummary.row(request.userAnswers, index, mode)).flatten
           )
 
           val vatRateLists: Seq[TitledSummaryList] =
@@ -55,8 +55,8 @@ class CheckSalesFromNiController @Inject()(
                   title = messages("checkSalesFromNi.vatRateTitle", vatRate.rateForDisplay),
                   list = SummaryListViewModel(
                     rows = Seq(
-                      NetValueOfSalesFromNiSummary.row(request.userAnswers, index, Index(i), vatRate),
-                      VatOnSalesFromNiSummary.row(request.userAnswers, index, Index(i), vatRate)
+                      NetValueOfSalesFromNiSummary.row(request.userAnswers, index, Index(i), vatRate, mode),
+                      VatOnSalesFromNiSummary.row(request.userAnswers, index, Index(i), vatRate, mode)
                     ).flatten
                   )
                 )
