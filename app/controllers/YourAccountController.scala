@@ -33,7 +33,6 @@ import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-//noinspection ScalaStyle
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        returnStatusConnector: ReturnStatusConnector,
@@ -105,7 +104,7 @@ class YourAccountController @Inject()(
       .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData)
       .map(vatReturnWithFinancialData =>
         vatReturnWithFinancialData.vatOwed match {
-          case Some(_) => vatReturnWithFinancialData //.copy(vatOwed = Some(vatOwed)) don't think we need this.
+          case Some(_) => vatReturnWithFinancialData
           case _ =>
             vatReturnWithFinancialData.copy(
               vatOwed = Some(

@@ -49,8 +49,16 @@ class SubmittedReturnsHistoryController @Inject()(
         case Right(vatReturnsWithFinancialData) =>
           val displayBanner = {
             if (vatReturnsWithFinancialData.nonEmpty) {
-              vatReturnsWithFinancialData.exists(data => data.charge.isEmpty && data.vatOwed
-                .getOrElse((vatReturnSalesService.getTotalVatOnSales(data.vatReturn, None) * 100).toLong) > 0)
+              vatReturnsWithFinancialData.exists { data =>
+                data.charge.isEmpty && data.vatOwed
+                  .getOrElse(
+                    (
+                      vatReturnSalesService.getTotalVatOnSales(
+                        data.vatReturn,
+                        data.corrections
+                      ) * 100
+                    ).toLong) > 0
+              }
             } else {
               false
             }
@@ -58,7 +66,7 @@ class SubmittedReturnsHistoryController @Inject()(
 
           val vatReturnsWithFinancialDataWithVatOwedCalculated = vatReturnsWithFinancialData.map { vatReturnWithFinancialData =>
             val vatOwed = vatReturnWithFinancialData.vatOwed
-              .getOrElse((vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, None) * 100).toLong)
+              .getOrElse((vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, vatReturnWithFinancialData.corrections) * 100).toLong)
 
             vatReturnWithFinancialData.copy(vatOwed = Some(vatOwed))
           }
