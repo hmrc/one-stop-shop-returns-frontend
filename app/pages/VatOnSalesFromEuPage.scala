@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers, VatOnSales}
+import models.{CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Index, NormalMode, UserAnswers, VatOnSales}
 import pages.PageConstants.{salesAtVatRate, salesFromCountry, salesFromEu, vatOnSales}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -50,5 +50,24 @@ case class VatOnSalesFromEuPage(countryFromIndex: Index, countryToIndex: Index, 
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 
   override def navigateInCheckLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
+
+  override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesToEuController.onPageLoad(CheckSecondLoopMode, answers.period, countryFromIndex, countryToIndex)
+
+  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesToEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex)
+
+  override def navigateInCheckInnerLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
+
+  override def navigateInCheckSecondInnerLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesToEuController.onPageLoad(CheckSecondLoopMode, answers.period, countryFromIndex, countryToIndex)
+
+  override def navigateInCheckThirdInnerLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesToEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex)
+
+  override def navigateInCheckFinalInnerLoopMode(answers: UserAnswers): Call =
     routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex)
+
 }

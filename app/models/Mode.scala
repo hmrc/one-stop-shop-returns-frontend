@@ -25,6 +25,10 @@ case object NormalMode extends Mode
 case object CheckLoopMode extends Mode
 case object CheckSecondLoopMode extends Mode
 case object CheckThirdLoopMode extends Mode
+case object CheckInnerLoopMode extends Mode
+case object CheckSecondInnerLoopMode extends Mode
+case object CheckThirdInnerLoopMode extends Mode
+case object CheckFinalInnerLoopMode extends Mode
 
 object Mode {
 
@@ -35,6 +39,10 @@ object Mode {
       case CheckLoopMode => "CheckLoopMode"
       case CheckSecondLoopMode => "CheckSecondLoopMode"
       case CheckThirdLoopMode => "CheckThirdLoopMode"
+      case CheckInnerLoopMode => "CheckInnerLoopMode"
+      case CheckSecondInnerLoopMode => "CheckSecondInnerLoopMode"
+      case CheckThirdInnerLoopMode => "CheckThirdInnerLoopMode"
+      case CheckFinalInnerLoopMode => "CheckFinalInnerLoopMode"
     }
   }
 }

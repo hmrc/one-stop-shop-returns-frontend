@@ -17,8 +17,7 @@
 package pages
 
 import controllers.routes
-
-import models.{CheckMode, Country, Index, NormalMode, VatRate}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Country, Index, NormalMode, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -63,6 +62,57 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
 
         VatRatesFromEuPage(index, index).navigate(CheckMode, answers)
           .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, answers.period, index, index, Index(0)))
+      }
+    }
+
+    "must navigate in Check Loop mode" - {
+
+      "to Sales Details from EU" in {
+
+        val countryFrom  = arbitrary[Country].sample.value
+        val countryTo    = arbitrary[Country].sample.value
+
+        val answers =
+          emptyUserAnswers
+            .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+            .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+
+        VatRatesFromEuPage(index, index).navigate(CheckLoopMode, answers)
+          .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckLoopMode, answers.period, index, index, Index(0)))
+      }
+    }
+
+    "must navigate in Check Second Loop mode" - {
+
+      "to Sales Details from EU" in {
+
+        val countryFrom  = arbitrary[Country].sample.value
+        val countryTo    = arbitrary[Country].sample.value
+
+        val answers =
+          emptyUserAnswers
+            .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+            .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+
+        VatRatesFromEuPage(index, index).navigate(CheckSecondLoopMode, answers)
+          .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckSecondLoopMode, answers.period, index, index, Index(0)))
+      }
+    }
+
+    "must navigate in Check Third Loop mode" - {
+
+      "to Sales Details from EU" in {
+
+        val countryFrom  = arbitrary[Country].sample.value
+        val countryTo    = arbitrary[Country].sample.value
+
+        val answers =
+          emptyUserAnswers
+            .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
+            .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+
+        VatRatesFromEuPage(index, index).navigate(CheckThirdLoopMode, answers)
+          .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckThirdLoopMode, answers.period, index, index, Index(0)))
       }
     }
   }

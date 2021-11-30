@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Country, Index, NormalMode}
+import models.{CheckMode, CheckThirdLoopMode, Country, Index, NormalMode}
 import pages.behaviours.PageBehaviours
 
 
@@ -46,6 +46,15 @@ class CountryOfConsumptionFromEuPageSpec extends PageBehaviours {
 
         CountryOfConsumptionFromEuPage(index, index).navigate(CheckMode, emptyUserAnswers)
           .mustEqual(routes.VatRatesFromEuController.onPageLoad(CheckMode, emptyUserAnswers.period, Index(0), Index(0)))
+      }
+    }
+
+    "must navigate in Check Third Loop mode" - {
+
+      "to Vat Rates from EU" in {
+
+        CountryOfConsumptionFromEuPage(index, index).navigate(CheckThirdLoopMode, emptyUserAnswers)
+          .mustEqual(routes.VatRatesFromEuController.onPageLoad(CheckThirdLoopMode, emptyUserAnswers.period, Index(0), Index(0)))
       }
     }
   }

@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, UserAnswers}
+import models.{CheckMode, CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers}
 import play.twirl.api.HtmlFormat
 import queries.AllSalesFromEuQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
@@ -27,9 +27,10 @@ object SalesFromEuSummary {
   def addToListRows(answers: UserAnswers, currentMode: Mode): Seq[ListItem] =
     answers.get(AllSalesFromEuQuery).getOrElse(List.empty).zipWithIndex.map {
       case (details, index) =>
+        val newMode = if(currentMode == NormalMode) CheckThirdLoopMode else currentMode
         ListItem(
           name = HtmlFormat.escape(details.countryOfSale.name).toString,
-          changeUrl = routes.SalesToEuListController.onPageLoad(CheckMode, answers.period, Index(index)).url,
+          changeUrl = routes.SalesToEuListController.onPageLoad(newMode, answers.period, Index(index)).url,
           removeUrl = routes.DeleteSalesFromEuController.onPageLoad(currentMode, answers.period, Index(index)).url
         )
     }

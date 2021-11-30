@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, Index, NormalMode, UserAnswers}
+import models.{Index, Mode, UserAnswers}
 import pages.PageConstants.{netValueOfSales, salesAtVatRate, salesFromNi}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
@@ -30,14 +30,8 @@ case class NetValueOfSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) e
 
   override def toString: String = netValueOfSales
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.VatOnSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex, vatRateIndex)
-
-  override def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.VatOnSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex, vatRateIndex)
-
-  override protected def navigateInCheckLoopMode(answers: UserAnswers): Call =
-    routes.VatOnSalesFromNiController.onPageLoad(CheckLoopMode, answers.period, countryIndex, vatRateIndex)
+  override def navigate(mode: Mode, answers: UserAnswers): Call =
+    routes.VatOnSalesFromNiController.onPageLoad(mode, answers.period, countryIndex, vatRateIndex)
 
   override def cleanup(value: Option[BigDecimal], userAnswers: UserAnswers): Try[UserAnswers] =
     userAnswers.remove(VatOnSalesFromNiPage(countryIndex, vatRateIndex))

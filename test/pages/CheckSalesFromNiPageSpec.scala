@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, NormalMode}
+import models.{CheckMode, CheckSecondLoopMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class CheckSalesFromNiPageSpec extends PageBehaviours {
@@ -39,6 +39,15 @@ class CheckSalesFromNiPageSpec extends PageBehaviours {
 
         CheckSalesFromNiPage.navigate(CheckMode, emptyUserAnswers)
           .mustEqual(routes.SalesFromNiListController.onPageLoad(CheckMode, emptyUserAnswers.period))
+      }
+    }
+
+    "must navigate in CheckSecondLoop mode" - {
+
+      "to Sales From NI List" in {
+
+        CheckSalesFromNiPage.navigate(CheckSecondLoopMode, emptyUserAnswers)
+          .mustEqual(routes.SalesFromNiListController.onPageLoad(NormalMode, emptyUserAnswers.period))
       }
     }
   }
