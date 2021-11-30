@@ -258,13 +258,13 @@ notificationBanner.text = We cannot get your latest payment records due to a tec
 previousReturn.title = Submitted return for
 previousReturn.summary.title = Summary
 previousReturn.details.title = Details
-previousReturn.vatOwed.label = VAT owed this period
+previousReturn.vatOwed.label = VAT declared
 previousReturn.clearedAmount.label = Amount paid
 previousReturn.amountOutstanding.label = Amount left to pay
-previousReturn.dateSubmitted.label = Date submitted
-previousReturn.dateDue.label = Date due
-previousReturn.returnReference.label = Return reference number
-previousReturn.paymentReference.label = Payment reference number
+previousReturn.dateSubmitted.label = Return submitted
+previousReturn.dateDue.label = Payment due by
+previousReturn.returnReference.label = Return reference
+previousReturn.paymentReference.label = Payment reference
 previousReturn.payNow = Pay now
 
 previousReturn.salesAtVatRate.title = Sales from {0} to {1}
@@ -277,7 +277,7 @@ previousReturn.netSalesFromNi.label = Sales excluding VAT from Northern Ireland
 previousReturn.netSalesFromEu.label = Sales excluding VAT from EU countries
 previousReturn.vatOnSalesFromNi.label = VAT on sales from Northern Ireland
 previousReturn.vatOnSalesFromEu.label = VAT on sales from EU countries
-previousReturn.totalVatOnSales.label = VAT owed this period
+previousReturn.totalVatOnSales.label = VAT payable this period before corrections
 
 netValueOfSalesFromNi.title = What were your sales at {0} rate excluding VAT?
 netValueOfSalesFromNi.heading = What were your sales at {0} rate excluding VAT?
