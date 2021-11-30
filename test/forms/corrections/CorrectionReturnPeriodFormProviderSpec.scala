@@ -17,10 +17,9 @@
 package forms.corrections
 
 import forms.behaviours.OptionFieldBehaviours
-import models.{Index, Period}
 import models.Quarter.{Q2, Q3, Q4}
+import models.{Index, Period}
 import play.api.data.FormError
-import play.api.libs.json.Json
 
 class CorrectionReturnPeriodFormProviderSpec extends OptionFieldBehaviours {
 

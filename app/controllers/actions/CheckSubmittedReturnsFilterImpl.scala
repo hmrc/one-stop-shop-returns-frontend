@@ -16,10 +16,10 @@
 
 package controllers.actions
 
-import connectors.{ReturnStatusConnector, VatReturnConnector}
+import connectors.ReturnStatusConnector
 import controllers.routes
-import models.{Period, SubmissionStatus}
-import models.requests.{DataRequest, OptionalDataRequest}
+import models.SubmissionStatus
+import models.requests.DataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import uk.gov.hmrc.http.HeaderCarrier

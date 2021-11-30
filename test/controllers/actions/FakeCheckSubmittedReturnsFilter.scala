@@ -16,9 +16,8 @@
 
 package controllers.actions
 
-import connectors.{ReturnStatusConnector, VatReturnConnector}
-import models.Period
-import models.requests.{DataRequest, OptionalDataRequest}
+import connectors.ReturnStatusConnector
+import models.requests.DataRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 

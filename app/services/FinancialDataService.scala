@@ -22,14 +22,21 @@ import javax.inject.Inject
 
 class FinancialDataService @Inject()(vatReturnSalesService: VatReturnSalesService) {
 
-  def filterIfPaymentIsOutstanding(vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData]): Seq[VatReturnWithFinancialData] = {
-    vatReturnsWithFinancialData.filter { vatReturnWithFinancialData =>
-      val hasChargeWithOutstanding = vatReturnWithFinancialData.charge.exists(_.outstandingAmount > 0)
-      val expectingCharge = vatReturnWithFinancialData.charge.isEmpty &&
-        vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn) > 0
+  def filterIfPaymentIsOutstanding(
+                                    vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData]
+                                  ): Seq[VatReturnWithFinancialData] = {
+    vatReturnsWithFinancialData.filter {
+      vatReturnWithFinancialData =>
+        val hasChargeWithOutstanding =
+          vatReturnWithFinancialData.charge.exists(_.outstandingAmount > 0)
+        val expectingCharge =
+          vatReturnWithFinancialData.charge.isEmpty &&
+          vatReturnSalesService.getTotalVatOnSales(
+            vatReturnWithFinancialData.vatReturn,
+            vatReturnWithFinancialData.corrections
+          ) > 0
 
-      hasChargeWithOutstanding || expectingCharge
+        hasChargeWithOutstanding || expectingCharge
     }
   }
-
 }

@@ -22,7 +22,7 @@ import connectors.WireMockHelper
 import formats.Format
 import models.Period
 import models.Quarter.Q3
-import models.financialdata.{Charge, PeriodWithOutstandingAmount}
+import models.financialdata.{Charge, PeriodWithOutstandingAmount, VatReturnWithFinancialData}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalatest.EitherValues
 import play.api.Application
@@ -67,6 +67,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
     }
 
     "must return None when no charge" in {
+
       val responseJson = Json.toJson(None)
 
       running(application) {
@@ -101,6 +102,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
   }
 
   ".getPeriodsAndOutstandingAmounts" - {
+
     val url = s"$baseUrl/outstanding-payments"
     val periodWithOutstandingAmount = PeriodWithOutstandingAmount(period, BigDecimal(1000.50))
     val responseJson = Json.toJson(Seq(periodWithOutstandingAmount))
@@ -149,6 +151,99 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
             ))
 
         connector.getPeriodsAndOutstandingAmounts().futureValue mustBe Left(UnexpectedResponseStatus(BAD_REQUEST, ""))
+      }
+    }
+  }
+
+  ".getVatReturnWithFinancialData" - {
+
+    val commencementDate = LocalDate.now()
+    val url = s"$baseUrl/charge-history/${Format.dateTimeFormatter.format(commencementDate)}"
+
+    "with no correctionPayload" - {
+
+      val vatReturnWithFinancialData =
+        VatReturnWithFinancialData(
+          completeVatReturn,
+          Some(Charge(period, BigDecimal(100), BigDecimal(100), BigDecimal(100))),
+          Some(100L),
+          None
+        )
+      val responseJson = Json.toJson(Seq(vatReturnWithFinancialData))
+
+      "must return a Some(vatReturnWithFinancialData) when successful" in {
+
+        running(application) {
+          val connector = application.injector.instanceOf[FinancialDataConnector]
+
+          server.stubFor(
+            get(urlEqualTo(s"$url"))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseJson.toString())
+              ))
+
+          connector.getVatReturnWithFinancialData(commencementDate).futureValue mustBe Right(Seq(vatReturnWithFinancialData))
+        }
+      }
+    }
+
+    "with a single correctionPayload" - {
+
+      val vatReturnWithFinancialData =
+        VatReturnWithFinancialData(
+          completeVatReturn,
+          Some(Charge(period, BigDecimal(100), BigDecimal(100), BigDecimal(100))),
+          Some(100L),
+          Some(emptyCorrectionPayload)
+        )
+      val responseJson = Json.toJson(Seq(vatReturnWithFinancialData))
+
+      "must return a Some(vatReturnWithFinancialData) when successful" in {
+
+        running(application) {
+          val connector = application.injector.instanceOf[FinancialDataConnector]
+
+          server.stubFor(
+            get(urlEqualTo(s"$url"))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseJson.toString())
+              ))
+
+          connector.getVatReturnWithFinancialData(commencementDate).futureValue mustBe Right(Seq(vatReturnWithFinancialData))
+        }
+      }
+    }
+
+    "must return invalid response when invalid json returned" in {
+
+      val responseJson = Json.toJson(Period(2021, Q3))
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getVatReturnWithFinancialData(commencementDate).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return unexpected response if response code is not OK" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(CREATED)
+            ))
+
+        connector.getVatReturnWithFinancialData(commencementDate).futureValue
+          .mustBe(Left(UnexpectedResponseStatus(CREATED, "")))
       }
     }
   }
