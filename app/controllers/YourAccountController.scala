@@ -108,7 +108,7 @@ class YourAccountController @Inject()(
           case _ =>
             vatReturnWithFinancialData.copy(
               vatOwed = Some(
-                (vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, vatReturnWithFinancialData.corrections) * 100).toLong
+                (vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturnWithFinancialData.vatReturn, vatReturnWithFinancialData.corrections) * 100).toLong
               )
             )
         }

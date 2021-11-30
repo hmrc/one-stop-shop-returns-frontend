@@ -239,7 +239,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       )
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
-      when(vatReturnsSalesService.getTotalVatOnSales(any(), eqTo(Some(completedCorrectionPayload)))) thenReturn BigDecimal(1000)
+      when(vatReturnsSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(completedCorrectionPayload)))) thenReturn BigDecimal(1000)
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -253,7 +253,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           displayBanner = true
         )(request, messages(application)).toString
 
-        verify(vatReturnsSalesService, times(2)).getTotalVatOnSales(any(), eqTo(Some(completedCorrectionPayload)))
+        verify(vatReturnsSalesService, times(2)).getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(completedCorrectionPayload)))
       }
     }
 

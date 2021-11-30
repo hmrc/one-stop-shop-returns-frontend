@@ -30,6 +30,7 @@
         niSalesList: Map[String, Seq[TitledSummaryList]],
         euSalesList: Map[String, Seq[TitledSummaryList]],
         totalSalesList: TitledSummaryList,
+        correctionsForPeriodList: Map[String, Seq[TitledSummaryList]],
         displayPayNow: Boolean,
         vatOwedInPence: Long,
         displayBanner: Boolean
@@ -110,9 +111,22 @@
             @govukSummaryList(item.list)
         }
     }
+
     <h2 class="govuk-heading-m">@{
         totalSalesList.title
     }</h2>
 
     @govukSummaryList(totalSalesList.list)
+
+    @for((mainTitle, list) <- correctionsForPeriodList) {
+        <h2 class="govuk-heading-m">@mainTitle</h2>
+        @for(item <- list) {
+            <h2 class="govuk-heading-s">@{
+                item.title
+            }</h2>
+
+            @govukSummaryList(item.list)
+        }
+    }
+
 }

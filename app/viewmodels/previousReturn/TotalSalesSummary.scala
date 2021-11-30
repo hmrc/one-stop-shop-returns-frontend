@@ -26,16 +26,17 @@ import viewmodels.implicits._
 object TotalSalesSummary extends CurrencyFormatter {
 
   def rows(netSalesFromNi: BigDecimal,
-            netSalesFromEu: BigDecimal,
-            vatOnSalesFromNi: BigDecimal,
-            vatOnSalesFromEu: BigDecimal,
-            totalVatOnSales: BigDecimal)(implicit messages: Messages): Seq[SummaryListRow] = {
+           netSalesFromEu: BigDecimal,
+           vatOnSalesFromNi: BigDecimal,
+           vatOnSalesFromEu: BigDecimal,
+           totalVatOnSales: BigDecimal,
+           correctionToggle: Boolean)(implicit messages: Messages): Seq[SummaryListRow] = {
     Seq(
       netSalesFromNiRow(netSalesFromNi),
       netSalesFromEuRow(netSalesFromEu),
       vatOnSalesFromNiRow(vatOnSalesFromNi),
       vatOnSalesFromEuRow(vatOnSalesFromEu),
-      totalVatOnSalesRow(totalVatOnSales)
+      totalVatOnSalesRow(totalVatOnSales, correctionToggle)
     ).flatten
   }
 
@@ -77,9 +78,14 @@ object TotalSalesSummary extends CurrencyFormatter {
     ))
   }
 
-  private[this] def totalVatOnSalesRow(totalVatOnSales: BigDecimal)(implicit messages: Messages): Option[SummaryListRow] = {
+  private[this] def totalVatOnSalesRow(totalVatOnSales: BigDecimal, correctionToggle: Boolean)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
-      key = Key("previousReturn.totalVatOnSales.label"),
+      key =
+        if (correctionToggle) {
+          Key("previousReturn.totalVatOnSalesWithCorrections.label")
+        } else {
+          Key("previousReturn.totalVatOnSales.label")
+        },
       value = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales)))
         .withCssClass("govuk-!-font-weight-bold"),
       actions = Seq.empty

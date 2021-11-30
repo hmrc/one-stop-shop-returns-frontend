@@ -277,7 +277,13 @@ previousReturn.netSalesFromNi.label = Sales excluding VAT from Northern Ireland
 previousReturn.netSalesFromEu.label = Sales excluding VAT from EU countries
 previousReturn.vatOnSalesFromNi.label = VAT on sales from Northern Ireland
 previousReturn.vatOnSalesFromEu.label = VAT on sales from EU countries
-previousReturn.totalVatOnSales.label = VAT payable this period before corrections
+previousReturn.totalVatOnSalesWithCorrections.label = VAT payable this period before corrections
+previousReturn.totalVatOnSales.label = VAT owed this period
+
+previousReturn.correction.correctionPeriod.title = Corrections for {0}
+previousReturn.correction.correctionToCountry.title = Correction to {0}
+previousReturn.correction.correctionToCountry.previousDeclared.label = Previous VAT total declared
+previousReturn.correction.correctionToCountry.correctionAmount.label = Correction amount
 
 netValueOfSalesFromNi.title = What were your sales at {0} rate excluding VAT?
 netValueOfSalesFromNi.heading = What were your sales at {0} rate excluding VAT?

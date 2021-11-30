@@ -33,6 +33,7 @@ import viewmodels.govuk.summarylist._
 import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary, TotalSalesSummary}
 import views.html.PreviousReturnView
 import models.responses.{NotFound => NotFoundResponse}
+import viewmodels.previousReturn.corrections.CorrectionSummary
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -70,11 +71,11 @@ class PreviousReturnController @Inject()(
             None
           }
 
-          val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn, maybeCorrectionPayload)
+          val totalVatOwed = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
 
           val (charge, displayBanner) = chargeResponse match {
             case Right(chargeOption) =>
-              val hasVatOwed = vatOwed > 0
+              val hasVatOwed = totalVatOwed > 0
               (chargeOption, chargeOption.isEmpty && hasVatOwed)
             case _ => (None, true)
           }
@@ -83,16 +84,17 @@ class PreviousReturnController @Inject()(
           val amountOutstanding = charge.map(_.outstandingAmount)
 
           val mainList =
-            SummaryListViewModel(rows = PreviousReturnSummary.rows(vatReturn, vatOwed, clearedAmount, amountOutstanding))
-          val displayPayNow = vatOwed > 0 && amountOutstanding.forall(outstanding => outstanding > 0)
-          val vatOwedInPence: Long = (amountOutstanding.getOrElse(vatOwed) * 100).toLong
+            SummaryListViewModel(rows = PreviousReturnSummary.rows(vatReturn, totalVatOwed, clearedAmount, amountOutstanding))
+          val displayPayNow = totalVatOwed > 0 && amountOutstanding.forall(outstanding => outstanding > 0)
+          val vatOwedInPence: Long = (amountOutstanding.getOrElse(totalVatOwed) * 100).toLong
 
           Ok(view(
             vatReturn,
             mainList,
             SaleAtVatRateSummary.getAllNiSales(vatReturn),
             SaleAtVatRateSummary.getAllEuSales(vatReturn),
-            getAllSales(vatReturn, vatOwed),
+            getAllSales(vatReturn),
+            CorrectionSummary.getAllCorrections(maybeCorrectionPayload),
             displayPayNow,
             vatOwedInPence,
             displayBanner
@@ -111,19 +113,26 @@ class PreviousReturnController @Inject()(
           logger.error(s"Error while getting previous return: ${e.getMessage}", e)
           Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
-}
+  }
 
-  private[this] def getAllSales(vatReturn: VatReturn, vatOwed: BigDecimal)(implicit messages: Messages): TitledSummaryList = {
+  private[this] def getAllSales(vatReturn: VatReturn)(implicit messages: Messages): TitledSummaryList = {
     val netSalesFromNi = vatReturnSalesService.getTotalNetSalesToCountry(vatReturn.salesFromNi)
     val netSalesFromEu = vatReturnSalesService.getEuTotalNetSales(vatReturn.salesFromEu)
     val vatOnSalesFromNi = vatReturnSalesService.getTotalVatOnSalesToCountry(vatReturn.salesFromNi)
     val vatOnSalesFromEu = vatReturnSalesService.getEuTotalVatOnSales(vatReturn.salesFromEu)
-    val totalVatOnSales = vatOwed
+    val totalVatOnSales = vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(vatReturn)
 
     TitledSummaryList(
       title = messages("previousReturn.allSales.title"),
       list = SummaryListViewModel(
-        rows = TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales)
+        rows = TotalSalesSummary.rows(
+          netSalesFromNi = netSalesFromNi,
+          netSalesFromEu = netSalesFromEu,
+          vatOnSalesFromNi = vatOnSalesFromNi,
+          vatOnSalesFromEu = vatOnSalesFromEu,
+          totalVatOnSales = totalVatOnSales,
+          correctionToggle = appConfig.correctionToggle
+        )
       )
     )
   }

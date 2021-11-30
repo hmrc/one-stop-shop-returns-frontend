@@ -28,7 +28,7 @@ import viewmodels.TitledSummaryList
 
 object SaleAtVatRateSummary {
 
-  def rows(saleAtVatRate: SalesDetails)(implicit messages: Messages): Seq[SummaryListRow] = {
+  private[this] def rows(saleAtVatRate: SalesDetails)(implicit messages: Messages): Seq[SummaryListRow] = {
 
     Seq(
       SummaryListRowViewModel(
@@ -75,7 +75,7 @@ object SaleAtVatRateSummary {
     } yield TitledSummaryList(
       title = messages("previousReturn.salesAtVatRate.vatRate", amount.vatRate.rateForDisplay),
       list = SummaryListViewModel(
-        rows = SaleAtVatRateSummary.rows(amount)
+        rows = rows(amount)
       )
     )
   }

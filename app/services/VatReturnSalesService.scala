@@ -23,15 +23,20 @@ import javax.inject.Inject
 
 class VatReturnSalesService @Inject()() {
 
-  def getTotalVatOnSales(vatReturn: VatReturn, maybeCorrectionPayload: Option[CorrectionPayload]): BigDecimal = {
+  def getTotalVatOnSalesBeforeCorrection(vatReturn: VatReturn): BigDecimal = {
     val niVat = getTotalVatOnSalesToCountry(vatReturn.salesFromNi)
     val euVat = getEuTotalVatOnSales(vatReturn.salesFromEu)
+
+    niVat + euVat
+  }
+
+  def getTotalVatOnSalesAfterCorrection(vatReturn: VatReturn, maybeCorrectionPayload: Option[CorrectionPayload]): BigDecimal = {
     val correction = maybeCorrectionPayload.map {
       correctionPayload =>
         getCorrectionAmount(correctionPayload.corrections)
     }.getOrElse(BigDecimal(0))
 
-    niVat + euVat + correction
+    getTotalVatOnSalesBeforeCorrection(vatReturn) + correction
   }
 
   def getEuTotalVatOnSales(allSalesFromEu: List[SalesFromEuCountry]): BigDecimal = {
