@@ -18,13 +18,18 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.VatCorrectionsListFormProvider
+import models.corrections.CorrectionToCountry
 import models.{Country, Index, Mode, Period}
 import pages.corrections.VatCorrectionsListPage
+import play.api.data.FormError
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.AllCorrectionCountriesQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.checkAnswers.corrections.VatCorrectionsListSummary
 import views.html.corrections.VatCorrectionsListView
+import controllers.{routes => baseRoutes}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -33,7 +38,7 @@ class VatCorrectionsListController @Inject()(
                                               cc: AuthenticatedControllerComponents,
                                               formProvider: VatCorrectionsListFormProvider,
                                               view: VatCorrectionsListView
-                                            )(implicit ec: ExecutionContext) extends FrontendBaseController with VatCorrectionsBaseController with I18nSupport {
+                                            )(implicit ec: ExecutionContext) extends FrontendBaseController with VatCorrectionsBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()
@@ -41,29 +46,45 @@ class VatCorrectionsListController @Inject()(
   def onPageLoad(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
       getNumberOfCorrections(periodIndex) { (number, correctionPeriod) =>
-
         val canAddCountries = number < Country.euCountries.size
         val list = VatCorrectionsListSummary.addToListRows(request.userAnswers, mode, periodIndex)
-
-        Ok(view(form, mode, list, period, correctionPeriod, periodIndex, canAddCountries))
+        withCompleteCorrections(periodIndex, onFailure = incompleteCorrections => {
+            Ok(view(form, mode, list, period, correctionPeriod, periodIndex, canAddCountries, incompleteCorrections.map(_.correctionCountry.name)))
+          }) {
+          Ok(view(form, mode, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
+        }
       }
-
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
-    implicit request =>
-      getNumberOfCorrections(periodIndex) { (number, correctionPeriod) =>
-
-        val canAddCountries = number < Country.euCountries.size
-
-        form.bindFromRequest().fold(
-          formWithErrors => {
-            val list = VatCorrectionsListSummary.addToListRows(request.userAnswers, mode, periodIndex)
-            BadRequest(view(formWithErrors, mode, list, period, correctionPeriod, periodIndex, canAddCountries))
-          },
-          value =>
-            Redirect(VatCorrectionsListPage(periodIndex).navigate(request.userAnswers, mode, value))
-        )
-      }
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
+    cc.authAndGetDataAndCorrectionToggle(period) { implicit request =>
+      withCompleteCorrections(
+        periodIndex,
+        onFailure = incompleteCorrections => {
+          if(incompletePromptShown) {
+            firstIndexedIncompleteCorrection(periodIndex, incompleteCorrections) match {
+              case Some(incompleteCorrection) =>
+                Redirect(routes.CheckVatPayableAmountController.onPageLoad( mode,  period,  periodIndex, Index(incompleteCorrection._2)))
+              case None =>
+                Redirect(baseRoutes.JourneyRecoveryController.onPageLoad())
+            }
+          } else {
+            Redirect(routes.VatCorrectionsListController.onPageLoad( mode,  period,  periodIndex))
+          }
+        })(
+        onSuccess = {
+          getNumberOfCorrections(periodIndex) { (number, correctionPeriod) =>
+            val canAddCountries = number < Country.euCountries.size
+            form.bindFromRequest().fold(
+              formWithErrors => {
+                val list = VatCorrectionsListSummary.addToListRows(request.userAnswers, mode, periodIndex)
+                BadRequest(view(formWithErrors, mode, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
+              },
+              value =>
+                Redirect(VatCorrectionsListPage(periodIndex).navigate(request.userAnswers, mode, value))
+            )
+          }
+        }
+      )
   }
 }

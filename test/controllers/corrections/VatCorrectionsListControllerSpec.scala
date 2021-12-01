@@ -23,7 +23,7 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatCorrectionsListPage}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, VatCorrectionsListPage, VatPayableForCountryPage}
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -48,6 +48,7 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
     emptyUserAnswers
       .set(CorrectionCountryPage(index, index), country).success.value
       .set(CorrectionReturnPeriodPage(index), period).success.value
+      .set(CountryVatCorrectionPage(index, index), BigDecimal(100.0)).success.value
 
   "VatCorrectionsList Controller" - {
 
@@ -73,7 +74,8 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
           period = period,
           correctionPeriod = period,
           canAddCountries = true,
-          periodIndex = index
+          periodIndex = index,
+          allCorrectionsComplete = true
         )(request, messages(application)).toString
       }
     }
@@ -114,7 +116,8 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
           period = period,
           correctionPeriod = period,
           canAddCountries = true,
-          periodIndex = index
+          periodIndex = index,
+          allCorrectionsComplete = true
         )(request, implicitly).toString
       }
     }

@@ -16,7 +16,7 @@
 
 package controllers.actions
 
-import models.Period
+import models.{Index, Mode, Period}
 import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest, RegistrationRequest}
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
@@ -38,6 +38,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def requireData: DataRequiredAction
   def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
   def checkCorrectionsToggle: CheckCorrectionsToggleFilterProvider
+  def checkCorrectionsComplete: CheckCorrectionsCompleteFilterProvider
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -52,7 +53,11 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     authAndGetOptionalData(period) andThen requireData
 
   def authAndGetDataAndCorrectionToggle(period: Period): ActionBuilder[DataRequest, AnyContent] =
-    authAndGetData(period) andThen requirePreviousReturns() andThen checkCorrectionsToggle()
+    authAndGetData(period) andThen requirePreviousReturns() andThen checkCorrectionsToggle ()
+
+  def authAndGetDataAndCompleteCorrections(mode: Mode, period: Period, periodIndex: Index): ActionBuilder[DataRequest, AnyContent] =
+    authAndGetData(period) andThen checkCorrectionsComplete(mode, period, periodIndex)
+
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
@@ -71,5 +76,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,
                                                                requirePreviousReturns:  CheckSubmittedReturnsFilterProvider,
-                                                               checkCorrectionsToggle: CheckCorrectionsToggleFilterProvider
+                                                               checkCorrectionsToggle: CheckCorrectionsToggleFilterProvider,
+                                                               checkCorrectionsComplete: CheckCorrectionsCompleteFilterProvider
                                                              ) extends AuthenticatedControllerComponents

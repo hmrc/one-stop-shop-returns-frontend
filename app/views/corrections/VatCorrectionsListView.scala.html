@@ -27,7 +27,7 @@
     addToList: components.addToSimpleList
 )
 
-@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean, incompleteCountries: Seq[String])(implicit request: Request[_], messages: Messages)
 
 @defining(if(list.size == 1) ".singular" else "") { messageSuffix =>
     @layout(pageTitle = title(
@@ -35,34 +35,53 @@
         messages("vatCorrectionsList.title" + messageSuffix, list.size),
         Some(messages("vatCorrectionsList.section", correctionPeriod.displayText))
     )) {
-
-        @formHelper(action = correctionRoutes.VatCorrectionsListController.onSubmit(mode, period, periodIndex), 'autoComplete -> "off") {
-
             @if(form.errors.nonEmpty) {
                 @govukErrorSummary(ErrorSummaryViewModel(form))
             }
 
+            @if(incompleteCountries.nonEmpty) {
+                <div class="govuk-warning-text">
+                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                    <strong class="govuk-warning-text__text">
+                        <span class="govuk-warning-text__assistive">Warning</span>
+                        @messages("error.missing_answers")
+                    </strong>
+                </div>
+            }
 
             @addToList(list, itemSize = Long, "vatCorrectionsList.change.hidden", "vatCorrectionsList.remove.hidden")
 
+            @if(incompleteCountries.isEmpty) {
+                @formHelper(action = correctionRoutes.VatCorrectionsListController.onSubmit(mode, period, periodIndex, false)) {
+                    @if(canAddCountries) {
+                        @govukRadios(
+                            RadiosViewModel.yesNo(
+                                field = form("value"),
+                                legend = LegendViewModel(
+                                    HtmlContent(Html(messages("vatCorrectionsList.addAnother")))
+                                ).withSize(LegendSize.Medium)
+                            )
+                        )
+                    } else {
+                        <p class="govuk-body">@messages("vatCorrectionsList.maximumReached")</p>
+                        <input type="hidden" name="value" id="value" value="false"/>
+                    }
 
-            @if(canAddCountries) {
-                @govukRadios(
-                    RadiosViewModel.yesNo(
-                        field = form("value"),
-                        legend = LegendViewModel(
-                            HtmlContent(Html(messages("vatCorrectionsList.addAnother")))
-                        ).withSize(LegendSize.Medium)
+                    @govukButton(
+                        ButtonViewModel(messages("site.continue"))
                     )
-                )
+                }
             } else {
-                <p class="govuk-body">@messages("vatCorrectionsList.maximumReached")</p>
-                <input type="hidden" name="value" id="value" value="false"/>
-            }
 
-            @govukButton(
-                ButtonViewModel(messages("site.continue"))
-            )
+                @formHelper(action = correctionRoutes.VatCorrectionsListController.onSubmit(mode, period, periodIndex, true)) {
+
+                    <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+                    <p class="govuk-body">@messages("error.missing_answers_prompt", incompleteCountries.head)</p>
+
+                    @govukButton(
+                        ButtonViewModel(messages("error.resolve_missing_answers"))
+                    )
+                }
+            }
         }
-    }
 }
