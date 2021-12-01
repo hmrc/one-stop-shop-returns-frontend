@@ -18,4 +18,4 @@ package viewmodels
 
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 
-case class TitledSummaryList(title: String, list: SummaryList)
+case class TitledSummaryList(title: String, list: SummaryList, hint: Option[String] = None)

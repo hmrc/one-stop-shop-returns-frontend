@@ -84,9 +84,11 @@ class PreviousReturnController @Inject()(
           val amountOutstanding = charge.map(_.outstandingAmount)
 
           val mainList =
-            SummaryListViewModel(rows = PreviousReturnSummary.rows(vatReturn, totalVatOwed, clearedAmount, amountOutstanding))
+            SummaryListViewModel(rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOwed, clearedAmount, amountOutstanding))
           val displayPayNow = totalVatOwed > 0 && amountOutstanding.forall(outstanding => outstanding > 0)
           val vatOwedInPence: Long = (amountOutstanding.getOrElse(totalVatOwed) * 100).toLong
+
+          val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOwed))
 
           Ok(view(
             vatReturn,
@@ -94,7 +96,9 @@ class PreviousReturnController @Inject()(
             SaleAtVatRateSummary.getAllNiSales(vatReturn),
             SaleAtVatRateSummary.getAllEuSales(vatReturn),
             getAllSales(vatReturn),
-            CorrectionSummary.getAllCorrections(maybeCorrectionPayload),
+            CorrectionSummary.getCorrectionPeriods(maybeCorrectionPayload),
+            CorrectionSummary.getDeclaredVatAfterCorrections(maybeCorrectionPayload, vatReturn),
+            Some(totalVatList),
             displayPayNow,
             vatOwedInPence,
             displayBanner

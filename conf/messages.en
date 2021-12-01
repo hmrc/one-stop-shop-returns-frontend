@@ -284,6 +284,14 @@ previousReturn.correction.correctionPeriod.title = Corrections for {0}
 previousReturn.correction.correctionToCountry.title = Correction to {0}
 previousReturn.correction.correctionToCountry.previousDeclared.label = Previous VAT total declared
 previousReturn.correction.correctionToCountry.correctionAmount.label = Correction amount
+previousReturn.correction.vatDeclared.title = VAT declared to EU countries after corrections
+previousReturn.correction.vatDeclared.noPaymentDue.title = VAT declared where no payment is due
+previousReturn.correction.vatDeclared.noPaymentDue.hint = EU countries are responsible for refunding any overpayments.
+previousReturn.correction.vatDeclared.paymentDue.title = VAT owed to each country
+previousReturn.correction.vatDeclared.countryLabel = Country
+previousReturn.correction.vatDeclared.countryAmountLabel = Amount
+previousReturn.correction.vatDeclared.totalVatOwed = VAT payable this period after corrections
+
 
 netValueOfSalesFromNi.title = What were your sales at {0} rate excluding VAT?
 netValueOfSalesFromNi.heading = What were your sales at {0} rate excluding VAT?

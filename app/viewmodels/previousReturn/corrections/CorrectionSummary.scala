@@ -17,6 +17,7 @@
 package viewmodels.previousReturn.corrections
 
 import models.corrections.{CorrectionPayload, CorrectionToCountry}
+import models.domain.VatReturn
 import play.api.i18n.Messages
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
@@ -28,14 +29,15 @@ import utils.CurrencyFormatter._
 
 object CorrectionSummary {
 
-  def getAllCorrections(maybeCorrectionPayload: Option[CorrectionPayload])(implicit messages: Messages): Map[String, Seq[TitledSummaryList]] = {
+  def getCorrectionPeriods(maybeCorrectionPayload: Option[CorrectionPayload])(implicit messages: Messages): Map[String, Seq[TitledSummaryList]] = {
     maybeCorrectionPayload match {
-      case Some(correctionPayload) => (for {
-        correction <- correctionPayload.corrections
-      } yield Map(
-        messages("previousReturn.correction.correctionPeriod.title", correction.correctionReturnPeriod.displayText) ->
-          summaryRowsOfCorrectionToCountry(correction.correctionsToCountry)
-      )).flatten.toMap
+      case Some(correctionPayload) =>
+        (for {
+          correction <- correctionPayload.corrections
+        } yield Map(
+          messages("previousReturn.correction.correctionPeriod.title", correction.correctionReturnPeriod.displayText) ->
+            summaryRowsOfCorrectionToCountry(correction.correctionsToCountry)
+        )).flatten.toMap
       case _ => Map.empty
     }
   }
@@ -46,22 +48,114 @@ object CorrectionSummary {
     } yield TitledSummaryList(
       title = messages("previousReturn.correction.correctionToCountry.title", correctionToCountry.correctionCountry.name),
       list = SummaryListViewModel(
-        rows = rows(correctionToCountry.countryVatCorrection)
+        rows = summaryRowsOfCountryVatCorrection(correctionToCountry.countryVatCorrection)
       )
     )
   }
 
-  private[this] def rows(correctionAmount: BigDecimal)(implicit messages: Messages): Seq[SummaryListRow] =
+  def getDeclaredVatAfterCorrections(maybeCorrectionPayload: Option[CorrectionPayload], vatReturn: VatReturn)(implicit messages: Messages): Seq[TitledSummaryList] = {
+    maybeCorrectionPayload match {
+      case Some(correctionPayload) =>
+        val correctionAmountsToCountries = groupByCountry(correctionPayload, vatReturn)
+        val negativeAndZeroValues = correctionAmountsToCountries.filter(_.countryVatCorrection <= 0)
+        val positiveValues = correctionAmountsToCountries.filter(_.countryVatCorrection > 0)
+
+        summaryRowsOfNegativeAndZeroValues(negativeAndZeroValues) ++
+          summaryRowsOfPositiveValues(positiveValues)
+      case _ => Seq.empty
+    }
+  }
+
+  private[this] def summaryRowsOfValues(correctionsToCountry: List[CorrectionToCountry])(implicit messages: Messages): List[SummaryListRow] = {
+
+    if (correctionsToCountry.nonEmpty) {
+      val columnHeading =
+        SummaryListRowViewModel(
+          key = Key("previousReturn.correction.vatDeclared.countryLabel")
+            .withCssClass("govuk-!-font-weight-bold"),
+          value = ValueViewModel(messages("previousReturn.correction.vatDeclared.countryAmountLabel"))
+            .withCssClass("govuk-!-font-weight-bold"),
+        )
+
+      val items = for {
+        correctionToCountry <- correctionsToCountry
+      } yield {
+        SummaryListRowViewModel(
+          key = Key(HtmlContent(correctionToCountry.correctionCountry.name))
+            .withCssClass("govuk-!-font-weight-regular"),
+          value = ValueViewModel(HtmlContent(currencyFormat(correctionToCountry.countryVatCorrection))),
+        )
+      }
+
+      List(columnHeading) ++ items
+    } else {
+      List.empty
+    }
+  }
+
+  private[this] def summaryRowsOfNegativeAndZeroValues(correctionsToCountry: List[CorrectionToCountry])(implicit messages: Messages): Seq[TitledSummaryList] = {
+    Seq(
+      TitledSummaryList(
+        title = messages("previousReturn.correction.vatDeclared.noPaymentDue.title"),
+        list = SummaryListViewModel(
+          rows = summaryRowsOfValues(correctionsToCountry)
+        ),
+        hint = Some(messages("previousReturn.correction.vatDeclared.noPaymentDue.hint"))
+      )
+    )
+  }
+
+  private[this] def summaryRowsOfPositiveValues(correctionsToCountry: List[CorrectionToCountry])(implicit messages: Messages): Seq[TitledSummaryList] = {
+    Seq(TitledSummaryList(
+      title = messages("previousReturn.correction.vatDeclared.paymentDue.title"),
+      list = SummaryListViewModel(
+        rows = summaryRowsOfValues(correctionsToCountry)
+      )
+    ))
+  }
+
+  def groupByCountry(correctionPayload: CorrectionPayload, vatReturn: VatReturn): List[CorrectionToCountry] = {
+    val returnAmountsToAllCountriesFromNi = (for {
+      salesFromNi <- vatReturn.salesFromNi
+    } yield {
+      Map(salesFromNi.countryOfConsumption -> salesFromNi.amounts.map(_.vatOnSales.amount).sum)
+    }).flatten.toMap
+
+    val returnAmountsToAllCountries = vatReturn.salesFromEu.flatMap(_.sales).groupBy(_.countryOfConsumption).flatMap {
+      case (country, salesToCountry) => {
+        val totalAmount = salesToCountry.flatMap(_.amounts.map(_.vatOnSales.amount)).sum
+        val totalAmountFromNi = returnAmountsToAllCountriesFromNi.getOrElse(country, BigDecimal(0))
+        val totalOfBoth = totalAmount + totalAmountFromNi
+
+        Map(country -> totalOfBoth)
+      }
+    }
+
+    val correctionsToAllCountries = for {
+      correctionPeriods <- correctionPayload.corrections
+      correctionToCountry <- correctionPeriods.correctionsToCountry
+    } yield correctionToCountry
+
+    correctionsToAllCountries.groupBy(_.correctionCountry).map {
+      case (country, corrections) =>
+        val total = corrections.map(_.countryVatCorrection).sum
+        val totalOfReturn = total + returnAmountsToAllCountries.getOrElse(country, BigDecimal(0))
+
+        CorrectionToCountry(country, totalOfReturn)
+    }.toList
+  }
+
+  private[this] def summaryRowsOfCountryVatCorrection(correctionAmount: BigDecimal)(implicit messages: Messages): Seq[SummaryListRow] =
     Seq(
       SummaryListRowViewModel(
-        key     = Key("previousReturn.correction.correctionToCountry.previousDeclared.label")
+        key = Key("previousReturn.correction.correctionToCountry.previousDeclared.label")
           .withCssClass("govuk-!-font-weight-regular"),
-        value   = ValueViewModel(HtmlContent("TODO")),
+        value = ValueViewModel(HtmlContent("TODO")),
       ),
       SummaryListRowViewModel(
-        key     = Key("previousReturn.correction.correctionToCountry.correctionAmount.label")
+        key = Key("previousReturn.correction.correctionToCountry.correctionAmount.label")
           .withCssClass("govuk-!-font-weight-regular"),
-        value   = ValueViewModel(HtmlContent(currencyFormat(correctionAmount))),
+        value = ValueViewModel(HtmlContent(currencyFormat(correctionAmount))),
       )
     )
 

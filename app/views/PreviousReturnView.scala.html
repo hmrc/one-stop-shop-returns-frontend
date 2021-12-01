@@ -31,6 +31,8 @@
         euSalesList: Map[String, Seq[TitledSummaryList]],
         totalSalesList: TitledSummaryList,
         correctionsForPeriodList: Map[String, Seq[TitledSummaryList]],
+        declaredVatAfterCorrections: Seq[TitledSummaryList],
+        totalVatList: Option[SummaryList],
         displayPayNow: Boolean,
         vatOwedInPence: Long,
         displayBanner: Boolean
@@ -127,6 +129,24 @@
 
             @govukSummaryList(item.list)
         }
+    }
+
+    <h2 class="govuk-heading-m">@messages("previousReturn.correction.vatDeclared.title")</h2>
+
+    @for(item <- declaredVatAfterCorrections) {
+        <h2 class="govuk-heading-s">@{
+            item.title
+        }</h2>
+
+        @if(item.hint.isDefined) {
+            <p class="govuk-body">@item.hint.get</p>
+        }
+
+        @govukSummaryList(item.list)
+    }
+
+    @if(totalVatList.isDefined) {
+        @govukSummaryList(totalVatList.get)
     }
 
 }
