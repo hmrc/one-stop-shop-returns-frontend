@@ -104,7 +104,17 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
             } else {
               form.bindFromRequest().fold(
                 formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriodsModel,List.empty ))),
-                value => Future.successful(Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, value)))
+                value => {
+                  VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).map{
+                    value =>
+                      if(value) {
+                        Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, value))
+                      } else{
+                        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+                      }
+                  }
+
+                }
               )
             }
           case Left(value) =>

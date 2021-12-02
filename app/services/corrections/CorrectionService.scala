@@ -104,7 +104,7 @@ class CorrectionService @Inject()(
     connector.getForCorrectionPeriod(period).map{
       response => response match {
         case Right(payloads) => {
-          payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry}}}
+          payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry.getOrElse(List.empty)}}}
         case Left(error) =>
           logger.error(s"there was an error when getting corrections for period: $error")
           throw new Exception(error.toString)

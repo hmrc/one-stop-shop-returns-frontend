@@ -36,7 +36,7 @@ trait CompletionChecks {
   def getPeriodsWithIncompleteCorrections()(implicit request: DataRequest[AnyContent]): List[Period] = {
     request.userAnswers
       .get(AllCorrectionPeriodsQuery)
-      .map(_.filter(_.correctionsToCountry.exists(_.countryVatCorrection.isEmpty)))
+      .map(_.filter(_.correctionsToCountry.getOrElse(List.empty).exists(_.countryVatCorrection.isEmpty)))
       .map(_.map(_.correctionReturnPeriod))
       .getOrElse(List())
   }
