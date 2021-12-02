@@ -79,6 +79,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
     "must return OK and the correct view for a GET with no banner" in {
 
+      val correctionToggle = true
+
       val application = applicationBuilder(Some(baseAnswers))
         .overrides(
           bind[VatReturnConnector].toInstance(vatReturnConnector),
@@ -86,7 +88,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
           bind[CorrectionConnector].toInstance(correctionConnector)
         )
-        .configure("features.corrections-toggle" -> true)
+        .configure("features.corrections-toggle" -> correctionToggle)
         .build()
 
       val netSalesFromNi = BigDecimal(4141)
@@ -126,7 +128,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSalesBeforeCorrection, true)
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSalesBeforeCorrection, correctionToggle)
           ))
         val totalVatSummaryList = SummaryListViewModel(
           rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection))
@@ -144,12 +146,15 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           totalVatList = Some(totalVatSummaryList),
           displayPayNow,
           (charge.outstandingAmount * 100).toLong,
-          false
+          false,
+          correctionToggle
         )(request, implicitly).toString
       }
     }
 
     "must return OK and the correct view for a GET with banner when charge is empty but expected" in {
+
+      val correctionToggle = false
 
       val application = applicationBuilder(Some(baseAnswers))
         .overrides(
@@ -158,7 +163,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
           bind[CorrectionConnector].toInstance(correctionConnector)
         )
-        .configure("features.corrections-toggle" -> false)
+        .configure("features.corrections-toggle" -> correctionToggle)
         .build()
 
       val netSalesFromNi = BigDecimal(4141)
@@ -191,7 +196,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, false)
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, correctionToggle)
           ))
         val displayPayNow = true
 
@@ -207,12 +212,15 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           None,
           displayPayNow,
           (totalVatOnSales * 100).toLong,
-          true
+          true,
+          correctionToggle
         )(request, implicitly).toString
       }
     }
 
     "must return OK and the correct view for a GET without banner for nil return" in {
+
+      val correctionToggle = false
 
       val application = applicationBuilder(Some(baseAnswers))
         .overrides(
@@ -221,7 +229,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
           bind[CorrectionConnector].toInstance(correctionConnector)
         )
-        .configure("features.corrections-toggle" -> false)
+        .configure("features.corrections-toggle" -> correctionToggle)
         .build()
 
       val zero = BigDecimal(0)
@@ -249,7 +257,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(zero, zero, zero, zero, zero, false)
+            TotalSalesSummary.rows(zero, zero, zero, zero, zero, correctionToggle)
           ))
         val displayPayNow = false
 
@@ -265,12 +273,15 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           None,
           displayPayNow,
           zero.toLong,
-          false
+          false,
+          correctionToggle
         )(request, implicitly).toString
       }
     }
 
     "must return OK and view without charge elements when unsuccessful ChargeResponse" in {
+
+      val correctionToggle = false
 
       val application = applicationBuilder(Some(baseAnswers))
         .overrides(
@@ -279,7 +290,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
           bind[CorrectionConnector].toInstance(correctionConnector)
         )
-        .configure("features.corrections-toggle" -> false)
+        .configure("features.corrections-toggle" -> correctionToggle)
         .build()
 
       val netSalesFromNi = BigDecimal(4141)
@@ -312,7 +323,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, false)
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, correctionToggle)
           ))
         val displayPayNow = true
 
@@ -328,12 +339,15 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           None,
           displayPayNow,
           (totalVatOnSales * 100).toLong,
-          true
+          true,
+          correctionToggle
         )(request, implicitly).toString
       }
     }
 
     "must return OK and correct view with nil return and a correction" in {
+
+      val correctionToggle = true
 
       val application = applicationBuilder(Some(baseAnswers))
         .overrides(
@@ -342,7 +356,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
           bind[CorrectionConnector].toInstance(correctionConnector)
         )
-        .configure("features.corrections-toggle" -> true)
+        .configure("features.corrections-toggle" -> correctionToggle)
         .build()
 
       val zero = BigDecimal(0)
@@ -372,13 +386,13 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(zero, zero, zero, zero, zero, true)
+            TotalSalesSummary.rows(zero, zero, zero, zero, zero, correctionToggle)
           ))
         val correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(Some(correctionPayload))
         val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVatAfterCorrections(Some(correctionPayload), vatReturn)
         val totalVatSummaryList = SummaryListViewModel(
           rows = PreviousReturnSummary.totalVatSummaryRows(correctionAmount))
-        val displayPayNow = false
+        val displayPayNow = true
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
@@ -392,7 +406,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           Some(totalVatSummaryList),
           displayPayNow,
           (correctionAmount * 100).toLong,
-          false
+          true,
+          correctionToggle
         )(request, implicitly).toString
       }
     }

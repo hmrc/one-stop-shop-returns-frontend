@@ -90,18 +90,21 @@ class PreviousReturnController @Inject()(
 
           val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOwed))
 
+          val hasCorrections = maybeCorrectionPayload.exists(_.corrections.nonEmpty)
+
           Ok(view(
             vatReturn,
             mainList,
             SaleAtVatRateSummary.getAllNiSales(vatReturn),
             SaleAtVatRateSummary.getAllEuSales(vatReturn),
-            getAllSales(vatReturn),
+            getAllSales(vatReturn, hasCorrections),
             CorrectionSummary.getCorrectionPeriods(maybeCorrectionPayload),
             CorrectionSummary.getDeclaredVatAfterCorrections(maybeCorrectionPayload, vatReturn),
             Some(totalVatList),
             displayPayNow,
             vatOwedInPence,
-            displayBanner
+            displayBanner,
+            appConfig.correctionToggle
           ))
 
         case (Left(NotFoundResponse), _, _) =>
@@ -119,12 +122,14 @@ class PreviousReturnController @Inject()(
       }
   }
 
-  private[this] def getAllSales(vatReturn: VatReturn)(implicit messages: Messages): TitledSummaryList = {
+  private[this] def getAllSales(vatReturn: VatReturn, hasCorrections: Boolean)(implicit messages: Messages): TitledSummaryList = {
     val netSalesFromNi = vatReturnSalesService.getTotalNetSalesToCountry(vatReturn.salesFromNi)
     val netSalesFromEu = vatReturnSalesService.getEuTotalNetSales(vatReturn.salesFromEu)
     val vatOnSalesFromNi = vatReturnSalesService.getTotalVatOnSalesToCountry(vatReturn.salesFromNi)
     val vatOnSalesFromEu = vatReturnSalesService.getEuTotalVatOnSales(vatReturn.salesFromEu)
     val totalVatOnSales = vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(vatReturn)
+
+    val showCorrections = appConfig.correctionToggle && hasCorrections
 
     TitledSummaryList(
       title = messages("previousReturn.allSales.title"),
@@ -135,7 +140,7 @@ class PreviousReturnController @Inject()(
           vatOnSalesFromNi = vatOnSalesFromNi,
           vatOnSalesFromEu = vatOnSalesFromEu,
           totalVatOnSales = totalVatOnSales,
-          correctionToggle = appConfig.correctionToggle
+          showCorrections = showCorrections
         )
       )
     )

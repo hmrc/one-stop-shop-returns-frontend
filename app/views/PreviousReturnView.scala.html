@@ -35,7 +35,8 @@
         totalVatList: Option[SummaryList],
         displayPayNow: Boolean,
         vatOwedInPence: Long,
-        displayBanner: Boolean
+        displayBanner: Boolean,
+        correctionToggle: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -120,33 +121,36 @@
 
     @govukSummaryList(totalSalesList.list)
 
-    @for((mainTitle, list) <- correctionsForPeriodList) {
-        <h2 class="govuk-heading-m">@mainTitle</h2>
-        @for(item <- list) {
+    @if(correctionToggle && correctionsForPeriodList.nonEmpty) {
+
+        @for((mainTitle, list) <- correctionsForPeriodList) {
+            <h2 class="govuk-heading-m">@mainTitle</h2>
+            @for(item <- list) {
+                <h2 class="govuk-heading-s">@{
+                    item.title
+                }</h2>
+
+                @govukSummaryList(item.list)
+            }
+        }
+
+        <h2 class="govuk-heading-m">@messages("previousReturn.correction.vatDeclared.title")</h2>
+
+        @for(item <- declaredVatAfterCorrections) {
             <h2 class="govuk-heading-s">@{
                 item.title
             }</h2>
 
+            @if(item.hint.isDefined) {
+                <p class="govuk-body">@item.hint.get</p>
+            }
+
             @govukSummaryList(item.list)
         }
-    }
 
-    <h2 class="govuk-heading-m">@messages("previousReturn.correction.vatDeclared.title")</h2>
-
-    @for(item <- declaredVatAfterCorrections) {
-        <h2 class="govuk-heading-s">@{
-            item.title
-        }</h2>
-
-        @if(item.hint.isDefined) {
-            <p class="govuk-body">@item.hint.get</p>
+        @if(totalVatList.isDefined) {
+            @govukSummaryList(totalVatList.get)
         }
-
-        @govukSummaryList(item.list)
-    }
-
-    @if(totalVatList.isDefined) {
-        @govukSummaryList(totalVatList.get)
     }
 
 }

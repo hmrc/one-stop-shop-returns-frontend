@@ -30,13 +30,13 @@ object TotalSalesSummary extends CurrencyFormatter {
            vatOnSalesFromNi: BigDecimal,
            vatOnSalesFromEu: BigDecimal,
            totalVatOnSales: BigDecimal,
-           correctionToggle: Boolean)(implicit messages: Messages): Seq[SummaryListRow] = {
+           showCorrections: Boolean)(implicit messages: Messages): Seq[SummaryListRow] = {
     Seq(
       netSalesFromNiRow(netSalesFromNi),
       netSalesFromEuRow(netSalesFromEu),
       vatOnSalesFromNiRow(vatOnSalesFromNi),
       vatOnSalesFromEuRow(vatOnSalesFromEu),
-      totalVatOnSalesRow(totalVatOnSales, correctionToggle)
+      totalVatOnSalesRow(totalVatOnSales, showCorrections)
     ).flatten
   }
 
@@ -78,10 +78,10 @@ object TotalSalesSummary extends CurrencyFormatter {
     ))
   }
 
-  private[this] def totalVatOnSalesRow(totalVatOnSales: BigDecimal, correctionToggle: Boolean)(implicit messages: Messages): Option[SummaryListRow] = {
+  private[this] def totalVatOnSalesRow(totalVatOnSales: BigDecimal, showCorrections: Boolean)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
       key =
-        if (correctionToggle) {
+        if (showCorrections) {
           Key("previousReturn.totalVatOnSalesWithCorrections.label")
         } else {
           Key("previousReturn.totalVatOnSales.label")
