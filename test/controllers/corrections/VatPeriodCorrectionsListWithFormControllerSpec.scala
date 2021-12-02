@@ -120,7 +120,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           doc.getElementsByClass("govuk-table__row").size() mustBe expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
-          responseString mustEqual view(form, NormalMode, period, completedCorrectionsModel, true)(request, messages(application)).toString
+          responseString mustEqual view(form, NormalMode, period, completedCorrectionsModel, List.empty)(request, messages(application)).toString
         }
       }
 
@@ -165,7 +165,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
             doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
 
             val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
-            responseString mustEqual view(form, NormalMode, period, completedCorrectionsModel, true)(request, messages(application)).toString
+            responseString mustEqual view(form, NormalMode, period, completedCorrectionsModel, List.empty)(request, messages(application)).toString
           }
         }
 

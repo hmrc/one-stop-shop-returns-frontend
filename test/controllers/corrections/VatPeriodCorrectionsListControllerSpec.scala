@@ -154,7 +154,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
-          responseString mustEqual view(NormalMode, period, allPeriodsModel)(request, messages(application)).toString
+          responseString mustEqual view(NormalMode, period, allPeriodsModel, List.empty)(request, messages(application)).toString
         }
       }
     }

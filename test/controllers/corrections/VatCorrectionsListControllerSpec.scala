@@ -41,6 +41,7 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
   private val form = formProvider()
 
   private lazy val vatCorrectionsListRoute = controllers.corrections.routes.VatCorrectionsListController.onPageLoad(NormalMode, period, index).url
+  private lazy val vatCorrectionsListRoutePost = controllers.corrections.routes.VatCorrectionsListController.onSubmit(NormalMode, period, index, false).url
 
   private val country = arbitrary[Country].sample.value
 
@@ -75,7 +76,7 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
           correctionPeriod = period,
           canAddCountries = true,
           periodIndex = index,
-          allCorrectionsComplete = true
+          incompleteCountries = List.empty
         )(request, messages(application)).toString
       }
     }
@@ -85,7 +86,7 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(Some(baseAnswers)).build()
 
       running(application) {
-        val request   = FakeRequest(POST, vatCorrectionsListRoute).withFormUrlEncodedBody("value" -> "true")
+        val request   = FakeRequest(POST, vatCorrectionsListRoutePost).withFormUrlEncodedBody("value" -> "true")
 
         val result = route(application, request).value
 
@@ -99,7 +100,7 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(Some(baseAnswers)).build()
 
       running(application) {
-        val request   = FakeRequest(POST, vatCorrectionsListRoute).withFormUrlEncodedBody("value" -> "")
+        val request   = FakeRequest(POST, vatCorrectionsListRoutePost).withFormUrlEncodedBody("value" -> "")
         val boundForm = form.bind(Map("value" -> ""))
 
         val result = route(application, request).value
@@ -117,7 +118,7 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
           correctionPeriod = period,
           canAddCountries = true,
           periodIndex = index,
-          allCorrectionsComplete = true
+          incompleteCountries = List.empty
         )(request, implicitly).toString
       }
     }
@@ -142,7 +143,7 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, vatCorrectionsListRoute)
+          FakeRequest(POST, vatCorrectionsListRoutePost)
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
