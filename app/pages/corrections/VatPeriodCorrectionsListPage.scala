@@ -49,11 +49,11 @@ case object VatPeriodCorrectionsListPage extends Page {
       userAnswersTry.flatMap(userAnswersToUpdate =>
         userAnswersToUpdate.remove(CorrectionPeriodQuery(Index(indexedPeriodWithCorrection._2))))
     }
-    val finalAnswers = updatedAnswers.flatMap(ua =>
-      if(ua.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).isEmpty){
-      ua.remove(AllCorrectionPeriodsQuery)
+    val finalAnswers = updatedAnswers.flatMap(userAnswers =>
+      if(userAnswers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).isEmpty){
+      userAnswers.remove(AllCorrectionPeriodsQuery)
     } else {
-        Try(ua)
+        Try(userAnswers)
       }
     )
     for{
