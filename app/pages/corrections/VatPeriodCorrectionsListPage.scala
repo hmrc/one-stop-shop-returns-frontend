@@ -20,9 +20,7 @@ import controllers.actions.AuthenticatedControllerComponents
 import controllers.corrections.{routes => correctionRoutes}
 import controllers.routes
 import models.{Index, Mode, UserAnswers}
-import pages.PageConstants.{corrections, correctionsToCountry}
-import pages.{Page, QuestionPage}
-import play.api.libs.json.JsPath
+import pages.Page
 import play.api.mvc.Call
 import queries.corrections.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery, DeriveNumberOfCorrectionPeriods}
 

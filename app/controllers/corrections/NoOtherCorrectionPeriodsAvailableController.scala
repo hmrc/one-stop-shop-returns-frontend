@@ -20,7 +20,7 @@ import controllers.actions._
 import controllers.{routes => baseRoutes}
 import logging.Logging
 import models.Period
-import pages.corrections.{CorrectPreviousReturnPage, CountryVatCorrectionPage}
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.DeriveCompletedCorrectionPeriods
@@ -29,7 +29,7 @@ import views.html.corrections.NoOtherCorrectionPeriodsAvailableView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.Failure
 
 class NoOtherCorrectionPeriodsAvailableController @Inject()(
                                        cc: AuthenticatedControllerComponents,

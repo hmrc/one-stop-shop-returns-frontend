@@ -16,7 +16,6 @@
 
 package pages.corrections
 
-import controllers.routes
 import models.{CheckMode, Index, NormalMode}
 import pages.behaviours.PageBehaviours
 

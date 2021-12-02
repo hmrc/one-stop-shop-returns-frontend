@@ -17,19 +17,16 @@
 package controllers.corrections
 
 import controllers.actions._
+import controllers.{routes => baseRoutes}
 import forms.corrections.VatCorrectionsListFormProvider
-import models.corrections.CorrectionToCountry
 import models.{Country, Index, Mode, Period}
 import pages.corrections.VatCorrectionsListPage
-import play.api.data.FormError
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.corrections.AllCorrectionCountriesQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CompletionChecks
 import viewmodels.checkAnswers.corrections.VatCorrectionsListSummary
 import views.html.corrections.VatCorrectionsListView
-import controllers.{routes => baseRoutes}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext

@@ -20,7 +20,7 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.SubmissionStatus.Complete
-import models.{Mode, Period}
+import models.{Index, Mode, Period}
 import pages.corrections.VatPeriodCorrectionsListPage
 import play.api.Logging
 import play.api.data.FormError
@@ -72,10 +72,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
             } else {
               withCompleteCorrections(onFailure = incompletePeriods => {
-                val errors = incompletePeriods.map(period =>
-                  FormError(period.toString, s"Please complete corrections for ${period.displayText}"))
-                val formWithErrors = form.copy(errors = form.errors ++ errors)
-                Ok(view(formWithErrors, mode, period, completedCorrectionPeriodsModel, incompletePeriods))
+                Ok(view(form, mode, period, completedCorrectionPeriodsModel, incompletePeriods))
               })(Ok(view(form, mode, period, completedCorrectionPeriodsModel, List.empty)))
             }
           }
@@ -87,7 +84,19 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-      withCompleteCorrectionsAsync(onFailure = _ => Future.successful(Redirect(routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period)))) {
+      withCompleteCorrectionsAsync(onFailure = {
+          incompletePeriods => {
+            if(incompletePromptShown) {
+              val correctionPeriods = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
+                .getOrElse(List.empty).zipWithIndex
+              correctionPeriods.find(correctionPeriod => correctionPeriod._1 == incompletePeriods.head)
+                .map(correctionPeriod => Future.successful(Redirect(routes.VatCorrectionsListController.onPageLoad(mode, period, Index(correctionPeriod._2)))))
+                .getOrElse(Future.successful(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad())))
+            } else {
+              Future.successful(Redirect(routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period)))
+            }
+          }
+        }) {
         returnStatusConnector.listStatuses(request.registration.commencementDate).map {
           case Right(returnStatuses) =>
 

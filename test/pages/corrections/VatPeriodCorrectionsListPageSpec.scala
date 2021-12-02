@@ -17,18 +17,14 @@
 package pages.corrections
 
 import connectors.ReturnStatusConnector
-import controllers.actions.{AuthenticatedControllerComponents, DefaultAuthenticatedControllerComponents}
-import controllers.corrections.routes
-import models.{CheckMode, CheckThirdLoopMode, Country, Index, NormalMode, Period}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import controllers.actions.AuthenticatedControllerComponents
+import models.{Country, Index, NormalMode, Period}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.behaviours.PageBehaviours
 import play.api.inject.bind
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.util.Success
 
 

@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.ReturnStatusConnector
 import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.Complete
-import models.{CheckThirdLoopMode, Country, Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
+import models.{Country, Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -32,7 +32,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
-import views.html.corrections.{VatPeriodAvailableCorrectionsListView, VatPeriodCorrectionsListView}
+import views.html.corrections.VatPeriodCorrectionsListView
 
 import scala.concurrent.Future
 
@@ -215,12 +215,37 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           .build()
 
         running(application) {
-          val request = FakeRequest(POST, vatPeriodCorrectionsListRoutePost)
+          val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(NormalMode, period, true).url)
 
           val result = route(application, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.VatCorrectionsListController.onPageLoad(NormalMode, period, Index(allPeriods.size-1)).url
+        }
+      }
+
+      "must refresh the page if there are correction amounts missing for a period" in {
+        when(mockReturnStatusConnector.listStatuses(any())(any()))
+          .thenReturn(getStatusResponse(allPeriods))
+
+        val expectedTitle = "You have corrected the VAT amount for 3 return periods"
+        val expectedTableRows = 3
+        val answers = addCorrectionPeriods(completeUserAnswers, allPeriods.tail).value
+          .set(CorrectionReturnPeriodPage(Index(allPeriods.tail.size)), allPeriods.head).success.value
+          .set(CorrectionCountryPage(Index(allPeriods.tail.size), index), Country.euCountries.head).success.value
+
+        val application = applicationBuilder(userAnswers = Some(answers))
+          .configure("bootstrap.filters.csrf.enabled" -> false)
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(NormalMode, period, false).url)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period).url
         }
       }
 
