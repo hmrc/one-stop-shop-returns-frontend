@@ -51,8 +51,15 @@ case object VatPeriodCorrectionsListPage extends Page {
       userAnswersTry.flatMap(userAnswersToUpdate =>
         userAnswersToUpdate.remove(CorrectionPeriodQuery(Index(indexedPeriodWithCorrection._2))))
     }
+    val finalAnswers = updatedAnswers.flatMap(ua =>
+      if(ua.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).isEmpty){
+      ua.remove(AllCorrectionPeriodsQuery)
+    } else {
+        Try(ua)
+      }
+    )
     for{
-      x              <- cc.sessionRepository.set(updatedAnswers.getOrElse(userAnswers))
-    }yield {x}
+      _              <- cc.sessionRepository.set(finalAnswers.getOrElse(userAnswers))
+    }yield {finalAnswers}
   }
 }

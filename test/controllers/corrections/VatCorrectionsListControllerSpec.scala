@@ -51,6 +51,11 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
       .set(CorrectionReturnPeriodPage(index), period).success.value
       .set(CountryVatCorrectionPage(index, index), BigDecimal(100.0)).success.value
 
+  private val answersWithNoCorrectionValue =
+    emptyUserAnswers
+      .set(CorrectionCountryPage(index, index), country).success.value
+      .set(CorrectionReturnPeriodPage(index), period).success.value
+
   "VatCorrectionsList Controller" - {
 
     "must return OK and the correct view for a GET" in {
@@ -77,6 +82,34 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
           canAddCountries = true,
           periodIndex = index,
           incompleteCountries = List.empty
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view with missing data warning for a GET" in {
+
+      val application = applicationBuilder(userAnswers = Some(answersWithNoCorrectionValue)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, vatCorrectionsListRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[VatCorrectionsListView]
+        implicit val msgs: Messages = messages(application)
+        val list                    = VatCorrectionsListSummary.addToListRows(answersWithNoCorrectionValue, NormalMode, index)
+
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          form = form,
+          mode = NormalMode,
+          list = list,
+          period = period,
+          correctionPeriod = period,
+          canAddCountries = true,
+          periodIndex = index,
+          incompleteCountries = List(country.name)
         )(request, messages(application)).toString
       }
     }
@@ -152,5 +185,36 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
+
+    "must refresh if there is incomplete data and the prompt has not been shown before" in {
+
+      val application = applicationBuilder(Some(answersWithNoCorrectionValue)).build()
+
+      running(application) {
+        val request   = FakeRequest(POST, vatCorrectionsListRoutePost).withFormUrlEncodedBody("value" -> "true")
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.VatCorrectionsListController.onPageLoad(NormalMode,  period,  index).url
+      }
+    }
+
+    "must redirect to CheckVatPayableAmount if there is incomplete data and the prompt has been shown before" in {
+
+      val application = applicationBuilder(Some(answersWithNoCorrectionValue)).build()
+
+      running(application) {
+        val routePost = controllers.corrections.routes.VatCorrectionsListController.onSubmit(NormalMode, period, index, true).url
+
+        val request   = FakeRequest(POST, routePost).withFormUrlEncodedBody("value" -> "true")
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.CheckVatPayableAmountController.onPageLoad(NormalMode,  period,  index, index).url
+      }
+    }
+
   }
 }

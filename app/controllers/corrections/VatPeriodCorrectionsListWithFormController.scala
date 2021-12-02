@@ -49,6 +49,10 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
 
+      VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).flatMap{result =>
+        result.fold(
+          _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())),
+          _ =>
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
         case Right(returnStatuses) =>
           val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
@@ -78,13 +82,13 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
         case Left(value) =>
           logger.error(s"there was an error $value")
           throw new Exception(value.toString)
-      }
+      } )}
   }
 
   def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
       withCompleteCorrectionsAsync(onFailure = _ => Future.successful(Redirect(routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period)))) {
-        returnStatusConnector.listStatuses(request.registration.commencementDate).flatMap {
+        returnStatusConnector.listStatuses(request.registration.commencementDate).map {
           case Right(returnStatuses) =>
 
             val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
@@ -100,20 +104,12 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
             val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
 
             if(uncompletedCorrectionPeriods.isEmpty) {
-              Future.successful(Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period)))
+              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
             } else {
               form.bindFromRequest().fold(
-                formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriodsModel,List.empty ))),
+                formWithErrors => BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriodsModel,List.empty )),
                 value => {
-                  VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).map{
-                    value =>
-                      if(value) {
-                        Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, value))
-                      } else{
-                        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-                      }
-                  }
-
+                   Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, value))
                 }
               )
             }

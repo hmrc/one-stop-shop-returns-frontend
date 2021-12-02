@@ -45,7 +45,10 @@ class VatPeriodCorrectionsListController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
     implicit request =>
-
+      VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).flatMap{result =>
+        result.fold(
+          _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())),
+          _ =>
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
         case Right(returnStatuses) =>
           val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
@@ -70,26 +73,22 @@ class VatPeriodCorrectionsListController @Inject()(
           logger.error(s"there was an error $value")
           throw new Exception(value.toString)
       }
+        )
+      }
   }
 
-  def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
-      withCompleteCorrectionsAsync(onFailure = {
+      withCompleteCorrections(onFailure = {
         incompletePeriods => {
           val correctionPeriods = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
             .getOrElse(List.empty).zipWithIndex
           correctionPeriods.find(correctionPeriod => correctionPeriod._1 == incompletePeriods.head)
-            .map(correctionPeriod => Future.successful(Redirect(routes.VatCorrectionsListController.onPageLoad(mode, period, Index(correctionPeriod._2)))))
-            .getOrElse(Future.successful(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad())))
+            .map(correctionPeriod => Redirect(routes.VatCorrectionsListController.onPageLoad(mode, period, Index(correctionPeriod._2))))
+            .getOrElse(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad()))
         }
       }) {
-        VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).map{
-          value => if(value){
-            Redirect(baseRoutes.CheckYourAnswersController.onPageLoad(period))
-          }else{
-            Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-          }
-        }
+        Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, false))
       }
   }
 }

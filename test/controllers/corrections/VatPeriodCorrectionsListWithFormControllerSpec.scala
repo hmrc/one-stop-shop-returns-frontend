@@ -73,7 +73,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
   "VatPeriodCorrectionsListWithFormController" - {
 
-    "when there are no previous return periods must redirect to JourneyRecovery" in {
+    "when there are no complete return periods available for correction must redirect to JourneyRecovery" in {
 
       when(mockReturnStatusConnector.listStatuses(any())(any()))
         .thenReturn(getStatusResponse(allPeriods, Overdue))
