@@ -80,13 +80,16 @@ class VatPeriodCorrectionsListController @Inject()(
   def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
     implicit request =>
       withCompleteCorrections(onFailure = {
-        incompletePeriods => {
-          val correctionPeriods = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
-            .getOrElse(List.empty).zipWithIndex
-          correctionPeriods.find(correctionPeriod => correctionPeriod._1 == incompletePeriods.head)
-            .map(correctionPeriod => Redirect(routes.VatCorrectionsListController.onPageLoad(mode, period, Index(correctionPeriod._2))))
-            .getOrElse(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad()))
-        }
+        incompletePeriods =>
+          if (incompletePromptShown) {
+            val correctionPeriods = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
+              .getOrElse(List.empty).zipWithIndex
+            correctionPeriods.find(correctionPeriod => correctionPeriod._1 == incompletePeriods.head)
+              .map(correctionPeriod => Redirect(routes.VatCorrectionsListController.onPageLoad(mode, period, Index(correctionPeriod._2))))
+              .getOrElse(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad()))
+          } else {
+            Redirect(routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
+          }
       }) {
         Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, false))
       }
