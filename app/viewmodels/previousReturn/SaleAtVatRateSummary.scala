@@ -34,9 +34,9 @@ object SaleAtVatRateSummary {
       SummaryListRowViewModel(
         key     = Key("previousReturn.saleAtVatRate.netValueOfSales.label")
           .withCssClass("govuk-!-font-weight-regular")
-          .withCssClass("govuk-!-width-one-half"),
+          .withCssClass("govuk-!-width-two-thirds"),
         value   = ValueViewModel(HtmlContent(currencyFormat(saleAtVatRate.netValueOfSales)))
-          .withCssClass("govuk-!-width-one-half"),
+          .withCssClass("govuk-!-width-one-third"),
       ),
       SummaryListRowViewModel(
         key     = Key("previousReturn.saleAtVatRate.vatOnSales.label")

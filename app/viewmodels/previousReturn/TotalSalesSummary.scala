@@ -44,9 +44,9 @@ object TotalSalesSummary extends CurrencyFormatter {
     Some(SummaryListRowViewModel(
       key = Key("previousReturn.netSalesFromNi.label")
         .withCssClass("govuk-!-font-weight-regular")
-        .withCssClass("govuk-!-width-one-half"),
+        .withCssClass("govuk-!-width-two-thirds"),
       value = ValueViewModel(HtmlContent(currencyFormat(netSalesFromNi)))
-        .withCssClass("govuk-!-width-one-half"),
+        .withCssClass("govuk-!-width-one-third"),
       actions = Seq.empty
     ))
   }

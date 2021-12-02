@@ -225,6 +225,67 @@ class VatReturnSalesServiceSpec extends SpecBase {
           Some(emptyCorrectionPayload.copy(corrections = periodWithCorrections))
         ) mustBe BigDecimal(743307.75)
       }
+
+      "must return total when NI exists and EU sales don't exist and has a mix of negative corrections" in {
+
+        val salesFromNi = List(SalesToCountry(Country("LT",
+          "Lithuania"),
+          List(SalesDetails(VatRate(45.54,
+            VatRateType.Reduced),
+            306338.71,
+            VatOnSales(Standard, 230899.32)),
+            SalesDetails(VatRate(98.54,
+              VatRateType.Reduced),
+              295985.50,
+              VatOnSales(Standard, 319051.84)))),
+          SalesToCountry(Country("MT",
+            "Malta"),
+            List(SalesDetails(VatRate(80.28,
+              VatRateType.Standard),
+              357873.00,
+              VatOnSales(Standard, 191855.64)))))
+
+        val periodWithCorrections = List(PeriodWithCorrections(
+          period,
+          List(CorrectionToCountry(
+            Country("ES", "Spain"),
+            BigDecimal(-500)
+          ),CorrectionToCountry(
+            Country("DE", "Germany"),
+            BigDecimal(1500.95)
+          ),CorrectionToCountry(
+            Country("MT", "Malta"),
+            BigDecimal(-999.99)
+          ))
+        ))
+
+        service.getTotalVatOnSalesAfterCorrection(
+          emptyVatReturn.copy(salesFromNi = salesFromNi),
+          Some(emptyCorrectionPayload.copy(corrections = periodWithCorrections))
+        ) mustBe BigDecimal(742307.76)
+      }
+
+      "must return total when nil return and has a mix of negative corrections" in {
+
+        val periodWithCorrections = List(PeriodWithCorrections(
+          period,
+          List(CorrectionToCountry(
+            Country("ES", "Spain"),
+            BigDecimal(-500)
+          ),CorrectionToCountry(
+            Country("DE", "Germany"),
+            BigDecimal(1500.95)
+          ),CorrectionToCountry(
+            Country("MT", "Malta"),
+            BigDecimal(-999.99)
+          ))
+        ))
+
+        service.getTotalVatOnSalesAfterCorrection(
+          emptyVatReturn,
+          Some(emptyCorrectionPayload.copy(corrections = periodWithCorrections))
+        ) mustBe BigDecimal(1500.95)
+      }
     }
   }
 }

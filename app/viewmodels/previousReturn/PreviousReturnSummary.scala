@@ -31,9 +31,11 @@ object PreviousReturnSummary extends CurrencyFormatter {
 
   def totalVatSummaryRows(totalVatOwed: BigDecimal)(implicit messages: Messages): Seq[SummaryListRow] = {
     Seq(SummaryListRowViewModel(
-      key = "previousReturn.correction.vatDeclared.totalVatOwed",
+      key = Key("previousReturn.correction.vatDeclared.totalVatOwed")
+        .withCssClass("govuk-!-width-two-thirds"),
       value = ValueViewModel(HtmlContent(currencyFormat(totalVatOwed)))
         .withCssClass("govuk-!-font-weight-bold")
+        .withCssClass("govuk-!-width-one-third")
     ))
   }
 
@@ -62,9 +64,9 @@ object PreviousReturnSummary extends CurrencyFormatter {
     clearedAmount.map(amount =>
     SummaryListRowViewModel(
       key = Key("previousReturn.clearedAmount.label")
-        .withCssClass("govuk-!-width-one-half"),
+        .withCssClass("govuk-!-width-two-thirds"),
       value = ValueViewModel(HtmlContent(currencyFormat(amount)))
-        .withCssClass("govuk-!-width-one-half")
+        .withCssClass("govuk-!-width-one-third")
     ))
   }
 
@@ -72,9 +74,9 @@ object PreviousReturnSummary extends CurrencyFormatter {
     amountOutstanding.map(outstandingAmount =>
     SummaryListRowViewModel(
       key = Key("previousReturn.amountOutstanding.label")
-        .withCssClass("govuk-!-width-one-half"),
+        .withCssClass("govuk-!-width-two-thirds"),
       value = ValueViewModel(HtmlContent(currencyFormat(outstandingAmount)))
-        .withCssClass("govuk-!-width-one-half")
+        .withCssClass("govuk-!-width-one-third")
     ))
   }
 
