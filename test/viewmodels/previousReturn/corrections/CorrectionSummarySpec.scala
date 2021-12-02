@@ -40,8 +40,8 @@ class CorrectionSummarySpec extends SpecBase {
       val country1 = arbitrary[Country].sample.value
 
       val correctionPayload = CorrectionPayload(
-        vrn = arbitrary[Vrn].sample.value,
-        period = arbitrary[Period].sample.value,
+        vrn = completeVatReturn.vrn,
+        period = completeVatReturn.period,
         corrections = List(
           PeriodWithCorrections(
             correctionReturnPeriod = Period(2021, Q3),
@@ -67,7 +67,7 @@ class CorrectionSummarySpec extends SpecBase {
         salesFromEu = List.empty
       )
 
-      CorrectionSummary.groupByCountry(correctionPayload, vatReturn) mustBe List(CorrectionToCountry(country1, BigDecimal(120)))
+      CorrectionSummary.groupByCountry(correctionPayload, vatReturn) mustBe Map(country1 -> BigDecimal(120))
     }
 
     "should add multiple countries with negative corrections" in {
@@ -106,7 +106,45 @@ class CorrectionSummarySpec extends SpecBase {
       )
 
       CorrectionSummary.groupByCountry(correctionPayload, vatReturn) must contain.theSameElementsAs(
-        List(CorrectionToCountry(country1, BigDecimal(100)), CorrectionToCountry(country2, BigDecimal(0)))
+        Map(
+          country1 -> BigDecimal(100),
+          country2 -> BigDecimal(0)
+        )
+      )
+    }
+
+    "should have nil return with with a mix of corrections" in {
+
+      val country1 = arbitrary[Country].sample.value
+      val country2 = arbitrary[Country].suchThat(_ != country1).sample.value
+
+      val correctionPayload = CorrectionPayload(
+        vrn = arbitrary[Vrn].sample.value,
+        period = arbitrary[Period].sample.value,
+        corrections = List(
+          PeriodWithCorrections(
+            correctionReturnPeriod = Period(2021, Q3),
+            correctionsToCountry = List(
+              CorrectionToCountry(country1, BigDecimal(52.44)),
+              CorrectionToCountry(country2, BigDecimal(-589.24))
+            )),
+          PeriodWithCorrections(
+            correctionReturnPeriod = Period(2021, Q4),
+            correctionsToCountry = List(
+              CorrectionToCountry(country1, BigDecimal(-10)),
+            ))
+        ),
+        submissionReceived = Instant.now(),
+        lastUpdated = Instant.now()
+      )
+
+      val vatReturn = emptyVatReturn
+
+      CorrectionSummary.groupByCountry(correctionPayload, vatReturn) must contain.theSameElementsAs(
+        Map(
+          country1 -> BigDecimal(42.44),
+          country2 -> BigDecimal(-589.24)
+        )
       )
     }
 

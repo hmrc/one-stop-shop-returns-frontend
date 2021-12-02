@@ -18,6 +18,7 @@ package viewmodels.previousReturn.corrections
 
 import models.corrections.{CorrectionPayload, CorrectionToCountry}
 import models.domain.VatReturn
+import models.Country
 import play.api.i18n.Messages
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
@@ -57,8 +58,12 @@ object CorrectionSummary {
     maybeCorrectionPayload match {
       case Some(correctionPayload) =>
         val correctionAmountsToCountries = groupByCountry(correctionPayload, vatReturn)
-        val negativeAndZeroValues = correctionAmountsToCountries.filter(_.countryVatCorrection <= 0)
-        val positiveValues = correctionAmountsToCountries.filter(_.countryVatCorrection > 0)
+        val negativeAndZeroValues = correctionAmountsToCountries.filter {
+          case (_, amount) => amount <= 0
+        }
+        val positiveValues = correctionAmountsToCountries.filter {
+          case (_, amount) => amount > 0
+        }
 
         summaryRowsOfNegativeAndZeroValues(negativeAndZeroValues) ++
           summaryRowsOfPositiveValues(positiveValues)
@@ -66,7 +71,7 @@ object CorrectionSummary {
     }
   }
 
-  private[this] def summaryRowsOfValues(correctionsToCountry: List[CorrectionToCountry])(implicit messages: Messages): List[SummaryListRow] = {
+  private[this] def summaryRowsOfValues(correctionsToCountry: Map[Country, BigDecimal])(implicit messages: Messages): List[SummaryListRow] = {
 
     if (correctionsToCountry.nonEmpty) {
       val columnHeading =
@@ -78,12 +83,12 @@ object CorrectionSummary {
         )
 
       val items = for {
-        correctionToCountry <- correctionsToCountry
+        (country, amount) <- correctionsToCountry
       } yield {
         SummaryListRowViewModel(
-          key = Key(HtmlContent(correctionToCountry.correctionCountry.name))
+          key = Key(HtmlContent(country.name))
             .withCssClass("govuk-!-font-weight-regular"),
-          value = ValueViewModel(HtmlContent(currencyFormat(correctionToCountry.countryVatCorrection))),
+          value = ValueViewModel(HtmlContent(currencyFormat(amount))),
         )
       }
 
@@ -93,7 +98,7 @@ object CorrectionSummary {
     }
   }
 
-  private[this] def summaryRowsOfNegativeAndZeroValues(correctionsToCountry: List[CorrectionToCountry])(implicit messages: Messages): Seq[TitledSummaryList] = {
+  private[this] def summaryRowsOfNegativeAndZeroValues(correctionsToCountry: Map[Country, BigDecimal])(implicit messages: Messages): Seq[TitledSummaryList] = {
     Seq(
       TitledSummaryList(
         title = messages("previousReturn.correction.vatDeclared.noPaymentDue.title"),
@@ -105,7 +110,7 @@ object CorrectionSummary {
     )
   }
 
-  private[this] def summaryRowsOfPositiveValues(correctionsToCountry: List[CorrectionToCountry])(implicit messages: Messages): Seq[TitledSummaryList] = {
+  private[this] def summaryRowsOfPositiveValues(correctionsToCountry: Map[Country, BigDecimal])(implicit messages: Messages): Seq[TitledSummaryList] = {
     Seq(TitledSummaryList(
       title = messages("previousReturn.correction.vatDeclared.paymentDue.title"),
       list = SummaryListViewModel(
@@ -114,35 +119,43 @@ object CorrectionSummary {
     ))
   }
 
-  def groupByCountry(correctionPayload: CorrectionPayload, vatReturn: VatReturn): List[CorrectionToCountry] = {
+  def groupByCountry(correctionPayload: CorrectionPayload, vatReturn: VatReturn): Map[Country, BigDecimal] = {
     val returnAmountsToAllCountriesFromNi = (for {
       salesFromNi <- vatReturn.salesFromNi
     } yield {
       Map(salesFromNi.countryOfConsumption -> salesFromNi.amounts.map(_.vatOnSales.amount).sum)
     }).flatten.toMap
 
-    val returnAmountsToAllCountries = vatReturn.salesFromEu.flatMap(_.sales).groupBy(_.countryOfConsumption).flatMap {
+    val returnAmountsToAllCountriesFromEu = vatReturn.salesFromEu.flatMap(_.sales).groupBy(_.countryOfConsumption).flatMap {
       case (country, salesToCountry) => {
         val totalAmount = salesToCountry.flatMap(_.amounts.map(_.vatOnSales.amount)).sum
-        val totalAmountFromNi = returnAmountsToAllCountriesFromNi.getOrElse(country, BigDecimal(0))
-        val totalOfBoth = totalAmount + totalAmountFromNi
 
-        Map(country -> totalOfBoth)
+        Map(country -> totalAmount)
       }
     }
+
+    val returnAmountsToAllCountries = returnAmountsToAllCountriesFromNi ++ returnAmountsToAllCountriesFromEu.map {
+      case (country, amount) =>
+        country -> (amount + returnAmountsToAllCountriesFromNi.getOrElse(country, BigDecimal(0)))
+    }
+
 
     val correctionsToAllCountries = for {
       correctionPeriods <- correctionPayload.corrections
       correctionToCountry <- correctionPeriods.correctionsToCountry
     } yield correctionToCountry
 
-    correctionsToAllCountries.groupBy(_.correctionCountry).map {
+    val correctionAmountsToAllCountries = correctionsToAllCountries.groupBy(_.correctionCountry).flatMap {
       case (country, corrections) =>
         val total = corrections.map(_.countryVatCorrection).sum
-        val totalOfReturn = total + returnAmountsToAllCountries.getOrElse(country, BigDecimal(0))
 
-        CorrectionToCountry(country, totalOfReturn)
-    }.toList
+        Map(country -> total)
+    }
+
+    correctionAmountsToAllCountries ++ returnAmountsToAllCountries.map {
+      case (country, amount) =>
+        country -> (amount + correctionAmountsToAllCountries.getOrElse(country, BigDecimal(0)))
+    }
   }
 
   private[this] def summaryRowsOfCountryVatCorrection(correctionAmount: BigDecimal)(implicit messages: Messages): Seq[SummaryListRow] =
