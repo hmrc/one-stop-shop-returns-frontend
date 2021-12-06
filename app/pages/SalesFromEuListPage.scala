@@ -24,7 +24,7 @@ import queries.DeriveNumberOfSalesFromEu
 
 case object SalesFromEuListPage extends Page {
 
-  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean, config: FrontendAppConfig): Call =
+  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call =
     if (addAnother) {
       answers.get(DeriveNumberOfSalesFromEu) match {
         case Some(size) => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(size))

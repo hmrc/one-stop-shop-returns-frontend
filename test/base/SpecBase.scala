@@ -33,7 +33,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
 import pages._
-import pages.corrections.CorrectPreviousReturnPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -96,6 +96,9 @@ trait SpecBase
 
   val completeUserAnswersWithCorrections: UserAnswers = completeUserAnswers
     .set(CorrectPreviousReturnPage, true).success.value
+    .set(CorrectionReturnPeriodPage(index), period).success.value
+    .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
+    .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
 
   val completeVatReturn: VatReturn =
       VatReturn(
