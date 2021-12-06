@@ -82,7 +82,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val vatOnSales = BigDecimal(0)
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(None))) thenReturn vatOnSales
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
         running(app) {
@@ -129,7 +129,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val vatOnSales = arbitrary[BigDecimal].sample.value
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(None))) thenReturn vatOnSales
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
         running(app) {
@@ -177,7 +177,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val vatOnSales = BigDecimal(100)
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(None))) thenReturn vatOnSales
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
         running(app) {
@@ -249,7 +249,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val vatOnSales = BigDecimal(0)
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
 
         running(app) {
@@ -296,7 +296,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val vatOnSales = arbitrary[BigDecimal].sample.value
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
 
         running(app) {
@@ -344,7 +344,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val vatOnSales = BigDecimal(100)
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
 
         running(app) {

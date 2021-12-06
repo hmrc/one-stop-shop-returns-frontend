@@ -57,16 +57,16 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
       "should return one vatReturnWithFinancialData" - {
 
         "when no charge exists and has vat owed with no correction" in {
-          when(mockVatReturnSalesService.getTotalVatOnSales(vatReturn, None)).thenReturn(vatOnSales)
+          when(mockVatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, None)).thenReturn(vatOnSales)
 
           val result = financialDataService.filterIfPaymentIsOutstanding(Seq(vatReturnWithFinancialData))
 
           result mustBe Seq(vatReturnWithFinancialData)
-          verify(mockVatReturnSalesService, times(1)).getTotalVatOnSales(vatReturn, None)
+          verify(mockVatReturnSalesService, times(1)).getTotalVatOnSalesAfterCorrection(vatReturn, None)
         }
 
         "when no charge exists and has vat owed with correction" in {
-          when(mockVatReturnSalesService.getTotalVatOnSales(vatReturn, Some(correctionPayload)))
+          when(mockVatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, Some(correctionPayload)))
             .thenReturn(vatOnSales)
 
           val vatReturnWithFinancialData = VatReturnWithFinancialData(vatReturn, None, None, Some(correctionPayload))
@@ -78,7 +78,7 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
 
           result mustBe Seq(vatReturnWithFinancialData)
           verify(mockVatReturnSalesService, times(1))
-            .getTotalVatOnSales(vatReturn, Some(correctionPayload))
+            .getTotalVatOnSalesAfterCorrection(vatReturn, Some(correctionPayload))
         }
 
         "when charge exists with outstanding amount" in {

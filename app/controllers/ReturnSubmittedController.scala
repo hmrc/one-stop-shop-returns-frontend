@@ -66,7 +66,7 @@ class ReturnSubmittedController @Inject()(
             None
           }
 
-          val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn, maybeCorrectionPayload)
+          val vatOwed = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
           val returnReference = ReturnReference(request.vrn, period)
           val email = request.registration.contactDetails.emailAddress
           val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)

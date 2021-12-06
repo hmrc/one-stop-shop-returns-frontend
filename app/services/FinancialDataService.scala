@@ -31,7 +31,7 @@ class FinancialDataService @Inject()(vatReturnSalesService: VatReturnSalesServic
           vatReturnWithFinancialData.charge.exists(_.outstandingAmount > 0)
         val expectingCharge =
           vatReturnWithFinancialData.charge.isEmpty &&
-          vatReturnSalesService.getTotalVatOnSales(
+          vatReturnSalesService.getTotalVatOnSalesAfterCorrection(
             vatReturnWithFinancialData.vatReturn,
             vatReturnWithFinancialData.corrections
           ) > 0

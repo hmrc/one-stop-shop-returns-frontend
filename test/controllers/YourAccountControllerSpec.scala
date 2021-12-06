@@ -430,7 +430,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
           )
 
-        when(vatReturnSalesService.getTotalVatOnSales(any(), any())) thenReturn BigDecimal(1000)
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -452,7 +452,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )(request, messages(application)).toString
 
           verify(vatReturnSalesService, times(1))
-            .getTotalVatOnSales(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
+            .getTotalVatOnSalesAfterCorrection(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
         }
       }
 
@@ -501,7 +501,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
           .thenReturn(Future.successful(Right(Seq(vatReturnWithFinancialData))))
 
-        when(vatReturnSalesService.getTotalVatOnSales(any(), any())) thenReturn BigDecimal(1000)
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -523,7 +523,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )(request, messages(application)).toString
 
           verify(vatReturnSalesService, times(2))
-            .getTotalVatOnSales(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
+            .getTotalVatOnSalesAfterCorrection(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
         }
       }
 
@@ -667,7 +667,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(Right(Seq(vatReturnWithFinancialData)))
 
-        when(vatReturnSalesService.getTotalVatOnSales(any(), any())) thenReturn
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
           vatOwed
 
         running(application) {

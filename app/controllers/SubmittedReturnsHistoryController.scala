@@ -53,7 +53,7 @@ class SubmittedReturnsHistoryController @Inject()(
                 data.charge.isEmpty && data.vatOwed
                   .getOrElse(
                     (
-                      vatReturnSalesService.getTotalVatOnSales(
+                      vatReturnSalesService.getTotalVatOnSalesAfterCorrection(
                         data.vatReturn,
                         data.corrections
                       ) * 100
@@ -66,7 +66,7 @@ class SubmittedReturnsHistoryController @Inject()(
 
           val vatReturnsWithFinancialDataWithVatOwedCalculated = vatReturnsWithFinancialData.map { vatReturnWithFinancialData =>
             val vatOwed = vatReturnWithFinancialData.vatOwed
-              .getOrElse((vatReturnSalesService.getTotalVatOnSales(vatReturnWithFinancialData.vatReturn, vatReturnWithFinancialData.corrections) * 100).toLong)
+              .getOrElse((vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturnWithFinancialData.vatReturn, vatReturnWithFinancialData.corrections) * 100).toLong)
 
             vatReturnWithFinancialData.copy(vatOwed = Some(vatOwed))
           }
