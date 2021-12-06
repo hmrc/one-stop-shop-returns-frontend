@@ -125,7 +125,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSalesBeforeCorrection, true)
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSalesBeforeCorrection, showCorrections = true)
           ))
         val totalVatSummaryList = SummaryListViewModel(
           rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection))
@@ -189,7 +189,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, correctionToggle)
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, showCorrections = false)
           ))
         val displayPayNow = true
 
@@ -246,7 +246,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(zero, zero, zero, zero, zero, false)
+            TotalSalesSummary.rows(zero, zero, zero, zero, zero, showCorrections = false)
           ))
         val displayPayNow = false
 
@@ -308,7 +308,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, correctionToggle)
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, showCorrections = false)
           ))
         val displayPayNow = true
 
@@ -367,7 +367,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(zero, zero, zero, zero, zero, correctionToggle)
+            TotalSalesSummary.rows(zero, zero, zero, zero, zero, showCorrections = true)
           ))
         val correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(Some(correctionPayload))
         val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVatAfterCorrections(Some(correctionPayload), vatReturn)
