@@ -35,8 +35,7 @@
         totalVatList: Option[SummaryList],
         displayPayNow: Boolean,
         vatOwedInPence: Long,
-        displayBanner: Boolean,
-        correctionToggle: Boolean
+        displayBanner: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -121,7 +120,7 @@
 
     @govukSummaryList(totalSalesList.list)
 
-    @if(correctionToggle && correctionsForPeriodList.nonEmpty) {
+    @if(correctionsForPeriodList.nonEmpty) {
 
         @for((mainTitle, list) <- correctionsForPeriodList) {
             <h2 class="govuk-heading-m">@mainTitle</h2>

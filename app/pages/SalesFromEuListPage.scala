@@ -31,14 +31,10 @@ case object SalesFromEuListPage extends Page {
         case None       => routes.JourneyRecoveryController.onPageLoad()
       }
     } else {
-      config.correctionToggle match {
-        case true =>
-          if(mode == CheckMode){
-            routes.CheckYourAnswersController.onPageLoad(answers.period)
-          } else {
-            controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
-          }
-        case _ => routes.CheckYourAnswersController.onPageLoad(answers.period)
-      }
+        if(mode == CheckMode){
+          routes.CheckYourAnswersController.onPageLoad(answers.period)
+        } else {
+          controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
+        }
     }
 }

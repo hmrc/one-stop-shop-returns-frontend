@@ -55,17 +55,13 @@ class SalesFromEuListPageSpec extends SpecBase with MockitoSugar with BeforeAndA
 
       "when the answer is no" - {
 
-        "to Check your answers when the Corrections toggle is false" in {
-
-          when(mockAppConfig.correctionToggle).thenReturn(false)
+        "to Check your answers when the Corrections is empty" in {
 
           SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false, mockAppConfig)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }
 
-        "to Do you want to correct a previous return page when the Corrections toggle is true" in {
-
-          when(mockAppConfig.correctionToggle).thenReturn(true)
+        "to Do you want to correct a previous return page when the Corrections exist" in {
 
           SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false, mockAppConfig)
             .mustEqual(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, emptyUserAnswers.period))
@@ -92,15 +88,12 @@ class SalesFromEuListPageSpec extends SpecBase with MockitoSugar with BeforeAndA
 
       "when the answer is no" - {
 
-        "to Check your answers if correction toggle is false" in {
-          when(mockAppConfig.correctionToggle).thenReturn(false)
+        "to Check your answers if corrections are empty" in {
           SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false, mockAppConfig)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }
 
-        "to CheckYourAnswers and correction toggle is true" in {
-          when(mockAppConfig.correctionToggle).thenReturn(true)
-          val country = arbitrary[Country].sample.value
+        "to CheckYourAnswers and corrections exist" in {
           SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false, mockAppConfig)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }

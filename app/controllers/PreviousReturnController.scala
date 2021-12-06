@@ -16,7 +16,6 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
@@ -24,6 +23,7 @@ import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.Period
 import models.domain.VatReturn
+import models.responses.{NotFound => NotFoundResponse}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatReturnSalesService
@@ -32,7 +32,6 @@ import viewmodels.TitledSummaryList
 import viewmodels.govuk.summarylist._
 import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary, TotalSalesSummary}
 import views.html.PreviousReturnView
-import models.responses.{NotFound => NotFoundResponse}
 import viewmodels.previousReturn.corrections.CorrectionSummary
 
 import javax.inject.Inject
@@ -45,8 +44,7 @@ class PreviousReturnController @Inject()(
                                           vatReturnConnector: VatReturnConnector,
                                           correctionConnector: CorrectionConnector,
                                           vatReturnSalesService: VatReturnSalesService,
-                                          financialDataConnector: FinancialDataConnector,
-                                          appConfig: FrontendAppConfig
+                                          financialDataConnector: FinancialDataConnector
   )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -62,14 +60,11 @@ class PreviousReturnController @Inject()(
         } yield (vatReturnResult, getChargeResult, correctionPayload)
       }.map {
         case (Right(vatReturn), chargeResponse, correctionPayload) =>
-          val maybeCorrectionPayload = if(appConfig.correctionToggle) {
+          val maybeCorrectionPayload =
             correctionPayload match {
               case Right(correction) => Some(correction)
               case _ => None
             }
-          } else {
-            None
-          }
 
           val totalVatOwed = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
 
@@ -103,8 +98,7 @@ class PreviousReturnController @Inject()(
             Some(totalVatList),
             displayPayNow,
             vatOwedInPence,
-            displayBanner,
-            appConfig.correctionToggle
+            displayBanner
           ))
 
         case (Left(NotFoundResponse), _, _) =>
@@ -129,8 +123,6 @@ class PreviousReturnController @Inject()(
     val vatOnSalesFromEu = vatReturnSalesService.getEuTotalVatOnSales(vatReturn.salesFromEu)
     val totalVatOnSales = vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(vatReturn)
 
-    val showCorrections = appConfig.correctionToggle && hasCorrections
-
     TitledSummaryList(
       title = messages("previousReturn.allSales.title"),
       list = SummaryListViewModel(
@@ -140,7 +132,7 @@ class PreviousReturnController @Inject()(
           vatOnSalesFromNi = vatOnSalesFromNi,
           vatOnSalesFromEu = vatOnSalesFromEu,
           totalVatOnSales = totalVatOnSales,
-          showCorrections = showCorrections
+          showCorrections = hasCorrections
         )
       )
     )
