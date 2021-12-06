@@ -21,6 +21,9 @@ import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode
 import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.{AllSalesFromEuQuery, EuSalesAtVatRateQuery}
+
+import scala.util.{Failure, Try}
 
 case class VatRatesFromEuPage(countryFromIndex: Index, countryToIndex: Index) extends QuestionPage[List[VatRate]] {
 
@@ -42,4 +45,16 @@ case class VatRatesFromEuPage(countryFromIndex: Index, countryToIndex: Index) ex
 
   override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
     routes.NetValueOfSalesFromEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex, Index(0))
+
+  override def cleanup(value: Option[List[VatRate]], userAnswers: UserAnswers): Try[UserAnswers] = {
+    for{
+       presentVatRates <- userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex))
+       vatRatesOnSales <- userAnswers.get(AllSalesFromEuQuery)
+    } yield {
+      val vatRates = vatRatesOnSales.flatMap(_.salesFromCountry.flatMap(_.salesAtVatRate.map(_.vatOnSales.vatRate))).zipWithIndex
+      val indexesToRemove = vatRates.filterNot(rateWithIndex => presentVatRates.contains(rateWithIndex._1)).map(_._2)
+      indexesToRemove.foldLeft(Try(userAnswers))((ua, index) => ua.flatMap(_.remove(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, Index(index)))))
+    }
+  }
+
 }
