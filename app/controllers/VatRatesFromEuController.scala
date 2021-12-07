@@ -52,6 +52,9 @@ class VatRatesFromEuController @Inject()(
           val form = formProvider(vatRates)
           val currentValue = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex))
 
+
+          println(currentValue)
+
           val preparedForm = currentValue match {
             case None => form
             case Some(value) => form.fill(value)

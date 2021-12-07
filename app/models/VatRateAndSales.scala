@@ -36,21 +36,27 @@ object VatRateAndSales {
 
   val stringReads: Reads[VatRateAndSales] = (
     (__ \ "rate").read[String].map(r => BigDecimal(r)) and
-      (__ \ "rateType").read[VatRateType] and
-      (__ \ "validFrom").read[LocalDate] and
-      (__ \ "validUntil").readNullable[LocalDate] and
-      (__  \ "salesAtVatRate").readNullable[SalesAtVatRate]
-    ) (VatRateAndSales.apply _)
+    (__ \ "rateType").read[VatRateType] and
+    (__ \ "validFrom").read[LocalDate] and
+    (__ \ "validUntil").readNullable[LocalDate] and
+    (__  \ "salesAtVatRate").readNullable[SalesAtVatRate]
+  ) (VatRateAndSales.apply _)
 
   val decimalReads: Reads[VatRateAndSales] = (
     (__ \ "rate").read[BigDecimal] and
-      (__ \ "rateType").read[VatRateType] and
-      (__ \ "validFrom").read[LocalDate] and
-      (__ \ "validUntil").readNullable[LocalDate] and
-      (__  \ "salesAtVatRate").readNullable[SalesAtVatRate]
-    ) (VatRateAndSales.apply _)
+    (__ \ "rateType").read[VatRateType] and
+    (__ \ "validFrom").read[LocalDate] and
+    (__ \ "validUntil").readNullable[LocalDate] and
+    (__  \ "salesAtVatRate").readNullable[SalesAtVatRate]
+  ) (VatRateAndSales.apply _)
 
   implicit val reads: Reads[VatRateAndSales] = decimalReads or stringReads
+
+  implicit val bigDecimalWrites: Writes[BigDecimal] = new Writes[BigDecimal] {
+    override def writes(o: BigDecimal): JsValue = {
+      JsString.apply(o.toString())
+    }
+  }
 
   implicit val writes: OWrites[VatRateAndSales] = (
       (__ \ "rate").write[BigDecimal] and
