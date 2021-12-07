@@ -38,7 +38,12 @@ case class VatRatesFromEuPage(countryFromIndex: Index, countryToIndex: Index) ex
 
     vatRateIndex match {
       case Some(index) => routes.NetValueOfSalesFromEuController.onPageLoad(mode, answers.period, countryFromIndex, countryToIndex, Index(index))
-      case None => routes.CheckSalesToEuController.onPageLoad(mode, answers.period, countryFromIndex, countryToIndex)
+      case None =>
+        mode match{
+          case CheckLoopMode => routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
+          case _ => routes.CheckSalesToEuController.onPageLoad(mode, answers.period, countryFromIndex, countryToIndex)
+        }
+
     }
 
   }

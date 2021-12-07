@@ -43,21 +43,21 @@ case class VatOnSalesFromEuPage(countryFromIndex: Index, countryToIndex: Index, 
 
   override def navigateInCheckMode(answers: UserAnswers): Call = navigateWithChecks(CheckMode, CheckMode, answers)
 
-  override def navigateInCheckLoopMode(answers: UserAnswers): Call =
+  override def navigateInCheckLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckLoopMode, NormalMode, answers)
+
+  override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckSecondLoopMode, CheckSecondLoopMode, answers)
+
+  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckThirdLoopMode, CheckSecondLoopMode, answers)
+
+  override def navigateInCheckInnerLoopMode(answers: UserAnswers): Call =
     routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
 
-  override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
+  override def navigateInCheckSecondInnerLoopMode(answers: UserAnswers): Call =
     routes.CheckSalesToEuController.onPageLoad(CheckSecondLoopMode, answers.period, countryFromIndex, countryToIndex)
 
-  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
+  override def navigateInCheckThirdInnerLoopMode(answers: UserAnswers): Call =
     routes.CheckSalesToEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex)
 
-  override def navigateInCheckInnerLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckInnerLoopMode, NormalMode, answers)
-
-  override def navigateInCheckSecondInnerLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckSecondInnerLoopMode, CheckSecondLoopMode, answers)
-
-  override def navigateInCheckThirdInnerLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckThirdInnerLoopMode, CheckThirdLoopMode, answers)
-
-  override def navigateInCheckFinalInnerLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckFinalInnerLoopMode, CheckMode, answers)
-
+  override def navigateInCheckFinalInnerLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex)
 }

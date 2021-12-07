@@ -32,7 +32,7 @@ object TotalNetValueOfSalesSummary extends CurrencyFormatter {
       allSales =>
 
         val totalNetValueOfSalesFromNi = allSales.map{ saleFromNi =>
-          saleFromNi.salesAtVatRate.map(_.netValueOfSales).sum
+          saleFromNi.vatRates.map(_.sales.map(_.netValueOfSales).getOrElse(BigDecimal(0))).sum
         }.sum
 
         SummaryListRowViewModel(

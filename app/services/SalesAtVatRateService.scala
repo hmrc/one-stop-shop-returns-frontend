@@ -29,7 +29,7 @@ class SalesAtVatRateService @Inject()(config: FrontendAppConfig) {
   def getNiTotalNetSales(userAnswers: UserAnswers): Option[BigDecimal]   = {
     userAnswers.get(AllSalesFromNiQuery).map(allSales =>
       allSales.map(saleFromNi =>
-        saleFromNi.salesAtVatRate.map(_.netValueOfSales).sum
+        saleFromNi.vatRates.map(_.sales.map(_.netValueOfSales).getOrElse(BigDecimal(0))).sum
       ).sum
     )
   }
@@ -37,7 +37,9 @@ class SalesAtVatRateService @Inject()(config: FrontendAppConfig) {
   def getNiTotalVatOnSales(userAnswers: UserAnswers): Option[BigDecimal] = {
     userAnswers.get(AllSalesFromNiQuery).map(allSales =>
       allSales.map(saleFromNi =>
-        saleFromNi.salesAtVatRate.map(_.vatOnSales.amount).sum
+        saleFromNi.vatRates.map(_.sales.map(
+          _.vatOnSales.amount
+        ).getOrElse(BigDecimal(0))).sum
       ).sum
     )
   }
@@ -45,15 +47,19 @@ class SalesAtVatRateService @Inject()(config: FrontendAppConfig) {
   def getEuTotalNetSales(userAnswers: UserAnswers): Option[BigDecimal]   = {
     userAnswers.get(AllSalesFromEuQuery).map(allSalesFromEu =>
       allSalesFromEu.map(
-        _.salesFromCountry.map(_.salesAtVatRate.map(_.netValueOfSales).sum).sum
+        _.salesFromCountry.map(_.vatRates.map(_.sales.map(_.netValueOfSales).getOrElse(BigDecimal(0))).sum
       ).sum
+    ).sum
     )
   }
 
   def getEuTotalVatOnSales(userAnswers: UserAnswers): Option[BigDecimal] = {
     userAnswers.get(AllSalesFromEuQuery).map(allSalesFromEu =>
       allSalesFromEu.map (
-        _.salesFromCountry.map (_.salesAtVatRate.map(_.vatOnSales.amount).sum).sum
+        _.salesFromCountry.map (_.vatRates.map(_.sales.map(
+          _.vatOnSales.amount
+        ).getOrElse(BigDecimal(0))).sum
+        ).sum
       ).sum
     )
   }
@@ -65,15 +71,15 @@ class SalesAtVatRateService @Inject()(config: FrontendAppConfig) {
         allSalesFromEu   <- userAnswers.get(AllSalesFromEuQuery).toSeq
         saleFromEu       <- allSalesFromEu
         salesFromCountry <- saleFromEu.salesFromCountry
-        salesAtVatRate   <- salesFromCountry.salesAtVatRate
-      } yield TotalVatToCountry(salesFromCountry.countryOfConsumption, salesAtVatRate.vatOnSales.amount)
+        salesAtVatRate   <- salesFromCountry.vatRates
+      } yield TotalVatToCountry(salesFromCountry.countryOfConsumption, salesAtVatRate.sales.map(_.vatOnSales.amount).getOrElse(BigDecimal(0)))
 
     val vatOwedToEuCountriesFromNI =
       for {
         allSalesFromNi <- userAnswers.get(AllSalesFromNiQuery).toSeq
         saleFromNi     <- allSalesFromNi
-        salesAtVatRate <- saleFromNi.salesAtVatRate
-      } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.vatOnSales.amount)
+        salesAtVatRate <- saleFromNi.vatRates
+      } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.sales.map(_.vatOnSales.amount).getOrElse(BigDecimal(0)))
 
     val correctionCountriesAmount = if(config.correctionToggle) {
       for {
