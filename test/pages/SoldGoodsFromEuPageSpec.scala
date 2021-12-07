@@ -17,22 +17,13 @@
 package pages
 
 import base.SpecBase
-import config.FrontendAppConfig
 import controllers.routes
 import models.{CheckMode, Country, Index, NormalMode}
-import org.mockito.Mockito
-import org.mockito.Mockito.when
-import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.behaviours.PageBehaviours
+import pages.corrections.CorrectPreviousReturnPage
 
-class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoSugar with BeforeAndAfterEach {
-
-  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
-
-  override def beforeEach(): Unit = {
-    Mockito.reset(mockAppConfig)
-  }
+class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoSugar {
 
   "SoldGoodsFromEuPage" - {
 
@@ -48,27 +39,16 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoS
 
         val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, true).success.value
 
-        SoldGoodsFromEuPage.navigate(NormalMode, answers, mockAppConfig)
+        SoldGoodsFromEuPage.navigate(NormalMode, answers)
           .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(0)))
       }
 
-      "to Check your answers when the answer is no and the Corrections feature toggle is false" in {
+      "to Do you want to correct a previous return page when the answer is no" in {
 
-        when(mockAppConfig.correctionToggle).thenReturn(false)
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromEuPage, false).success.value
 
-        val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
-
-        SoldGoodsFromEuPage.navigate(NormalMode, answers, mockAppConfig)
-          .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
-      }
-
-      "to Do you want to correct a previous return page when the answer is no and the Corrections feature toggle is true" in {
-
-        when(mockAppConfig.correctionToggle).thenReturn(true)
-
-        val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
-
-        SoldGoodsFromEuPage.navigate(NormalMode, answers, mockAppConfig)
+        SoldGoodsFromEuPage.navigate(NormalMode, answers)
           .mustEqual(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, answers.period))
       }
 
@@ -80,7 +60,7 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoS
 
         val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, true).success.value
 
-        SoldGoodsFromEuPage.navigate(CheckMode, answers, mockAppConfig)
+        SoldGoodsFromEuPage.navigate(CheckMode, answers)
           .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0)))
       }
 
@@ -91,25 +71,25 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoS
           .set(CountryOfConsumptionFromEuPage(index, index), Country("Germany", "DE")).success.value
           .set(NetValueOfSalesFromEuPage(index, index, index), BigDecimal(10)).success.value
 
-        SoldGoodsFromEuPage.navigate(CheckMode, answers, mockAppConfig)
+        SoldGoodsFromEuPage.navigate(CheckMode, answers)
           .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
       }
 
-      "to Check your answers when the answer is no and correction toggle is false" in {
-        when(mockAppConfig.correctionToggle).thenReturn(false)
+      "to Check your answers when the answer is no and corrections is false / empty" in {
 
         val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
 
-        SoldGoodsFromEuPage.navigate(CheckMode, answers, mockAppConfig)
+        SoldGoodsFromEuPage.navigate(CheckMode, answers)
           .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
       }
 
-      "to Check your answers when the answer is no and correction toggle is true" in {
-        when(mockAppConfig.correctionToggle).thenReturn(true)
+      "to Check your answers when the answer is no and corrections exist" in {
 
-        val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, false).success.value
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromEuPage, false).success.value
+          .set(CorrectPreviousReturnPage, true).success.value
 
-        SoldGoodsFromEuPage.navigate(CheckMode, answers, mockAppConfig)
+        SoldGoodsFromEuPage.navigate(CheckMode, answers)
           .mustEqual(routes.CheckYourAnswersController.onPageLoad(answers.period))
       }
     }

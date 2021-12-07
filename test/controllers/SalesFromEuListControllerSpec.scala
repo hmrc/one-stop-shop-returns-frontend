@@ -73,7 +73,7 @@ class SalesFromEuListControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual SalesFromEuListPage.navigate(baseAnswers, NormalMode, addAnother = true, mockAppConfig).url
+        redirectLocation(result).value mustEqual SalesFromEuListPage.navigate(baseAnswers, NormalMode, addAnother = true).url
       }
     }
 

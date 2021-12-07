@@ -33,8 +33,7 @@ class SalesFromEuListController @Inject()(
                                            override val messagesApi: MessagesApi,
                                            cc: AuthenticatedControllerComponents,
                                            formProvider: SalesFromEuListFormProvider,
-                                           view: SalesFromEuListView,
-                                           config: FrontendAppConfig
+                                           view: SalesFromEuListView
                                          )
   extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
 
@@ -66,7 +65,7 @@ class SalesFromEuListController @Inject()(
               BadRequest(view(formWithErrors, mode, list, period, canAddCountries))
             },
             value =>
-              Redirect(SalesFromEuListPage.navigate(request.userAnswers, mode, value, config))
+              Redirect(SalesFromEuListPage.navigate(request.userAnswers, mode, value))
           )
       }
   }

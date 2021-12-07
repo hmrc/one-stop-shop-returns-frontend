@@ -16,7 +16,6 @@
 
 package pages
 
-import config.FrontendAppConfig
 import controllers.routes
 import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
@@ -31,17 +30,16 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
 
   override def toString: String = "soldGoodsFromEu"
 
-  def navigate(mode: Mode, answers: UserAnswers, config: FrontendAppConfig): Call = {
+  override def navigate(mode: Mode, answers: UserAnswers): Call = {
     val salesFromEu = answers.get(DeriveNumberOfSalesFromEu).getOrElse(0)
 
     (mode, answers.get(SoldGoodsFromEuPage)) match {
       case (CheckMode, Some(true)) if salesFromEu > 0 => routes.CheckYourAnswersController.onPageLoad(answers.period)
       case (CheckMode, Some(true)) => routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0))
-      case (NormalMode, Some(true))  => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
+      case (NormalMode, Some(true)) => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
       case (CheckMode, Some(false)) => routes.CheckYourAnswersController.onPageLoad(answers.period)
-      case (NormalMode, Some(false)) if(config.correctionToggle) => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
-      case (NormalMode, Some(false)) if(!config.correctionToggle) => routes.CheckYourAnswersController.onPageLoad(answers.period)
-      case _        => routes.JourneyRecoveryController.onPageLoad()
+      case (NormalMode, Some(false)) => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
     }
   }
 
@@ -49,7 +47,7 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
   override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
     value match {
       case Some(false) => userAnswers.remove(AllSalesFromEuQuery)
-      case _           => super.cleanup(value, userAnswers)
+      case _ => super.cleanup(value, userAnswers)
     }
   }
 }

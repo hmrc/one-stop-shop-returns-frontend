@@ -41,7 +41,7 @@ class VatPeriodCorrectionsListController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
 
     implicit request =>
 
@@ -71,7 +71,7 @@ class VatPeriodCorrectionsListController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
     implicit request => Redirect(baseRoutes.CheckYourAnswersController.onPageLoad(period))
   }
 }

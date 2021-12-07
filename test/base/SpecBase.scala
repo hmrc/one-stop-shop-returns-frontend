@@ -33,6 +33,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
 import pages._
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -92,6 +93,12 @@ trait SpecBase
     .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
     .set(NetValueOfSalesFromEuPage(index, index, index), BigDecimal(100)).success.value
     .set(VatOnSalesFromEuPage(index, index, index), VatOnSales(Standard, BigDecimal(20))).success.value
+
+  val completeUserAnswersWithCorrections: UserAnswers = completeUserAnswers
+    .set(CorrectPreviousReturnPage, true).success.value
+    .set(CorrectionReturnPeriodPage(index), period).success.value
+    .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
+    .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
 
   val completeVatReturn: VatReturn =
       VatReturn(
@@ -250,7 +257,6 @@ trait SpecBase
         bind[CheckReturnsFilterProvider].toInstance(new FakeCheckReturnsFilterProvider()),
         bind[CheckCommencementDateFilterProvider].toInstance(new FakeCheckCommencementDateFilterProvider()),
         bind[Clock].toInstance(clockToBind),
-        bind[CheckCorrectionsToggleFilterProvider].toInstance(new FakeCheckCorrectionsToggleFilterProvider()),
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
       )
   }

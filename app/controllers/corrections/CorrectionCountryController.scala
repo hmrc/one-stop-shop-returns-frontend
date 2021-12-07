@@ -43,7 +43,7 @@ class CorrectionCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
     implicit request =>
       val form = formProvider(countryIndex,
         request.userAnswers
@@ -60,7 +60,7 @@ class CorrectionCountryController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       val form = formProvider(countryIndex,
         request.userAnswers

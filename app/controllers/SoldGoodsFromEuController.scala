@@ -16,11 +16,8 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions._
 import forms.SoldGoodsFromEuFormProvider
-
-import javax.inject.Inject
 import models.{Mode, Period}
 import pages.SoldGoodsFromEuPage
 import play.api.i18n.I18nSupport
@@ -28,13 +25,13 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SoldGoodsFromEuView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class SoldGoodsFromEuController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: SoldGoodsFromEuFormProvider,
-                                       view: SoldGoodsFromEuView,
-                                       config: FrontendAppConfig
+                                       view: SoldGoodsFromEuView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
@@ -62,7 +59,7 @@ class SoldGoodsFromEuController @Inject()(
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldGoodsFromEuPage, value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SoldGoodsFromEuPage.navigate(mode, updatedAnswers, config))
+          } yield Redirect(SoldGoodsFromEuPage.navigate(mode, updatedAnswers))
       )
   }
 }

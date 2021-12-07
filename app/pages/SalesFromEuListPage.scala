@@ -24,21 +24,17 @@ import queries.DeriveNumberOfSalesFromEu
 
 case object SalesFromEuListPage extends Page {
 
-  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean, config: FrontendAppConfig): Call =
+  def navigate(answers: UserAnswers, mode: Mode, addAnother: Boolean): Call =
     if (addAnother) {
       answers.get(DeriveNumberOfSalesFromEu) match {
         case Some(size) => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(size))
         case None       => routes.JourneyRecoveryController.onPageLoad()
       }
     } else {
-      config.correctionToggle match {
-        case true =>
-          if(mode == CheckMode){
-            routes.CheckYourAnswersController.onPageLoad(answers.period)
-          } else {
-            controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
-          }
-        case _ => routes.CheckYourAnswersController.onPageLoad(answers.period)
-      }
+        if(mode == CheckMode){
+          routes.CheckYourAnswersController.onPageLoad(answers.period)
+        } else {
+          controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
+        }
     }
 }
