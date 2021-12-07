@@ -60,16 +60,16 @@ class VatReturnSalesServiceSpec extends SpecBase {
 
     }
 
-    "getTotalVatOnSales" - {
+    "getTotalVatOnSalesBeforeCorrection" - {
 
       "must return correct total when NI and EU sales exist" in {
 
-        service.getTotalVatOnSales(completeVatReturn, None) mustBe BigDecimal(2121614.23)
+        service.getTotalVatOnSalesBeforeCorrection(completeVatReturn) mustBe BigDecimal(2121614.23)
       }
 
       "must return zero when total NI and EU sales don't exist" in {
 
-        service.getTotalVatOnSales(emptyVatReturn, None) mustBe BigDecimal(0)
+        service.getTotalVatOnSalesBeforeCorrection(emptyVatReturn) mustBe BigDecimal(0)
       }
 
       "must return total when NI exists and EU sales don't exist" in {
@@ -91,7 +91,7 @@ class VatReturnSalesServiceSpec extends SpecBase {
               357873.00,
               VatOnSales(Standard, 191855.64)))))
 
-        service.getTotalVatOnSales(emptyVatReturn.copy(salesFromNi = salesFromNi), None) mustBe BigDecimal(741806.80)
+        service.getTotalVatOnSalesBeforeCorrection(emptyVatReturn.copy(salesFromNi = salesFromNi)) mustBe BigDecimal(741806.80)
       }
 
       "must return total when NI doesn't exist and EU does exist" in {
@@ -118,8 +118,11 @@ class VatReturnSalesServiceSpec extends SpecBase {
                   122792.32,
                   VatOnSales(Standard, 554583.78)))))))
 
-        service.getTotalVatOnSales(emptyVatReturn.copy(salesFromEu = salesFromEu), None) mustBe BigDecimal(1379807.43)
+        service.getTotalVatOnSalesBeforeCorrection(emptyVatReturn.copy(salesFromEu = salesFromEu)) mustBe BigDecimal(1379807.43)
       }
+    }
+
+    "getTotalVatOnSalesAfterCorrection" - {
 
       "must return total when NI exists and EU sales don't exist and has corrections" in {
 
@@ -148,7 +151,7 @@ class VatReturnSalesServiceSpec extends SpecBase {
           ))
         ))
 
-        service.getTotalVatOnSales(
+        service.getTotalVatOnSalesAfterCorrection(
           emptyVatReturn.copy(salesFromNi = salesFromNi),
           Some(emptyCorrectionPayload.copy(corrections = periodWithCorrections))
         ) mustBe BigDecimal(742306.80)
@@ -181,7 +184,7 @@ class VatReturnSalesServiceSpec extends SpecBase {
           ))
         ))
 
-        service.getTotalVatOnSales(
+        service.getTotalVatOnSalesAfterCorrection(
           emptyVatReturn.copy(salesFromNi = salesFromNi),
           Some(emptyCorrectionPayload.copy(corrections = periodWithCorrections))
         ) mustBe BigDecimal(741806.80)
@@ -217,10 +220,71 @@ class VatReturnSalesServiceSpec extends SpecBase {
           ))
         ))
 
-        service.getTotalVatOnSales(
+        service.getTotalVatOnSalesAfterCorrection(
           emptyVatReturn.copy(salesFromNi = salesFromNi),
           Some(emptyCorrectionPayload.copy(corrections = periodWithCorrections))
         ) mustBe BigDecimal(743307.75)
+      }
+
+      "must return total when NI exists and EU sales don't exist and has a mix of negative corrections" in {
+
+        val salesFromNi = List(SalesToCountry(Country("LT",
+          "Lithuania"),
+          List(SalesDetails(VatRate(45.54,
+            VatRateType.Reduced),
+            306338.71,
+            VatOnSales(Standard, 230899.32)),
+            SalesDetails(VatRate(98.54,
+              VatRateType.Reduced),
+              295985.50,
+              VatOnSales(Standard, 319051.84)))),
+          SalesToCountry(Country("MT",
+            "Malta"),
+            List(SalesDetails(VatRate(80.28,
+              VatRateType.Standard),
+              357873.00,
+              VatOnSales(Standard, 191855.64)))))
+
+        val periodWithCorrections = List(PeriodWithCorrections(
+          period,
+          List(CorrectionToCountry(
+            Country("ES", "Spain"),
+            BigDecimal(-500)
+          ),CorrectionToCountry(
+            Country("DE", "Germany"),
+            BigDecimal(1500.95)
+          ),CorrectionToCountry(
+            Country("MT", "Malta"),
+            BigDecimal(-999.99)
+          ))
+        ))
+
+        service.getTotalVatOnSalesAfterCorrection(
+          emptyVatReturn.copy(salesFromNi = salesFromNi),
+          Some(emptyCorrectionPayload.copy(corrections = periodWithCorrections))
+        ) mustBe BigDecimal(742307.76)
+      }
+
+      "must return total when nil return and has a mix of negative corrections" in {
+
+        val periodWithCorrections = List(PeriodWithCorrections(
+          period,
+          List(CorrectionToCountry(
+            Country("ES", "Spain"),
+            BigDecimal(-500)
+          ),CorrectionToCountry(
+            Country("DE", "Germany"),
+            BigDecimal(1500.95)
+          ),CorrectionToCountry(
+            Country("MT", "Malta"),
+            BigDecimal(-999.99)
+          ))
+        ))
+
+        service.getTotalVatOnSalesAfterCorrection(
+          emptyVatReturn,
+          Some(emptyCorrectionPayload.copy(corrections = periodWithCorrections))
+        ) mustBe BigDecimal(1500.95)
       }
     }
   }

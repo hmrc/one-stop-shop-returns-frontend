@@ -16,7 +16,6 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import controllers.actions.AuthenticatedControllerComponents
@@ -40,7 +39,6 @@ class ReturnSubmittedController @Inject()(
                                            vatReturnConnector: VatReturnConnector,
                                            correctionConnector: CorrectionConnector,
                                            vatReturnSalesService: VatReturnSalesService,
-                                           frontendAppConfig: FrontendAppConfig,
                                            clock: Clock
                                          )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
@@ -57,16 +55,13 @@ class ReturnSubmittedController @Inject()(
        } yield (vatReturnResponse, correctionResponse)).map {
         case (Right(vatReturn), correctionResponse) =>
 
-          val maybeCorrectionPayload = if(frontendAppConfig.correctionToggle) {
+          val maybeCorrectionPayload =
             correctionResponse match {
               case Right(correctionPayload) => Some(correctionPayload)
               case _ => None
             }
-          } else {
-            None
-          }
 
-          val vatOwed = vatReturnSalesService.getTotalVatOnSales(vatReturn, maybeCorrectionPayload)
+          val vatOwed = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
           val returnReference = ReturnReference(request.vrn, period)
           val email = request.registration.contactDetails.emailAddress
           val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)

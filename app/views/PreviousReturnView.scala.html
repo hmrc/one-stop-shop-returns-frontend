@@ -30,6 +30,9 @@
         niSalesList: Map[String, Seq[TitledSummaryList]],
         euSalesList: Map[String, Seq[TitledSummaryList]],
         totalSalesList: TitledSummaryList,
+        correctionsForPeriodList: Map[String, Seq[TitledSummaryList]],
+        declaredVatAfterCorrections: Seq[TitledSummaryList],
+        totalVatList: Option[SummaryList],
         displayPayNow: Boolean,
         vatOwedInPence: Long,
         displayBanner: Boolean
@@ -110,9 +113,43 @@
             @govukSummaryList(item.list)
         }
     }
+
     <h2 class="govuk-heading-m">@{
         totalSalesList.title
     }</h2>
 
     @govukSummaryList(totalSalesList.list)
+
+    @if(correctionsForPeriodList.nonEmpty) {
+
+        @for((mainTitle, list) <- correctionsForPeriodList) {
+            <h2 class="govuk-heading-m">@mainTitle</h2>
+            @for(item <- list) {
+                <h2 class="govuk-heading-s">@{
+                    item.title
+                }</h2>
+
+                @govukSummaryList(item.list)
+            }
+        }
+
+        <h2 class="govuk-heading-m">@messages("previousReturn.correction.vatDeclared.title")</h2>
+
+        @for(item <- declaredVatAfterCorrections) {
+            <h2 class="govuk-heading-s">@{
+                item.title
+            }</h2>
+
+            @if(item.hint.isDefined) {
+                <p class="govuk-body">@item.hint.get</p>
+            }
+
+            @govukSummaryList(item.list)
+        }
+
+        @if(totalVatList.isDefined) {
+            @govukSummaryList(totalVatList.get)
+        }
+    }
+
 }

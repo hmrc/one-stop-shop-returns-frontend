@@ -38,7 +38,7 @@ class RemoveCountryCorrectionController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
     implicit request =>
 
       val preparedForm = request.userAnswers.get(RemoveCountryCorrectionPage(periodIndex)) match {
@@ -49,7 +49,7 @@ class RemoveCountryCorrectionController @Inject()(
       Ok(view(preparedForm, mode, period, periodIndex, countryIndex))
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(

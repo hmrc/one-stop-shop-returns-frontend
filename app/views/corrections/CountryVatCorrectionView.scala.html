@@ -47,11 +47,9 @@
             .withHint(HintViewModel(HtmlContent(
                 if(vatOwedPrevReturn != BigDecimal(0)){
                 s"<p>${Html(messages("countryVatCorrection.hint"))}</p>" +
-                s"<p>${Html(messages("countryVatCorrection.hint2"))}</p>" +
                 s"<p>${Html(messages("countryVatCorrection.previous-amount.hint", currencyFormat(vatOwedPrevReturn)))}</p>"}
                 else {
                     s"<p>${Html(messages("countryVatCorrection.hint"))}</p>"
-                    s"<p>${Html(messages("countryVatCorrection.hint2"))}</p>"
                 }
             )))
         )

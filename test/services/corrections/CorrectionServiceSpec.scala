@@ -23,8 +23,10 @@ import cats.data.Validated.{Invalid, Valid}
 import models.requests.corrections.CorrectionRequest
 import models.responses.UnexpectedResponseStatus
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
-import models.{Country, DataMissingError, Period}
-import models.Quarter.{Q1, Q2}
+import models.{Country, DataMissingError, Period, VatOnSales}
+import models.Quarter.{Q1, Q2, Q3, Q4}
+import models.domain.{SalesDetails, SalesToCountry}
+import models.VatOnSalesChoice.Standard
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -36,6 +38,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery}
 import services.PeriodService
+import uk.gov.hmrc.domain.Vrn
+import viewmodels.previousReturn.corrections.CorrectionSummary
+
+import java.time.Instant
 
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 

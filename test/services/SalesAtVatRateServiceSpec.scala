@@ -17,28 +17,19 @@
 package services
 
 import base.SpecBase
-import config.FrontendAppConfig
-import models.VatOnSalesChoice.Standard
 import models.{Country, Index, TotalVatToCountry, VatOnSales, VatRate, VatRateType}
-import org.mockito.Mockito
-import org.mockito.Mockito.when
-import org.scalatest.BeforeAndAfterEach
+import models.VatOnSalesChoice.Standard
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 
-class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
   private val index0 = Index(0)
   private val index1 = Index(1)
-  private val mockAppConfig = mock[FrontendAppConfig]
 
-  override def beforeEach(): Unit = {
-    Mockito.reset(mockAppConfig)
-    super.beforeEach()
-  }
 
-  val service = new SalesAtVatRateService(mockAppConfig)
+  val service = new SalesAtVatRateService()
 
   "SalesAtVatRateService" - {
 
@@ -275,11 +266,9 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
       val denmark: Country = Country("DK", "Denmark")
       val spain: Country = Country("ES", "Spain")
 
-      "when the corrections toggle is true" - {
+      "when the corrections exist" - {
 
         "must return correct total vat to eu countries for one country from, one country to with one vat rate" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
           val ua = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -290,12 +279,11 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
 
           val expected = List(TotalVatToCountry(belgium, BigDecimal(20)))
 
-          serviceWithToggle.getVatOwedToEuCountries(ua) mustBe expected
+          service.getVatOwedToEuCountries(ua) mustBe expected
         }
 
         "must return correct total vat to eu countries for one country from, one country to with one vat rate and a correction for the country" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val ua = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -309,12 +297,11 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
 
           val expected = List(TotalVatToCountry(belgium, BigDecimal(120)))
 
-          serviceWithToggle.getVatOwedToEuCountries(ua) mustBe expected
+          service.getVatOwedToEuCountries(ua) mustBe expected
         }
 
         "must return correct total vat to eu countries for one country from, one country to with one vat rate and a correction for another country" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val ua = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -328,12 +315,11 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
 
           val expected = List(TotalVatToCountry(belgium, BigDecimal(20)), TotalVatToCountry(spain, BigDecimal(-100)))
 
-          serviceWithToggle.getVatOwedToEuCountries(ua) mustBe expected
+          service.getVatOwedToEuCountries(ua) mustBe expected
         }
 
         "must return correct total vat to eu countries for one country from, one country to with multiple vat rates" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -345,12 +331,11 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
 
           val expected = List(TotalVatToCountry(belgium, BigDecimal(40)))
 
-          serviceWithToggle.getVatOwedToEuCountries(answers) mustBe expected
+          service.getVatOwedToEuCountries(answers) mustBe expected
         }
 
         "must return correct total vat to eu countries for one country from, multiple countries to with multiple vat rates" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -365,15 +350,14 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(100)).success.value
             .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
-          serviceWithToggle.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
+          service.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
             TotalVatToCountry(belgium, BigDecimal(40)),
             TotalVatToCountry(denmark, BigDecimal(20))
           )
         }
 
         "must return correct total vat to eu countries for multiple country from, multiple countries to with multiple vat rates" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             //countries from
@@ -406,15 +390,14 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(NetValueOfSalesFromEuPage(index1, index1, index1), BigDecimal(400)).success.value
             .set(VatOnSalesFromEuPage(index1, index1, index1), VatOnSales(Standard, BigDecimal(60))).success.value
 
-          serviceWithToggle.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
+          service.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
             TotalVatToCountry(belgium, BigDecimal(50)),
             TotalVatToCountry(denmark, BigDecimal(160))
           )
         }
 
         "must return correct total vat to eu countries for multiple country from, multiple countries to with multiple vat rates with NI sales and Eu sales" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = completeSalesFromNIUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             //countries from
@@ -447,7 +430,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(NetValueOfSalesFromEuPage(index1, index1, index1), BigDecimal(400)).success.value
             .set(VatOnSalesFromEuPage(index1, index1, index1), VatOnSales(Standard, BigDecimal(60))).success.value
 
-          serviceWithToggle.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
+          service.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
             TotalVatToCountry(belgium, BigDecimal(50)),
             TotalVatToCountry(denmark, BigDecimal(160)),
             TotalVatToCountry(spain, BigDecimal(1000))
@@ -455,11 +438,10 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
         }
       }
 
-      "when the corrections toggle is false" - {
+      "when the corrections is empty" - {
 
         "must return correct total vat to eu countries for one country from, one country to with one vat rate" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val ua = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -470,31 +452,11 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
 
           val expected = List(TotalVatToCountry(belgium, BigDecimal(20)))
 
-          serviceWithToggle.getVatOwedToEuCountries(ua) mustBe expected
-        }
-
-        "must return correct total vat to eu countries for one country from, one country to with one vat rate and ignore correction for the country" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
-          val ua = emptyUserAnswers
-            .set(SoldGoodsFromEuPage,true).success.value
-            .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
-            .set(CountryOfConsumptionFromEuPage(index0, index0), Country("BE", "Belgium")).success.value
-            .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(CorrectionReturnPeriodPage(index0), period).success.value
-            .set(CorrectionCountryPage(index0, index0), belgium).success.value
-            .set(CountryVatCorrectionPage(index0, index0), BigDecimal(100)).success.value
-
-          val expected = List(TotalVatToCountry(belgium, BigDecimal(20)))
-
-          serviceWithToggle.getVatOwedToEuCountries(ua) mustBe expected
+          service.getVatOwedToEuCountries(ua) mustBe expected
         }
 
         "must return correct total vat to eu countries for one country from, one country to with multiple vat rates" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -506,12 +468,11 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
 
           val expected = List(TotalVatToCountry(belgium, BigDecimal(40)))
 
-          serviceWithToggle.getVatOwedToEuCountries(answers) mustBe expected
+          service.getVatOwedToEuCountries(answers) mustBe expected
         }
 
         "must return correct total vat to eu countries for one country from, multiple countries to with multiple vat rates" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -526,15 +487,14 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(100)).success.value
             .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
-          serviceWithToggle.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
+          service.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
             TotalVatToCountry(belgium, BigDecimal(40)),
             TotalVatToCountry(denmark, BigDecimal(20))
           )
         }
 
         "must return correct total vat to eu countries for multiple country from, multiple countries to with multiple vat rates" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = emptyUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             //countries from
@@ -567,15 +527,14 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(NetValueOfSalesFromEuPage(index1, index1, index1), BigDecimal(400)).success.value
             .set(VatOnSalesFromEuPage(index1, index1, index1), VatOnSales(Standard, BigDecimal(60))).success.value
 
-          serviceWithToggle.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
+          service.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
             TotalVatToCountry(belgium, BigDecimal(50)),
             TotalVatToCountry(denmark, BigDecimal(160))
           )
         }
 
         "must return correct total vat to eu countries for multiple country from, multiple countries to with multiple vat rates with NI sales and Eu sales" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = completeSalesFromNIUserAnswers
             .set(SoldGoodsFromEuPage,true).success.value
             //countries from
@@ -608,7 +567,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(NetValueOfSalesFromEuPage(index1, index1, index1), BigDecimal(400)).success.value
             .set(VatOnSalesFromEuPage(index1, index1, index1), VatOnSales(Standard, BigDecimal(60))).success.value
 
-          serviceWithToggle.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
+          service.getVatOwedToEuCountries(answers) must contain theSameElementsAs List(
             TotalVatToCountry(belgium, BigDecimal(50)),
             TotalVatToCountry(denmark, BigDecimal(160)),
             TotalVatToCountry(spain, BigDecimal(1000))
@@ -619,29 +578,25 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
     }
 
     "getTotalVatOwedAfterCorrections" - {
-      "when corrections toggle is true" - {
+      "when corrections exist" - {
 
         "must return correct total when NI and EU sales exist" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
-          serviceWithToggle.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1020)
+          
+          service.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1020)
         }
 
         "must return zero when total NI and EU sales don't exist" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
-          serviceWithToggle.getTotalVatOwedAfterCorrections(emptyUserAnswers) mustBe BigDecimal(0)
+          
+          service.getTotalVatOwedAfterCorrections(emptyUserAnswers) mustBe BigDecimal(0)
         }
 
         "must return total when NI exists and EU sales don't exist" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
-          serviceWithToggle.getTotalVatOwedAfterCorrections(completeSalesFromNIUserAnswers) mustBe BigDecimal(1000)
+          
+          service.getTotalVatOwedAfterCorrections(completeSalesFromNIUserAnswers) mustBe BigDecimal(1000)
         }
 
         "must return total when NI doesn't exist and EU does exist" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = emptyUserAnswers
             .set(SoldGoodsFromEuPage, true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -650,12 +605,11 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
             .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
-          serviceWithToggle.getTotalVatOwedAfterCorrections(answers) mustBe BigDecimal(20)
+          service.getTotalVatOwedAfterCorrections(answers) mustBe BigDecimal(20)
         }
 
         "must return correct total when there is a positive correction " in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val ua = emptyUserAnswers
             .set(SoldGoodsFromEuPage, true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -667,13 +621,12 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(CorrectionCountryPage(index0, index0), Country("BE", "Belgium")).success.value
             .set(CountryVatCorrectionPage(index0, index0), BigDecimal(100)).success.value
 
-          serviceWithToggle.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(120)
+          service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(120)
 
         }
 
         "must return correct total when there is a negative correction" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val ua = emptyUserAnswers
             .set(SoldGoodsFromEuPage, true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -685,12 +638,11 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(CorrectionCountryPage(index0, index0), Country("BE", "Belgium")).success.value
             .set(CountryVatCorrectionPage(index0, index0), BigDecimal(-100)).success.value
 
-          serviceWithToggle.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(100)
+          service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(100)
         }
 
         "must return zero when the correction makes the total amount negative for a country" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val ua = emptyUserAnswers
             .set(SoldGoodsFromEuPage, true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -702,12 +654,11 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(CorrectionCountryPage(index0, index0), Country("BE", "Belgium")).success.value
             .set(CountryVatCorrectionPage(index0, index0), BigDecimal(-1000)).success.value
 
-          serviceWithToggle.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(0)
+          service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(0)
         }
 
         "must not subtract the negative amount for one country from the positive total for other countries" in {
-          when(mockAppConfig.correctionToggle) thenReturn true
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val ua = emptyUserAnswers
             .set(SoldGoodsFromEuPage, true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -719,33 +670,29 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(CorrectionCountryPage(index0, index0), Country("EE", "Estonia")).success.value
             .set(CountryVatCorrectionPage(index0, index0), BigDecimal(-1000)).success.value
 
-          serviceWithToggle.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(100)
+          service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(100)
         }
       }
 
-      "when corrections toggle is false" - {
+      "when corrections is empty" - {
 
         "must return correct total when NI and EU sales exist" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
-          serviceWithToggle.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1020)
+          
+          service.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1020)
         }
 
         "must return zero when total NI and EU sales don't exist" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
-          serviceWithToggle.getTotalVatOwedAfterCorrections(emptyUserAnswers) mustBe BigDecimal(0)
+          
+          service.getTotalVatOwedAfterCorrections(emptyUserAnswers) mustBe BigDecimal(0)
         }
 
         "must return total when NI exists and EU sales don't exist" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
-          serviceWithToggle.getTotalVatOwedAfterCorrections(completeSalesFromNIUserAnswers) mustBe BigDecimal(1000)
+          
+          service.getTotalVatOwedAfterCorrections(completeSalesFromNIUserAnswers) mustBe BigDecimal(1000)
         }
 
         "must return total when NI doesn't exist and EU does exist" in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
+          
           val answers = emptyUserAnswers
             .set(SoldGoodsFromEuPage, true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
@@ -754,25 +701,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAn
             .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
             .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
-          serviceWithToggle.getTotalVatOwedAfterCorrections(answers) mustBe BigDecimal(20)
-        }
-
-        "must return correct total and not include corrections " in {
-          when(mockAppConfig.correctionToggle) thenReturn false
-          val serviceWithToggle = new SalesAtVatRateService(mockAppConfig)
-          val ua = emptyUserAnswers
-            .set(SoldGoodsFromEuPage, true).success.value
-            .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
-            .set(CountryOfConsumptionFromEuPage(index0, index0), Country("BE", "Belgium")).success.value
-            .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(CorrectionReturnPeriodPage(index0), period).success.value
-            .set(CorrectionCountryPage(index0, index0), Country("BE", "Belgium")).success.value
-            .set(CountryVatCorrectionPage(index0, index0), BigDecimal(100)).success.value
-
-          serviceWithToggle.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(20)
-
+          service.getTotalVatOwedAfterCorrections(answers) mustBe BigDecimal(20)
         }
       }
     }

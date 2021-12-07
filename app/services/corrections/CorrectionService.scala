@@ -18,8 +18,9 @@ package services.corrections
 
 import cats.implicits._
 import connectors.corrections.CorrectionConnector
-import models.{DataMissingError, Index, Period, UserAnswers, ValidationResult}
-import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
+import models.{Country, DataMissingError, Index, Period, UserAnswers, ValidationResult}
+import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
+import models.domain.VatReturn
 import models.requests.corrections.CorrectionRequest
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.Lang.logger
@@ -102,13 +103,11 @@ class CorrectionService @Inject()(
 
   def getCorrectionsForPeriod(period: Period)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Seq[CorrectionToCountry]] = {
     connector.getForCorrectionPeriod(period).map{
-      response => response match {
-        case Right(payloads) => {
-          payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry}}}
-        case Left(error) =>
-          logger.error(s"there was an error when getting corrections for period: $error")
-          throw new Exception(error.toString)
-      }
+      case Right(payloads) => {
+        payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry}}}
+      case Left(error) =>
+        logger.error(s"there was an error when getting corrections for period: $error")
+        throw new Exception(error.toString)
     }
   }
 

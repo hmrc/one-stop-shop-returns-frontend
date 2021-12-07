@@ -26,13 +26,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 
-class SalesFromEuListPageSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
-
-  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
-
-  override def beforeEach(): Unit = {
-    Mockito.reset(mockAppConfig)
-  }
+class SalesFromEuListPageSpec extends SpecBase with MockitoSugar {
 
   "SalesFromEuList page" - {
 
@@ -48,26 +42,16 @@ class SalesFromEuListPageSpec extends SpecBase with MockitoSugar with BeforeAndA
             emptyUserAnswers
               .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
 
-          SalesFromEuListPage.navigate(answers, NormalMode, addAnother = true, mockAppConfig)
+          SalesFromEuListPage.navigate(answers, NormalMode, addAnother = true)
             .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(1)))
         }
       }
 
       "when the answer is no" - {
 
-        "to Check your answers when the Corrections toggle is false" in {
+        "to Do you want to correct a previous return page" in {
 
-          when(mockAppConfig.correctionToggle).thenReturn(false)
-
-          SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false, mockAppConfig)
-            .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
-        }
-
-        "to Do you want to correct a previous return page when the Corrections toggle is true" in {
-
-          when(mockAppConfig.correctionToggle).thenReturn(true)
-
-          SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false, mockAppConfig)
+          SalesFromEuListPage.navigate(emptyUserAnswers, NormalMode, addAnother = false)
             .mustEqual(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, emptyUserAnswers.period))
         }
       }
@@ -84,7 +68,7 @@ class SalesFromEuListPageSpec extends SpecBase with MockitoSugar with BeforeAndA
             emptyUserAnswers
               .set(CountryOfSaleFromEuPage(Index(0)), country).success.value
 
-          SalesFromEuListPage.navigate(answers, CheckMode, addAnother = true, mockAppConfig)
+          SalesFromEuListPage.navigate(answers, CheckMode, addAnother = true)
             .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(1)))
         }
 
@@ -92,16 +76,13 @@ class SalesFromEuListPageSpec extends SpecBase with MockitoSugar with BeforeAndA
 
       "when the answer is no" - {
 
-        "to Check your answers if correction toggle is false" in {
-          when(mockAppConfig.correctionToggle).thenReturn(false)
-          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false, mockAppConfig)
+        "to Check your answers if corrections are empty" in {
+          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }
 
-        "to CheckYourAnswers and correction toggle is true" in {
-          when(mockAppConfig.correctionToggle).thenReturn(true)
-          val country = arbitrary[Country].sample.value
-          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false, mockAppConfig)
+        "to CheckYourAnswers and corrections exist" in {
+          SalesFromEuListPage.navigate(emptyUserAnswers, CheckMode, addAnother = false)
             .mustEqual(routes.CheckYourAnswersController.onPageLoad(emptyUserAnswers.period))
         }
       }

@@ -42,6 +42,7 @@ import services.VatReturnSalesService
 import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary, TotalSalesSummary}
 import viewmodels.govuk.summarylist._
 import viewmodels.TitledSummaryList
+import viewmodels.previousReturn.corrections.CorrectionSummary
 import views.html.PreviousReturnView
 
 import scala.concurrent.Future
@@ -64,7 +65,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
   private lazy val previousReturnRoute = routes.PreviousReturnController.onPageLoad(period).url
 
   private val countryFrom = arbitrary[Country].sample.value
-  private val countryTo   = arbitrary[Country].sample.value
+  private val countryTo = arbitrary[Country].sample.value
 
   private val vatReturn = arbitrary[VatReturn].sample.value
   private val correctionPayload = arbitrary[CorrectionPayload].sample.value
@@ -85,7 +86,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
           bind[CorrectionConnector].toInstance(correctionConnector)
         )
-        .configure("features.corrections-toggle" -> true)
         .build()
 
       val netSalesFromNi = BigDecimal(4141)
@@ -93,7 +93,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       val vatOnSalesFromNi = BigDecimal(55)
       val vatOnSalesFromEu = BigDecimal(44)
       val correctionAmount = BigDecimal(25)
-      val totalVatOnSales = vatOnSalesFromNi + vatOnSalesFromEu + correctionAmount
+      val totalVatOnSalesBeforeCorrection = vatOnSalesFromNi + vatOnSalesFromEu
+      val totalVatOnSalesAfterCorrection = totalVatOnSalesBeforeCorrection + correctionAmount
 
       val clearedAmount = BigDecimal(3333.33)
       val outstandingAmount = BigDecimal(2247.22)
@@ -107,33 +108,39 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
       when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
-      when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSales
+      when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSalesBeforeCorrection
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSalesAfterCorrection
 
       running(application) {
         val request = FakeRequest(GET, previousReturnRoute)
 
         val result = route(application, request).value
 
-        val view                    = application.injector.instanceOf[PreviousReturnView]
+        val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
-        val summaryList             = SummaryListViewModel(
-          rows = PreviousReturnSummary.rows(vatReturn, totalVatOnSales, Some(clearedAmount), Some(outstandingAmount)))
-        val niSalesList             = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-        val euSalesList             = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-        val totalSalesList          = TitledSummaryList(
+        val summaryList = SummaryListViewModel(
+          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSalesAfterCorrection, Some(clearedAmount), Some(outstandingAmount)))
+        val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
+        val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
+        val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales)
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSalesBeforeCorrection, showCorrections = true)
           ))
+        val totalVatSummaryList = SummaryListViewModel(
+          rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection))
         val displayPayNow = true
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          vatReturn,
-          summaryList,
-          niSalesList,
-          euSalesList,
-          totalSalesList,
+          vatReturn = vatReturn,
+          mainList = summaryList,
+          niSalesList = niSalesList,
+          euSalesList = euSalesList,
+          totalSalesList = totalSalesList,
+          correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(Some(correctionPayload)),
+          declaredVatAfterCorrections = CorrectionSummary.getDeclaredVatAfterCorrections(Some(correctionPayload), vatReturn),
+          totalVatList = Some(totalVatSummaryList),
           displayPayNow,
           (charge.outstandingAmount * 100).toLong,
           false
@@ -150,7 +157,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
           bind[CorrectionConnector].toInstance(correctionConnector)
         )
-        .configure("features.corrections-toggle" -> false)
         .build()
 
       val netSalesFromNi = BigDecimal(4141)
@@ -165,7 +171,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
       when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
       when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
-      when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(None))) thenReturn totalVatOnSales
+      when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
 
       running(application) {
@@ -173,16 +180,16 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         val result = route(application, request).value
 
-        val view                    = application.injector.instanceOf[PreviousReturnView]
+        val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
-        val summaryList             = SummaryListViewModel(
-          rows = PreviousReturnSummary.rows(vatReturn, totalVatOnSales, None, None))
-        val niSalesList             = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-        val euSalesList             = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-        val totalSalesList          = TitledSummaryList(
+        val summaryList = SummaryListViewModel(
+          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSales, None, None))
+        val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
+        val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
+        val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales)
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, showCorrections = false)
           ))
         val displayPayNow = true
 
@@ -193,6 +200,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           niSalesList,
           euSalesList,
           totalSalesList,
+          Map.empty,
+          Seq.empty,
+          None,
           displayPayNow,
           (totalVatOnSales * 100).toLong,
           true
@@ -209,7 +219,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
           bind[CorrectionConnector].toInstance(correctionConnector)
         )
-        .configure("features.corrections-toggle" -> false)
         .build()
 
       val zero = BigDecimal(0)
@@ -219,7 +228,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn zero
       when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn zero
       when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn zero
-      when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(None))) thenReturn zero
+      when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn zero
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
 
       running(application) {
@@ -227,16 +237,16 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         val result = route(application, request).value
 
-        val view                    = application.injector.instanceOf[PreviousReturnView]
+        val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
-        val summaryList             = SummaryListViewModel(
-          rows = PreviousReturnSummary.rows(vatReturn, zero, None, None))
-        val niSalesList             = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-        val euSalesList             = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-        val totalSalesList          = TitledSummaryList(
+        val summaryList = SummaryListViewModel(
+          rows = PreviousReturnSummary.mainListRows(vatReturn, zero, None, None))
+        val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
+        val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
+        val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(zero, zero, zero, zero, zero)
+            TotalSalesSummary.rows(zero, zero, zero, zero, zero, showCorrections = false)
           ))
         val displayPayNow = false
 
@@ -247,6 +257,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           niSalesList,
           euSalesList,
           totalSalesList,
+          Map.empty,
+          Seq.empty,
+          None,
           displayPayNow,
           zero.toLong,
           false
@@ -263,7 +276,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
           bind[CorrectionConnector].toInstance(correctionConnector)
         )
-        .configure("features.corrections-toggle" -> false)
         .build()
 
       val netSalesFromNi = BigDecimal(4141)
@@ -278,7 +290,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
       when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
       when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
-      when(vatReturnSalesService.getTotalVatOnSales(any(), eqTo(None))) thenReturn totalVatOnSales
+      when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
 
       running(application) {
@@ -286,16 +299,16 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         val result = route(application, request).value
 
-        val view                    = application.injector.instanceOf[PreviousReturnView]
+        val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
-        val summaryList             = SummaryListViewModel(
-          rows = PreviousReturnSummary.rows(vatReturn, totalVatOnSales, None, None))
-        val niSalesList             = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-        val euSalesList             = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-        val totalSalesList          = TitledSummaryList(
+        val summaryList = SummaryListViewModel(
+          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSales, None, None))
+        val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
+        val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
+        val totalSalesList = TitledSummaryList(
           title = "All sales",
           list = SummaryListViewModel(
-            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales)
+            TotalSalesSummary.rows(netSalesFromNi, netSalesFromEu, vatOnSalesFromNi, vatOnSalesFromEu, totalVatOnSales, showCorrections = false)
           ))
         val displayPayNow = true
 
@@ -306,11 +319,78 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           niSalesList,
           euSalesList,
           totalSalesList,
+          Map.empty,
+          Seq.empty,
+          None,
           displayPayNow,
           (totalVatOnSales * 100).toLong,
           true
         )(request, implicitly).toString
       }
     }
+
+    "must return OK and correct view with nil return and a correction" in {
+
+      val application = applicationBuilder(Some(baseAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+          bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
+        )
+        .build()
+
+      val zero = BigDecimal(0)
+      val correctionAmount = BigDecimal(100)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+      when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn zero
+      when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn zero
+      when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn zero
+      when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn zero
+      when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+
+      running(application) {
+        val request = FakeRequest(GET, previousReturnRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[PreviousReturnView]
+        implicit val msgs: Messages = messages(application)
+        val summaryList = SummaryListViewModel(
+          rows = PreviousReturnSummary.mainListRows(vatReturn, correctionAmount, None, None))
+        val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
+        val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
+        val totalSalesList = TitledSummaryList(
+          title = "All sales",
+          list = SummaryListViewModel(
+            TotalSalesSummary.rows(zero, zero, zero, zero, zero, showCorrections = true)
+          ))
+        val correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(Some(correctionPayload))
+        val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVatAfterCorrections(Some(correctionPayload), vatReturn)
+        val totalVatSummaryList = SummaryListViewModel(
+          rows = PreviousReturnSummary.totalVatSummaryRows(correctionAmount))
+        val displayPayNow = true
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          vatReturn,
+          summaryList,
+          niSalesList,
+          euSalesList,
+          totalSalesList,
+          correctionsForPeriodList,
+          declaredVatAfterCorrections,
+          Some(totalVatSummaryList),
+          displayPayNow,
+          (correctionAmount * 100).toLong,
+          true
+        )(request, implicitly).toString
+      }
+    }
+
   }
 }

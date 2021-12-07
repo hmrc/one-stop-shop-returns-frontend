@@ -38,12 +38,12 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
     implicit request =>
       Ok(view(period))
   }
 
-  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
 
       val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)

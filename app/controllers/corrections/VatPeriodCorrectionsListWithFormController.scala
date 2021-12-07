@@ -44,7 +44,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
 
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
@@ -74,7 +74,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
 
       returnStatusConnector.listStatuses(request.registration.commencementDate).flatMap {

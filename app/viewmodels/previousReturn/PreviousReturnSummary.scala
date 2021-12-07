@@ -29,7 +29,17 @@ import viewmodels.implicits._
 
 object PreviousReturnSummary extends CurrencyFormatter {
 
-  def rows(vatReturn: VatReturn, vatOwed: BigDecimal, clearedAmount: Option[BigDecimal], amountOutstanding: Option[BigDecimal])(implicit messages: Messages): Seq[SummaryListRow] = {
+  def totalVatSummaryRows(totalVatOwed: BigDecimal)(implicit messages: Messages): Seq[SummaryListRow] = {
+    Seq(SummaryListRowViewModel(
+      key = Key("previousReturn.correction.vatDeclared.totalVatOwed")
+        .withCssClass("govuk-!-width-two-thirds"),
+      value = ValueViewModel(HtmlContent(currencyFormat(totalVatOwed)))
+        .withCssClass("govuk-!-font-weight-bold")
+        .withCssClass("govuk-!-width-one-third")
+    ))
+  }
+
+  def mainListRows(vatReturn: VatReturn, vatOwed: BigDecimal, clearedAmount: Option[BigDecimal], amountOutstanding: Option[BigDecimal])(implicit messages: Messages): Seq[SummaryListRow] = {
     Seq(
       vatOwedRow(vatOwed),
       clearedAmountRow(clearedAmount),
@@ -46,8 +56,7 @@ object PreviousReturnSummary extends CurrencyFormatter {
         key = Key("previousReturn.vatOwed.label")
           .withCssClass("govuk-!-width-one-half"),
         value = ValueViewModel(HtmlContent(currencyFormat(vatOwed)))
-          .withCssClass("govuk-!-width-one-half"),
-        actions = Seq.empty
+          .withCssClass("govuk-!-width-one-half")
       ))
   }
 
@@ -55,10 +64,9 @@ object PreviousReturnSummary extends CurrencyFormatter {
     clearedAmount.map(amount =>
     SummaryListRowViewModel(
       key = Key("previousReturn.clearedAmount.label")
-        .withCssClass("govuk-!-width-one-half"),
+        .withCssClass("govuk-!-width-two-thirds"),
       value = ValueViewModel(HtmlContent(currencyFormat(amount)))
-        .withCssClass("govuk-!-width-one-half"),
-      actions = Seq.empty
+        .withCssClass("govuk-!-width-one-third")
     ))
   }
 
@@ -66,10 +74,9 @@ object PreviousReturnSummary extends CurrencyFormatter {
     amountOutstanding.map(outstandingAmount =>
     SummaryListRowViewModel(
       key = Key("previousReturn.amountOutstanding.label")
-        .withCssClass("govuk-!-width-one-half"),
+        .withCssClass("govuk-!-width-two-thirds"),
       value = ValueViewModel(HtmlContent(currencyFormat(outstandingAmount)))
-        .withCssClass("govuk-!-width-one-half"),
-      actions = Seq.empty
+        .withCssClass("govuk-!-width-one-third")
     ))
   }
 
@@ -77,8 +84,7 @@ object PreviousReturnSummary extends CurrencyFormatter {
     Some(SummaryListRowViewModel(
       key = "previousReturn.dateSubmitted.label",
       value = ValueViewModel(
-        HtmlContent(Format.localDateFormatter.format(vatReturn.submissionReceived))),
-      actions = Seq.empty
+        HtmlContent(Format.localDateFormatter.format(vatReturn.submissionReceived)))
     ))
   }
 
@@ -86,24 +92,21 @@ object PreviousReturnSummary extends CurrencyFormatter {
     Some(SummaryListRowViewModel(
       key = "previousReturn.dateDue.label",
       value = ValueViewModel(
-        HtmlContent(Format.localDateFormatter.format(vatReturn.period.paymentDeadline))),
-      actions = Seq.empty
+        HtmlContent(Format.localDateFormatter.format(vatReturn.period.paymentDeadline)))
     ))
   }
 
   private[this] def returnReferenceNumber(vatReturn: VatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
       key = "previousReturn.returnReference.label",
-      value = ValueViewModel(HtmlFormat.escape(vatReturn.reference.value).toString),
-      actions = Seq.empty
+      value = ValueViewModel(HtmlFormat.escape(vatReturn.reference.value).toString)
     ))
   }
 
   private[this] def paymentReferenceNumber(vatReturn: VatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
       key = "previousReturn.paymentReference.label",
-      value = ValueViewModel(HtmlFormat.escape(vatReturn.paymentReference.value).toString),
-      actions = Seq.empty
+      value = ValueViewModel(HtmlFormat.escape(vatReturn.paymentReference.value).toString)
     ))
   }
 }
