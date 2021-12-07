@@ -18,7 +18,7 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class VatOnSales(choice: VatOnSalesChoice, amount: BigDecimal, vatRate: VatRate)
+case class VatOnSales(choice: VatOnSalesChoice, amount: BigDecimal)
 
 object VatOnSales {
 

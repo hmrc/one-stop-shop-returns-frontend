@@ -16,13 +16,13 @@
 
 package queries
 
-import models.{Index, SalesAtVatRate}
-import pages.PageConstants.{salesAtVatRate, salesFromCountry, salesFromEu, vatRates}
+import models.{Index, VatRateAndSales}
+import pages.PageConstants.{salesFromCountry, salesFromEu, vatRates}
 import play.api.libs.json.JsPath
 
-case class EuSalesAtVatRateQuery(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index)
-  extends Gettable[SalesAtVatRate] with Settable[SalesAtVatRate] {
+case class AllEuVatRateAndSalesQuery(countryFromIndex: Index, countryToIndex: Index)
+  extends Gettable[Seq[VatRateAndSales]] with Settable[Seq[VatRateAndSales]] {
 
   override def path: JsPath =
-    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ vatRates \ vatRateIndex.position \ salesAtVatRate
+    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ vatRates
 }

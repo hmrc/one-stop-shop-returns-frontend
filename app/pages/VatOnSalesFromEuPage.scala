@@ -17,37 +17,31 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Index, NormalMode, UserAnswers, VatOnSales}
-import pages.PageConstants.{salesAtVatRate, salesFromCountry, salesFromEu, vatOnSales}
+import models.{CheckFinalInnerLoopMode, CheckInnerLoopMode, CheckLoopMode, CheckMode, CheckSecondInnerLoopMode, CheckSecondLoopMode, CheckThirdInnerLoopMode, CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers, VatOnSales}
+import pages.PageConstants.{salesAtVatRate, salesFromCountry, salesFromEu, vatOnSales, vatRates}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
 case class VatOnSalesFromEuPage(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
   override def path: JsPath =
-    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ salesAtVatRate \ vatRateIndex.position \ toString
+    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ vatRates \ vatRateIndex.position \ salesAtVatRate \ toString
 
   override def toString: String = vatOnSales
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
+  private def navigateWithChecks(currentMode: Mode, nextMode:Mode, answers: UserAnswers): Call =
     answers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map {
       rates =>
         if (rates.size > vatRateIndex.position + 1) {
-          routes.NetValueOfSalesFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex + 1)
+          routes.NetValueOfSalesFromEuController.onPageLoad(currentMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex + 1)
         } else {
-          routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
+          routes.CheckSalesToEuController.onPageLoad(nextMode, answers.period, countryFromIndex, countryToIndex)
         }
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
 
-  override def navigateInCheckMode(answers: UserAnswers): Call =
-    answers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map {
-      rates =>
-        if (rates.size > vatRateIndex.position + 1) {
-          routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex + 1)
-        } else {
-          routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex)
-        }
-    }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
+  override def navigateInNormalMode(answers: UserAnswers): Call = navigateWithChecks(NormalMode, NormalMode, answers)
+
+  override def navigateInCheckMode(answers: UserAnswers): Call = navigateWithChecks(CheckMode, CheckMode, answers)
 
   override def navigateInCheckLoopMode(answers: UserAnswers): Call =
     routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
@@ -58,16 +52,12 @@ case class VatOnSalesFromEuPage(countryFromIndex: Index, countryToIndex: Index, 
   override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
     routes.CheckSalesToEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex)
 
-  override def navigateInCheckInnerLoopMode(answers: UserAnswers): Call =
-    routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
+  override def navigateInCheckInnerLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckInnerLoopMode, NormalMode, answers)
 
-  override def navigateInCheckSecondInnerLoopMode(answers: UserAnswers): Call =
-    routes.CheckSalesToEuController.onPageLoad(CheckSecondLoopMode, answers.period, countryFromIndex, countryToIndex)
+  override def navigateInCheckSecondInnerLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckSecondInnerLoopMode, CheckSecondLoopMode, answers)
 
-  override def navigateInCheckThirdInnerLoopMode(answers: UserAnswers): Call =
-    routes.CheckSalesToEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex)
+  override def navigateInCheckThirdInnerLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckThirdInnerLoopMode, CheckThirdLoopMode, answers)
 
-  override def navigateInCheckFinalInnerLoopMode(answers: UserAnswers): Call =
-    routes.CheckSalesToEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex)
+  override def navigateInCheckFinalInnerLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckFinalInnerLoopMode, CheckMode, answers)
 
 }
