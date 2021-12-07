@@ -34,7 +34,7 @@ import scala.concurrent.Future
 class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new VatPayableForCountryFormProvider()
-  private val form = formProvider(Country("DE", "Germany"), BigDecimal(1000))
+  private val form = formProvider(Country("DE", "Germany"), BigDecimal(2000))
 
   private val mockService = mock[VatReturnService]
 
