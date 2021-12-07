@@ -64,15 +64,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
   "Check Your Answers Controller" - {
 
-    "when correction toggle if false" - {
+    "when correct previous return is false / empty" - {
       "must return OK and the correct view for a GET" in {
         val answers = completeUserAnswers
-          .set(CorrectionReturnPeriodPage(index), period).success.value
-          .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
-          .set(CountryVatCorrectionPage(index, index), BigDecimal(-1000)).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
-          .configure("features.corrections-toggle" -> false)
           .build()
 
         running(application) {
@@ -92,35 +88,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           contentAsString(result).contains("Corrections") mustBe false
         }
       }
-    }
-
-    "when correction toggle is true" - {
-
-      "must return OK and the correct view for a GET when there were no corrections" in {
-        val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
-          .configure("features.corrections-toggle" -> true)
-          .build()
-
-        running(application) {
-          val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(period).url)
-
-          val result = route(application, request).value
-
-          status(result) mustEqual OK
-          contentAsString(result).contains("Business name") mustBe true
-          contentAsString(result).contains(registration.registeredCompanyName) mustBe true
-          contentAsString(result).contains(registration.vrn.vrn) mustBe true
-          contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
-          contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
-          contentAsString(result).contains("VAT owed to EU countries") mustBe true
-          contentAsString(result).contains("VAT declared where no payment is due") mustBe false
-          contentAsString(result).contains("VAT declared to EU countries after corrections") mustBe false
-        }
-      }
 
       "must return OK and the correct view for a GET when the correction choice was NO " in {
         val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, false).success.value))
-          .configure("features.corrections-toggle" -> true)
           .build()
 
         running(application) {
@@ -141,15 +111,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         }
       }
 
+    }
+
+    "when correct previous return is true" - {
+
       "must contain VAT declared to EU countries after corrections heading if there were corrections and all totals are positive" in {
-        val answers = completeUserAnswers
-          .set(CorrectPreviousReturnPage, true).success.value
-          .set(CorrectionReturnPeriodPage(index), period).success.value
-          .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
-          .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
+        val answers = completeUserAnswersWithCorrections
 
         val application = applicationBuilder(userAnswers = Some(answers))
-          .configure("features.corrections-toggle" -> true)
           .build()
 
         running(application) {
@@ -171,14 +140,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       }
 
       "must contain VAT declared where no payment is due heading if there were negative totals after corrections" in {
-        val answers = completeUserAnswers
+        val answers = completeUserAnswersWithCorrections
           .set(CorrectPreviousReturnPage, true).success.value
           .set(CorrectionReturnPeriodPage(index), period).success.value
           .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
           .set(CountryVatCorrectionPage(index, index), BigDecimal(-1000)).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
-          .configure("features.corrections-toggle" -> true)
           .build()
 
         running(application) {
@@ -222,7 +190,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
     "when the user answered all necessary data and submission of the return succeeds" - {
 
-      "and corrections is toggled off" - {
+      "and correct previous return is false / empty" - {
 
         "must redirect to the next page" in {
 
@@ -237,7 +205,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           val app =
             applicationBuilder(Some(answers))
-              .configure("features.corrections-toggle" -> false)
               .overrides(
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[CorrectionConnector].toInstance(correctionConnector),
@@ -269,7 +236,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           doNothing().when(auditService).audit(any())(any(), any())
 
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
-            .configure("features.corrections-toggle" -> false)
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
@@ -309,15 +275,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         }
       }
 
-      "and corrections is toggled on" - {
+      "and correct previous return is true" - {
 
         "must redirect to the next page" in {
 
           val answers =
-            emptyUserAnswers
+            completeUserAnswersWithCorrections
               .set(SoldGoodsFromNiPage, false).success.value
               .set(SoldGoodsFromEuPage, false).success.value
-              .set(CorrectPreviousReturnPage, false).success.value
 
           when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
@@ -325,7 +290,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           val app =
             applicationBuilder(Some(answers))
-              .configure("features.corrections-toggle" -> true)
               .overrides(
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[CorrectionConnector].toInstance(correctionConnector),
@@ -345,6 +309,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         "must audit the event and redirect to the next page and successfully send email confirmation" in {
           val mockSessionRepository = mock[SessionRepository]
 
+          val answers =
+            completeUserAnswersWithCorrections
+
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
@@ -356,8 +323,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
           doNothing().when(auditService).audit(any())(any(), any())
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
-            .configure("features.corrections-toggle" -> true)
+          val application = applicationBuilder(userAnswers = Some(answers))
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[CorrectionService].toInstance(correctionService),
@@ -373,13 +339,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           running(application) {
             val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period).url)
             val result = route(application, request).value
-            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, answers)
             val expectedAuditEvent = ReturnsAuditModel.build(
               vatReturnRequest, Some(correctionRequest), SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
             )
             val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, Some(correctionRequest), vatReturn.reference, vatReturn.paymentReference)
 
-            val userAnswersWithEmailConfirmation = completeUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
+            val userAnswersWithEmailConfirmation = answers.set(EmailConfirmationQuery, true).success.value
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswersWithEmailConfirmation).url
@@ -410,7 +376,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val app =
           applicationBuilder(Some(answers))
-            .configure("features.corrections-toggle" -> false)
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
@@ -446,7 +411,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val app =
           applicationBuilder(Some(answers))
-            .configure("features.corrections-toggle" -> false)
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),

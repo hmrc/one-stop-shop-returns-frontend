@@ -39,7 +39,7 @@ class CountryVatCorrectionController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
@@ -60,7 +60,7 @@ class CountryVatCorrectionController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))

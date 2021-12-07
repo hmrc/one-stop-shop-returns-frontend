@@ -38,7 +38,7 @@ class VatCorrectionsListController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
     implicit request =>
       getNumberOfCorrections(periodIndex) { (number, correctionPeriod) =>
 
@@ -50,7 +50,7 @@ class VatCorrectionsListController @Inject()(
 
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
     implicit request =>
       getNumberOfCorrections(periodIndex) { (number, correctionPeriod) =>
 

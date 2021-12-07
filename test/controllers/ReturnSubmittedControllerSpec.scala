@@ -31,6 +31,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -60,7 +61,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
 
   "ReturnSubmitted controller" - {
 
-    "when correction toggle is off" - {
+    "when correct previous return is false / empty" - {
 
       "must return OK and the correct view for a GET with email confirmation" in {
         val instant = Instant.parse("2021-10-30T00:00:00.00Z")
@@ -76,7 +77,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[CorrectionConnector].toInstance(correctionConnector)
           )
-          .configure("features.corrections-toggle" -> false)
           .build()
 
         val vatOnSales = BigDecimal(0)
@@ -123,7 +123,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[CorrectionConnector].toInstance(correctionConnector)
           )
-          .configure("features.corrections-toggle" -> false)
           .build()
 
         val vatOnSales = arbitrary[BigDecimal].sample.value
@@ -171,7 +170,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[CorrectionConnector].toInstance(correctionConnector)
           )
-          .configure("features.corrections-toggle" -> false)
           .build()
 
         val vatOnSales = BigDecimal(100)
@@ -212,7 +210,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[CorrectionConnector].toInstance(correctionConnector)
           )
-          .configure("features.corrections-toggle" -> false)
           .build()
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
@@ -228,14 +225,16 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
       }
     }
 
-    "when correction toggle is on" - {
+    "when correct previous return is true" - {
 
       "must return OK and the correct view for a GET with email confirmation" in {
         val instant = Instant.parse("2021-10-30T00:00:00.00Z")
         val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val userAnswersWithEmail =
-          emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
+          emptyUserAnswers
+            .set(EmailConfirmationQuery, true).success.value
+            .set(CorrectPreviousReturnPage, true).success.value
 
         val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
           .overrides(
@@ -243,7 +242,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[CorrectionConnector].toInstance(correctionConnector)
           )
-          .configure("features.corrections-toggle" -> true)
           .build()
 
         val vatOnSales = BigDecimal(0)
@@ -282,7 +280,9 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val userAnswersWithoutEmail =
-          emptyUserAnswers.copy().set(EmailConfirmationQuery, false).success.value
+          emptyUserAnswers
+            .set(EmailConfirmationQuery, false).success.value
+            .set(CorrectPreviousReturnPage, true).success.value
 
         val app = applicationBuilder(Some(userAnswersWithoutEmail), clock = Some(stubClock))
           .overrides(
@@ -290,7 +290,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[CorrectionConnector].toInstance(correctionConnector)
           )
-          .configure("features.corrections-toggle" -> true)
           .build()
 
         val vatOnSales = arbitrary[BigDecimal].sample.value
@@ -330,7 +329,9 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val userAnswersWithEmail =
-          emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
+          emptyUserAnswers
+            .set(EmailConfirmationQuery, true).success.value
+            .set(CorrectPreviousReturnPage, true).success.value
 
         val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
           .overrides(
@@ -338,7 +339,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[CorrectionConnector].toInstance(correctionConnector)
           )
-          .configure("features.corrections-toggle" -> true)
           .build()
 
         val vatOnSales = BigDecimal(100)
@@ -373,13 +373,15 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
 
       "must return redirect and the correct view" in {
 
-        val app = applicationBuilder(Some(emptyUserAnswers))
+        val userAnswers = emptyUserAnswers
+          .set(CorrectPreviousReturnPage, true).success.value
+
+        val app = applicationBuilder(Some(userAnswers))
           .overrides(
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[CorrectionConnector].toInstance(correctionConnector)
           )
-          .configure("features.corrections-toggle" -> true)
           .build()
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
