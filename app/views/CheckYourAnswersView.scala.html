@@ -46,29 +46,29 @@
         }
         @if(containsCorrections) {
             <p class="govuk-table__caption--l">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>
-        @if(noPaymentDueCountries.nonEmpty) {
-            <table class="govuk-table">
-                <caption class="govuk-table__caption">
-                    <p class="govuk-table__caption--s">@messages("checkYourAnswers.noPaymentsDue.heading")</p>
-                    <p class="govuk-body">@messages("checkYourAnswers.noPaymentsDue.caption")</p>
-                </caption>
-                <thead class="govuk-table__head">
-                    <tr class="govuk-table__row">
-                        <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswersLabel.country")</th>
-                        <th scope="col" class="govuk-table__header">@messages("checkYourAnswersLabel.amount")</th>
-                    </tr>
-                </thead>
-                <tbody class="govuk-table__body">
-                @for(noPaymentDueCountry <- noPaymentDueCountries) {
-                    <tr class="govuk-table__row">
-                        <td scope="row" class="govuk-table__cell">@noPaymentDueCountry.country.name</td>
-                        <td class="govuk-table__cell">@Html(currencyFormat(noPaymentDueCountry.totalVat))</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+            @if(noPaymentDueCountries.nonEmpty) {
+                <table class="govuk-table">
+                    <caption class="govuk-table__caption">
+                        <p class="govuk-table__caption--s">@messages("checkYourAnswers.noPaymentsDue.heading")</p>
+                        <p class="govuk-body">@messages("checkYourAnswers.noPaymentsDue.caption")</p>
+                    </caption>
+                    <thead class="govuk-table__head">
+                        <tr class="govuk-table__row">
+                            <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswersLabel.country")</th>
+                            <th scope="col" class="govuk-table__header">@messages("checkYourAnswersLabel.amount")</th>
+                        </tr>
+                    </thead>
+                    <tbody class="govuk-table__body">
+                    @for(noPaymentDueCountry <- noPaymentDueCountries) {
+                        <tr class="govuk-table__row">
+                            <td scope="row" class="govuk-table__cell">@noPaymentDueCountry.country.name</td>
+                            <td class="govuk-table__cell">@Html(currencyFormat(noPaymentDueCountry.totalVat))</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
         }
-    }
 
         @if(totalVatOnSales > 0) {
             <table class="govuk-table govuk-!-margin-bottom-8">
