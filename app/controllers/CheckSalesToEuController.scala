@@ -51,7 +51,6 @@ class CheckSalesToEuController @Inject()(
           val vatRateLists: Seq[TitledSummaryList] =
             request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map(_.zipWithIndex.map {
               case (vatRate, i) =>
-
                 TitledSummaryList(
                   title = messages("checkSalesToEu.vatRateTitle", vatRate.rateForDisplay),
                   list = SummaryListViewModel(

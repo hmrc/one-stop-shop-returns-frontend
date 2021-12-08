@@ -229,33 +229,32 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
           .set(SoldGoodsFromEuPage,true).success.value
           //countries from
           .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
-          .set(CountryOfSaleFromEuPage(index1), Country("EE", "Estonia")).success.value
-
-          //countries to
           .set(CountryOfConsumptionFromEuPage(index0, index0), Country("BE", "Belgium")).success.value
-          .set(CountryOfConsumptionFromEuPage(index0, index1), Country("DK", "Denmark")).success.value
-          .set(CountryOfConsumptionFromEuPage(index1, index0), Country("BE", "Belgium")).success.value
-          .set(CountryOfConsumptionFromEuPage(index1, index1), Country("DK", "Denmark")).success.value
-
-          //vat rates
           .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
-          .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
-          .set(VatRatesFromEuPage(index1, index0), List(twentyPercentVatRate)).success.value
-          .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
-
-          //sales at vat rate
           .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
           .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+
+          .set(CountryOfConsumptionFromEuPage(index0, index1), Country("DK", "Denmark")).success.value
+          .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
           .set(NetValueOfSalesFromEuPage(index0, index1, index0), BigDecimal(200)).success.value
           .set(VatOnSalesFromEuPage(index0, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
           .set(NetValueOfSalesFromEuPage(index0, index1, index1), BigDecimal(200)).success.value
           .set(VatOnSalesFromEuPage(index0, index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+
+
+          .set(CountryOfSaleFromEuPage(index1), Country("EE", "Estonia")).success.value
+          .set(CountryOfConsumptionFromEuPage(index1, index0), Country("BE", "Belgium")).success.value
+          .set(VatRatesFromEuPage(index1, index0), List(twentyPercentVatRate)).success.value
           .set(NetValueOfSalesFromEuPage(index1, index0, index0), BigDecimal(300)).success.value
           .set(VatOnSalesFromEuPage(index1, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+
+          .set(CountryOfConsumptionFromEuPage(index1, index1), Country("DK", "Denmark")).success.value
+          .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
           .set(NetValueOfSalesFromEuPage(index1, index1, index0), BigDecimal(400)).success.value
           .set(VatOnSalesFromEuPage(index1, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
           .set(NetValueOfSalesFromEuPage(index1, index1, index1), BigDecimal(400)).success.value
           .set(VatOnSalesFromEuPage(index1, index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+
 
         service.getEuTotalNetSales(answers) mustBe Some(BigDecimal(1600))
       }
@@ -324,6 +323,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
             .set(CountryOfConsumptionFromEuPage(index0, index0), Country("BE", "Belgium")).success.value
+            .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
             .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
             .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
             .set(NetValueOfSalesFromEuPage(index0, index0, index1), BigDecimal(200)).success.value
@@ -372,9 +372,9 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
             //vat rates
             .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
+            .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
             .set(VatRatesFromEuPage(index1, index0), List(twentyPercentVatRate)).success.value
-            .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
+            .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
 
             //sales at vat rate
             .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
@@ -412,9 +412,9 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
             //vat rates
             .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
+            .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
             .set(VatRatesFromEuPage(index1, index0), List(twentyPercentVatRate)).success.value
-            .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
+            .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
 
             //sales at vat rate
             .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
@@ -461,6 +461,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
             .set(SoldGoodsFromEuPage,true).success.value
             .set(CountryOfSaleFromEuPage(index0), Country("HR", "Croatia")).success.value
             .set(CountryOfConsumptionFromEuPage(index0, index0), Country("BE", "Belgium")).success.value
+            .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)). success.value
             .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
             .set(VatOnSalesFromEuPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
             .set(NetValueOfSalesFromEuPage(index0, index0, index1), BigDecimal(200)).success.value
@@ -509,9 +510,9 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
             //vat rates
             .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
+            .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
             .set(VatRatesFromEuPage(index1, index0), List(twentyPercentVatRate)).success.value
-            .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
+            .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
 
             //sales at vat rate
             .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value
@@ -549,9 +550,9 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
             //vat rates
             .set(VatRatesFromEuPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate)).success.value
+            .set(VatRatesFromEuPage(index0, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
             .set(VatRatesFromEuPage(index1, index0), List(twentyPercentVatRate)).success.value
-            .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate)).success.value
+            .set(VatRatesFromEuPage(index1, index1), List(twentyPercentVatRate, fivePercentVatRate)).success.value
 
             //sales at vat rate
             .set(NetValueOfSalesFromEuPage(index0, index0, index0), BigDecimal(100)).success.value

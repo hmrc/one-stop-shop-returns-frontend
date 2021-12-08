@@ -17,12 +17,10 @@
 package pages
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, Index, NormalMode, UserAnswers, VatRate}
+import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers, VatRate}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.AllSalesFromNiAtVatRateQuery
-
-import scala.util.Try
+import queries.AllNiVatRateAndSalesQuery
 
 case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRate]] {
 
@@ -30,18 +28,18 @@ case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRate]] 
 
   override def toString: String = PageConstants.vatRates
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, answers.period, index, Index(0))
+  override def navigate(mode: Mode, answers: UserAnswers): Call = {
 
-  override def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, answers.period, index, Index(0))
+    val vatRateIndex: Option[Int] =
+      answers.get(AllNiVatRateAndSalesQuery(index)).flatMap(_.zipWithIndex.find(_._1.sales.isEmpty).map(_._2))
 
-  override def navigateInCheckLoopMode(answers: UserAnswers): Call =
-    routes.NetValueOfSalesFromNiController.onPageLoad(CheckLoopMode, answers.period, index, Index(0))
-
-  override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
-    routes.NetValueOfSalesFromNiController.onPageLoad(CheckSecondLoopMode, answers.period, index, Index(0))
-
-  override def cleanup(value: Option[List[VatRate]], userAnswers: UserAnswers): Try[UserAnswers] =
-    userAnswers.remove(AllSalesFromNiAtVatRateQuery(index))
+    vatRateIndex match {
+      case Some(vatIndex) => routes.NetValueOfSalesFromNiController.onPageLoad(mode, answers.period, index, Index(vatIndex))
+      case None =>
+        mode match{
+          case CheckLoopMode => routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, index)
+          case _ => routes.CheckSalesFromNiController.onPageLoad(mode, answers.period, index)
+        }
+    }
+  }
 }

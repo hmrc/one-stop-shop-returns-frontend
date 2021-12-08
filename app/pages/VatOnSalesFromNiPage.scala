@@ -18,13 +18,14 @@ package pages
 
 import controllers.routes
 import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, Index, Mode, NormalMode, UserAnswers, VatOnSales}
-import pages.PageConstants.{salesAtVatRate, salesFromNi, vatOnSales}
+import pages.PageConstants.{salesAtVatRate, salesFromNi, vatOnSales, vatRates}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
 case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
-  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ salesAtVatRate \ vatRateIndex.position \ vatOnSales
+  override def path: JsPath =
+    JsPath \ salesFromNi \ countryIndex.position \ vatRates \ vatRateIndex.position \ salesAtVatRate \ toString
 
   override def toString: String = vatOnSales
 
