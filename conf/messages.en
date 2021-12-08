@@ -436,4 +436,14 @@ vatPayableForCountry.caption = Correction period: {0}
 vatPayableForCountry.hint = We''ve calculated this total based on your most recent declaration and the correction amount.
 vatPayableForCountry.error.required = Select yes if the total VAT payable for {0} is {1}
 
+savedProgress.title = We have saved your progress
+savedProgress.subtitle = We''ll keep your information until {0}
+savedProgress.return.due = This return is due by {0}.
+savedProgress.nextSteps = What happens next
+savedProgress.listStart = You can:
+savedProgress.continue.return = continue to complete your return
+savedProgress.your.account = return to your account
+savedProgress.sign.out = sign out and come back later
+savedProgress.heading = savedProgress
+savedProgress.sign.in = If you sign out, you must sign back into your <a href="{0}">Government Gateway</a> to continue.
 saveProgress.button = Save and come back later
