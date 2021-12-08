@@ -95,11 +95,11 @@ class VatOnSalesFromEuPageSpec extends PageBehaviours {
 
     "must navigate in Check Loop Mode" - {
 
-      "when there are other vat rates" - {
+      "when there are no other vat rates" - {
 
         "it will navigate to the check sales from ni page" in {
 
-          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+          val vatRates = Gen.listOfN(1, arbitrary[VatRate]).sample.value
 
           val answers =
             emptyUserAnswers
@@ -110,15 +110,31 @@ class VatOnSalesFromEuPageSpec extends PageBehaviours {
 
         }
       }
+
+      "when there are other vat rates" - {
+
+        "it will navigate to the NetValueOfSalesFromEu page" in {
+
+          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), vatRates).success.value
+
+          VatOnSalesFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(CheckLoopMode, answers)
+            .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckLoopMode, answers.period, countryFromIndex, countryToIndex, Index(1)))
+
+        }
+      }
     }
 
     "must navigate in Check Second Loop Mode" - {
 
-      "when there are other vat rates" - {
+      "when there are no other vat rates" - {
 
         "it will navigate to the check sales from ni page" in {
 
-          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+          val vatRates = Gen.listOfN(1, arbitrary[VatRate]).sample.value
 
           val answers =
             emptyUserAnswers
@@ -129,13 +145,45 @@ class VatOnSalesFromEuPageSpec extends PageBehaviours {
 
         }
       }
+
+      "when there are other vat rates" - {
+
+        "it will navigate to the NetValueOfSalesFromEu page" in {
+
+          val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), vatRates).success.value
+
+          VatOnSalesFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(CheckSecondLoopMode, answers)
+            .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckSecondLoopMode, answers.period, countryFromIndex, countryToIndex, Index(1)))
+
+        }
+      }
     }
 
     "must navigate in Check Third Loop Mode" - {
 
-      "when there are other vat rates" - {
+      "when there are no other vat rates" - {
 
         "it will navigate to the check sales from ni page" in {
+
+          val vatRates = Gen.listOfN(1, arbitrary[VatRate]).sample.value
+
+          val answers =
+            emptyUserAnswers
+              .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), vatRates).success.value
+
+          VatOnSalesFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(CheckThirdLoopMode, answers)
+            .mustEqual(routes.CheckSalesToEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex))
+
+        }
+      }
+
+      "when there are other vat rates" - {
+
+        "it will navigate to the NetValueOfSalesFromEu page" in {
 
           val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
 
@@ -144,7 +192,7 @@ class VatOnSalesFromEuPageSpec extends PageBehaviours {
               .set(VatRatesFromEuPage(countryFromIndex, countryToIndex), vatRates).success.value
 
           VatOnSalesFromEuPage(countryFromIndex, countryToIndex, Index(0)).navigate(CheckThirdLoopMode, answers)
-            .mustEqual(routes.CheckSalesToEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex))
+            .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckThirdLoopMode, answers.period, countryFromIndex, countryToIndex, Index(1)))
 
         }
       }

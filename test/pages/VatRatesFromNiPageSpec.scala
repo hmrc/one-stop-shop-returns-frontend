@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.VatOnSalesChoice.Standard
-import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, Index, NormalMode, VatOnSales, VatRate}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, Country, Index, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
@@ -26,6 +26,10 @@ import pages.behaviours.PageBehaviours
 class VatRatesFromNiPageSpec extends PageBehaviours {
 
   "VatRatesFromNiPage" - {
+    val newVatRates = Gen.listOfN(1, arbitrary[VatRate]).sample.value
+    val answersWithVatRate = emptyUserAnswers.set(SoldGoodsFromNiPage, true).success.value
+      .set(CountryOfConsumptionFromNiPage(index), Country("Spain", "Spain")).success.value
+      .set(VatRatesFromNiPage(index), newVatRates).success.value
 
     beRetrievable[List[VatRate]](VatRatesFromNiPage(index))
 
@@ -37,7 +41,7 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
 
       "to Net Value of Sales" in {
 
-        VatRatesFromNiPage(index).navigate(NormalMode, emptyUserAnswers)
+        VatRatesFromNiPage(index).navigate(NormalMode, answersWithVatRate)
           .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(NormalMode, emptyUserAnswers.period, index, Index(0)))
       }
     }
@@ -46,7 +50,7 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
 
       "to Net Value of Sales" in {
 
-        VatRatesFromNiPage(index).navigate(CheckMode, emptyUserAnswers)
+        VatRatesFromNiPage(index).navigate(CheckMode, answersWithVatRate)
           .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, emptyUserAnswers.period, index, Index(0)))
       }
     }
@@ -55,7 +59,7 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
 
         "to Net Value of Sales" in {
 
-          VatRatesFromNiPage(index).navigate(CheckLoopMode, emptyUserAnswers)
+          VatRatesFromNiPage(index).navigate(CheckLoopMode, answersWithVatRate)
             .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckLoopMode, emptyUserAnswers.period, index, Index(0)))
         }
       }
@@ -64,7 +68,7 @@ class VatRatesFromNiPageSpec extends PageBehaviours {
 
         "to Net Value of Sales" in {
 
-          VatRatesFromNiPage(index).navigate(CheckSecondLoopMode, emptyUserAnswers)
+          VatRatesFromNiPage(index).navigate(CheckSecondLoopMode, answersWithVatRate)
             .mustEqual(routes.NetValueOfSalesFromNiController.onPageLoad(CheckSecondLoopMode, emptyUserAnswers.period, index, Index(0)))
         }
       }
