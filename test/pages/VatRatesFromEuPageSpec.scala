@@ -42,6 +42,7 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
           emptyUserAnswers
             .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
             .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+            .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
 
         VatRatesFromEuPage(index, index).navigate(NormalMode, answers)
           .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(NormalMode, answers.period, index, index, Index(0)))
@@ -59,6 +60,7 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
           emptyUserAnswers
             .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
             .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+            .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
 
         VatRatesFromEuPage(index, index).navigate(CheckMode, answers)
           .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, answers.period, index, index, Index(0)))
@@ -76,6 +78,7 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
           emptyUserAnswers
             .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
             .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+            .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
 
         VatRatesFromEuPage(index, index).navigate(CheckLoopMode, answers)
           .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckLoopMode, answers.period, index, index, Index(0)))
@@ -93,6 +96,7 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
           emptyUserAnswers
             .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
             .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+            .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
 
         VatRatesFromEuPage(index, index).navigate(CheckSecondLoopMode, answers)
           .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckSecondLoopMode, answers.period, index, index, Index(0)))
@@ -110,6 +114,7 @@ class VatRatesFromEuPageSpec extends PageBehaviours {
           emptyUserAnswers
             .set(CountryOfSaleFromEuPage(index), countryFrom).success.value
             .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
+            .set(VatRatesFromEuPage(index, index), List(twentyPercentVatRate)).success.value
 
         VatRatesFromEuPage(index, index).navigate(CheckThirdLoopMode, answers)
           .mustEqual(routes.NetValueOfSalesFromEuController.onPageLoad(CheckThirdLoopMode, answers.period, index, index, Index(0)))

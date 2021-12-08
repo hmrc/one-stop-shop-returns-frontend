@@ -52,15 +52,10 @@ class VatRatesFromEuController @Inject()(
           val form = formProvider(vatRates)
           val currentValue = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex))
 
-
-          println(currentValue)
-
           val preparedForm = currentValue match {
             case None => form
             case Some(value) => form.fill(value)
           }
-
-          println(preparedForm.data)
 
           vatRates.size match {
             case 1 =>
@@ -70,10 +65,8 @@ class VatRatesFromEuController @Inject()(
                 case _ =>
                   updateAndContinue(mode, countryFromIndex, countryToIndex, request, vatRates.toList)
               }
-            case _ =>{
+            case _ =>
               Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo, checkboxItems(vatRates))).toFuture
-
-            }
           }
       }
   }
@@ -111,10 +104,8 @@ class VatRatesFromEuController @Inject()(
       updatedAnswers <- Future.fromTry(request.userAnswers.set(
         AllEuVatRateAndSalesQuery(countryFromIndex, countryToIndex),
         getUpdatedAnswers(countryFromIndex, countryToIndex, request.userAnswers, value)))
-//      cleanedAnswers <- Future.fromTry( VatRatesFromEuPage(countryFromIndex, countryToIndex).cleanup( Some(value), updatedAnswers))
       _ <- cc.sessionRepository.set(updatedAnswers)
     } yield {
-//      implicit val seqReads = Reads.seq(VatRateAndSales.reads)
       Redirect(VatRatesFromEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
     }
   }

@@ -16,7 +16,6 @@
 
 package services
 
-import config.FrontendAppConfig
 import models.{TotalVatToCountry, UserAnswers}
 import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery}
 import queries.corrections.AllCorrectionPeriodsQuery

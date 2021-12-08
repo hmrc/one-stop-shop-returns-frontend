@@ -47,7 +47,7 @@ case class VatOnSalesFromEuPage(countryFromIndex: Index, countryToIndex: Index, 
 
   override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckSecondLoopMode, CheckSecondLoopMode, answers)
 
-  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckThirdLoopMode, CheckSecondLoopMode, answers)
+  override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call = navigateWithChecks(CheckThirdLoopMode, CheckThirdLoopMode, answers)
 
   override def navigateInCheckInnerLoopMode(answers: UserAnswers): Call =
     routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
