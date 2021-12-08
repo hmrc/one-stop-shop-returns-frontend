@@ -14,12 +14,13 @@
  * limitations under the License.
  *@
 
+@import templates.ButtonGroup
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukCheckboxes: GovukCheckboxes,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, countryFrom: Country, countryTo: Country, checkboxItems: Seq[CheckboxItem])(implicit request: Request[_], messages: Messages)
@@ -48,8 +49,6 @@
             ).withHint(HintViewModel(messages("vatRatesFromEu.hint")))
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue")
     }
 }

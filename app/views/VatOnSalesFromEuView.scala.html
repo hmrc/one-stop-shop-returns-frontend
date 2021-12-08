@@ -16,14 +16,14 @@
 
 @import utils.CurrencyFormatter.currencyFormat
 @import viewmodels.InputWidth._
-
+@import templates.ButtonGroup
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
     govukInput: GovukInput,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(
@@ -86,8 +86,6 @@
             )
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue")
     }
 }

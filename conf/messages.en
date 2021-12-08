@@ -435,3 +435,5 @@ vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.caption = Correction period: {0}
 vatPayableForCountry.hint = We''ve calculated this total based on your most recent declaration and the correction amount.
 vatPayableForCountry.error.required = Select yes if the total VAT payable for {0} is {1}
+
+saveProgress.button = Save and come back later
