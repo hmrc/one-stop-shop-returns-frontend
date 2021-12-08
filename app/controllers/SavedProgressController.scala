@@ -16,7 +16,10 @@
 
 package controllers
 
+import com.typesafe.play.cachecontrol.Seconds
+import config.FrontendAppConfig
 import controllers.actions._
+
 import javax.inject.Inject
 import models.Period
 import play.api.i18n.I18nSupport
@@ -24,15 +27,26 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SavedProgressView
 
+import java.time.{LocalDate, ZoneId}
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+
 class SavedProgressController @Inject()(
                                        cc: AuthenticatedControllerComponents,
-                                       view: SavedProgressView
+                                       view: SavedProgressView,
+                                       appConfig: FrontendAppConfig
                                      ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(period: Period): Action[AnyContent] =
+    (cc.actionBuilder andThen cc.identify andThen cc.getRegistration andThen cc.getData(period) andThen cc.requireData) {
     implicit request =>
-      Ok(view(period))
+      val dayFormatter  = DateTimeFormatter.ofPattern("d MMMM yyyy")
+
+      val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.cacheTtl, ChronoUnit.SECONDS)
+        .atZone(ZoneId.systemDefault()).toLocalDate.format(dayFormatter)
+
+      Ok(view(period, answersExpiry))
   }
 }
