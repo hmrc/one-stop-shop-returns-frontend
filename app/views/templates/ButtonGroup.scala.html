@@ -15,13 +15,13 @@
  *@
 
 @this(govukButton: GovukButton)
-@(continueMessage: String)(implicit messages: Messages)
+@(continueMessage: String, period: Period)(implicit messages: Messages)
 <div class="govuk-button-group">
     @govukButton(
     ButtonViewModel(messages(continueMessage))
     )
 
-    <a role="button" href="#" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+    <a role="button" href="@routes.SavedProgressController.onPageLoad(period)" class="govuk-button govuk-button--secondary" data-module="govuk-button">
         @messages("saveProgress.button")
     </a>
 </div>
