@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
+import formats.Format.dateTimeFormatter
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.test.FakeRequest
@@ -32,7 +33,6 @@ class SavedProgressControllerSpec extends SpecBase {
   "SavedProgress Controller" - {
 
     "must return OK and the correct view for a GET" in {
-      val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
       val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
       when(mockAppConfig.cacheTtl) thenReturn 1
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
@@ -46,7 +46,7 @@ class SavedProgressControllerSpec extends SpecBase {
         val clock = application.injector.instanceOf(classOf[Clock])
         val date = clock.instant().atZone(clock.getZone).toLocalDate
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(period, date.format(dateFormatter))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(period, date.format(dateTimeFormatter))(request, messages(application)).toString
       }
     }
   }
