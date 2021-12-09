@@ -21,7 +21,7 @@ import com.google.inject.Inject
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.{NormalMode, Period}
+import models.{NormalMode, Period, UserAnswers}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
@@ -41,10 +41,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
+import java.time.{Clock, Instant}
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckYourAnswersController @Inject()(
@@ -55,7 +56,8 @@ class CheckYourAnswersController @Inject()(
                                             correctionService: CorrectionService,
                                             auditService: AuditService,
                                             emailService: EmailService,
-                                            vatReturnConnector: VatReturnConnector
+                                            vatReturnConnector: VatReturnConnector,
+                                            clock: Clock
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -109,13 +111,14 @@ class CheckYourAnswersController @Inject()(
         (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
         (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
         (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
-      )} else {
-        Seq(
-          (None, businessSummaryList),
-          (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
-        )
-      }
+      )
+    } else {
+      Seq(
+        (None, businessSummaryList),
+        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
+        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
+      )
+    }
 
   private def getSalesFromEuSummaryList(request: DataRequest[AnyContent])(implicit messages: Messages) = {
     SummaryListViewModel(
@@ -225,11 +228,11 @@ class CheckYourAnswersController @Inject()(
   }
 
   private def auditEmailAndRedirect(
-   returnRequest: VatReturnRequest,
-   correctionRequest: Option[CorrectionRequest],
-   vatReturn: VatReturn,
-   period: Period
-  )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
+                                     returnRequest: VatReturnRequest,
+                                     correctionRequest: Option[CorrectionRequest],
+                                     vatReturn: VatReturn,
+                                     period: Period
+                                   )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
     auditService.audit(
       ReturnsAuditModel.build(
         returnRequest,
@@ -261,7 +264,12 @@ class CheckYourAnswersController @Inject()(
         val emailSent = EMAIL_ACCEPTED == emailConfirmationResult
 
         for {
-          updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
+          _ <- cc.sessionRepository.clear(request.userId)
+          updatedAnswers <- Future.fromTry(UserAnswers(
+            userId = request.userId,
+            period = period,
+            lastUpdated = Instant.now(clock)
+          ).set(EmailConfirmationQuery, emailSent))
           _ <- cc.sessionRepository.set(updatedAnswers)
         } yield {
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
