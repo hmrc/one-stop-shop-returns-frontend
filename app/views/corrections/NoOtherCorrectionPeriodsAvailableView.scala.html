@@ -33,7 +33,7 @@
     <p class="govuk-body">@messages("noOtherCorrectionPeriodsAvailable.paragraph")</p>
 
     @govukButton(
-    ButtonViewModel(messages("site.continue"))
+    ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
     )
 }
 }

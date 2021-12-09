@@ -21,7 +21,7 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    govukButton: GovukButton
+    button: GovukButton
 )
 
 @(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
@@ -44,8 +44,8 @@
             )
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+    @button(
+    ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
+    )
     }
 }

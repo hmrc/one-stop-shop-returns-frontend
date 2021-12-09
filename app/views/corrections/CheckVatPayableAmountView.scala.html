@@ -32,6 +32,14 @@
 
 
    <p class="govuk-!-margin-bottom-9" style="margin-top:50px;">
+
+<div class="govuk-button-group">
     <a class="govuk-button" href="@controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, period, periodIndex)" id="continue">@messages("site.continue")</a>
+
+    <a id="saveProgress" role="button" href="@routes.SavedProgressController.onPageLoad(period)" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+        @messages("saveProgress.button")
+    </a>
+</div>
+
    </p>
 }

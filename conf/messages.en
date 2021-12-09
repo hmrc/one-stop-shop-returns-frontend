@@ -446,3 +446,4 @@ savedProgress.your.account = return to your account
 savedProgress.sign.out = sign out and come back later
 savedProgress.heading = savedProgress
 savedProgress.sign.in = If you sign out, you must sign back into your <a href="{0}">Government Gateway</a> to continue.
+saveProgress.button = Save and come back later
