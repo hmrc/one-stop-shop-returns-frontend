@@ -15,14 +15,13 @@
  *@
 
 @import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
-@import templates.ButtonGroup
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    button: ButtonGroup
+    button: GovukButton
 )
 
 @(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
@@ -45,6 +44,8 @@
             )
         )
 
-        @button("site.continue", period)
+    @button(
+    ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
+    )
     }
 }

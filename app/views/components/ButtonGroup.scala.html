@@ -18,10 +18,10 @@
 @(continueMessage: String, period: Period)(implicit messages: Messages)
 <div class="govuk-button-group">
     @govukButton(
-    ButtonViewModel(messages(continueMessage))
+    ButtonViewModel(messages(continueMessage)).withAttribute(("id", "continue"))
     )
 
-    <a role="button" href="@routes.SavedProgressController.onPageLoad(period)" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+    <a id="saveProgress" role="button" href="@routes.SavedProgressController.onPageLoad(period)" class="govuk-button govuk-button--secondary" data-module="govuk-button">
         @messages("saveProgress.button")
     </a>
 </div>
