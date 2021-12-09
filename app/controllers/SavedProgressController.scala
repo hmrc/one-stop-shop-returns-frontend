@@ -19,6 +19,7 @@ package controllers
 import com.typesafe.play.cachecontrol.Seconds
 import config.FrontendAppConfig
 import controllers.actions._
+import formats.Format.dateTimeFormatter
 
 import javax.inject.Inject
 import models.Period
@@ -39,13 +40,10 @@ class SavedProgressController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] =
-    (cc.actionBuilder andThen cc.identify andThen cc.getRegistration andThen cc.getData(period) andThen cc.requireData) {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetDataSimple(period) {
     implicit request =>
-      val dayFormatter  = DateTimeFormatter.ofPattern("d MMMM yyyy")
-
       val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.cacheTtl, ChronoUnit.SECONDS)
-        .atZone(ZoneId.systemDefault()).toLocalDate.format(dayFormatter)
+        .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
 
       Ok(view(period, answersExpiry))
   }

@@ -289,4 +289,4 @@ POST       /:period/second-change-vat-payable-confirm/:periodIndex/:countryIndex
 GET        /:period/third-change-vat-payable-confirm/:periodIndex/:countryIndex                              controllers.corrections.VatPayableForCountryController.onPageLoad(mode: Mode = CheckThirdLoopMode, period: Period, periodIndex: Index, countryIndex: Index)
 POST       /:period/third-change-vat-payable-confirm/:periodIndex/:countryIndex                              controllers.corrections.VatPayableForCountryController.onSubmit(mode: Mode = CheckThirdLoopMode, period: Period, periodIndex: Index, countryIndex: Index)
 
-GET        /:period/savedProgress                       controllers.SavedProgressController.onPageLoad(period: Period)
+GET        /:period/progress-saved                                                                           controllers.SavedProgressController.onPageLoad(period: Period)
