@@ -123,7 +123,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
         val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
         val totalVatSummaryList = SummaryListViewModel(
-          rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection))
+          rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection, hasCorrections = true))
         val displayPayNow = true
 
         status(result) mustEqual OK
