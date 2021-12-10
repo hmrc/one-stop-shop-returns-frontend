@@ -15,13 +15,12 @@
  *@
 
 @import viewmodels.TitledSummaryList
-@import components.ButtonGroup
 
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukSummaryList: GovukSummaryList,
-        button: ButtonGroup
+        govukButton: GovukButton
 )
 
 @(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: Country)(implicit request: Request[_], messages: Messages)
@@ -48,6 +47,8 @@
             @govukSummaryList(list.list)
         }
 
-        @button("site.continue", period)
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
+        )
     }
 }

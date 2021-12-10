@@ -15,13 +15,12 @@
  *@
 
 @import utils.CurrencyFormatter.currencyFormat
-@import components.ButtonGroup
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukSummaryList: GovukSummaryList,
-    button: ButtonGroup
+    govukButton: GovukButton
 )
 
 @(
@@ -108,6 +107,8 @@
             </div>
         </dl>
 
-        @button("site.submit", period)
+        @govukButton(
+            ButtonViewModel(messages("site.submit"))
+        )
     }
 }
