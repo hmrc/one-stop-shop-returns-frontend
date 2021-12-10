@@ -45,7 +45,8 @@ class ReturnSubmittedController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetDataSimple(period).async {
+  def onPageLoad(period: Period): Action[AnyContent] = {
+    (cc.actionBuilder andThen cc.identify andThen cc.getRegistration andThen cc.getData(period) andThen cc.requireData).async {
     implicit request =>
 
       (for {
@@ -86,4 +87,5 @@ class ReturnSubmittedController @Inject()(
           throw e
       }
     }
+  }
 }
