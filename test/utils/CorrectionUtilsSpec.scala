@@ -69,7 +69,7 @@ class CorrectionUtilsSpec extends SpecBase {
     "should add multiple countries with negative corrections" in {
 
       val country1 = arbitrary[Country].sample.value
-      val country2 = arbitrary[Country].suchThat(_ != country1).sample.value
+      val country2 = arbitrary[Country].retryUntil(_ != country1).sample.value
 
       val correctionPayload = CorrectionPayload(
         vrn = arbitrary[Vrn].sample.value,
@@ -112,7 +112,7 @@ class CorrectionUtilsSpec extends SpecBase {
     "should have nil return with with a mix of corrections" in {
 
       val country1 = arbitrary[Country].sample.value
-      val country2 = arbitrary[Country].suchThat(_ != country1).sample.value
+      val country2 = arbitrary[Country].retryUntil(_ != country1).sample.value
 
       val correctionPayload = CorrectionPayload(
         vrn = arbitrary[Vrn].sample.value,

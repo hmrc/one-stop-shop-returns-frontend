@@ -19,14 +19,20 @@ package forms
 import forms.behaviours.CheckboxFieldBehaviours
 import generators.Generators
 import models.VatRate
+import models.VatRateType.{Reduced, Standard}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.data.FormError
 
+import java.time.LocalDate
+
 class VatRatesFromEuFormProviderSpec extends CheckboxFieldBehaviours with ScalaCheckPropertyChecks with Generators {
 
-  private val vatRates = Gen.listOfN(2, arbitrary[VatRate]).sample.value
+  private val vatRate1 = VatRate(BigDecimal(10), Standard, LocalDate.now().minusMonths(1))
+  private val vatRate2 = VatRate(BigDecimal(20), Reduced, LocalDate.now().minusMonths(1))
+  private val vatRate3 = VatRate(BigDecimal(15), Standard, LocalDate.now().minusMonths(1))
+  private val vatRates = List(vatRate1, vatRate2)
   private val formProvider = new VatRatesFromEuFormProvider()
   private val form = formProvider(vatRates)
 
@@ -50,15 +56,8 @@ class VatRatesFromEuFormProviderSpec extends CheckboxFieldBehaviours with ScalaC
 
     "must fail to bind invalid values" in {
 
-      forAll(arbitrary[VatRate]) {
-        vatRate =>
-
-          whenever(!vatRates.contains(vatRate)) {
-            val data = Map(s"$fieldName[0]" -> vatRate.rate.toString)
-
-            form.bind(data).errors must contain(FormError(fieldName, "vatRatesFromEu.error.invalid"))
-          }
-      }
+      val data = Map(s"$fieldName[0]" -> vatRate3.rate.toString)
+      form.bind(data).errors must contain(FormError(fieldName, "vatRatesFromEu.error.invalid"))
     }
 
     "must fail to bind when the key is not present" in {
