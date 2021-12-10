@@ -16,22 +16,6 @@
 
 package viewmodels
 
-package object govuk {
+import uk.gov.hmrc.govukfrontend.views.viewmodels.table.Table
 
-  object all
-    extends ImplicitConversions
-      with BackLinkFluency
-      with ButtonFluency
-      with CheckboxFluency
-      with DateFluency
-      with ErrorSummaryFluency
-      with FieldsetFluency
-      with HintFluency
-      with InputFluency
-      with LabelFluency
-      with RadiosFluency
-      with SelectFluency
-      with SummaryListFluency
-      with TagFluency
-      with TableFluency
-}
+case class TitledTable(title: String, list: Table, hint: Option[String] = None)

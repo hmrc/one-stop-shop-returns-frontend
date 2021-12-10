@@ -29,10 +29,14 @@ import viewmodels.implicits._
 
 object PreviousReturnSummary extends CurrencyFormatter {
 
-  def totalVatSummaryRows(totalVatOwed: BigDecimal)(implicit messages: Messages): Seq[SummaryListRow] = {
+  def totalVatSummaryRows(totalVatOwed: BigDecimal, hasCorrections: Boolean)(implicit messages: Messages): Seq[SummaryListRow] = {
     Seq(SummaryListRowViewModel(
-      key = Key("previousReturn.correction.vatDeclared.totalVatOwed")
-        .withCssClass("govuk-!-width-two-thirds"),
+      key = Key(if(hasCorrections) {
+        "previousReturn.correction.vatDeclared.totalVatOwedWithCorrections"
+      } else {
+        "previousReturn.correction.vatDeclared.totalVatOwed"
+      }).withCssClass("govuk-!-width-two-thirds")
+      ,
       value = ValueViewModel(HtmlContent(currencyFormat(totalVatOwed)))
         .withCssClass("govuk-!-font-weight-bold")
         .withCssClass("govuk-!-width-one-third")

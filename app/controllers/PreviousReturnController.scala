@@ -22,17 +22,15 @@ import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.Period
-import models.domain.VatReturn
 import models.responses.{NotFound => NotFoundResponse}
-import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatReturnSalesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import viewmodels.TitledSummaryList
 import viewmodels.govuk.summarylist._
-import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary, TotalSalesSummary}
-import views.html.PreviousReturnView
+import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary}
 import viewmodels.previousReturn.corrections.CorrectionSummary
+import views.html.PreviousReturnView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -45,96 +43,72 @@ class PreviousReturnController @Inject()(
                                           correctionConnector: CorrectionConnector,
                                           vatReturnSalesService: VatReturnSalesService,
                                           financialDataConnector: FinancialDataConnector
-  )(implicit ec: ExecutionContext)
+                                        )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetRegistration.async {
-    implicit request =>
-      {
-        for {
-          vatReturnResult <- vatReturnConnector.get(period)
-          getChargeResult <- financialDataConnector.getCharge(period)
-          correctionPayload <- correctionConnector.get(period)
-        } yield (vatReturnResult, getChargeResult, correctionPayload)
-      }.map {
-        case (Right(vatReturn), chargeResponse, correctionPayload) =>
-          val maybeCorrectionPayload =
-            correctionPayload match {
-              case Right(correction) => Some(correction)
-              case _ => None
-            }
-
-          val totalVatOwed = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
-
-          val (charge, displayBanner) = chargeResponse match {
-            case Right(chargeOption) =>
-              val hasVatOwed = totalVatOwed > 0
-              (chargeOption, chargeOption.isEmpty && hasVatOwed)
-            case _ => (None, true)
+    implicit request => {
+      for {
+        vatReturnResult <- vatReturnConnector.get(period)
+        getChargeResult <- financialDataConnector.getCharge(period)
+        correctionPayload <- correctionConnector.get(period)
+      } yield (vatReturnResult, getChargeResult, correctionPayload)
+    }.map {
+      case (Right(vatReturn), chargeResponse, correctionPayload) =>
+        val maybeCorrectionPayload =
+          correctionPayload match {
+            case Right(correction) => Some(correction)
+            case _ => None
           }
 
-          val clearedAmount = charge.map(_.clearedAmount)
-          val amountOutstanding = charge.map(_.outstandingAmount)
+        val totalVatOwed = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
 
-          val mainList =
-            SummaryListViewModel(rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOwed, clearedAmount, amountOutstanding))
-          val displayPayNow = totalVatOwed > 0 && amountOutstanding.forall(outstanding => outstanding > 0)
-          val vatOwedInPence: Long = (amountOutstanding.getOrElse(totalVatOwed) * 100).toLong
+        val (charge, displayBanner) = chargeResponse match {
+          case Right(chargeOption) =>
+            val hasVatOwed = totalVatOwed > 0
+            (chargeOption, chargeOption.isEmpty && hasVatOwed)
+          case _ => (None, true)
+        }
 
-          val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOwed))
+        val clearedAmount = charge.map(_.clearedAmount)
+        val amountOutstanding = charge.map(_.outstandingAmount)
 
-          val hasCorrections = maybeCorrectionPayload.exists(_.corrections.nonEmpty)
+        val mainList =
+          SummaryListViewModel(rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOwed, clearedAmount, amountOutstanding))
+        val displayPayNow = totalVatOwed > 0 && amountOutstanding.forall(outstanding => outstanding > 0)
+        val vatOwedInPence: Long = (amountOutstanding.getOrElse(totalVatOwed) * 100).toLong
 
-          Ok(view(
-            vatReturn,
-            mainList,
-            SaleAtVatRateSummary.getAllNiSales(vatReturn),
-            SaleAtVatRateSummary.getAllEuSales(vatReturn),
-            getAllSales(vatReturn, hasCorrections),
-            CorrectionSummary.getCorrectionPeriods(maybeCorrectionPayload),
-            CorrectionSummary.getDeclaredVatAfterCorrections(maybeCorrectionPayload, vatReturn),
-            Some(totalVatList),
-            displayPayNow,
-            vatOwedInPence,
-            displayBanner
-          ))
+        val hasCorrections = maybeCorrectionPayload.exists(_.corrections.nonEmpty)
+        val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOwed, hasCorrections))
 
-        case (Left(NotFoundResponse), _, _) =>
-          Redirect(routes.YourAccountController.onPageLoad())
-        case (Left(e), _, _) =>
-          logger.error(s"Unexpected result from api while getting return: $e")
-          Redirect(routes.JourneyRecoveryController.onPageLoad())
+        Ok(view(
+          vatReturn,
+          mainList,
+          SaleAtVatRateSummary.getAllNiSales(vatReturn),
+          SaleAtVatRateSummary.getAllEuSales(vatReturn),
+          CorrectionSummary.getCorrectionPeriods(maybeCorrectionPayload),
+          CorrectionSummary.getDeclaredVat(maybeCorrectionPayload, vatReturn),
+          Some(totalVatList),
+          displayPayNow,
+          vatOwedInPence,
+          displayBanner
+        ))
 
-        case _ => Redirect(routes.JourneyRecoveryController.onPageLoad())
-      }.recover {
+      case (Left(NotFoundResponse), _, _) =>
+        Redirect(routes.YourAccountController.onPageLoad())
+      case (Left(e), _, _) =>
+        logger.error(s"Unexpected result from api while getting return: $e")
+        Redirect(routes.JourneyRecoveryController.onPageLoad())
 
-        case e: Exception =>
-          logger.error(s"Error while getting previous return: ${e.getMessage}", e)
-          Redirect(routes.JourneyRecoveryController.onPageLoad())
-      }
+      case _ => Redirect(routes.JourneyRecoveryController.onPageLoad())
+    }.recover {
+
+      case e: Exception =>
+        logger.error(s"Error while getting previous return: ${e.getMessage}", e)
+        Redirect(routes.JourneyRecoveryController.onPageLoad())
+    }
   }
 
-  private[this] def getAllSales(vatReturn: VatReturn, hasCorrections: Boolean)(implicit messages: Messages): TitledSummaryList = {
-    val netSalesFromNi = vatReturnSalesService.getTotalNetSalesToCountry(vatReturn.salesFromNi)
-    val netSalesFromEu = vatReturnSalesService.getEuTotalNetSales(vatReturn.salesFromEu)
-    val vatOnSalesFromNi = vatReturnSalesService.getTotalVatOnSalesToCountry(vatReturn.salesFromNi)
-    val vatOnSalesFromEu = vatReturnSalesService.getEuTotalVatOnSales(vatReturn.salesFromEu)
-    val totalVatOnSales = vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(vatReturn)
-
-    TitledSummaryList(
-      title = messages("previousReturn.allSales.title"),
-      list = SummaryListViewModel(
-        rows = TotalSalesSummary.rows(
-          netSalesFromNi = netSalesFromNi,
-          netSalesFromEu = netSalesFromEu,
-          vatOnSalesFromNi = vatOnSalesFromNi,
-          vatOnSalesFromEu = vatOnSalesFromEu,
-          totalVatOnSales = totalVatOnSales,
-          showCorrections = hasCorrections
-        )
-      )
-    )
-  }
 }
