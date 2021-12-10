@@ -23,6 +23,26 @@ import models.Country
 object CorrectionUtils {
 
   def groupByCountryAndSum(correctionPayload: CorrectionPayload, vatReturn: VatReturn): Map[Country, BigDecimal] = {
+
+    val correctionsToAllCountries = for {
+      correctionPeriods <- correctionPayload.corrections
+      correctionToCountry <- correctionPeriods.correctionsToCountry
+    } yield correctionToCountry
+
+    val correctionAmountsToAllCountries = correctionsToAllCountries.groupBy(_.correctionCountry).flatMap {
+      case (country, corrections) =>
+        val total = corrections.map(_.countryVatCorrection).sum
+
+        Map(country -> total)
+    }
+
+    correctionAmountsToAllCountries ++ groupByCountryAndSum(vatReturn).map {
+      case (country, amount) =>
+        country -> (amount + correctionAmountsToAllCountries.getOrElse(country, BigDecimal(0)))
+    }
+  }
+
+  def groupByCountryAndSum(vatReturn: VatReturn): Map[Country, BigDecimal] = {
     val returnAmountsToAllCountriesFromNi = (for {
       salesFromNi <- vatReturn.salesFromNi
     } yield {
@@ -37,27 +57,9 @@ object CorrectionUtils {
       }
     }
 
-    val returnAmountsToAllCountries = returnAmountsToAllCountriesFromNi ++ returnAmountsToAllCountriesFromEu.map {
+    returnAmountsToAllCountriesFromNi ++ returnAmountsToAllCountriesFromEu.map {
       case (country, amount) =>
         country -> (amount + returnAmountsToAllCountriesFromNi.getOrElse(country, BigDecimal(0)))
-    }
-
-
-    val correctionsToAllCountries = for {
-      correctionPeriods <- correctionPayload.corrections
-      correctionToCountry <- correctionPeriods.correctionsToCountry
-    } yield correctionToCountry
-
-    val correctionAmountsToAllCountries = correctionsToAllCountries.groupBy(_.correctionCountry).flatMap {
-      case (country, corrections) =>
-        val total = corrections.map(_.countryVatCorrection).sum
-
-        Map(country -> total)
-    }
-
-    correctionAmountsToAllCountries ++ returnAmountsToAllCountries.map {
-      case (country, amount) =>
-        country -> (amount + correctionAmountsToAllCountries.getOrElse(country, BigDecimal(0)))
     }
   }
 
