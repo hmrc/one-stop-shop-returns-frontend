@@ -29,9 +29,9 @@ import java.time.LocalDate
 
 class VatRatesFromNiFormProviderSpec extends CheckboxFieldBehaviours with ScalaCheckPropertyChecks with Generators {
 
-  private val vatRate1 = VatRate(BigDecimal(10), Standard, LocalDate.now().minusMonths(1))
-  private val vatRate2 = VatRate(BigDecimal(20), Reduced, LocalDate.now().minusMonths(1))
-  private val vatRate3 = VatRate(BigDecimal(15), Standard, LocalDate.now().minusMonths(1))
+  private val vatRate1 = arbitrary[VatRate].sample.value
+  private val vatRate2 = arbitrary[VatRate].retryUntil(_ != vatRate1).sample.value
+  private val vatRate3 = arbitrary[VatRate].retryUntil(v => !List(vatRate1,vatRate2).contains(v)).sample.value
   private val vatRates = List(vatRate1, vatRate2)
   private val formProvider = new VatRatesFromNiFormProvider()
   private val form = formProvider(vatRates)
