@@ -54,22 +54,5 @@ trait TableFluency {
     def withCssClass(className: String): TableRow =
       row copy (classes = s"${row.classes} $className")
   }
-/*
-  object TableCellViewModel {
-
-    def apply(
-               content: Content
-             ): TableRow =
-      TableRow(
-        content = content
-      )
-
-  }
-
-  implicit class FluentTableRow(row: TableRow) {
-
-    def withCssClass(className: String): TableRow =
-      row copy (classes = s"${row.classes} $className")
-  }*/
 
 }
