@@ -16,13 +16,13 @@
 
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
 @import viewmodels.LegendSize
-@import components.ButtonGroup
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
         govukRadios: GovukRadios,
-        button: ButtonGroup,
+        govukButton: GovukButton,
         addToList: components.addToList
 )
 
@@ -64,7 +64,9 @@
                 <input type="hidden" name="value" id="value" value="false"/>
             }
 
-            @button("site.continue", period)
+            @govukButton(
+                ButtonViewModel(messages("site.continue"))
+            )
         }
     }
 }

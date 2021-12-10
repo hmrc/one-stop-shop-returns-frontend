@@ -15,14 +15,13 @@
  *@
 
 @import utils.CurrencyFormatter.currencyFormat
-@import components.ButtonGroup
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    button: ButtonGroup,
+    govukButton: GovukButton
 )
 
 @(form: Form[_], mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
@@ -44,6 +43,8 @@
             ).withHint(HintViewModel(HtmlContent(Html(messages("vatPayableForCountry.hint")))))
         )
 
-        @button("site.continue", period)
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
+        )
     }
 }
