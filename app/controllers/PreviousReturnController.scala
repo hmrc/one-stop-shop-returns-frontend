@@ -84,16 +84,16 @@ class PreviousReturnController @Inject()(
         val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOwed, hasCorrections))
 
         Ok(view(
-          vatReturn,
-          mainList,
-          SaleAtVatRateSummary.getAllNiSales(vatReturn),
-          SaleAtVatRateSummary.getAllEuSales(vatReturn),
-          CorrectionSummary.getCorrectionPeriods(maybeCorrectionPayload),
-          CorrectionSummary.getDeclaredVat(maybeCorrectionPayload, vatReturn),
-          Some(totalVatList),
-          displayPayNow,
-          vatOwedInPence,
-          displayBanner
+          vatReturn = vatReturn,
+          mainList = mainList,
+          niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn),
+          euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn),
+          correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(maybeCorrectionPayload),
+          declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(maybeCorrectionPayload, vatReturn),
+          totalVatList = Some(totalVatList),
+          displayPayNow = displayPayNow,
+          vatOwedInPence = vatOwedInPence,
+          displayBanner = displayBanner
         ))
 
       case (Left(NotFoundResponse), _, _) =>
