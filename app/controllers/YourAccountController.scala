@@ -20,18 +20,19 @@ import connectors.ReturnStatusConnector
 import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.SubmissionStatus
+import models.{PeriodWithStatus, SubmissionStatus}
 import models.financialdata.VatReturnWithFinancialData
 import models.requests.RegistrationRequest
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import repositories.SessionRepository
 import services.{FinancialDataService, VatReturnSalesService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
 
 import java.time.Clock
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -40,7 +41,8 @@ class YourAccountController @Inject()(
                                        financialDataService: FinancialDataService,
                                        vatReturnSalesService: VatReturnSalesService,
                                        view: IndexView,
-                                       clock: Clock
+                                       clock: Clock,
+                                       sessionRepository: SessionRepository
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -50,7 +52,7 @@ class YourAccountController @Inject()(
     implicit request =>
       val results = getPeriodsAndFinancialData()
 
-      results.map {
+      results.flatMap {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData)) =>
           val filteredPeriodsWithOutstandingAmounts =
             getFilteredPeriodsWithOutstandingAmounts(vatReturnsWithFinancialData)
@@ -58,35 +60,47 @@ class YourAccountController @Inject()(
             filteredPeriodsWithOutstandingAmounts.filterNot(_.vatReturn.period.isOverdue(clock))
           val overduePeriodsWithOutstandingAmounts =
             filteredPeriodsWithOutstandingAmounts.filter(_.vatReturn.period.isOverdue(clock))
+          val sortedPeriodsToSubmit = availablePeriodsWithStatus
+            .filter(p => p.status == SubmissionStatus.Due || p.status == SubmissionStatus.Overdue).
+            sortBy(_.period.firstDay.toEpochDay)
 
-          Ok(view(
-            request.registration.registeredCompanyName,
-            request.vrn.vrn,
-            availablePeriodsWithStatus
-              .filter(_.status == SubmissionStatus.Overdue)
-              .map(_.period),
-            availablePeriodsWithStatus
-              .find(_.status == SubmissionStatus.Due)
-              .map(_.period),
-            duePeriodsWithOutstandingAmounts,
-            overduePeriodsWithOutstandingAmounts,
-            filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty)
-          ))
+             sortedPeriodsToSubmit.headOption.map(p => sessionRepository.get(request.userId, p.period)).getOrElse(Future.successful(None))
+               .map( u =>
+                Ok(view(
+                  request.registration.registeredCompanyName,
+                  request.vrn.vrn,
+                  availablePeriodsWithStatus
+                    .filter(_.status == SubmissionStatus.Overdue)
+                    .map(_.period),
+                  availablePeriodsWithStatus
+                    .find(_.status == SubmissionStatus.Due)
+                    .map(_.period),
+                  duePeriodsWithOutstandingAmounts,
+                  overduePeriodsWithOutstandingAmounts,
+                  filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
+                  periodInProgress = u.map(_.period)
+                )))
         case (Right(availablePeriodsWithStatus), Left(error)) =>
           logger.warn(s"There was an error with getting payment information $error")
-          Ok(view(
-            request.registration.registeredCompanyName,
-            request.vrn.vrn,
-            availablePeriodsWithStatus
-              .filter(_.status == SubmissionStatus.Overdue)
-              .map(_.period),
-            availablePeriodsWithStatus
-              .find(_.status == SubmissionStatus.Due)
-              .map(_.period),
-            Seq.empty,
-            Seq.empty,
-            paymentError = true
-          ))
+          val sortedPeriodsToSubmit = availablePeriodsWithStatus
+            .filter(p => p.status == SubmissionStatus.Due || p.status == SubmissionStatus.Overdue)
+            .sortBy(_.period.firstDay.toEpochDay)
+          sortedPeriodsToSubmit.headOption.map(p => sessionRepository.get(request.userId, p.period)).getOrElse(Future.successful(None))
+            .map( u =>
+              Ok(view(
+                request.registration.registeredCompanyName,
+                request.vrn.vrn,
+                availablePeriodsWithStatus
+                  .filter(_.status == SubmissionStatus.Overdue)
+                  .map(_.period),
+                availablePeriodsWithStatus
+                  .find(_.status == SubmissionStatus.Due)
+                  .map(_.period),
+                Seq.empty,
+                Seq.empty,
+                paymentError = true,
+                periodInProgress = u.map(_.period)
+              )))
         case (Left(error), Left(error2)) =>
           logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
           throw new Exception(error.toString)
@@ -121,4 +135,5 @@ class YourAccountController @Inject()(
       vatReturnsWithFinancialData <- financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate)
     } yield (availablePeriodsWithStatus, vatReturnsWithFinancialData)
   }
+
 }
