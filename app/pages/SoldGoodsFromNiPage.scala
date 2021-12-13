@@ -20,7 +20,7 @@ import controllers.routes
 import models.{CheckMode, Index, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.AllSalesFromNiQuery
+import queries.{AllSalesFromNiQuery, DeriveNumberOfSalesFromNi}
 
 import scala.util.Try
 
@@ -30,6 +30,7 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
 
   override def toString: String = "soldGoodsFromNi"
 
+
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(SoldGoodsFromNiPage) match {
       case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, answers.period, Index(0))
@@ -38,10 +39,15 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
     }
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
-    answers.get(SoldGoodsFromNiPage) match {
-      case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, Index(0)) // TODO index
-      case _ => routes.CheckYourAnswersController.onPageLoad(answers.period)
+    {
+      val salesFromNi = answers.get(DeriveNumberOfSalesFromNi).getOrElse(0)
+      answers.get(SoldGoodsFromNiPage) match {
+        case Some(true) if salesFromNi > 0 => routes.CheckYourAnswersController.onPageLoad(answers.period)
+        case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, Index(0)) // TODO index
+        case _ => routes.CheckYourAnswersController.onPageLoad(answers.period)
+      }
     }
+
 
   override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
     value match {

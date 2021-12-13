@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, NormalMode}
+import models.{CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class CheckSalesToEuPageSpec extends PageBehaviours {
@@ -39,6 +39,24 @@ class CheckSalesToEuPageSpec extends PageBehaviours {
 
         CheckSalesToEuPage(index).navigate(CheckMode, emptyUserAnswers)
           .mustEqual(routes.SalesToEuListController.onPageLoad(CheckMode, emptyUserAnswers.period, index))
+      }
+    }
+
+    "must navigate in CheckSecondLoop mode" - {
+
+      "to sales to EU List" in {
+
+        CheckSalesToEuPage(index).navigate(CheckSecondLoopMode, emptyUserAnswers)
+          .mustEqual(routes.SalesToEuListController.onPageLoad(NormalMode, emptyUserAnswers.period, index))
+      }
+    }
+
+    "must navigate in CheckThirdLoop mode" - {
+
+      "to sales to EU List" in {
+
+        CheckSalesToEuPage(index).navigate(CheckThirdLoopMode, emptyUserAnswers)
+          .mustEqual(routes.SalesToEuListController.onPageLoad(CheckThirdLoopMode, emptyUserAnswers.period, index))
       }
     }
   }

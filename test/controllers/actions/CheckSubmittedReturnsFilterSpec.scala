@@ -17,12 +17,12 @@
 package controllers.actions
 
 import base.SpecBase
-import connectors.{ReturnStatusConnector, VatReturnConnector}
+import connectors.ReturnStatusConnector
 import controllers.routes
 import models.Quarter.Q3
+import models.requests.DataRequest
+import models.responses.UnexpectedResponseStatus
 import models.{Period, PeriodWithStatus, SubmissionStatus}
-import models.requests.{DataRequest, OptionalDataRequest}
-import models.responses.{NotFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -33,7 +33,6 @@ import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
-import queries.EmailConfirmationQuery
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

@@ -20,19 +20,23 @@ import base.SpecBase
 import connectors.ReturnStatusConnector
 import connectors.financialdata.FinancialDataConnector
 import generators.Generators
-import models.{Period, PeriodWithStatus, SubmissionStatus}
 import models.Quarter._
-import models.financialdata.{Charge, PeriodWithOutstandingAmount, VatReturnWithFinancialData}
+import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
+import models.financialdata.{Charge, VatReturnWithFinancialData}
 import models.responses.InvalidJson
+import models.{Country, Period, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.VatReturnSalesService
+import uk.gov.hmrc.domain.Vrn
 import views.html.IndexView
 
 import java.time.{Clock, Instant, ZoneId}
@@ -263,7 +267,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         }
       }
 
-      "when there is 1 return is completed 1 return is due" in {
+      "when there is 1 return completed 1 return is due" in {
 
         val instant = Instant.parse("2022-01-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
@@ -309,7 +313,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         }
       }
 
-      "when there is 1 return is completed and payment is outstanding" in {
+      "when there is 1 return completed and payment is outstanding" in {
 
         val instant = Instant.parse("2021-10-25T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
@@ -332,7 +336,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             originalAmount = outstandingAmount,
             clearedAmount = BigDecimal(0)
           )),
-          vatOwed = Some(outstandingAmount.toLong)
+          vatOwed = Some(outstandingAmount.toLong),
+          None
         )
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
@@ -371,7 +376,158 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         }
       }
 
-      "when there is 1 return is completed and payment is outstanding and overdue" in {
+      "when there is 1 return completed and payment is outstanding with a correction" in {
+
+        val instant = Instant.parse("2021-10-25T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService)
+          ).build()
+
+        val firstPeriod = Period(2021, Q3)
+        val secondPeriod = Period(2021, Q4)
+        val outstandingAmount = BigDecimal(1000)
+        val vatReturn = completeVatReturn.copy(period = firstPeriod)
+        val completedCorrectionPayload: CorrectionPayload =
+          CorrectionPayload(
+            Vrn("063407423"),
+            Period("2086", "Q3").get,
+            List(PeriodWithCorrections(
+              firstPeriod,
+              List(CorrectionToCountry(Country("ES", "Spain"), BigDecimal(1000.00)))
+            )),
+            Instant.ofEpochSecond(1630670836),
+            Instant.ofEpochSecond(1630670836)
+          )
+        val vatReturnWithFinancialData = VatReturnWithFinancialData(
+          vatReturn = vatReturn,
+          charge = Some(Charge(
+            period = firstPeriod,
+            outstandingAmount = outstandingAmount,
+            originalAmount = outstandingAmount,
+            clearedAmount = BigDecimal(0)
+          )),
+          vatOwed = None,
+          corrections = Some(completedCorrectionPayload)
+        )
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
+            )))
+
+
+        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+          Future.successful(
+            Right(
+              Seq(vatReturnWithFinancialData)
+            )
+          )
+
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq.empty,
+            Some(secondPeriod),
+            Seq(vatReturnWithFinancialData),
+            Seq.empty,
+            paymentError = false
+          )(request, messages(application)).toString
+
+          verify(vatReturnSalesService, times(1))
+            .getTotalVatOnSalesAfterCorrection(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
+        }
+      }
+
+      "when there is 1 nil return completed and payment is outstanding from a correction" in {
+
+        val instant = Instant.parse("2021-10-25T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService)
+          ).build()
+
+        val firstPeriod = Period(2021, Q3)
+        val secondPeriod = Period(2021, Q4)
+        val vatReturn = emptyVatReturn.copy(period = firstPeriod)
+
+        val completedCorrectionPayload: CorrectionPayload =
+          CorrectionPayload(
+            Vrn("063407423"),
+            Period("2086", "Q3").get,
+            List(PeriodWithCorrections(
+              firstPeriod,
+              List(Arbitrary.arbitrary[CorrectionToCountry].sample.value)
+            )),
+            Instant.ofEpochSecond(1630670836),
+            Instant.ofEpochSecond(1630670836)
+          )
+        val vatReturnWithFinancialData = VatReturnWithFinancialData(
+          vatReturn = vatReturn,
+          charge = None,
+          vatOwed = None,
+          corrections = Some(completedCorrectionPayload)
+        )
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq(
+              PeriodWithStatus(firstPeriod, SubmissionStatus.Complete),
+              PeriodWithStatus(secondPeriod, SubmissionStatus.Due)
+            )))
+
+
+        when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
+          .thenReturn(Future.successful(Right(Seq(vatReturnWithFinancialData))))
+
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq.empty,
+            Some(secondPeriod),
+            Seq(vatReturnWithFinancialData.copy(vatOwed = Some(100000L))),
+            Seq.empty,
+            paymentError = true
+          )(request, messages(application)).toString
+
+          verify(vatReturnSalesService, times(2))
+            .getTotalVatOnSalesAfterCorrection(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
+        }
+      }
+
+      "when there is 1 return completed and payment is outstanding and overdue" in {
 
         val instant = Instant.parse("2022-01-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
@@ -394,7 +550,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             originalAmount = outstandingAmount,
             clearedAmount = BigDecimal(0)
           )),
-          vatOwed = Some(outstandingAmount.toLong)
+          vatOwed = Some(outstandingAmount.toLong),
+          None
         )
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
@@ -432,7 +589,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         }
       }
 
-      "when there is 1 return is completed and payment errors" in {
+      "when there is 1 return completed and payment errors" in {
 
         val instant = Instant.parse("2022-01-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
@@ -481,7 +638,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         }
       }
 
-      "when there is 1 return is completed and charge is not in ETMP" in {
+      "when there is 1 return completed and charge is not in ETMP" in {
         val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
         val vatOwed = BigDecimal(1563.49)
 
@@ -497,7 +654,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val vatReturnWithFinancialData = VatReturnWithFinancialData(
           vatReturn = vatReturn,
           charge = None,
-          vatOwed = None
+          vatOwed = None,
+          None
         )
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
@@ -509,7 +667,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(Right(Seq(vatReturnWithFinancialData)))
 
-        when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
           vatOwed
 
         running(application) {

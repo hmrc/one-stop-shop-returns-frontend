@@ -17,7 +17,7 @@
 package connectors.financialdata
 
 import logging.Logging
-import models.financialdata.{Charge, VatReturnWithFinancialData}
+import models.financialdata.VatReturnWithFinancialData
 import models.responses._
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}

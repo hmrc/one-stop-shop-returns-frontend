@@ -17,8 +17,8 @@
 package pages
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, Index, NormalMode, UserAnswers}
-import pages.PageConstants.{netValueOfSales, salesAtVatRate, salesFromCountry, salesFromEu}
+import models.{Index, Mode, UserAnswers}
+import pages.PageConstants.{netValueOfSales, salesAtVatRate, salesFromCountry, salesFromEu, vatRates}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -27,18 +27,12 @@ import scala.util.Try
 case class NetValueOfSalesFromEuPage(countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index) extends QuestionPage[BigDecimal] {
 
   override def path: JsPath =
-    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ salesAtVatRate \ vatRateIndex.position \ toString
+    JsPath \ salesFromEu \ countryFromIndex.position \ salesFromCountry \ countryToIndex.position \ vatRates \ vatRateIndex.position \ salesAtVatRate \ toString
 
   override def toString: String = netValueOfSales
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.VatOnSalesFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex)
-
-  override def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.VatOnSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex)
-
-  override def navigateInCheckLoopMode(answers: UserAnswers): Call =
-    routes.VatOnSalesFromEuController.onPageLoad(CheckLoopMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex)
+  override def navigate(mode: Mode, answers: UserAnswers): Call =
+    routes.VatOnSalesFromEuController.onPageLoad(mode, answers.period, countryFromIndex, countryToIndex, vatRateIndex)
 
   override def cleanup(value: Option[BigDecimal], userAnswers: UserAnswers): Try[UserAnswers] =
     userAnswers.remove(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex))

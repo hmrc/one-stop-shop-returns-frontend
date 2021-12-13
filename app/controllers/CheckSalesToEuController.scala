@@ -45,19 +45,18 @@ class CheckSalesToEuController @Inject()(
           val messages = messagesApi.preferred(request)
 
           val mainList = SummaryListViewModel(
-            rows = Seq(VatRatesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex)).flatten
+            rows = Seq(VatRatesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, mode)).flatten
           )
 
           val vatRateLists: Seq[TitledSummaryList] =
             request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).map(_.zipWithIndex.map {
               case (vatRate, i) =>
-
                 TitledSummaryList(
                   title = messages("checkSalesToEu.vatRateTitle", vatRate.rateForDisplay),
                   list = SummaryListViewModel(
                     rows = Seq(
-                      NetValueOfSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i), vatRate),
-                      VatOnSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i), vatRate)
+                      NetValueOfSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i), vatRate, mode),
+                      VatOnSalesFromEuSummary.row(request.userAnswers, countryFromIndex, countryToIndex, Index(i), vatRate, mode)
                     ).flatten
                   )
                 )

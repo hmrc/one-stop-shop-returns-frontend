@@ -17,10 +17,11 @@
 package pages
 
 import controllers.routes
-import models.{Index, NormalMode, CheckMode, UserAnswers, VatRate}
+import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers, VatRate}
 import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.AllEuVatRateAndSalesQuery
 
 case class VatRatesFromEuPage(countryFromIndex: Index, countryToIndex: Index) extends QuestionPage[List[VatRate]] {
 
@@ -28,9 +29,20 @@ case class VatRatesFromEuPage(countryFromIndex: Index, countryToIndex: Index) ex
 
   override def toString: String = PageConstants.vatRates
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.NetValueOfSalesFromEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex, Index(0))
+  override def navigate(mode: Mode, answers: UserAnswers): Call = {
 
-  override def navigateInCheckMode(answers: UserAnswers): Call =
-    routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, answers.period, countryFromIndex, countryToIndex, Index(0))
+    val vatRateIndex: Option[Int] =
+      answers.get(AllEuVatRateAndSalesQuery(countryFromIndex, countryToIndex)).flatMap(_.zipWithIndex.find(_._1.sales.isEmpty).map(_._2))
+
+    vatRateIndex match {
+      case Some(index) => routes.NetValueOfSalesFromEuController.onPageLoad(mode, answers.period, countryFromIndex, countryToIndex, Index(index))
+      case None =>
+        mode match{
+          case CheckLoopMode => routes.CheckSalesToEuController.onPageLoad(NormalMode, answers.period, countryFromIndex, countryToIndex)
+          case _ => routes.CheckSalesToEuController.onPageLoad(mode, answers.period, countryFromIndex, countryToIndex)
+        }
+
+    }
+
+  }
 }

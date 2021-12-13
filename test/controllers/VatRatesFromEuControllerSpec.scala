@@ -51,17 +51,20 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar with VatRa
   "VatRatesFromEu Controller" - {
 
     "must return OK and the correct view for a GET" in {
+      val vatRateService = mock[VatRateService]
+      when(vatRateService.vatRates(any(), any())) thenReturn(vatRates)
 
-      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers))
+        .overrides(
+          bind[VatRateService].toInstance(vatRateService)
+        )
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, vatRatesFromEuRoute)
-
-        val vatRateService = application.injector.instanceOf[VatRateService]
         val view           = application.injector.instanceOf[VatRatesFromEuView]
         val formProvider   = application.injector.instanceOf[VatRatesFromEuFormProvider]
         val controller     = application.injector.instanceOf[VatRatesFromEuController]
-        val vatRates       = vatRateService.vatRates(period, countryTo)
         val form           = formProvider(vatRates)
         val checkboxItems  = controller.checkboxItems(vatRates)
 
@@ -111,10 +114,14 @@ class VatRatesFromEuControllerSpec extends SpecBase with MockitoSugar with VatRa
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
-
+      val vatRateService = mock[VatRateService]
+      when(vatRateService.vatRates(any(), any())) thenReturn(vatRates)
       val userAnswers = baseAnswers.set(VatRatesFromEuPage(index, index), vatRates).success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(
+          bind[VatRateService].toInstance(vatRateService)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, vatRatesFromEuRoute)

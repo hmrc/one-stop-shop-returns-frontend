@@ -18,11 +18,13 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromEuFormProvider
-import models.{Index, Mode, Period, VatRate}
+import models.{Index, Mode, Period, UserAnswers, VatRate, VatRateAndSales}
 import models.requests.DataRequest
 import pages.VatRatesFromEuPage
 import play.api.i18n.I18nSupport
+import play.api.libs.json.Reads
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.AllEuVatRateAndSalesQuery
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
@@ -81,16 +83,30 @@ class VatRatesFromEuController @Inject()(
             formWithErrors =>
               BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo, checkboxItems(vatRates))).toFuture,
 
-            value =>
-              updateAndContinue(mode, countryFromIndex, countryToIndex, request, value)
+            value => {
+              val existingAnswers = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).getOrElse(List.empty)
+              val existingAnswersWithRemovals = existingAnswers.filter(rate => value.contains(rate))
+              val updated = existingAnswersWithRemovals ++ value.filterNot(rate => existingAnswersWithRemovals.contains(rate))
+              updateAndContinue(mode, countryFromIndex, countryToIndex, request, updated)
+            }
           )
       }
   }
 
+  def getUpdatedAnswers(countryFromIndex: Index, countryToIndex: Index, existingUserAnswers: UserAnswers, vatRates: List[VatRate]): Seq[VatRateAndSales] = {
+    val existingSales = existingUserAnswers.get(AllEuVatRateAndSalesQuery(countryFromIndex, countryToIndex)).getOrElse(Seq())
+    existingSales.filter(sales => vatRates.exists(_.rate == sales.rate)) ++ vatRates.filterNot(rate => existingSales.exists(_.rate == rate.rate))
+      .map(VatRateAndSales.convert)
+  }
+
   private def updateAndContinue(mode: Mode, countryFromIndex: Index, countryToIndex: Index, request: DataRequest[AnyContent], value: List[VatRate]) = {
     for {
-      updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromEuPage(countryFromIndex, countryToIndex), value))
+      updatedAnswers <- Future.fromTry(request.userAnswers.set(
+        AllEuVatRateAndSalesQuery(countryFromIndex, countryToIndex),
+        getUpdatedAnswers(countryFromIndex, countryToIndex, request.userAnswers, value)))
       _ <- cc.sessionRepository.set(updatedAnswers)
-    } yield Redirect(VatRatesFromEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
+    } yield {
+      Redirect(VatRatesFromEuPage(countryFromIndex, countryToIndex).navigate(mode, updatedAnswers))
+    }
   }
 }

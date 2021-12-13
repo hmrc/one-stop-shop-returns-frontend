@@ -47,7 +47,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
 
       VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).flatMap{result =>
@@ -83,7 +83,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
       } )}
   }
 
-  def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period).async {
+  def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       withCompleteCorrectionsAsync(onFailure = {
           incompletePeriods => {

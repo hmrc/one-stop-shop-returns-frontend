@@ -17,14 +17,15 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, NormalMode, UserAnswers, VatOnSales}
-import pages.PageConstants.{salesAtVatRate, salesFromNi, vatOnSales}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, Index, Mode, NormalMode, UserAnswers, VatOnSales}
+import pages.PageConstants.{salesAtVatRate, salesFromNi, vatOnSales, vatRates}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
 case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
-  override def path: JsPath = JsPath \ salesFromNi \ countryIndex.position \ salesAtVatRate \ vatRateIndex.position \ vatOnSales
+  override def path: JsPath =
+    JsPath \ salesFromNi \ countryIndex.position \ vatRates \ vatRateIndex.position \ salesAtVatRate \ toString
 
   override def toString: String = vatOnSales
 
@@ -36,9 +37,26 @@ case class VatOnSalesFromNiPage(countryIndex: Index, vatRateIndex: Index) extend
 
   override def navigateInCheckLoopMode(answers: UserAnswers): Call =
     answers.get(VatRatesFromNiPage(countryIndex)).map {
-      _ =>
-        routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex)
+      rates =>
+        if (rates.size > vatRateIndex.position + 1) {
+          routes.NetValueOfSalesFromNiController.onPageLoad(CheckLoopMode, answers.period, countryIndex, vatRateIndex + 1)
+        } else {
+          routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex)
+        }
     }.getOrElse(routes.JourneyRecoveryController.onPageLoad())
+
+  override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
+    commonNavigate(CheckSecondLoopMode, answers)
+
+  override def navigateInCheckInnerLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesFromNiController.onPageLoad(NormalMode, answers.period, countryIndex)
+
+  override def navigateInCheckSecondInnerLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesFromNiController.onPageLoad(CheckSecondLoopMode, answers.period, countryIndex)
+
+  override def navigateInCheckFinalInnerLoopMode(answers: UserAnswers): Call =
+    routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, countryIndex)
+
 
   private def commonNavigate(mode: Mode, answers: UserAnswers): Call = {
     answers.get(VatRatesFromNiPage(countryIndex)).map {

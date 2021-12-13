@@ -40,7 +40,7 @@ class VatCorrectionsListController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionToggle(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
     implicit request =>
       getNumberOfCorrections(periodIndex) { (number, correctionPeriod) =>
         val canAddCountries = number < Country.euCountries.size
@@ -54,7 +54,7 @@ class VatCorrectionsListController @Inject()(
   }
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
-    cc.authAndGetDataAndCorrectionToggle(period) { implicit request =>
+    cc.authAndGetDataAndCorrectionEligible(period) { implicit request =>
       withCompleteCorrections(
         periodIndex,
         onFailure = incompleteCorrections => {

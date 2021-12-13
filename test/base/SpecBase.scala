@@ -21,6 +21,7 @@ import generators.Generators
 import models.VatOnSalesChoice.Standard
 import models.PaymentReference
 import models.Quarter.{Q1, Q2, Q3, Q4}
+import models.corrections.CorrectionPayload
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
@@ -32,6 +33,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
 import pages._
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -92,12 +94,18 @@ trait SpecBase
     .set(NetValueOfSalesFromEuPage(index, index, index), BigDecimal(100)).success.value
     .set(VatOnSalesFromEuPage(index, index, index), VatOnSales(Standard, BigDecimal(20))).success.value
 
+  val completeUserAnswersWithCorrections: UserAnswers = completeUserAnswers
+    .set(CorrectPreviousReturnPage, true).success.value
+    .set(CorrectionReturnPeriodPage(index), period).success.value
+    .set(CorrectionCountryPage(index, index), Country("EE", "Estonia")).success.value
+    .set(CountryVatCorrectionPage(index, index), BigDecimal(1000)).success.value
+
   val completeVatReturn: VatReturn =
       VatReturn(
         Vrn("063407423"),
         Period("2086", "Q3").get,
         ReturnReference("XI/XI063407423/Q3.2086"),
-        PaymentReference("XI063407423Q386"),
+        PaymentReference("NI063407423Q386"),
         None,
         None,
         List(SalesToCountry(Country("LT",
@@ -202,6 +210,15 @@ trait SpecBase
       Instant.ofEpochSecond(1630670836)
     )
 
+  val emptyCorrectionPayload: CorrectionPayload =
+    CorrectionPayload(
+      Vrn("063407423"),
+      Period("2086", "Q3").get,
+      List.empty,
+      Instant.ofEpochSecond(1630670836),
+      Instant.ofEpochSecond(1630670836)
+    )
+
   val vatReturnRequest: VatReturnRequest =
     VatReturnRequest(
       Vrn("063407423"),
@@ -240,7 +257,6 @@ trait SpecBase
         bind[CheckReturnsFilterProvider].toInstance(new FakeCheckReturnsFilterProvider()),
         bind[CheckCommencementDateFilterProvider].toInstance(new FakeCheckCommencementDateFilterProvider()),
         bind[Clock].toInstance(clockToBind),
-        bind[CheckCorrectionsToggleFilterProvider].toInstance(new FakeCheckCorrectionsToggleFilterProvider()),
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
       )
   }

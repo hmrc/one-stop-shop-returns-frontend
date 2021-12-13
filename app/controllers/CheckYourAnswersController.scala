@@ -18,17 +18,15 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.{CheckMode, NormalMode, Period}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
-import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.corrections.CorrectionRequest
 import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
+import models.requests.corrections.CorrectionRequest
 import models.responses.ConflictFound
 import pages.CheckYourAnswersPage
 import pages.corrections.{CorrectPreviousReturnPage, VatPeriodCorrectionsListPage}
@@ -43,7 +41,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
+import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -58,8 +56,7 @@ class CheckYourAnswersController @Inject()(
                                             correctionService: CorrectionService,
                                             auditService: AuditService,
                                             emailService: EmailService,
-                                            vatReturnConnector: VatReturnConnector,
-                                            config: FrontendAppConfig
+                                            vatReturnConnector: VatReturnConnector
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -92,15 +89,15 @@ class CheckYourAnswersController @Inject()(
 
     val salesFromEuSummaryList = getSalesFromEuSummaryList(request)
 
-    val containsCorrections = config.correctionToggle && request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
+      val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
-    val totalVatToCountries =
-      service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
-    val noPaymentDueCountries = if (config.correctionToggle) {
-      service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
-    } else List.empty
-    val totalVatOnSales =
-      service.getTotalVatOwedAfterCorrections(request.userAnswers)
+      val totalVatToCountries =
+        service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
+      val noPaymentDueCountries =
+        service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
+
+      val totalVatOnSales =
+        service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
     val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromNiSummaryList, salesFromEuSummaryList)
 
@@ -120,7 +117,7 @@ class CheckYourAnswersController @Inject()(
                                   salesFromNiSummaryList: SummaryList,
                                   salesFromEuSummaryList: SummaryList
                                 )(implicit messages: Messages) =
-    if (config.correctionToggle && request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
+    if (request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
           CorrectPreviousReturnSummary.row(request.userAnswers),
@@ -175,7 +172,7 @@ class CheckYourAnswersController @Inject()(
       val validatedVatReturnRequest =
         vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
 
-      if (config.correctionToggle) {
+      if (request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
         val validatedCorrectionRequest =
           correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate)
 
