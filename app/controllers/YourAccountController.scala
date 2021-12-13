@@ -23,6 +23,7 @@ import logging.Logging
 import models.{PeriodWithStatus, SubmissionStatus}
 import models.financialdata.VatReturnWithFinancialData
 import models.requests.RegistrationRequest
+import pages.SavedProgressPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -78,7 +79,8 @@ class YourAccountController @Inject()(
                   duePeriodsWithOutstandingAmounts,
                   overduePeriodsWithOutstandingAmounts,
                   filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
-                  periodInProgress = u.map(_.period)
+                  periodInProgress = u.map(_.period),
+                  continueUrl = u.flatMap(_.get(SavedProgressPage))
                 )))
         case (Right(availablePeriodsWithStatus), Left(error)) =>
           logger.warn(s"There was an error with getting payment information $error")

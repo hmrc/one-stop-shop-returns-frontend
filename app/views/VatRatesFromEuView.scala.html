@@ -49,6 +49,6 @@
             ).withHint(HintViewModel(messages("vatRatesFromEu.hint")))
         )
 
-        @button("site.continue", period)
+        @button("site.continue", period, routes.VatRatesFromEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex).url)
     }
 }

@@ -86,6 +86,6 @@
             )
         )
 
-        @button("site.continue", period)
+        @button("site.continue", period, routes.VatOnSalesFromEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex, vatRateIndex).url)
     }
 }

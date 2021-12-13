@@ -30,7 +30,8 @@
         dueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
         overdueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
         paymentError: Boolean,
-        periodInProgress: Option[Period] = None
+        periodInProgress: Option[Period] = None,
+        continueUrl: Option[String] = None
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -129,11 +130,18 @@
 
                 }
 
-                @(duePeriod, overduePeriods.size) match {
-                    case (None, 0) => {
+                @(continueUrl, duePeriod, overduePeriods.size) match {
+                    case (Some(url), _, _) => {
+                        <p class="govuk-body">
+                            <a class="govuk-link" href="@url" id="continue-your-return">
+                                @messages("index.yourReturns.continueReturn")
+                            </a>
+                        </p>
+                    }
+                    case (None, None, 0) => {
                         <p class="govuk-body">@messages("index.yourReturns.nothingDue")</p>
                     }
-                    case (Some(period), 0) => {
+                    case (None, Some(period), 0) => {
                         <p class="govuk-body">
                             <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url" id="start-your-return">
                             @messages("index.yourReturns.startReturn")

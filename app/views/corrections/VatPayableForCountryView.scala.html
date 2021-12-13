@@ -44,6 +44,6 @@
             ).withHint(HintViewModel(HtmlContent(Html(messages("vatPayableForCountry.hint")))))
         )
 
-        @button("site.continue", period)
+        @button("site.continue", period, controllers.corrections.routes.VatPayableForCountryController.onPageLoad(mode, period, periodIndex, countryIndex).url)
     }
 }

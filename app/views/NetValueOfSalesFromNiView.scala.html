@@ -54,6 +54,6 @@
             .withHint(HintViewModel(messages("netValueOfSalesFromNi.hint")))
         )
 
-        @button("site.continue", period)
+        @button("site.continue", period, routes.NetValueOfSalesFromNiController.onPageLoad(mode, period, countryIndex, vatRateIndex).url)
     }
 }

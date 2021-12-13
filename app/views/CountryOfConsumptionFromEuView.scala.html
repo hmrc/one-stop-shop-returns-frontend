@@ -47,6 +47,6 @@
             .withCssClass("autocomplete")
         )
 
-        @button("site.continue", period)
+        @button("site.continue", period, routes.CountryOfConsumptionFromEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex).url)
     }
 }

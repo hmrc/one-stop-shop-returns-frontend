@@ -108,6 +108,6 @@
             </div>
         </dl>
 
-        @button("site.submit", period)
+        @button("site.submit", period, routes.CheckYourAnswersController.onPageLoad(period).url)
     }
 }

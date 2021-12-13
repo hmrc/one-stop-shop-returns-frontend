@@ -51,6 +51,6 @@
             ).withHint(HintViewModel(messages("vatRatesFromNi.hint")))
         )
 
-        @button("site.continue", period)
+        @button("site.continue", period, routes.VatRatesFromNiController.onPageLoad(mode, period, index).url)
     }
 }

@@ -50,6 +50,6 @@
         )
 
 
-        @button("site.continue", period)
+        @button("site.continue", period, routes.CountryOfConsumptionFromNiController.onPageLoad(mode, period, index).url)
     }
 }

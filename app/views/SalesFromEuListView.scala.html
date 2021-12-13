@@ -64,7 +64,7 @@
                 <input type="hidden" name="value" id="value" value="false"/>
             }
 
-            @button("site.continue", period)
+            @button("site.continue", period, routes.SalesFromEuListController.onPageLoad(mode, period).url)
         }
     }
 }

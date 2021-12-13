@@ -41,6 +41,6 @@
             )
         )
 
-        @button("site.continue", period)
+        @button("site.continue", period, controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, period, periodIndex).url)
     }
 }

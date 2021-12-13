@@ -44,6 +44,6 @@
             )
         )
 
-        @button("site.continue", period)
+        @button("site.continue", period, routes.SoldGoodsFromEuController.onPageLoad(mode, period).url)
     }
 }
