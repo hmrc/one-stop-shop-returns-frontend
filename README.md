@@ -21,7 +21,7 @@ sm --start ONE_STOP_SHOP_ALL -r
 
 ### To run the application locally execute the following:
 ```
-sm --stop ONE_STOP_SHOP_FRONTEND
+sm --stop ONE_STOP_SHOP_RETURNS_FRONTEND
 ```
 and 
 ```
