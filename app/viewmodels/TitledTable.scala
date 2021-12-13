@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this(govukButton: GovukButton)
-@(continueMessage: String, period: Period, continueUrl: String = "")(implicit messages: Messages)
-<div class="govuk-button-group">
-    @govukButton(
-    ButtonViewModel(messages(continueMessage)).withAttribute(("id", "continue"))
-    )
+package viewmodels
 
-    <a id="saveProgress" role="button" href="@routes.SavedProgressController.onPageLoad(period, continueUrl)" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-        @messages("saveProgress.button")
-    </a>
-</div>
+import uk.gov.hmrc.govukfrontend.views.viewmodels.table.Table
+
+case class TitledTable(title: String, list: Table, hint: Option[String] = None)

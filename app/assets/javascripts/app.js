@@ -104,10 +104,3 @@ if (typeof accessibleAutocomplete != 'undefined' && document.querySelector('.aut
     }
   }
 }
-
-var continueToYourReturn = document.getElementById('continueToYourReturn');
-  continueToYourReturn.addEventListener('click', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    window.history.back();
-  });
