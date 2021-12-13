@@ -41,14 +41,14 @@ class CorrectionUtilsSpec extends SpecBase {
         corrections = List(
           PeriodWithCorrections(
             correctionReturnPeriod = Period(2021, Q3),
-            correctionsToCountry = List(
-              CorrectionToCountry(country1, BigDecimal(10))
-            )),
+            correctionsToCountry = Some(List(
+              CorrectionToCountry(country1, Some(BigDecimal(10)))
+            ))),
           PeriodWithCorrections(
             correctionReturnPeriod = Period(2021, Q4),
-            correctionsToCountry = List(
-              CorrectionToCountry(country1, BigDecimal(10))
-            ))
+            correctionsToCountry = Some(List(
+              CorrectionToCountry(country1, Some(BigDecimal(10)))
+            )))
         ),
         submissionReceived = Instant.now(),
         lastUpdated = Instant.now()
@@ -77,16 +77,16 @@ class CorrectionUtilsSpec extends SpecBase {
         corrections = List(
           PeriodWithCorrections(
             correctionReturnPeriod = Period(2021, Q3),
-            correctionsToCountry = List(
-              CorrectionToCountry(country1, BigDecimal(10)),
-              CorrectionToCountry(country2, BigDecimal(-10))
-            )),
+            correctionsToCountry = Some(List(
+              CorrectionToCountry(country1, Some(BigDecimal(10))),
+              CorrectionToCountry(country2, Some(BigDecimal(-10)))
+            ))),
           PeriodWithCorrections(
             correctionReturnPeriod = Period(2021, Q4),
-            correctionsToCountry = List(
-              CorrectionToCountry(country1, BigDecimal(-10)),
-              CorrectionToCountry(country2, BigDecimal(10))
-            ))
+            correctionsToCountry = Some(List(
+              CorrectionToCountry(country1, Some(BigDecimal(-10))),
+              CorrectionToCountry(country2, Some(BigDecimal(10)))
+            )))
         ),
         submissionReceived = Instant.now(),
         lastUpdated = Instant.now()
@@ -120,15 +120,15 @@ class CorrectionUtilsSpec extends SpecBase {
         corrections = List(
           PeriodWithCorrections(
             correctionReturnPeriod = Period(2021, Q3),
-            correctionsToCountry = List(
-              CorrectionToCountry(country1, BigDecimal(52.44)),
-              CorrectionToCountry(country2, BigDecimal(-589.24))
-            )),
+            correctionsToCountry = Some(List(
+              CorrectionToCountry(country1, Some(BigDecimal(52.44))),
+              CorrectionToCountry(country2, Some(BigDecimal(-589.24)))
+            ))),
           PeriodWithCorrections(
             correctionReturnPeriod = Period(2021, Q4),
-            correctionsToCountry = List(
-              CorrectionToCountry(country1, BigDecimal(-10)),
-            ))
+            correctionsToCountry = Some(List(
+              CorrectionToCountry(country1, Some(BigDecimal(-10))),
+            )))
         ),
         submissionReceived = Instant.now(),
         lastUpdated = Instant.now()

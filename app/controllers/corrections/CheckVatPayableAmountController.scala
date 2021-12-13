@@ -70,8 +70,9 @@ class CheckVatPayableAmountController @Inject()(
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
+
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
-    cc.authAndGetDataAndCorrectionToggle(period) { implicit request =>
+    cc.authAndGetDataAndCorrectionEligible(period) { implicit request =>
       withCompleteCorrections(periodIndex, onFailure = incompleteCorrections => {
         Redirect(routes.CorrectionCountryController.onPageLoad(
             mode,

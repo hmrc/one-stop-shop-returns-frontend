@@ -145,10 +145,10 @@ class VatReturnSalesServiceSpec extends SpecBase {
 
         val periodWithCorrections = List(PeriodWithCorrections(
           period,
-          List(CorrectionToCountry(
+          Some(List(CorrectionToCountry(
             Country("ES", "Spain"),
-            BigDecimal(500)
-          ))
+            Some(BigDecimal(500))
+          )))
         ))
 
         service.getTotalVatOnSalesAfterCorrection(
@@ -178,10 +178,10 @@ class VatReturnSalesServiceSpec extends SpecBase {
 
         val periodWithCorrections = List(PeriodWithCorrections(
           period,
-          List(CorrectionToCountry(
+          Some(List(CorrectionToCountry(
             Country("ES", "Spain"),
-            BigDecimal(-500)
-          ))
+            Some(BigDecimal(-500))
+          )))
         ))
 
         service.getTotalVatOnSalesAfterCorrection(
@@ -211,13 +211,13 @@ class VatReturnSalesServiceSpec extends SpecBase {
 
         val periodWithCorrections = List(PeriodWithCorrections(
           period,
-          List(CorrectionToCountry(
+          Some(List(CorrectionToCountry(
             Country("ES", "Spain"),
-            BigDecimal(-500)
+            Some(BigDecimal(-500))
           ),CorrectionToCountry(
             Country("DE", "Germany"),
-            BigDecimal(1500.95)
-          ))
+            Some(BigDecimal(1500.95))
+          )))
         ))
 
         service.getTotalVatOnSalesAfterCorrection(
@@ -247,16 +247,16 @@ class VatReturnSalesServiceSpec extends SpecBase {
 
         val periodWithCorrections = List(PeriodWithCorrections(
           period,
-          List(CorrectionToCountry(
+          Some(List(CorrectionToCountry(
             Country("ES", "Spain"),
-            BigDecimal(-500)
+            Some(BigDecimal(-500))
           ),CorrectionToCountry(
             Country("DE", "Germany"),
-            BigDecimal(1500.95)
+            Some(BigDecimal(1500.95))
           ),CorrectionToCountry(
             Country("MT", "Malta"),
-            BigDecimal(-999.99)
-          ))
+            Some(BigDecimal(-999.99))
+          )))
         ))
 
         service.getTotalVatOnSalesAfterCorrection(
@@ -269,16 +269,16 @@ class VatReturnSalesServiceSpec extends SpecBase {
 
         val periodWithCorrections = List(PeriodWithCorrections(
           period,
-          List(CorrectionToCountry(
+          Some(List(CorrectionToCountry(
             Country("ES", "Spain"),
-            BigDecimal(-500)
+            Some(BigDecimal(-500))
           ),CorrectionToCountry(
             Country("DE", "Germany"),
-            BigDecimal(1500.95)
+            Some(BigDecimal(1500.95))
           ),CorrectionToCountry(
             Country("MT", "Malta"),
-            BigDecimal(-999.99)
-          ))
+            Some(BigDecimal(-999.99))
+          )))
         ))
 
         service.getTotalVatOnSalesAfterCorrection(
