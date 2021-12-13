@@ -21,21 +21,21 @@ import com.google.inject.Inject
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.{NormalMode, Period, UserAnswers}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.requests.corrections.CorrectionRequest
+import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.ConflictFound
+import models.{NormalMode, Period}
 import pages.CheckYourAnswersPage
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import queries.EmailConfirmationQuery
 import queries.corrections.AllCorrectionPeriodsQuery
-import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import services.corrections.CorrectionService
+import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -45,7 +45,6 @@ import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, Correc
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
-import java.time.{Clock, Instant}
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckYourAnswersController @Inject()(
@@ -57,7 +56,6 @@ class CheckYourAnswersController @Inject()(
                                             auditService: AuditService,
                                             emailService: EmailService,
                                             vatReturnConnector: VatReturnConnector,
-                                            clock: Clock
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -264,12 +262,7 @@ class CheckYourAnswersController @Inject()(
         val emailSent = EMAIL_ACCEPTED == emailConfirmationResult
 
         for {
-          _ <- cc.sessionRepository.clear(request.userId)
-          updatedAnswers <- Future.fromTry(UserAnswers(
-            userId = request.userId,
-            period = period,
-            lastUpdated = Instant.now(clock)
-          ).set(EmailConfirmationQuery, emailSent))
+          updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
           _ <- cc.sessionRepository.set(updatedAnswers)
         } yield {
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
