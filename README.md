@@ -54,10 +54,9 @@ To log in using the Authority Wizard provide "continue url", "affinity group" an
 
 ![image](https://user-images.githubusercontent.com/48218839/145842926-c318cb10-70c3-4186-a839-b1928c8e2625.png)
 
-
-To be able to use the application you need to be registered for the service.
-
-
+The VRN can be any 9-digit number.
+  
+To be able to use the application you need to be registered for the service (instructions to complete a registration can be found here https://github.com/hmrc/one-stop-shop-registration-frontend).
 
 ### License
 
