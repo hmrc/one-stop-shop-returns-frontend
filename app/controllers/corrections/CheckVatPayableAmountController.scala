@@ -57,7 +57,7 @@ class CheckVatPayableAmountController @Inject()(
               ).flatten
             ).withCssClass("govuk-!-margin-bottom-9")
 
-            Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex))
+            Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex))
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }

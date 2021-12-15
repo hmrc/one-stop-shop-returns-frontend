@@ -15,12 +15,12 @@
  *@
 
 @import viewmodels.TitledSummaryList
-
+@import components.ButtonGroup
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukSummaryList: GovukSummaryList,
-        govukButton: GovukButton
+        button: ButtonGroup
 )
 
 @(
@@ -56,8 +56,6 @@
             @govukSummaryList(list.list)
         }
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue", period, routes.CheckSalesToEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex).url)
     }
 }

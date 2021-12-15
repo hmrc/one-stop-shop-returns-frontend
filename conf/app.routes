@@ -298,3 +298,5 @@ GET        /:period/deleteReturn                        controllers.DeleteReturn
 POST       /:period/deleteReturn                        controllers.DeleteReturnController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET        /:period/changeDeleteReturn                  controllers.DeleteReturnController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST       /:period/changeDeleteReturn                  controllers.DeleteReturnController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/progress-saved                                                                           controllers.SavedProgressController.onPageLoad(period: Period, continueUrl: String)

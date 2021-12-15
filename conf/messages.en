@@ -48,9 +48,11 @@ index.paragraph = You can correct a previous return when you submit your next on
 index.yourReturns = Your returns
 index.yourReturns.returnDue = {0} is due by {1}
 index.yourReturns.returnOverdue = {0} is overdue
-index.yourReturns.returnsOverdue = You have {0} returns overdue
+index.yourReturns.returnsOverdue = You also have {0} returns overdue
+index.yourReturns.onlyReturnsOverdue = You have {0} returns overdue
 index.yourReturns.nothingDue = You do not have any returns due
 index.yourReturns.startReturn = Start your return
+index.yourReturns.continueReturn = Continue your return
 index.payment.heading = Payments
 index.payment.dueHeading = Due Payments
 index.payment.overdueHeading = Overdue Payments
@@ -437,6 +439,21 @@ vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.caption = Correction period: {0}
 vatPayableForCountry.hint = We''ve calculated this total based on your most recent declaration and the correction amount.
 vatPayableForCountry.error.required = Select yes if the total VAT payable for {0} is {1}
+
+savedProgress.title = We have saved your progress
+savedProgress.subtitle = We''ll keep your information until {0}
+savedProgress.return.due = This return is due by {0}.
+savedProgress.nextSteps = What happens next
+savedProgress.listStart = You can:
+savedProgress.continue.return = continue to complete your return
+savedProgress.your.account = return to your account
+savedProgress.sign.out = sign out and come back later
+savedProgress.heading = savedProgress
+savedProgress.sign.in = If you sign out, you must sign back into your <a href="{0}">Government Gateway</a> to continue.
+saveProgress.button = Save and come back later
+yourAccount.return.inProgress = Your return for {0} is in progress
+yourAccount.return.inProgress.due = It is due by {0}
+
 
 continueReturn.title = ContinueReturn
 continueReturn.heading = ContinueReturn
