@@ -33,7 +33,7 @@ class CachedVatReturnRepositorySpec
 
 
   private val mockAppConfig = mock[FrontendAppConfig]
-  when(mockAppConfig.cacheTtl) thenReturn 1
+  when(mockAppConfig.cachedVatReturnTtl) thenReturn 1
 
   protected override val repository = new CachedVatReturnRepository(
     mongoComponent = mongoComponent,
