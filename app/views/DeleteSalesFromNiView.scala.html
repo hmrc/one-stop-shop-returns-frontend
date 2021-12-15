@@ -14,12 +14,14 @@
  * limitations under the License.
  *@
 
+@import components.ButtonGroup
+
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period, index: Index, country: Country)(implicit request: Request[_], messages: Messages)
@@ -46,8 +48,7 @@
             )
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.saveAndContinue",  period, controllers.routes.DeleteSalesFromNiController.onPageLoad(mode, period, index).url)
+
     }
 }

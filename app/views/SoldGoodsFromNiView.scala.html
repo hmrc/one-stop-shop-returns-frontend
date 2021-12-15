@@ -15,13 +15,14 @@
  *@
 
 @import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
+@import components.ButtonGroup
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
@@ -44,8 +45,7 @@
             )
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.saveAndContinue",  period, controllers.routes.SoldGoodsFromNiController.onPageLoad(mode, period).url)
+
     }
 }
