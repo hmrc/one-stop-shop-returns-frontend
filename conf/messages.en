@@ -437,3 +437,17 @@ vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.caption = Correction period: {0}
 vatPayableForCountry.hint = We''ve calculated this total based on your most recent declaration and the correction amount.
 vatPayableForCountry.error.required = Select yes if the total VAT payable for {0} is {1}
+
+continueReturn.title = ContinueReturn
+continueReturn.heading = ContinueReturn
+continueReturn.continue = Continue my return
+continueReturn.delete = Delete my return and start again
+continueReturn.checkYourAnswersLabel = ContinueReturn
+continueReturn.error.required = Select continueReturn
+continueReturn.change.hidden = ContinueReturn
+
+deleteReturn.title = deleteReturn
+deleteReturn.heading = deleteReturn
+deleteReturn.checkYourAnswersLabel = deleteReturn
+deleteReturn.error.required = Select yes if deleteReturn
+deleteReturn.change.hidden = DeleteReturn
