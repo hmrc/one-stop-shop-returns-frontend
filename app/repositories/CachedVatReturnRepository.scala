@@ -44,7 +44,7 @@ class CachedVatReturnRepository @Inject()(
         Indexes.ascending("lastUpdated"),
         IndexOptions()
           .name("lastUpdatedIdx")
-          .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
+          .expireAfter(appConfig.cachedVatReturnTtl, TimeUnit.SECONDS)
       ),
       IndexModel(
         Indexes.ascending("userId", "period"),
