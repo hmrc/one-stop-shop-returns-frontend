@@ -24,7 +24,7 @@ import queries.Derivable
 
 case object DeriveCompletedCorrectionPeriods extends Derivable[List[JsObject], List[Period]] {
 
-  override val derive: List[JsObject] => List[Period] = _.flatMap(_.asOpt[PeriodWithCorrections]).map(_.correctionReturnPeriod)
+  override val derive: List[JsObject] => List[Period] = _.flatMap(_.asOpt[PeriodWithCorrections]).filter(_.correctionsToCountry.isDefined).map(_.correctionReturnPeriod)
 
   override def path: JsPath = JsPath \ PageConstants.corrections
 }

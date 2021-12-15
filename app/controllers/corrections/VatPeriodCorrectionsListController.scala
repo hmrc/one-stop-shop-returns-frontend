@@ -20,31 +20,35 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import controllers.{routes => baseRoutes}
 import models.SubmissionStatus.Complete
-import models.{Mode, Period}
+import models.{Index, Mode, Period}
+import pages.corrections.VatPeriodCorrectionsListPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.checkAnswers.corrections.VatPeriodCorrectionsListSummary
 import views.html.corrections.VatPeriodCorrectionsListView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class VatPeriodCorrectionsListController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: VatPeriodCorrectionsListView,
                                        returnStatusConnector: ReturnStatusConnector
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with CompletionChecks with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
-
     implicit request =>
-
+      VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).flatMap{result =>
+        result.fold(
+          _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())),
+          _ =>
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
         case Right(returnStatuses) =>
           val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
@@ -52,26 +56,42 @@ class VatPeriodCorrectionsListController @Inject()(
           if(allPeriods.isEmpty) {
             Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
           } else {
-
             val completedCorrectionPeriods: List[Period] = request.userAnswers
               .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
-
             val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
             val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
 
             if(uncompletedCorrectionPeriods.isEmpty) {
-              Ok(view(mode, period, completedCorrectionPeriodsModel))
+              withCompleteCorrections(onFailure = incompletePeriods =>
+                Ok(view(mode, period, completedCorrectionPeriodsModel, incompletePeriods)))(Ok(view(mode, period, completedCorrectionPeriodsModel, List.empty)))
             } else {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period))
             }
+
           }
         case Left(value) =>
           logger.error(s"there was an error $value")
           throw new Exception(value.toString)
       }
+        )
+      }
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
-    implicit request => Redirect(baseRoutes.CheckYourAnswersController.onPageLoad(period))
+  def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
+    implicit request =>
+      withCompleteCorrections(onFailure = {
+        incompletePeriods =>
+          if (incompletePromptShown) {
+            val correctionPeriods = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
+              .getOrElse(List.empty).zipWithIndex
+            correctionPeriods.find(correctionPeriod => correctionPeriod._1 == incompletePeriods.head)
+              .map(correctionPeriod => Redirect(routes.VatCorrectionsListController.onPageLoad(mode, period, Index(correctionPeriod._2))))
+              .getOrElse(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad()))
+          } else {
+            Redirect(routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
+          }
+      }) {
+        Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, false))
+      }
   }
 }

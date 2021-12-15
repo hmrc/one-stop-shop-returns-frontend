@@ -23,9 +23,11 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.checkAnswers.corrections.{CountryVatCorrectionSummary, NewVatTotalSummary, PreviousVatTotalSummary}
 import viewmodels.govuk.summarylist._
 import views.html.corrections.CheckVatPayableAmountView
+import controllers.{routes => baseRoutes}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,7 +36,7 @@ class CheckVatPayableAmountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: CheckVatPayableAmountView,
                                        service: VatReturnService
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -57,9 +59,28 @@ class CheckVatPayableAmountController @Inject()(
               ).flatten
             ).withCssClass("govuk-!-margin-bottom-9")
 
-            Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex))
+            withCompleteCorrections(periodIndex, onFailure = incompleteCorrections => {
+              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, false))
+            }) {
+              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, true))
+            }
+
+
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      }
+  }
+
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
+    cc.authAndGetDataAndCorrectionEligible(period) { implicit request =>
+      withCompleteCorrections(periodIndex, onFailure = incompleteCorrections => {
+        Redirect(routes.CorrectionCountryController.onPageLoad(
+            mode,
+            period,
+            periodIndex,
+            countryIndex))
+        }) {
+        Redirect(controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, period, periodIndex))
       }
   }
 }

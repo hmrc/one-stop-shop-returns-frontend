@@ -103,11 +103,13 @@ class CorrectionService @Inject()(
 
   def getCorrectionsForPeriod(period: Period)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Seq[CorrectionToCountry]] = {
     connector.getForCorrectionPeriod(period).map{
-      case Right(payloads) => {
-        payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry}}}
-      case Left(error) =>
-        logger.error(s"there was an error when getting corrections for period: $error")
-        throw new Exception(error.toString)
+      response => response match {
+        case Right(payloads) => {
+          payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry.getOrElse(List.empty)}}}
+        case Left(error) =>
+          logger.error(s"there was an error when getting corrections for period: $error")
+          throw new Exception(error.toString)
+      }
     }
   }
 

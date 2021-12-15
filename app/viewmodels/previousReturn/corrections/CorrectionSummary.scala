@@ -63,18 +63,21 @@ object CorrectionSummary {
       periodWithCorrections <- periodsWithCorrections
       correctionToCountry <- periodWithCorrections.correctionsToCountry
     } yield {
-      Seq(
-        TableRowViewModel(
-          content = Text(periodWithCorrections.correctionReturnPeriod.displayText)
-        ),
-        TableRowViewModel(
-          content = Text(correctionToCountry.correctionCountry.name)
-        ),
-        TableRowViewModel(
-          content = HtmlContent(currencyFormat(correctionToCountry.countryVatCorrection))
-        ).withCssClass("govuk-table__cell--numeric")
-      )
-    }
+      correctionToCountry.groupBy(_.correctionCountry).flatMap {
+        case (country, corrections) =>
+          Seq(
+            TableRowViewModel(
+              content = Text(periodWithCorrections.correctionReturnPeriod.displayText)
+            ),
+            TableRowViewModel(
+              content = Text(country.name)
+            ),
+            TableRowViewModel(
+              content = HtmlContent(currencyFormat(corrections.map(_.countryVatCorrection.getOrElse(BigDecimal(0))).sum))
+            ).withCssClass("govuk-table__cell--numeric")
+          )
+      }
+    }.toSeq
   }
 
   def getDeclaredVat(maybeCorrectionPayload: Option[CorrectionPayload], vatReturn: VatReturn)

@@ -29,9 +29,9 @@ object CorrectionUtils {
       correctionToCountry <- correctionPeriods.correctionsToCountry
     } yield correctionToCountry
 
-    val correctionAmountsToAllCountries = correctionsToAllCountries.groupBy(_.correctionCountry).flatMap {
+    val correctionAmountsToAllCountries = correctionsToAllCountries.flatten.groupBy(_.correctionCountry).flatMap {
       case (country, corrections) =>
-        val total = corrections.map(_.countryVatCorrection).sum
+        val total = corrections.map(_.countryVatCorrection.getOrElse(BigDecimal(0))).sum
 
         Map(country -> total)
     }

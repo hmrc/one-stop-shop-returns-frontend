@@ -17,10 +17,11 @@
 @this(
     layout: templates.Layout,
     govukSummaryList: GovukSummaryList,
-    govukButton: GovukButton
+    govukButton: GovukButton,
+    formHelper: FormWithCSRF
 )
 
-@(period: Period, summaryList: SummaryList, country: Country, mode: Mode, correctionPeriod: Period, periodIndex: Index)(implicit request: Request[_], messages: Messages)
+@(period: Period, summaryList: SummaryList, country: Country, mode: Mode, correctionPeriod: Period, periodIndex: Index, countryIndex: Index, countryCorrectionComplete: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title"))) {
    <header class="hmrc-page-heading">
@@ -28,10 +29,32 @@
     <p class="govuk-caption-xl hmrc-caption-xl">@messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)</p>
    </header>
 
-   @govukSummaryList(summaryList)
+    @if(!countryCorrectionComplete) {
+    <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            @messages("error.missing_answers")
+        </strong>
+    </div>
+    }
 
+    @govukSummaryList(summaryList)
 
-   <p class="govuk-!-margin-bottom-9" style="margin-top:50px;">
-    <a class="govuk-button" href="@controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, period, periodIndex)" id="continue">@messages("site.continue")</a>
-   </p>
+    @if(countryCorrectionComplete) {
+        @formHelper(action = controllers.corrections.routes.CheckVatPayableAmountController.onSubmit(mode, period, periodIndex, countryIndex), 'missingPrompt -> "false") {
+            @govukButton(
+                ButtonViewModel(messages("site.continue"))
+            )
+        }
+    } else {
+        <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+        <p class="govuk-body">@messages("error.missing_answers_prompt", country.name)</p>
+
+        @formHelper(action = controllers.corrections.routes.CheckVatPayableAmountController.onSubmit(mode, period, periodIndex, countryIndex).withFragment("missing"), 'missingPrompt -> "true") {
+            @govukButton(
+                ButtonViewModel(messages("error.resolve_missing_answers"))
+            )
+        }
+    }
 }

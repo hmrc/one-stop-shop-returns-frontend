@@ -16,12 +16,16 @@
 
 package pages.corrections
 
+import controllers.actions.AuthenticatedControllerComponents
 import controllers.corrections.{routes => correctionRoutes}
 import controllers.routes
 import models.{Index, Mode, UserAnswers}
 import pages.Page
 import play.api.mvc.Call
-import queries.corrections.DeriveNumberOfCorrectionPeriods
+import queries.corrections.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery, DeriveNumberOfCorrectionPeriods}
+
+import scala.concurrent.ExecutionContext
+import scala.util.Try
 
 case object VatPeriodCorrectionsListPage extends Page {
 
@@ -36,5 +40,24 @@ case object VatPeriodCorrectionsListPage extends Page {
     } else {
       routes.CheckYourAnswersController.onPageLoad(answers.period)
     }
+  }
+
+  def cleanup(userAnswers: UserAnswers, cc: AuthenticatedControllerComponents)(implicit ec: ExecutionContext) = {
+    val periodsWithCorrections = userAnswers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty)
+    val emptyPeriods = periodsWithCorrections.zipWithIndex.filter(_._1.correctionsToCountry.isEmpty)
+    val updatedAnswers = emptyPeriods.foldRight(Try(userAnswers)){ (indexedPeriodWithCorrection, userAnswersTry) =>
+      userAnswersTry.flatMap(userAnswersToUpdate =>
+        userAnswersToUpdate.remove(CorrectionPeriodQuery(Index(indexedPeriodWithCorrection._2))))
+    }
+    val finalAnswers = updatedAnswers.flatMap(userAnswers =>
+      if(userAnswers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).isEmpty){
+      userAnswers.remove(AllCorrectionPeriodsQuery)
+    } else {
+        Try(userAnswers)
+      }
+    )
+    for{
+      _              <- cc.sessionRepository.set(finalAnswers.getOrElse(userAnswers))
+    }yield {finalAnswers}
   }
 }
