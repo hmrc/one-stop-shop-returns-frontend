@@ -52,6 +52,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def authAndGetDataAndCorrectionEligible(period: Period): ActionBuilder[DataRequest, AnyContent] =
     authAndGetData(period) andThen requirePreviousReturns()
+
+  def authAndGetDataSimple(period: Period): ActionBuilder[DataRequest, AnyContent] = authAndGetRegistration andThen getData(period) andThen requireData
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
