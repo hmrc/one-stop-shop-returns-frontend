@@ -21,27 +21,27 @@ import com.google.inject.Inject
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.{NormalMode, Period}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.requests.corrections.CorrectionRequest
+import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.ConflictFound
+import models.{NormalMode, Period}
 import pages.CheckYourAnswersPage
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import queries.EmailConfirmationQuery
 import queries.corrections.AllCorrectionPeriodsQuery
-import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import services.corrections.CorrectionService
+import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -55,7 +55,7 @@ class CheckYourAnswersController @Inject()(
                                             correctionService: CorrectionService,
                                             auditService: AuditService,
                                             emailService: EmailService,
-                                            vatReturnConnector: VatReturnConnector
+                                            vatReturnConnector: VatReturnConnector,
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -109,13 +109,14 @@ class CheckYourAnswersController @Inject()(
         (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
         (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
         (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
-      )} else {
-        Seq(
-          (None, businessSummaryList),
-          (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
-        )
-      }
+      )
+    } else {
+      Seq(
+        (None, businessSummaryList),
+        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
+        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
+      )
+    }
 
   private def getSalesFromEuSummaryList(request: DataRequest[AnyContent])(implicit messages: Messages) = {
     SummaryListViewModel(
@@ -225,11 +226,11 @@ class CheckYourAnswersController @Inject()(
   }
 
   private def auditEmailAndRedirect(
-   returnRequest: VatReturnRequest,
-   correctionRequest: Option[CorrectionRequest],
-   vatReturn: VatReturn,
-   period: Period
-  )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
+                                     returnRequest: VatReturnRequest,
+                                     correctionRequest: Option[CorrectionRequest],
+                                     vatReturn: VatReturn,
+                                     period: Period
+                                   )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
     auditService.audit(
       ReturnsAuditModel.build(
         returnRequest,

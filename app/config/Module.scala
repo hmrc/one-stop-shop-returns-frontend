@@ -19,7 +19,7 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions._
 
-import java.time.{Clock, Instant, ZoneId, ZoneOffset}
+import java.time.{Clock, ZoneOffset}
 
 class Module extends AbstractModule {
 
