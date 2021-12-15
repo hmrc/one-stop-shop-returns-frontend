@@ -30,8 +30,7 @@
         dueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
         overdueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
         paymentError: Boolean,
-        periodInProgress: Option[Period] = None,
-        continueUrl: Option[String] = None
+        periodInProgress: Option[Period] = None
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -130,10 +129,10 @@
 
                 }
 
-                @(continueUrl, duePeriod, overduePeriods.size) match {
-                    case (Some(url), _, _) => {
+                @(periodInProgress, duePeriod, overduePeriods.size) match {
+                    case (Some(inProgress), _, _) => {
                         <p class="govuk-body">
-                            <a class="govuk-link" href="@url" id="continue-your-return">
+                            <a class="govuk-link" href="@controllers.routes.ContinueReturnController.onPageLoad(inProgress).url" id="continue-your-return">
                                 @messages("index.yourReturns.continueReturn")
                             </a>
                         </p>

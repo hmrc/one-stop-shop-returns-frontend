@@ -22,11 +22,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], period: Period)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("deleteReturn.title"))) {
 
-    @formHelper(action = routes.DeleteReturnController.onSubmit(mode, period), 'autoComplete -> "off") {
+    @formHelper(action = routes.DeleteReturnController.onSubmit(period), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -35,12 +35,15 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("deleteReturn.heading")).asPageHeading()
+                legend = HmrcPageHeadingLegend(
+                            content = messages("deleteReturn.heading"),
+                            caption = period.displayText
+                        )
             )
         )
 
         @govukButton(
-            ButtonViewModel(messages("site.continue"))
+            ButtonViewModel(messages("deleteReturn.button")).withCssClass("govuk-button--warning")
         )
     }
 }

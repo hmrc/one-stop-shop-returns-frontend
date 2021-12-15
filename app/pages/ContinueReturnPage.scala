@@ -17,9 +17,11 @@
 package pages
 
 import controllers.routes
-import models.{ContinueReturn, UserAnswers}
+import models.ContinueReturn.{Continue, Delete}
+import models.{ContinueReturn, NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import uk.gov.hmrc.http.HttpVerbs.GET
 
 case object ContinueReturnPage extends QuestionPage[ContinueReturn] {
 
@@ -27,6 +29,10 @@ case object ContinueReturnPage extends QuestionPage[ContinueReturn] {
 
   override def toString: String = "continueReturn"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+  def navigate(answers: UserAnswers, questionAnswer: ContinueReturn): Call =
+    (questionAnswer, answers.get(SavedProgressPage)) match {
+      case (Continue, Some(url)) => Call(GET, url)
+      case (Delete, _) =>  controllers.routes.DeleteReturnController.onPageLoad(answers.period)
+      case _ => routes.JourneyRecoveryController.onPageLoad()
+    }
 }

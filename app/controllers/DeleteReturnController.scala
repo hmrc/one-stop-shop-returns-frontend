@@ -18,8 +18,9 @@ package controllers
 
 import controllers.actions._
 import forms.DeleteReturnFormProvider
+
 import javax.inject.Inject
-import models.{Mode, Period}
+import models.{Mode, NormalMode, Period}
 import pages.DeleteReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -37,29 +38,18 @@ class DeleteReturnController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-
-      val preparedForm = request.userAnswers.get(DeleteReturnPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
-
-      Ok(view(preparedForm, mode, period))
+      Ok(view(form, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
-
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(DeleteReturnPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(DeleteReturnPage.navigate(mode, updatedAnswers))
+          BadRequest(view(formWithErrors, period)),
+        value => Redirect(DeleteReturnPage.navigate(request.userAnswers, value))
       )
   }
 }

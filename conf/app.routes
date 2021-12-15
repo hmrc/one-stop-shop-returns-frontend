@@ -289,14 +289,10 @@ POST       /:period/second-change-vat-payable-confirm/:periodIndex/:countryIndex
 GET        /:period/third-change-vat-payable-confirm/:periodIndex/:countryIndex                              controllers.corrections.VatPayableForCountryController.onPageLoad(mode: Mode = CheckThirdLoopMode, period: Period, periodIndex: Index, countryIndex: Index)
 POST       /:period/third-change-vat-payable-confirm/:periodIndex/:countryIndex                              controllers.corrections.VatPayableForCountryController.onSubmit(mode: Mode = CheckThirdLoopMode, period: Period, periodIndex: Index, countryIndex: Index)
 
-GET        /:period/continueReturn                        controllers.ContinueReturnController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST       /:period/continueReturn                        controllers.ContinueReturnController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET        /:period/changeContinueReturn                  controllers.ContinueReturnController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST       /:period/changeContinueReturn                  controllers.ContinueReturnController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET        /:period/return-continue                        controllers.ContinueReturnController.onPageLoad(period: Period)
+POST       /:period/return-continue                        controllers.ContinueReturnController.onSubmit(period: Period)
 
-GET        /:period/deleteReturn                        controllers.DeleteReturnController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST       /:period/deleteReturn                        controllers.DeleteReturnController.onSubmit(mode: Mode = NormalMode, period: Period)
-GET        /:period/changeDeleteReturn                  controllers.DeleteReturnController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST       /:period/changeDeleteReturn                  controllers.DeleteReturnController.onSubmit(mode: Mode = CheckMode, period: Period)
+GET        /:period/return-delete-confirm                        controllers.DeleteReturnController.onPageLoad(period: Period)
+POST       /:period/return-delete-confirm                        controllers.DeleteReturnController.onSubmit(period: Period)
 
 GET        /:period/progress-saved                                                                           controllers.SavedProgressController.onPageLoad(period: Period, continueUrl: String)

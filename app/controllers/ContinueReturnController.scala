@@ -37,29 +37,18 @@ class ContinueReturnController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-
-      val preparedForm = request.userAnswers.get(ContinueReturnPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
-
-      Ok(view(preparedForm, mode, period))
+      Ok(view(form, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
-
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(ContinueReturnPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(ContinueReturnPage.navigate(mode, updatedAnswers))
+          BadRequest(view(formWithErrors, period)),
+        value => Redirect(ContinueReturnPage.navigate(request.userAnswers, value))
       )
   }
 }

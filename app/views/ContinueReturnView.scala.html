@@ -22,11 +22,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], period: Period)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("continueReturn.title"))) {
 
-    @formHelper(action = routes.ContinueReturnController.onSubmit(mode, period), 'autoComplete -> "off") {
+    @formHelper(action = routes.ContinueReturnController.onSubmit(period), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))
@@ -35,7 +35,10 @@
         @govukRadios(
             RadiosViewModel(
                 field  = form("value"),
-                legend = LegendViewModel(messages("continueReturn.heading")).asPageHeading(),
+                legend = HmrcPageHeadingLegend(
+                        content = messages("continueReturn.heading"),
+                        caption = period.displayText
+                        ),
                 items  = ContinueReturn.options
             )
         )

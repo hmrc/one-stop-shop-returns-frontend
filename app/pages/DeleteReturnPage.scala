@@ -27,6 +27,10 @@ case object DeleteReturnPage extends QuestionPage[Boolean] {
 
   override def toString: String = "deleteReturn"
 
-  override def navigateInNormalMode(answers: UserAnswers): Call =
-    routes.IndexController.onPageLoad()
+  def navigate(answers: UserAnswers, delete: Boolean): Call =
+    if(delete){
+      controllers.routes.YourAccountController.onPageLoad()
+    } else {
+      controllers.routes.ContinueReturnController.onPageLoad(answers.period)
+    }
 }
