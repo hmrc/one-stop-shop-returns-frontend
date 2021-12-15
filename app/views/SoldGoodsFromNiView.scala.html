@@ -22,7 +22,7 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    button: ButtonGroup
+    govukButton: GovukButton
 )
 
 @(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
@@ -44,8 +44,9 @@
                 )
             )
         )
-
-        @button("site.saveAndContinue",  period, controllers.routes.SoldGoodsFromNiController.onPageLoad(mode, period).url)
+        @govukButton(
+            ButtonViewModel(messages("site.saveAndContinue"))
+        )
 
     }
 }
