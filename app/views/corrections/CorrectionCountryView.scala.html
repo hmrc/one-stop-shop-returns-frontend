@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import components.ButtonGroup
+
 @import viewmodels.InputWidth._
 
 @this(
@@ -21,7 +23,7 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukSelect: GovukSelect,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period, periodIndex: Index, correctionPeriod: Period, countryIndex: Index)(implicit request: Request[_], messages: Messages)
@@ -48,8 +50,6 @@
             .withHint(HintViewModel(messages("correctionCountry.hint")))
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue", period, controllers.corrections.routes.CorrectionCountryController.onPageLoad(mode, period, periodIndex, countryIndex).url)
     }
 }

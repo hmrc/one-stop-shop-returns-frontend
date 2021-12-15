@@ -16,13 +16,14 @@
 
 @import viewmodels.InputWidth._
 @import utils.CurrencyFormatter.currencyFormat
+@import components.ButtonGroup
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukInput: GovukInput,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period, country: Country, correctionPeriod:Period, periodIndex: Index, countryIndex: Index, vatOwedPrevReturn: BigDecimal)(implicit request: Request[_], messages: Messages)
@@ -54,8 +55,6 @@
             )))
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue", period, controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(mode, period, periodIndex, countryIndex).url)
     }
 }

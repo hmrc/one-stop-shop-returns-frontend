@@ -23,6 +23,7 @@ import formats.Format.dateTimeFormatter
 
 import javax.inject.Inject
 import models.Period
+import pages.SavedProgressPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -31,20 +32,25 @@ import views.html.SavedProgressView
 import java.time.{LocalDate, ZoneId}
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import scala.concurrent.{ExecutionContext, Future}
 
 class SavedProgressController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: SavedProgressView,
                                        appConfig: FrontendAppConfig
-                                     ) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetDataSimple(period) {
+  def onPageLoad(period: Period, continueUrl: String): Action[AnyContent] = cc.authAndGetDataSimple(period).async {
     implicit request =>
       val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.cacheTtl, ChronoUnit.SECONDS)
         .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
-
-      Ok(view(period, answersExpiry))
+      for {
+        updatedAnswers <- Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl))
+        _              <- cc.sessionRepository.set(updatedAnswers)
+      } yield{
+        Ok(view(period, answersExpiry))
+      }
   }
 }
