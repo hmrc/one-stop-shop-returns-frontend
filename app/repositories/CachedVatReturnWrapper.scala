@@ -16,6 +16,7 @@
 
 package repositories
 
+import models.Period
 import models.domain.VatReturn
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{OFormat, OWrites, Reads, __}
@@ -25,7 +26,8 @@ import java.time.Instant
 
 final case class CachedVatReturnWrapper(
                                       userId: String,
-                                      vatReturn: VatReturn,
+                                      period: Period,
+                                      vatReturn: Option[VatReturn],
                                       lastUpdated: Instant
                                     )
 
@@ -33,15 +35,17 @@ object CachedVatReturnWrapper {
 
   val reads: Reads[CachedVatReturnWrapper] =
     (
-      (__ \ "_id").read[String] and
-      (__ \ "vatReturn").read[VatReturn] and
+      (__ \ "userId").read[String] and
+      (__ \ "period").read[Period] and
+      (__ \ "vatReturn").readNullable[VatReturn] and
       (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
     ) (CachedVatReturnWrapper.apply _)
 
   val writes: OWrites[CachedVatReturnWrapper] =
     (
-      (__ \ "_id").write[String] and
-      (__ \ "vatReturn").write[VatReturn] and
+      (__ \ "userId").write[String] and
+      (__ \ "period").write[Period] and
+      (__ \ "vatReturn").writeNullable[VatReturn] and
       (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
     ) (unlift(CachedVatReturnWrapper.unapply))
 

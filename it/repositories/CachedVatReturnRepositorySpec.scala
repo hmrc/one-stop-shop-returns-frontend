@@ -2,6 +2,8 @@ package repositories
 
 import config.FrontendAppConfig
 import generators.Generators
+import models.Period
+import models.Quarter.Q3
 import models.domain.VatReturn
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
@@ -11,6 +13,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.mongo.play.json.Codecs.JsonOps
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.{Clock, Instant, ZoneId}
@@ -30,6 +33,8 @@ class CachedVatReturnRepositorySpec
   private val instant = Instant.now
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
   private val vatReturn: VatReturn = arbitrary[VatReturn].sample.value
+  private val cachedVatReturnWrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), instant)
+
 
   private val mockAppConfig = mock[FrontendAppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1
@@ -44,10 +49,10 @@ class CachedVatReturnRepositorySpec
 
     "must set the last updated time to `now` and save the vat return" in {
 
-      val expectedResult = CachedVatReturnWrapper(userId, vatReturn, instant)
+      val expectedResult = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), instant)
 
-      val setResult = repository.set(userId, vatReturn).futureValue
-      val dbRecord  = find(Filters.equal("_id", userId)).futureValue.headOption.value
+      val setResult = repository.set(userId, vatReturn.period, Some(vatReturn)).futureValue
+      val dbRecord  = findAll().futureValue.headOption.value
 
       setResult mustEqual true
       dbRecord mustEqual expectedResult
@@ -60,12 +65,12 @@ class CachedVatReturnRepositorySpec
 
       "must get the record" in {
 
-        val wrapper = CachedVatReturnWrapper(userId, vatReturn, instant)
+        val wrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), instant)
         insert(wrapper).futureValue
 
-        val result = repository.get(userId).futureValue
+        val result = repository.get(userId, vatReturn.period).futureValue
 
-        result.value mustEqual vatReturn
+        result.value mustEqual cachedVatReturnWrapper
       }
     }
 
@@ -73,8 +78,28 @@ class CachedVatReturnRepositorySpec
 
       "must return None" in {
 
-        repository.get(userId).futureValue must not be defined
+        repository.get(userId, vatReturn.period).futureValue must not be defined
       }
+    }
+  }
+
+  "clear" - {
+
+    "must remove a record" in {
+
+      val wrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), instant)
+      insert(wrapper).futureValue
+
+      val result = repository.clear(wrapper.userId, vatReturn.period).futureValue
+
+      result mustEqual true
+      repository.get(wrapper.userId, vatReturn.period).futureValue must not be defined
+    }
+
+    "must return true when there is no record to remove" in {
+      val result = repository.clear("id that does not exist", vatReturn.period).futureValue
+
+      result mustEqual true
     }
   }
 }

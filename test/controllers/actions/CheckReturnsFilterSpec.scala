@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import controllers.routes
 import models.requests.OptionalDataRequest
-import models.responses.NotFound
+import models.responses.{ConflictFound, NotFound}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -32,7 +32,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
-import repositories.CachedVatReturnRepository
+import repositories.{CachedVatReturnRepository, CachedVatReturnWrapper}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -45,6 +45,8 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
   private val mockConnector = mock[VatReturnConnector]
   private val mockRepository = mock[CachedVatReturnRepository]
+  private val cachedVatReturnWrapper = CachedVatReturnWrapper(userAnswersId, period, Some(completeVatReturn), arbitraryInstant)
+
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockConnector, mockRepository)
@@ -58,8 +60,8 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
         "must save the vat return to the repository and return Right" in {
 
-          when(mockRepository.get(userAnswersId)) thenReturn Future.successful(None)
-          when(mockRepository.set(any(), any())) thenReturn Future.successful(true)
+          when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(None)
+          when(mockRepository.set(any(), any(), any())) thenReturn Future.successful(true)
           when(mockConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
 
           val app = applicationBuilder(None)
@@ -75,8 +77,8 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
             result.value mustEqual Redirect(routes.PreviousReturnController.onPageLoad(period))
 
-            verify(mockRepository, times(1)).set(eqTo(userAnswersId), eqTo(completeVatReturn))
-            verify(mockRepository, times(1)).get(eqTo(userAnswersId))
+            verify(mockRepository, times(1)).set(eqTo(userAnswersId), eqTo(period), eqTo(Some(completeVatReturn)))
+            verify(mockRepository, times(1)).get(eqTo(userAnswersId), eqTo(period))
           }
         }
 
@@ -84,9 +86,32 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
       "and a vat return cannot be retrieved from the backend" - {
 
+        "must return an empty Cached Vat Return Wrapper when an existing vat return is not found in the backend" in {
+
+          when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(None)
+          when(mockRepository.set(any(), any(), any())) thenReturn Future.successful(true)
+          when(mockConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+
+          val app = applicationBuilder(None)
+            .overrides(bind[CachedVatReturnRepository].toInstance(mockRepository))
+            .overrides(bind[VatReturnConnector].toInstance(mockConnector))
+            .build()
+
+          running(app) {
+            val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(emptyUserAnswers))
+            val controller = new Harness(mockRepository, mockConnector)
+
+            val result = controller.callFilter(request).futureValue
+
+            result.value mustEqual None
+
+            verify(mockRepository, times(1)).get(eqTo(userAnswersId), eqTo(period))
+          }
+        }
+
         "must return None when an existing vat return is not found in the backend" in {
 
-          when(mockRepository.get(userAnswersId)) thenReturn Future.successful(None)
+          when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(None)
           when(mockConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
           val app = applicationBuilder(None)
@@ -102,7 +127,7 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
             result must not be defined
 
-            verify(mockRepository, times(1)).get(eqTo(userAnswersId))
+            verify(mockRepository, times(1)).get(eqTo(userAnswersId), eqTo(period))
           }
         }
       }
@@ -112,7 +137,7 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
       "must redirect to Vat Return Details page when an existing return is found" in {
 
-        when(mockRepository.get(userAnswersId)) thenReturn Future.successful(Some(completeVatReturn))
+        when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(Some(cachedVatReturnWrapper))
 
         val app = applicationBuilder(None)
           .overrides(bind[CachedVatReturnRepository].toInstance(mockRepository))

@@ -17,10 +17,12 @@
 package repositories
 
 import config.FrontendAppConfig
+import models.Period
 import models.domain.VatReturn
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model._
+import org.mongodb.scala.model.{IndexModel, _}
 import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.Codecs.JsonOps
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.time.{Clock, Instant}
@@ -42,31 +44,45 @@ class CachedVatReturnRepository @Inject()(
         Indexes.ascending("lastUpdated"),
         IndexOptions()
           .name("lastUpdatedIdx")
-          .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS) //TODO Need to change to DAYS when VEOSS-692 merged
+          .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
+      ),
+      IndexModel(
+        Indexes.ascending("userId", "period"),
+        IndexOptions()
+          .name("userIdAndPeriodIdx")
+          .unique(true)
       )
     )
   ) {
 
-  private def byId(id: String): Bson = Filters.equal("_id", id)
+  private def byId(id: String, period: Period): Bson = Filters.and(
+    Filters.equal("userId", id),
+    Filters.equal("period", period.toBson(legacyNumbers = false))
+  )
 
-  def get(id: String): Future[Option[VatReturn]] =
+  def get(id: String, period: Period): Future[Option[CachedVatReturnWrapper]] =
     collection
-      .find(byId(id))
+      .find(byId(id, period))
       .headOption
-      .map(_.map(_.vatReturn))
 
-  def set(userId: String, vatReturn: VatReturn): Future[Boolean] = {
+  def set(userId: String, period: Period, vatReturn: Option[VatReturn]): Future[Boolean] = {
 
-    val wrapper = CachedVatReturnWrapper(userId, vatReturn, Instant.now(clock))
+    val wrapper = CachedVatReturnWrapper(userId, period, vatReturn, Instant.now(clock))
 
     collection
       .replaceOne(
-        filter      = byId(userId),
+        filter      = byId(userId, period),
         replacement = wrapper,
         options     = ReplaceOptions().upsert(true)
       )
       .toFuture()
       .map(_ => true)
   }
+
+  def clear(userId: String, period: Period): Future[Boolean] =
+    collection
+      .deleteOne(byId(userId, period))
+      .toFuture
+      .map(_ => true)
 }
 
