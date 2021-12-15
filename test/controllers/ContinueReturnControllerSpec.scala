@@ -33,7 +33,7 @@ import scala.concurrent.Future
 
 class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
-  private lazy val continueReturnRoute = routes.ContinueReturnController.onPageLoad(NormalMode, period).url
+  private lazy val continueReturnRoute = routes.ContinueReturnController.onPageLoad(period).url
 
   private val formProvider = new ContinueReturnFormProvider()
   private val form = formProvider()
@@ -52,37 +52,13 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[ContinueReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, period)(request, messages(application)).toString
       }
     }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
-
-      val userAnswers = emptyUserAnswers.set(ContinueReturnPage, ContinueReturn.values.head).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, continueReturnRoute)
-
-        val view = application.injector.instanceOf[ContinueReturnView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(ContinueReturn.values.head), NormalMode, period)(request, messages(application)).toString
-      }
-    }
-
-    "must save the answer and redirect to the next page when valid data is submitted" in {
-
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
+    "must redirect to the next page when valid data is submitted" in {
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -91,11 +67,9 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", ContinueReturn.values.head.toString))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(ContinueReturnPage, ContinueReturn.values.head).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual ContinueReturnPage.navigate(NormalMode, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+        redirectLocation(result).value mustEqual ContinueReturnPage.navigate(emptyUserAnswers, ContinueReturn.values.head).url
       }
     }
 
@@ -115,7 +89,7 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, period)(request, messages(application)).toString
       }
     }
 

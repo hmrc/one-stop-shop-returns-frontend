@@ -767,8 +767,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Seq.empty,
             Seq.empty,
             paymentError = false,
-            periodInProgress = Some(period),
-            continueUrl = Some("test")
+            periodInProgress = Some(period)
           )(request, messages(application)).toString
         }
       }

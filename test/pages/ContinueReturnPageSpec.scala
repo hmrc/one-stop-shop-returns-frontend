@@ -18,6 +18,8 @@ package pages
 
 import models.ContinueReturn
 import pages.behaviours.PageBehaviours
+import play.api.mvc.Call
+import uk.gov.hmrc.http.HttpVerbs.GET
 
 class ContinueReturnSpec extends PageBehaviours {
 
@@ -28,5 +30,22 @@ class ContinueReturnSpec extends PageBehaviours {
     beSettable[ContinueReturn](ContinueReturnPage)
 
     beRemovable[ContinueReturn](ContinueReturnPage)
+
+    "must navigate" - {
+
+      "to the saved url when the answer is Continue" in {
+
+        val answers = emptyUserAnswers.set(SavedProgressPage, "test").success.value
+
+        ContinueReturnPage.navigate(answers, ContinueReturn.Continue)
+          .mustEqual(Call(GET, "test"))
+      }
+
+      "to Delete Return when the answer is Delete" in {
+        ContinueReturnPage.navigate(emptyUserAnswers, ContinueReturn.Delete)
+          .mustEqual(controllers.routes.DeleteReturnController.onPageLoad(emptyUserAnswers.period))
+      }
+    }
+
   }
 }

@@ -23,12 +23,6 @@ import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, Corr
 
 trait PageGenerators {
 
-  implicit lazy val arbitraryDeleteReturnPage: Arbitrary[DeleteReturnPage.type] =
-    Arbitrary(DeleteReturnPage)
-
-  implicit lazy val arbitraryContinueReturnPage: Arbitrary[ContinueReturnPage.type] =
-    Arbitrary(ContinueReturnPage)
-
   implicit lazy val arbitraryVatPeriodCorrectionsListPage: Arbitrary[VatPeriodCorrectionsListPage.type] =
     Arbitrary(VatPeriodCorrectionsListPage)
 

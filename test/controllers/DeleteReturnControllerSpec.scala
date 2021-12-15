@@ -22,7 +22,6 @@ import models.{NormalMode, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.DeleteReturnPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -36,7 +35,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new DeleteReturnFormProvider()
   private val form = formProvider()
 
-  private lazy val deleteReturnRoute = routes.DeleteReturnController.onPageLoad(NormalMode, period).url
+  private lazy val deleteReturnRoute = routes.DeleteReturnController.onPageLoad(period).url
 
   "DeleteReturn Controller" - {
 
@@ -52,33 +51,32 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[DeleteReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, period)(request, messages(application)).toString
       }
     }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
+    "must redirect to the Continue Return page if the answer is No" in {
 
-      val userAnswers = emptyUserAnswers.set(DeleteReturnPage, true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .build()
 
       running(application) {
-        val request = FakeRequest(GET, deleteReturnRoute)
-
-        val view = application.injector.instanceOf[DeleteReturnView]
+        val request =
+          FakeRequest(POST, deleteReturnRoute)
+            .withFormUrlEncodedBody(("value", "false"))
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual (controllers.routes.ContinueReturnController.onPageLoad(period).url)
       }
     }
 
-    "must save the answer and redirect to the next page when valid data is submitted" in {
-
+    "must redirect to the Your Account page and delete answers if the answer is Yes" in {
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -91,11 +89,10 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(DeleteReturnPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual DeleteReturnPage.navigate(NormalMode, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+        redirectLocation(result).value mustEqual (controllers.routes.YourAccountController.onPageLoad().url)
+        verify(mockSessionRepository, times(1)).clear(eqTo(emptyUserAnswers.userId))
       }
     }
 
@@ -115,7 +112,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, period)(request, messages(application)).toString
       }
     }
 

@@ -21,7 +21,6 @@ import forms.DeleteReturnFormProvider
 
 import javax.inject.Inject
 import models.{Mode, NormalMode, Period}
-import pages.DeleteReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -43,13 +42,20 @@ class DeleteReturnController @Inject()(
       Ok(view(form, period))
   }
 
-  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, period)),
-        value => Redirect(DeleteReturnPage.navigate(request.userAnswers, value))
+          Future.successful(BadRequest(view(formWithErrors, period))),
+        value =>
+          if(value){
+            for{
+              _ <- cc.sessionRepository.clear(request.userId)
+            } yield Redirect(controllers.routes.YourAccountController.onPageLoad())
+          } else {
+            Future.successful(Redirect(controllers.routes.ContinueReturnController.onPageLoad(request.userAnswers.period)))
+          }
       )
   }
 }
