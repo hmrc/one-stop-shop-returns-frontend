@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import controllers.routes
 import models.requests.OptionalDataRequest
-import models.responses.{ConflictFound, NotFound}
+import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -46,6 +46,7 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
   private val mockConnector = mock[VatReturnConnector]
   private val mockRepository = mock[CachedVatReturnRepository]
   private val cachedVatReturnWrapper = CachedVatReturnWrapper(userAnswersId, period, Some(completeVatReturn), arbitraryInstant)
+  private val emptyCachedVatReturnWrapper = CachedVatReturnWrapper(userAnswersId, period, None, arbitraryInstant)
 
 
   override def beforeEach(): Unit = {
@@ -88,35 +89,14 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
         "must return an empty Cached Vat Return Wrapper when an existing vat return is not found in the backend" in {
 
-          when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(None)
-          when(mockRepository.set(any(), any(), any())) thenReturn Future.successful(true)
-          when(mockConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-
-          val app = applicationBuilder(None)
-            .overrides(bind[CachedVatReturnRepository].toInstance(mockRepository))
-            .overrides(bind[VatReturnConnector].toInstance(mockConnector))
-            .build()
-
-          running(app) {
-            val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(emptyUserAnswers))
-            val controller = new Harness(mockRepository, mockConnector)
-
-            val result = controller.callFilter(request).futureValue
-
-            result.value mustEqual None
-
-            verify(mockRepository, times(1)).get(eqTo(userAnswersId), eqTo(period))
-          }
-        }
-
-        "must return None when an existing vat return is not found in the backend" in {
-
-          when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(None)
           when(mockConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+          when(mockRepository.set(any(), any(), any())) thenReturn Future.successful(true)
+          when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(Some(emptyCachedVatReturnWrapper))
+
 
           val app = applicationBuilder(None)
-            .overrides(bind[CachedVatReturnRepository].toInstance(mockRepository))
             .overrides(bind[VatReturnConnector].toInstance(mockConnector))
+            .overrides(bind[CachedVatReturnRepository].toInstance(mockRepository))
             .build()
 
           running(app) {
@@ -153,6 +133,5 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
         }
       }
     }
-
   }
 }

@@ -265,6 +265,7 @@ class CheckYourAnswersController @Inject()(
         for {
           updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
           _ <- cc.sessionRepository.set(updatedAnswers)
+          _ <- cachedVatReturnRepository.clear(request.userId, period)
 
         } yield {
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
