@@ -31,7 +31,7 @@ import views.html.ReturnSubmittedView
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class ReturnSubmittedController @Inject()(
                                            cc: AuthenticatedControllerComponents,
@@ -51,7 +51,7 @@ class ReturnSubmittedController @Inject()(
       (for {
          vatReturnResponse <- vatReturnConnector.get(period)
          correctionResponse <- correctionConnector.get(period)
-       } yield (vatReturnResponse, correctionResponse)).map {
+       } yield (vatReturnResponse, correctionResponse)).flatMap {
         case (Right(vatReturn), correctionResponse) =>
 
           val maybeCorrectionPayload =
@@ -68,18 +68,22 @@ class ReturnSubmittedController @Inject()(
           val amountToPayInPence: Long = (vatOwed * 100).toLong
           val overdueReturn = period.paymentDeadline.isBefore(LocalDate.now(clock))
 
-          Ok(view(
-            period,
-            returnReference,
-            currencyFormat(vatOwed),
-            showEmailConfirmation.get,
-            email,
-            displayPayNow,
-            amountToPayInPence,
-            overdueReturn
-          ))
+          for {
+            _ <- cc.sessionRepository.clear(request.userId)
+          } yield {
+            Ok(view(
+              period,
+              returnReference,
+              currencyFormat(vatOwed),
+              showEmailConfirmation.getOrElse(false),
+              email,
+              displayPayNow,
+              amountToPayInPence,
+              overdueReturn
+            ))
+          }
         case _ =>
-          Redirect(routes.YourAccountController.onPageLoad())
+            Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
       }.recover {
         case e: Exception =>
           logger.error(s"Error occurred: ${e.getMessage}", e)
