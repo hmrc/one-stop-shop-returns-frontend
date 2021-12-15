@@ -16,11 +16,12 @@
 
 package utils
 
-import models.{Index, Period}
+import models.{Index, Period, VatRateAndSales}
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.mvc.{AnyContent, Result}
+import queries.{AllNiVatRateAndSalesQuery, AllSalesFromNiQuery}
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods, DeriveNumberOfCorrections}
 
 import scala.concurrent.Future
@@ -77,6 +78,24 @@ trait CompletionChecks {
                                        (implicit request: DataRequest[AnyContent]): Future[Result] = {
 
     val incomplete = getPeriodsWithIncompleteCorrections()
+    if(incomplete.isEmpty) {
+      onSuccess
+    } else {
+      onFailure(incomplete)
+    }
+  }
+
+  def getIncompleteNiVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[VatRateAndSales] = {
+    request.userAnswers
+      .get(AllNiVatRateAndSalesQuery(countryIndex))
+      .map(_.filter(_.sales.isEmpty)).getOrElse(List.empty)
+  }
+
+  protected def withCompleteVatRateAndSales(countryIndex: Index, onFailure: Seq[VatRateAndSales] => Result)
+                                       (onSuccess: => Result)
+                                       (implicit request: DataRequest[AnyContent]): Result = {
+
+    val incomplete = getIncompleteNiVatRateAndSales(countryIndex)
     if(incomplete.isEmpty) {
       onSuccess
     } else {

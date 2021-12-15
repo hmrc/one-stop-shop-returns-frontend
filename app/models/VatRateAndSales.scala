@@ -27,7 +27,14 @@ case class VatRateAndSales(
                     validFrom: LocalDate,
                     validUntil: Option[LocalDate] = None,
                     sales: Option[SalesAtVatRate]
-                  )
+                  ) {
+
+  lazy val rateForDisplay: String = if(rate.isWhole) {
+    rate.toString.split('.').headOption.getOrElse(rate.toString) + "%"
+  } else {
+    rate.toString + "%"
+  }
+}
 
 object VatRateAndSales {
 

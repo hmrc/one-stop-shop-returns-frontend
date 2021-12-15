@@ -23,6 +23,7 @@ import pages.{CheckSalesFromNiPage, VatRatesFromNiPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.TitledSummaryList
 import viewmodels.checkAnswers.{NetValueOfSalesFromNiSummary, VatOnSalesFromNiSummary, VatRatesFromNiSummary}
 import viewmodels.govuk.summarylist._
@@ -32,7 +33,7 @@ class CheckSalesFromNiController @Inject()(
                                             cc: AuthenticatedControllerComponents,
                                             view: CheckSalesFromNiView
                                           )
-  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
+  extends FrontendBaseController with SalesFromNiBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -62,12 +63,26 @@ class CheckSalesFromNiController @Inject()(
                 )
             }).getOrElse(Seq.empty)
 
-          Ok(view(mode, mainList, vatRateLists, period, index, country))
+          withCompleteVatRateAndSales(index, onFailure = incomplete => {
+            Ok(view(mode, mainList, vatRateLists, period, index, country, incomplete))
+          }) {
+            Ok(view(mode, mainList, vatRateLists, period, index, country))
+          }
+
       }
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
       Redirect(CheckSalesFromNiPage.navigate(mode, request.userAnswers))
+
+      withCompleteVatRateAndSales(index, onFailure = incomplete => {
+        Redirect(routes.VatRatesFromNiController.onPageLoad(
+          mode,
+          period,
+          index))
+      }) {
+        Redirect(CheckSalesFromNiPage.navigate(mode, request.userAnswers))
+      }
   }
 }
