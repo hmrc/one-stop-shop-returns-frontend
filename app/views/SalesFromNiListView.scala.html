@@ -26,7 +26,7 @@
         addToList: components.addToList
 )
 
-@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, canAddCountries: Boolean, incompleteCountries: List[Country] = List.empty)(implicit request: Request[_], messages: Messages)
 @defining(if(list.size == 1) ".singular" else "") { messageSuffix =>
 
     @layout(pageTitle = title(
@@ -35,39 +35,65 @@
         Some(period.displayText)
     )) {
 
-        @formHelper(action = routes.SalesFromNiListController.onSubmit(mode, period), 'autoComplete -> "off") {
-
             @if(form.errors.nonEmpty) {
                 @govukErrorSummary(ErrorSummaryViewModel(form))
             }
 
+            @if(incompleteCountries.nonEmpty) {
+            <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                    <span class="govuk-warning-text__assistive">Warning</span>
+                    @messages("error.missing_answers")
+                </strong>
+            </div>
+            }
             <header class="hmrc-page-heading">
                 <h1 class="govuk-heading-xl">@messages("salesFromNiList.heading" + messageSuffix, list.size)</h1>
                 <p class="govuk-caption-xl hmrc-caption-xl">@period.displayText</p>
             </header>
 
             @addToList(list, Long, "salesFromNiList.change.hidden", "salesFromNiList.remove.hidden", None)
+            @if(incompleteCountries.isEmpty) {
+                @formHelper(action = routes.SalesFromNiListController.onSubmit(mode, period, false), 'autoComplete -> "off") {
 
-            @if(canAddCountries) {
-                @govukRadios(
-                    RadiosViewModel.yesNo(
-                        field = form("value"),
-                        legend = LegendViewModel(
-                            HtmlContent(
-                                Html(messages("salesFromNiList.addAnother")))
-                        ).withSize(LegendSize.Medium)
-                    ).withHint(
-                        HintViewModel(messages("salesFromNiList.hint"))
+                @if(canAddCountries) {
+                    @govukRadios(
+                        RadiosViewModel.yesNo(
+                            field = form("value"),
+                            legend = LegendViewModel(
+                                HtmlContent(
+                                    Html(messages("salesFromNiList.addAnother")))
+                            ).withSize(LegendSize.Medium)
+                        ).withHint(
+                            HintViewModel(messages("salesFromNiList.hint"))
+                        )
                     )
+                } else {
+                    <p class="govuk-body">@messages("salesFromNiList.maximumReached")</p>
+                    <input type="hidden" name="value" id="value" value="false"/>
+                }
+
+
+                @govukButton(
+                    ButtonViewModel(messages("site.continue"))
                 )
+}
             } else {
-                <p class="govuk-body">@messages("salesFromNiList.maximumReached")</p>
-                <input type="hidden" name="value" id="value" value="false"/>
+                @formHelper(action = controllers.routes.SalesFromNiListController.onSubmit(mode, period, true)) {
+
+                    <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+                    <p class="govuk-body">@messages("error.missing_answers_prompt",
+                        if(incompleteCountries.size > 1) {
+                            incompleteCountries.reverse.tail.map(_.name).mkString(", ") + " and " + incompleteCountries.reverse.head.name
+                        }
+                        else {incompleteCountries.head.name})</p>
+
+                    @govukButton(
+                        ButtonViewModel(messages("error.resolve_missing_answers"))
+                    )
+                }
             }
 
-            @govukButton(
-                ButtonViewModel(messages("site.continue"))
-            )
-        }
     }
 }
