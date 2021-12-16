@@ -74,8 +74,6 @@ class CheckSalesFromNiController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      Redirect(CheckSalesFromNiPage.navigate(mode, request.userAnswers))
-
       withCompleteVatRateAndSales(index, onFailure = incomplete => {
         Redirect(routes.VatRatesFromNiController.onPageLoad(
           mode,

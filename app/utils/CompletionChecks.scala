@@ -16,12 +16,12 @@
 
 package utils
 
-import models.{Index, Period, VatRateAndSales, VatRateAndSalesWithOptionalVat}
+import models.{Country, Index, Period, SalesFromCountryWithOptionalVat, VatRateAndSales, VatRateAndSalesWithOptionalVat}
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.mvc.{AnyContent, Result}
-import queries.{AllNiVatRateAndSalesQuery, AllNiVatRateAndSalesWithOptionalVatQuery, AllSalesFromNiQuery}
+import queries.{AllNiVatRateAndSalesQuery, AllNiVatRateAndSalesWithOptionalVatQuery, AllSalesFromNiQuery, AllSalesFromNiWithOptionalVatQuery}
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods, DeriveNumberOfCorrections}
 
 import scala.concurrent.Future
@@ -85,6 +85,19 @@ trait CompletionChecks {
     }
   }
 
+  def getNiCountriesWithIncompleteSales()(implicit request: DataRequest[AnyContent]): List[Country] = {
+    request.userAnswers
+      .get(AllSalesFromNiWithOptionalVatQuery)
+      .map(_.filter(sales =>
+        sales.vatRates.isEmpty ||
+        sales.vatRates.getOrElse(List.empty).exists(
+          rate => rate.sales.isEmpty || rate.sales.exists(_.vatOnSales.isEmpty)
+        )
+      ))
+      .map(_.map(_.countryOfConsumption))
+      .getOrElse(List())
+  }
+
   def getIncompleteNiVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[VatRateAndSalesWithOptionalVat] = {
     val noSales = request.userAnswers
       .get(AllNiVatRateAndSalesWithOptionalVatQuery(countryIndex))
@@ -111,5 +124,24 @@ trait CompletionChecks {
     } else {
       onFailure(incomplete)
     }
+  }
+
+  protected def withCompleteNiSalesForCountry(onFailure: List[Country] => Result)
+                                       (onSuccess: => Result)
+                                       (implicit request: DataRequest[AnyContent]): Result = {
+
+    val incomplete = getNiCountriesWithIncompleteSales()
+    if(incomplete.isEmpty) {
+      onSuccess
+    } else {
+      onFailure(incomplete)
+    }
+  }
+
+  def firstIndexedIncompleteNiCountrySales(incompleteCountries: List[Country])
+                                      (implicit request: DataRequest[AnyContent]): Option[(SalesFromCountryWithOptionalVat, Int)] = {
+    request.userAnswers.get(AllSalesFromNiWithOptionalVatQuery)
+      .getOrElse(List.empty).zipWithIndex
+      .find(indexedCorrection => incompleteCountries.contains(indexedCorrection._1.countryOfConsumption))
   }
 }
