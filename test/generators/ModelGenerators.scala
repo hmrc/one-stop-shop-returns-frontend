@@ -31,6 +31,11 @@ import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
 
+  implicit lazy val arbitraryContinueReturn: Arbitrary[ContinueReturn] =
+    Arbitrary {
+      Gen.oneOf(ContinueReturn.values.toSeq)
+    }
+
   implicit val arbitraryVatOnSales: Arbitrary[VatOnSales] =
     Arbitrary {
       for {

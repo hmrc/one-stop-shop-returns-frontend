@@ -455,3 +455,14 @@ saveProgress.button = Come back later
 yourAccount.return.inProgress = Your return for {0} is in progress
 yourAccount.return.inProgress.due = It is due by {0}
 
+
+continueReturn.title = What would you like to do?
+continueReturn.heading = What would you like to do?
+continueReturn.continue = Continue my return
+continueReturn.delete = Delete my return and start again
+continueReturn.error.required = Select to continue or delete your current return
+
+deleteReturn.title = Are you sure you want to delete this return?
+deleteReturn.heading = Are you sure you want to delete this return?
+deleteReturn.error.required = Select yes if you want to delete this return
+deleteReturn.button = Delete return

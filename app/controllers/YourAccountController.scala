@@ -79,8 +79,7 @@ class YourAccountController @Inject()(
                   duePeriodsWithOutstandingAmounts,
                   overduePeriodsWithOutstandingAmounts,
                   filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
-                  periodInProgress = answers.map(_.period),
-                  continueUrl = answers.flatMap(_.get(SavedProgressPage))
+                  periodInProgress = answers.map(_.period)
                 )))
         case (Right(availablePeriodsWithStatus), Left(error)) =>
           logger.warn(s"There was an error with getting payment information $error")
