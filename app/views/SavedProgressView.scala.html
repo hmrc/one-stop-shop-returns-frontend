@@ -22,7 +22,7 @@
         appConfig: FrontendAppConfig
 )
 
-@(period: Period, answersExpiry: String)(implicit request: Request[_], messages: Messages)
+@(period: Period, answersExpiry: String, continueUrl: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("savedProgress.title")), showBackLink = false) {
 
@@ -36,7 +36,7 @@
     <p class="govuk-body">@messages("savedProgress.listStart")</p>
 
     <ul class="govuk-list govuk-list--bullet">
-        <li><a href="#" id="continueToYourReturn">@messages("savedProgress.continue.return")</a></li>
+        <li><a href="@continueUrl" id="continueToYourReturn">@messages("savedProgress.continue.return")</a></li>
         <li><a href="@routes.YourAccountController.onPageLoad()" id="backToYourAccount">@messages("savedProgress.your.account")</a></li>
         <li><a href="@appConfig.signOutUrl" id="signOut">@messages("savedProgress.sign.out")</a></li>
     </ul>

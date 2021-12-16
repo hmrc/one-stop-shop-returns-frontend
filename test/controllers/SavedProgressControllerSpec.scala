@@ -46,7 +46,7 @@ class SavedProgressControllerSpec extends SpecBase {
         val clock = application.injector.instanceOf(classOf[Clock])
         val date = clock.instant().atZone(clock.getZone).toLocalDate
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(period, date.format(dateTimeFormatter))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(period, date.format(dateTimeFormatter), "test")(request, messages(application)).toString
       }
     }
   }
