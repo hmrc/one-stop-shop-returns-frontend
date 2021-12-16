@@ -16,12 +16,12 @@
 
 package utils
 
-import models.{Index, Period, VatRateAndSales}
+import models.{Index, Period, VatRateAndSales, VatRateAndSalesWithOptionalVat}
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.mvc.{AnyContent, Result}
-import queries.{AllNiVatRateAndSalesQuery, AllSalesFromNiQuery}
+import queries.{AllNiVatRateAndSalesQuery, AllNiVatRateAndSalesWithOptionalVatQuery, AllSalesFromNiQuery}
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods, DeriveNumberOfCorrections}
 
 import scala.concurrent.Future
@@ -85,13 +85,23 @@ trait CompletionChecks {
     }
   }
 
-  def getIncompleteNiVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[VatRateAndSales] = {
-    request.userAnswers
-      .get(AllNiVatRateAndSalesQuery(countryIndex))
+  def getIncompleteNiVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[VatRateAndSalesWithOptionalVat] = {
+    val noSales = request.userAnswers
+      .get(AllNiVatRateAndSalesWithOptionalVatQuery(countryIndex))
       .map(_.filter(_.sales.isEmpty)).getOrElse(List.empty)
+
+    val noVat =  request.userAnswers
+      .get(AllNiVatRateAndSalesWithOptionalVatQuery(countryIndex))
+      .map(
+        _.filter(v =>
+        v.sales.exists(_.vatOnSales.isEmpty)
+        )
+      ).getOrElse(List.empty)
+
+    noSales ++ noVat
   }
 
-  protected def withCompleteVatRateAndSales(countryIndex: Index, onFailure: Seq[VatRateAndSales] => Result)
+  protected def withCompleteVatRateAndSales(countryIndex: Index, onFailure: Seq[VatRateAndSalesWithOptionalVat] => Result)
                                        (onSuccess: => Result)
                                        (implicit request: DataRequest[AnyContent]): Result = {
 

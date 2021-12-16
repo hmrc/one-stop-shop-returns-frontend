@@ -23,7 +23,7 @@
         govukButton: GovukButton
 )
 
-@(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: Country, incompleteVatRates: Seq[VatRateAndSales] = List.empty)(implicit request: Request[_], messages: Messages)
+@(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: Country, incompleteVatRates: Seq[VatRateAndSalesWithOptionalVat] = List.empty)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(
     messages("checkSalesFromNi.title")),
