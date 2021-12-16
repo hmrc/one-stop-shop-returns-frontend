@@ -43,7 +43,7 @@
         )
 
         @govukButton(
-            ButtonViewModel(messages("deleteReturn.button")).withCssClass("govuk-button--warning")
+            ButtonViewModel(messages("deleteReturn.button")).withCssClass("govuk-button--warning").withAttribute(("id", "continue"))
         )
     }
 }
