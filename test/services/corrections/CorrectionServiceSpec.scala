@@ -189,26 +189,6 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllCorrectionCountriesQuery(index))))
       }
 
-      // TODO: Needs a rewrite?
-
-//      "when user is expected adds a correction period and country but not the amount" in new Fixture {
-//
-//        private val country1 = arbitrary[Country].sample.value
-//        private val correctionPeriod1 = Period(2021, Q1)
-//
-//        private val answers =
-//          emptyUserAnswers
-//            .set(CorrectPreviousReturnPage, true).success.value
-//            .set(CorrectionReturnPeriodPage(index), correctionPeriod1).success.value
-//            .set(CorrectionCountryPage(index, index), country1).success.value
-//
-//        when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
-//
-//        private val result = service.fromUserAnswers(answers, vrn, period, registration.commencementDate)
-//
-//        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllCorrectionPeriodsQuery)))
-//      }
-
     }
 
   }
