@@ -50,7 +50,7 @@ class SavedProgressController @Inject()(
         updatedAnswers <- Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl))
         _              <- cc.sessionRepository.set(updatedAnswers)
       } yield{
-        Ok(view(period, answersExpiry))
+        Ok(view(period, answersExpiry, continueUrl))
       }
   }
 }

@@ -66,7 +66,7 @@ class YourAccountController @Inject()(
             sortBy(_.period.firstDay.toEpochDay)
 
              sortedPeriodsToSubmit.headOption.map(p => sessionRepository.get(request.userId, p.period)).getOrElse(Future.successful(None))
-               .map( u =>
+               .map( answers =>
                 Ok(view(
                   request.registration.registeredCompanyName,
                   request.vrn.vrn,
@@ -79,7 +79,7 @@ class YourAccountController @Inject()(
                   duePeriodsWithOutstandingAmounts,
                   overduePeriodsWithOutstandingAmounts,
                   filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
-                  periodInProgress = u.map(_.period)
+                  periodInProgress = answers.map(_.period)
                 )))
         case (Right(availablePeriodsWithStatus), Left(error)) =>
           logger.warn(s"There was an error with getting payment information $error")
@@ -87,7 +87,7 @@ class YourAccountController @Inject()(
             .filter(p => p.status == SubmissionStatus.Due || p.status == SubmissionStatus.Overdue)
             .sortBy(_.period.firstDay.toEpochDay)
           sortedPeriodsToSubmit.headOption.map(p => sessionRepository.get(request.userId, p.period)).getOrElse(Future.successful(None))
-            .map( u =>
+            .map( answers =>
               Ok(view(
                 request.registration.registeredCompanyName,
                 request.vrn.vrn,
@@ -100,7 +100,7 @@ class YourAccountController @Inject()(
                 Seq.empty,
                 Seq.empty,
                 paymentError = true,
-                periodInProgress = u.map(_.period)
+                periodInProgress = answers.map(_.period)
               )))
         case (Left(error), Left(error2)) =>
           logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")

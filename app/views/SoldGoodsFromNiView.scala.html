@@ -15,6 +15,7 @@
  *@
 
 @import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
+@import components.ButtonGroup
 
 @this(
     layout: templates.Layout,
@@ -43,9 +44,9 @@
                 )
             )
         )
-
         @govukButton(
-            ButtonViewModel(messages("site.continue"))
+            ButtonViewModel(messages("site.saveAndContinue"))
         )
+
     }
 }

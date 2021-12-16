@@ -45,7 +45,7 @@ else {
 
             @addToList(periodList, itemSize = Long, "vatPeriodCorrectionsList.change.hidden", "vatPeriodCorrectionsList.remove.hidden")
 
-            @button("site.continue", period, controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period).url)
+            @button("site.saveAndContinue",  period, controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period).url)
         }
     }
 }
