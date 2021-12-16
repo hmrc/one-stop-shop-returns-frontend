@@ -26,7 +26,7 @@ object VatPeriodCorrectionsListSummary {
   def getCompletedRows(answers: UserAnswers, currentMode: Mode)(implicit messages: Messages): Seq[ListItem] = {
     val mode = if(currentMode == NormalMode) CheckThirdLoopMode else currentMode
     answers
-      .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).zipWithIndex.map{
+      .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).sortBy(_.firstDay.toEpochDay).zipWithIndex.map{
       case (correctionPeriod, index) =>
         ListItem(
           name = correctionPeriod.displayText,

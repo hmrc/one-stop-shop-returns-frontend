@@ -83,11 +83,11 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
           corrections = List(
             PeriodWithCorrections(
               correctionReturnPeriod = correctionPeriod,
-              correctionsToCountry = List(
+              correctionsToCountry = Some(List(
                 CorrectionToCountry(
                   correctionCountry = country,
-                  countryVatCorrection = correctionAmount
-                )
+                  countryVatCorrection = Some(correctionAmount)
+                ))
               )
             )
           ))
@@ -127,26 +127,26 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
           corrections = List(
             PeriodWithCorrections(
               correctionReturnPeriod = correctionPeriod1,
-              correctionsToCountry = List(
+              correctionsToCountry = Some(List(
                 CorrectionToCountry(
                   correctionCountry = country1,
-                  countryVatCorrection = correctionAmount1
+                  countryVatCorrection = Some(correctionAmount1)
                 )
-              )
+              ))
             ),
             PeriodWithCorrections(
               correctionReturnPeriod = correctionPeriod2,
-              correctionsToCountry = List(
+              correctionsToCountry = Some(List(
                 CorrectionToCountry(
                   correctionCountry = country2,
-                  countryVatCorrection = correctionAmount2
+                  countryVatCorrection = Some(correctionAmount2)
                 ),
                 CorrectionToCountry(
                   correctionCountry = country3,
-                  countryVatCorrection = correctionAmount3
+                  countryVatCorrection = Some(correctionAmount3)
                 )
               )
-            )
+            ))
           ))
 
         when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
@@ -189,24 +189,6 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllCorrectionCountriesQuery(index))))
       }
 
-      "when user is expected adds a correction period and country but not the amount" in new Fixture {
-
-        private val country1 = arbitrary[Country].sample.value
-        private val correctionPeriod1 = Period(2021, Q1)
-
-        private val answers =
-          emptyUserAnswers
-            .set(CorrectPreviousReturnPage, true).success.value
-            .set(CorrectionReturnPeriodPage(index), correctionPeriod1).success.value
-            .set(CorrectionCountryPage(index, index), country1).success.value
-
-        when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
-
-        private val result = service.fromUserAnswers(answers, vrn, period, registration.commencementDate)
-
-        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllCorrectionPeriodsQuery)))
-      }
-
     }
 
   }
@@ -215,7 +197,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
     "must return list of corrections" in new Fixture {
       val correctionPayload = arbitrary[CorrectionPayload].sample.value
       when(connector.getForCorrectionPeriod(any())(any())) thenReturn Future.successful(Right(Seq(correctionPayload)))
-      service.getCorrectionsForPeriod(period)(ExecutionContext.global, hc).futureValue mustBe correctionPayload.corrections.flatMap(_.correctionsToCountry)
+      service.getCorrectionsForPeriod(period)(ExecutionContext.global, hc).futureValue mustBe correctionPayload.corrections.flatMap(_.correctionsToCountry.value)
     }
 
     "must throw if connector returns an error" in new Fixture {

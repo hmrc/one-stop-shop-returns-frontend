@@ -20,14 +20,17 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.SubmissionStatus.Complete
-import models.{Mode, Period}
+import models.{Index, Mode, Period}
 import pages.corrections.VatPeriodCorrectionsListPage
 import play.api.Logging
+import controllers.{routes => baseRoutes}
+import play.api.data.FormError
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.checkAnswers.corrections.VatPeriodCorrectionsListSummary
 import views.html.corrections.VatPeriodAvailableCorrectionsListView
 
@@ -39,7 +42,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
                                                     formProvider: VatPeriodCorrectionsListFormProvider,
                                                     view: VatPeriodAvailableCorrectionsListView,
                                                     returnStatusConnector: ReturnStatusConnector
-                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with CompletionChecks with I18nSupport with Logging {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -47,6 +50,10 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
 
+      VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).flatMap{result =>
+        result.fold(
+          _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())),
+          _ =>
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
         case Right(returnStatuses) =>
           val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
@@ -65,44 +72,62 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
             if(uncompletedCorrectionPeriods.isEmpty) {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
             } else {
-              Ok(view(form, mode, period, completedCorrectionPeriodsModel))
+              withCompleteCorrections(onFailure = incompletePeriods => {
+                Ok(view(form, mode, period, completedCorrectionPeriodsModel, incompletePeriods))
+              })(Ok(view(form, mode, period, completedCorrectionPeriodsModel, List.empty)))
             }
           }
         case Left(value) =>
           logger.error(s"there was an error $value")
           throw new Exception(value.toString)
-      }
+      } )}
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
+  def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
-
-      returnStatusConnector.listStatuses(request.registration.commencementDate).flatMap {
-        case Right(returnStatuses) =>
-
-          val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
-
-          if(allPeriods.isEmpty) {
-            Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+      withCompleteCorrectionsAsync(onFailure = {
+          incompletePeriods => {
+            if(incompletePromptShown) {
+              val correctionPeriods = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
+                .getOrElse(List.empty).zipWithIndex
+              correctionPeriods.find(correctionPeriod => correctionPeriod._1 == incompletePeriods.head)
+                .map(correctionPeriod => Future.successful(Redirect(routes.VatCorrectionsListController.onPageLoad(mode, period, Index(correctionPeriod._2)))))
+                .getOrElse(Future.successful(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad())))
+            } else {
+              Future.successful(Redirect(routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period)))
+            }
           }
+        }) {
+        returnStatusConnector.listStatuses(request.registration.commencementDate).map {
+          case Right(returnStatuses) =>
 
-          val completedCorrectionPeriods: List[Period] = request.userAnswers
-            .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
+            val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
-          val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
-          val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
+            if(allPeriods.isEmpty) {
+              Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+            }
 
-          if(uncompletedCorrectionPeriods.isEmpty) {
-            Future.successful(Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period)))
-          } else {
-            form.bindFromRequest().fold(
-              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriodsModel))),
-              value => Future.successful(Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, value)))
-            )
-          }
-        case Left(value) =>
-          logger.error(s"there was an error $value")
-          throw new Exception(value.toString)
+            val completedCorrectionPeriods: List[Period] = request.userAnswers
+              .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
+
+            val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
+            val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
+
+            if(uncompletedCorrectionPeriods.isEmpty) {
+              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
+            } else {
+              form.bindFromRequest().fold(
+                formWithErrors => BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriodsModel,List.empty )),
+                value => {
+                   Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, value))
+                }
+              )
+            }
+          case Left(value) =>
+            logger.error(s"there was an error $value")
+            throw new Exception(value.toString)
+        }
       }
+
   }
 }

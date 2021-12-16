@@ -21,7 +21,7 @@ import com.google.inject.Inject
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.{NormalMode, Period}
+import models.{CheckMode, NormalMode, Period}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
@@ -29,7 +29,7 @@ import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRe
 import models.requests.corrections.CorrectionRequest
 import models.responses.ConflictFound
 import pages.CheckYourAnswersPage
-import pages.corrections.CorrectPreviousReturnPage
+import pages.corrections.{CorrectPreviousReturnPage, VatPeriodCorrectionsListPage}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import queries.EmailConfirmationQuery
@@ -45,6 +45,7 @@ import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, Corre
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
+import scala.concurrent.Future.fromTry
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckYourAnswersController @Inject()(
@@ -60,14 +61,33 @@ class CheckYourAnswersController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
+      VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).flatMap{result =>
+        result.fold(
+          _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())),
+          answers =>
+            {
+            if(answers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).isEmpty) {
+              for{
+                updatedAnwers <- fromTry(request.userAnswers.set(CorrectPreviousReturnPage, false))
+                _ <- cc.sessionRepository.set(updatedAnwers)
+              }yield {
+                displayPage()
+              }
+            }else{
+              Future.successful(displayPage())
+            }
+          }
+        )}
+  }
 
-      val businessSummaryList = getBusinessSummaryList(request)
+  private def displayPage()(implicit request: DataRequest[AnyContent]): Result = {
+    val businessSummaryList = getBusinessSummaryList(request)
 
-      val salesFromNiSummaryList = getSalesFromNiSummaryList(request)
+    val salesFromNiSummaryList = getSalesFromNiSummaryList(request)
 
-      val salesFromEuSummaryList = getSalesFromEuSummaryList(request)
+    val salesFromEuSummaryList = getSalesFromEuSummaryList(request)
 
       val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
@@ -79,16 +99,16 @@ class CheckYourAnswersController @Inject()(
       val totalVatOnSales =
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
-      val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromNiSummaryList, salesFromEuSummaryList)
+    val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromNiSummaryList, salesFromEuSummaryList)
 
-      Ok(view(
-        summaryLists,
-        period,
-        totalVatToCountries,
-        totalVatOnSales,
-        noPaymentDueCountries,
-        containsCorrections
-      ))
+    Ok(view(
+      summaryLists,
+      request.userAnswers.period,
+      totalVatToCountries,
+      totalVatOnSales,
+      noPaymentDueCountries,
+      containsCorrections
+    ))
   }
 
   private def getAllSummaryLists(
