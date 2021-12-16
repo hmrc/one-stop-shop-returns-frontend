@@ -60,19 +60,16 @@ class SalesFromNiListController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request => {
-
-      println("::::::::")
-      println("::::::::")
-      println("::::::::")
-      println("::::::::")
-      println(incompletePromptShown)
       withCompleteNiSalesForCountry(
         onFailure = incompleteCountries => {
           if (incompletePromptShown) {
-
             firstIndexedIncompleteNiCountrySales(incompleteCountries) match {
               case Some(incompleteCountry) =>
-                Redirect(routes.CheckSalesFromNiController.onPageLoad(mode, period, Index(incompleteCountry._2)))
+                if(incompleteCountry._1.vatRates.isEmpty) {
+                  Redirect(routes.VatRatesFromNiController.onPageLoad(mode, period, Index(incompleteCountry._2)))
+                } else {
+                  Redirect(routes.CheckSalesFromNiController.onPageLoad(mode, period, Index(incompleteCountry._2)))
+                }
               case None =>
                 Redirect(routes.JourneyRecoveryController.onPageLoad())
             }
