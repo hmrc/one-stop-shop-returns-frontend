@@ -22,45 +22,29 @@ import models.Period
 import models.requests.OptionalDataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
-import repositories.CachedVatReturnRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import models.responses.NotFound
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckReturnsFilterImpl(period: Period, repository: CachedVatReturnRepository, connector: VatReturnConnector)
+class CheckReturnsFilterImpl(period: Period, connector: VatReturnConnector)
                             (implicit val executionContext: ExecutionContext)
   extends ActionFilter[OptionalDataRequest] {
   
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    repository.get(request.userId, period) flatMap {
-      case Some(cachedVatReturn) if cachedVatReturn.vatReturn.isDefined =>
-        Future.successful(Some(Redirect(routes.PreviousReturnController.onPageLoad(period))))
-      case Some(_) =>
-        Future.successful(None)
-      case None =>
-        connector.get(period) flatMap  {
-          case Right(vatReturn) =>
-            repository.set(request.userId, period, Some(vatReturn)).map {
-             _ =>  Some(Redirect(routes.PreviousReturnController.onPageLoad(period)))
-            }
-          case Left(NotFound) =>
-            repository.set(request.userId, period, None).map(_ => None)
-          case _ =>
-            Future.successful(None)
-        }
+    connector.get(period) map {
+      case Right(_) => Some(Redirect(routes.PreviousReturnController.onPageLoad(period)))
+      case _    => None
     }
   }
 }
 
-class CheckReturnsFilterProvider @Inject()(repository: CachedVatReturnRepository,
-                                           connector: VatReturnConnector)
+class CheckReturnsFilterProvider @Inject()(connector: VatReturnConnector)
                                           (implicit ec: ExecutionContext) {
 
  def apply(period: Period): CheckReturnsFilterImpl =
-   new CheckReturnsFilterImpl(period, repository, connector)
+   new CheckReturnsFilterImpl(period, connector)
 }

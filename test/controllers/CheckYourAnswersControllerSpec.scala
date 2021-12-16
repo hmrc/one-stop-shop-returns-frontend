@@ -40,7 +40,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.EmailConfirmationQuery
-import repositories.{CachedVatReturnRepository, SessionRepository}
+import repositories.SessionRepository
 import services.corrections.CorrectionService
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import viewmodels.govuk.SummaryListFluency
@@ -485,36 +485,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         contentAsString(result).contains("&pound;3,333") mustBe true
         contentAsString(result).contains("&pound;7,777") mustBe true
         contentAsString(result).contains("&pound;8,888") mustBe true
-      }
-    }
-
-    "must clear cached vat return when return submitted" in {
-      val mockCachedVatReturnRepository = mock[CachedVatReturnRepository]
-
-      val answers = completeUserAnswers
-
-      when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
-      when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
-        .thenReturn(Future.successful(EMAIL_ACCEPTED))
-      when(mockCachedVatReturnRepository.clear(any(), any())) thenReturn Future.successful(true)
-
-      val app = applicationBuilder(userAnswers = Some(answers))
-        .overrides(
-          bind[CachedVatReturnRepository].toInstance(mockCachedVatReturnRepository),
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[EmailService].toInstance(emailService),
-        ).build()
-
-      running(app) {
-
-        val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
-
-        val result = route(app, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
-        verify(vatReturnConnector, times(1)).submit(any())(any())
-        verify(mockCachedVatReturnRepository, times(1)).clear(eqTo(answers.userId), eqTo(period))
       }
     }
   }
