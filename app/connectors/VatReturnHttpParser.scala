@@ -42,7 +42,7 @@ object VatReturnHttpParser extends Logging {
           logger.warn("Received NotFound for vat return")
           Left(NotFound)
         case CONFLICT =>
-          logger.warn("Conflict found for vat return")
+          logger.warn("Received Conflict found for vat return")
           Left(ConflictFound)
         case status   =>
           logger.warn("Received unexpected error from vat return")
