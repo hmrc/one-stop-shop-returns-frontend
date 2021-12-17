@@ -87,7 +87,7 @@ class SalesAtVatRateService @Inject()() {
         allCorrectionPeriods <- userAnswers.get(AllCorrectionPeriodsQuery).toSeq
         periodWithCorrections <- allCorrectionPeriods
         countryCorrection <- periodWithCorrections.correctionsToCountry.getOrElse(List.empty).filter(_.countryVatCorrection.isDefined)
-      } yield TotalVatToCountry(countryCorrection.correctionCountry, countryCorrection.countryVatCorrection.get)
+      } yield TotalVatToCountry(countryCorrection.correctionCountry, countryCorrection.countryVatCorrection.getOrElse(BigDecimal(0)))
 
     val vatOwedToEuCountries =
       vatOwedToEuCountriesFromEu ++ vatOwedToEuCountriesFromNI ++ correctionCountriesAmount
