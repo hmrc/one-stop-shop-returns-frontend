@@ -63,7 +63,7 @@ class CheckSalesToEuController @Inject()(
                 )
             }).getOrElse(Seq.empty)
 
-          withCompleteEuSales(onFailure = incompleteSales => Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, incompleteSales.map(_.countryOfConsumption.name)))) {
+          withCompleteEuSales(countryFromIndex, onFailure = incompleteSales => Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, incompleteSales.map(_.countryOfConsumption.name)))) {
             Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, Seq.empty))
           }
       }
@@ -72,11 +72,11 @@ class CheckSalesToEuController @Inject()(
   def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
     cc.authAndGetData(period) {
     implicit request => {
-      withCompleteEuSales(onFailure = _ =>
+      withCompleteEuSales(countryFromIndex, onFailure = _ =>
         if(incompletePromptShown) {
           firstIndexedIncompleteSaleToEu(countryFromIndex) match {
-            case Some(incompleteCorrection) =>
-              Redirect(routes.VatRatesFromEuController.onPageLoad( mode,  period,  countryFromIndex, Index(incompleteCorrection._2)))
+            case Some(incompleteSales) =>
+              Redirect(routes.VatRatesFromEuController.onPageLoad( mode,  period,  countryFromIndex, Index(incompleteSales._2)))
             case None =>
               Redirect(routes.JourneyRecoveryController.onPageLoad())
           }

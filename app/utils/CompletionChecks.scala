@@ -35,10 +35,21 @@ trait CompletionChecks {
       .map(_.filter(_.countryVatCorrection.isEmpty)).getOrElse(List.empty)
   }
 
-  def getIncompleteToEuSales()(implicit request: DataRequest[AnyContent]): List[SalesFromCountryWithOptionalVat] = {
+  def getIncompleteToEuSales(index: Index)(implicit request: DataRequest[AnyContent]): List[SalesFromCountryWithOptionalVat] = {
+    request.userAnswers
+      .get(AllSalesToEuWithOptionalVatQuery(index))
+      .map(_.filter(sales => sales.vatRates.isEmpty || sales.vatRates.exists(_.exists(_.sales.isEmpty))))
+      .getOrElse(List.empty)
+  }
+
+  def getIncompleteFromEuSales()(implicit request: DataRequest[AnyContent]): List[SalesFromEuWithOptionalVat] = {
     request.userAnswers
       .get(AllSalesFromEuQueryWithOptionalVatQuery)
-      .map(_.flatMap(_.salesFromCountry).filter(y => y.vatRates.isEmpty || y.vatRates.exists(_.exists(_.sales.isEmpty))))
+      .map(_.filter(sales =>
+        sales.salesFromCountry.isEmpty ||
+        sales.salesFromCountry.getOrElse(List.empty).exists(_.vatRates.isEmpty) ||
+        sales.salesFromCountry.getOrElse(List.empty).exists(_.vatRates.exists(_.exists(_.sales.isEmpty)))
+      ))
       .getOrElse(List.empty)
   }
 
@@ -47,6 +58,17 @@ trait CompletionChecks {
     request.userAnswers.get(AllSalesToEuWithOptionalVatQuery(index))
       .getOrElse(List.empty).zipWithIndex
       .find(indexedSale => indexedSale._1.vatRates.isEmpty || indexedSale._1.vatRates.exists(_.exists(_.sales.isEmpty)))
+  }
+
+  def firstIndexedIncompleteSaleFromEu()
+                                    (implicit request: DataRequest[AnyContent]): Option[(SalesFromEuWithOptionalVat, Int)] = {
+    request.userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery)
+      .getOrElse(List.empty).zipWithIndex
+      .find(indexedSale =>
+        indexedSale._1.salesFromCountry.isEmpty ||
+        indexedSale._1.salesFromCountry.getOrElse(List.empty).exists(_.vatRates.isEmpty) ||
+        indexedSale._1.salesFromCountry.getOrElse(List.empty).exists(_.vatRates.exists(_.exists(_.sales.isEmpty))
+        ))
   }
 
   def getPeriodsWithIncompleteCorrections()(implicit request: DataRequest[AnyContent]): List[Period] = {
@@ -64,11 +86,23 @@ trait CompletionChecks {
       .find(indexedCorrection => incompleteCorrections.contains(indexedCorrection._1))
   }
 
-  protected def withCompleteEuSales(onFailure: List[SalesFromCountryWithOptionalVat] => Result)
+  protected def withCompleteEuSales(index: Index, onFailure: List[SalesFromCountryWithOptionalVat] => Result)
                                        (onSuccess: => Result)
                                        (implicit request: DataRequest[AnyContent]): Result = {
 
-    val incomplete = getIncompleteToEuSales()
+    val incomplete = getIncompleteToEuSales(index)
+    if(incomplete.isEmpty) {
+      onSuccess
+    } else {
+      onFailure(incomplete)
+    }
+  }
+
+  protected def withCompleteFromEuSales(onFailure: List[SalesFromEuWithOptionalVat] => Result)
+                                   (onSuccess: => Result)
+                                   (implicit request: DataRequest[AnyContent]): Result = {
+
+    val incomplete = getIncompleteFromEuSales()
     if(incomplete.isEmpty) {
       onSuccess
     } else {

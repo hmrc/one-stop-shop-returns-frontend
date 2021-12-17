@@ -114,9 +114,9 @@ GET         /:period/third-change-check-sales-from-eu/:countryFromIndex/:country
 POST        /:period/third-change-check-sales-from-eu/:countryFromIndex/:countryToIndex                            controllers.CheckSalesToEuController.onSubmit(mode: Mode = CheckThirdLoopMode, period: Period, countryFromIndex: Index, countryToIndex: Index, incompletePromptShown: Boolean)
 
 GET         /:period/add-sales-from-eu                                                                       controllers.SalesFromEuListController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST        /:period/add-sales-from-eu                                                                       controllers.SalesFromEuListController.onSubmit(mode: Mode = NormalMode, period: Period)
+POST        /:period/add-sales-from-eu                                                                       controllers.SalesFromEuListController.onSubmit(mode: Mode = NormalMode, period: Period, incompletePromptShown: Boolean)
 GET         /:period/check-add-sales-from-eu                                                                 controllers.SalesFromEuListController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST        /:period/check-add-sales-from-eu                                                                 controllers.SalesFromEuListController.onSubmit(mode: Mode = CheckMode, period: Period)
+POST        /:period/check-add-sales-from-eu                                                                 controllers.SalesFromEuListController.onSubmit(mode: Mode = CheckMode, period: Period, incompletePromptShown: Boolean)
 
 GET         /:period/add-sales-from-eu-to-eu/:index                                                          controllers.SalesToEuListController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
 POST        /:period/add-sales-from-eu-to-eu/:index                                                          controllers.SalesToEuListController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index, incompletePromptShown:Boolean)

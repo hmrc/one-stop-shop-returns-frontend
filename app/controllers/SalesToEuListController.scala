@@ -50,7 +50,7 @@ class SalesToEuListController @Inject()(
           val canAddCountries = number < Country.euCountries.size
           val list            = SalesToEuSummary.addToListRows(request.userAnswers, mode, index)
 
-          withCompleteEuSales(onFailure = incompleteSales => {
+          withCompleteEuSales(index, onFailure = incompleteSales => {
             Ok(view(form, mode, list, period, index, canAddCountries, country, incompleteSales.map(_.countryOfConsumption.name)))
           })(Ok(view(form, mode, list, period, index, canAddCountries, country, Seq.empty)))
       }
@@ -59,11 +59,11 @@ class SalesToEuListController @Inject()(
   def onSubmit(mode: Mode, period: Period, index: Index, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      withCompleteEuSales(onFailure = _ => {
+      withCompleteEuSales(index, onFailure = _ => {
         if(incompletePromptShown) {
           firstIndexedIncompleteSaleToEu(index) match {
-            case Some(incompleteCorrection) =>
-              Redirect(routes.CheckSalesToEuController.onPageLoad( mode,  period, index, Index(incompleteCorrection._2)))
+            case Some(incompleteCountryTo) =>
+              Redirect(routes.CheckSalesToEuController.onPageLoad( mode,  period, index, Index(incompleteCountryTo._2)))
             case None =>
               Redirect(routes.JourneyRecoveryController.onPageLoad())
           }

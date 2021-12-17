@@ -26,7 +26,7 @@
         addToList: components.addToList
 )
 
-@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, canAddCountries: Boolean, incompleteCountriesFrom: List[Country] = List.empty)(implicit request: Request[_], messages: Messages)
 @defining(if(list.size == 1) ".singular" else "") { messageSuffix =>
 
     @layout(pageTitle = title(
@@ -34,11 +34,18 @@
         messages("salesFromEuList.title" + messageSuffix, list.size),
         Some(period.displayText)
     )) {
-
-        @formHelper(action = routes.SalesFromEuListController.onSubmit(mode, period), 'autoComplete -> "off") {
-
             @if(form.errors.nonEmpty) {
                 @govukErrorSummary(ErrorSummaryViewModel(form))
+            }
+
+            @if(incompleteCountriesFrom.nonEmpty) {
+            <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                    <span class="govuk-warning-text__assistive">Warning</span>
+                    @messages("error.missing_answers")
+                </strong>
+            </div>
             }
 
             <header class="hmrc-page-heading">
@@ -47,26 +54,42 @@
             </header>
 
             @addToList(list, Long, "salesFromEuList.change.hidden", "salesFromEuList.remove.hidden", None)
+                @if(incompleteCountriesFrom.isEmpty) {
+                    @formHelper(action = routes.SalesFromEuListController.onSubmit(mode, period, false), 'autoComplete -> "off") {
+                        @if(canAddCountries) {
+                            @govukRadios(
+                                RadiosViewModel.yesNo(
+                                    field = form("value"),
+                                    legend = LegendViewModel(
+                                        HtmlContent(Html(messages("salesFromEuList.addAnother")))
+                                    ).withSize(LegendSize.Medium)
+                                ).withHint(
+                                    HintViewModel(messages("salesFromEuList.hint"))
+                                )
+                            )
+                        } else {
+                            <p class="govuk-body">@messages("salesFromEuList.maximumReached")</p>
+                            <input type="hidden" name="value" id="value" value="false"/>
+                        }
 
-            @if(canAddCountries) {
-                @govukRadios(
-                    RadiosViewModel.yesNo(
-                        field = form("value"),
-                        legend = LegendViewModel(
-                            HtmlContent(Html(messages("salesFromEuList.addAnother")))
-                        ).withSize(LegendSize.Medium)
-                    ).withHint(
-                        HintViewModel(messages("salesFromEuList.hint"))
+                    @govukButton(
+                        ButtonViewModel(messages("site.continue"))
                     )
-                )
+                }
             } else {
-                <p class="govuk-body">@messages("salesFromEuList.maximumReached")</p>
-                <input type="hidden" name="value" id="value" value="false"/>
-            }
+                @formHelper(action = controllers.routes.SalesFromEuListController.onSubmit(mode, period, true)) {
 
-            @govukButton(
-                ButtonViewModel(messages("site.continue"))
-            )
+                <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+                <p class="govuk-body">@messages("error.missing_answers_prompt",
+                    if(incompleteCountriesFrom.size > 1) {
+                    incompleteCountriesFrom.reverse.tail.map(_.name).mkString(", ") + " and " + incompleteCountriesFrom.reverse.head.name
+                    }
+                    else {incompleteCountriesFrom.head.name})</p>
+
+                @govukButton(
+                ButtonViewModel(messages("error.resolve_missing_answers"))
+                )
+            }
         }
     }
 }
