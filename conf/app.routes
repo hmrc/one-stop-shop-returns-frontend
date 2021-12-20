@@ -33,9 +33,9 @@ GET         /:period/second-change-check-sales-from-northern-ireland/:index     
 POST        /:period/second-change-check-sales-from-northern-ireland/:index                                  controllers.CheckSalesFromNiController.onSubmit(mode: Mode = CheckSecondLoopMode, period: Period, index: Index)
 
 GET         /:period/add-sales-from-northern-ireland                                                         controllers.SalesFromNiListController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST        /:period/add-sales-from-northern-ireland                                                         controllers.SalesFromNiListController.onSubmit(mode: Mode = NormalMode, period: Period)
+POST        /:period/add-sales-from-northern-ireland                                                         controllers.SalesFromNiListController.onSubmit(mode: Mode = NormalMode, period: Period, incompletePromptShown:Boolean)
 GET         /:period/check-add-sales-from-northern-ireland                                                   controllers.SalesFromNiListController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST        /:period/check-add-sales-from-northern-ireland                                                   controllers.SalesFromNiListController.onSubmit(mode: Mode = CheckMode, period: Period)
+POST        /:period/check-add-sales-from-northern-ireland                                                   controllers.SalesFromNiListController.onSubmit(mode: Mode = CheckMode, period: Period, incompletePromptShown:Boolean)
 
 GET         /:period/start                                                                                   controllers.StartReturnController.onPageLoad(period: Period)
 POST        /:period/start                                                                                   controllers.StartReturnController.onSubmit(period: Period)

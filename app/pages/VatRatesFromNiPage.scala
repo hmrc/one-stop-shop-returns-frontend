@@ -20,7 +20,7 @@ import controllers.routes
 import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers, VatRate}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.AllNiVatRateAndSalesQuery
+import queries.{AllNiVatRateAndSalesQuery, AllNiVatRateAndSalesWithOptionalVatQuery}
 
 case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRate]] {
 
@@ -29,9 +29,11 @@ case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRate]] 
   override def toString: String = PageConstants.vatRates
 
   override def navigate(mode: Mode, answers: UserAnswers): Call = {
-
     val vatRateIndex: Option[Int] =
-      answers.get(AllNiVatRateAndSalesQuery(index)).flatMap(_.zipWithIndex.find(_._1.sales.isEmpty).map(_._2))
+      answers.get(AllNiVatRateAndSalesWithOptionalVatQuery(index)).flatMap(
+        _.zipWithIndex.find(salesWithIndex => salesWithIndex._1.sales.isEmpty ||
+          salesWithIndex._1.sales.exists(_.vatOnSales.isEmpty) ).map(_._2)
+      )
 
     vatRateIndex match {
       case Some(vatIndex) => routes.NetValueOfSalesFromNiController.onPageLoad(mode, answers.period, index, Index(vatIndex))

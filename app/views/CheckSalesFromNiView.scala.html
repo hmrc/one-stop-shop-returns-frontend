@@ -23,7 +23,7 @@
         govukButton: GovukButton
 )
 
-@(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: Country)(implicit request: Request[_], messages: Messages)
+@(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: Country, incompleteVatRates: Seq[VatRateAndSalesWithOptionalVat] = List.empty)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(
     messages("checkSalesFromNi.title")),
@@ -37,6 +37,16 @@
             <p class="govuk-caption-xl hmrc-caption-xl">@messages("caption.fromNi.periodAndCountry", period.displayText, country.name)</p>
         </header>
 
+        @if(!incompleteVatRates.isEmpty) {
+        <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+                <span class="govuk-warning-text__assistive">Warning</span>
+                @messages("error.missing_answers")
+            </strong>
+        </div>
+        }
+
         @govukSummaryList(mainList)
 
         @for(list <- vatRateLists) {
@@ -47,8 +57,22 @@
             @govukSummaryList(list.list)
         }
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+
+        @if(incompleteVatRates.isEmpty) {
+            @formHelper(action = controllers.routes.CheckSalesFromNiController.onSubmit(mode, period, index), 'missingPrompt -> "false") {
+                @govukButton(
+                    ButtonViewModel(messages("site.continue"))
+                )
+            }
+        } else {
+            <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+            <p class="govuk-body">@messages("error.missing_answers_prompt", if(incompleteVatRates.size > 1) {incompleteVatRates.map(_.rateForDisplay).reverse.tail.mkString(", ") + " and " + incompleteVatRates.last.rateForDisplay + " VAT rates"} else {incompleteVatRates.head.rateForDisplay + " VAT rate"})</p>
+
+            @formHelper(action = controllers.routes.CheckSalesFromNiController.onSubmit(mode, period, index).withFragment("missing"), 'missingPrompt -> "true") {
+                @govukButton(
+                    ButtonViewModel(messages("error.resolve_missing_answers"))
+                )
+            }
+        }
     }
 }
