@@ -34,6 +34,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import queries.EmailConfirmationQuery
 import queries.corrections.AllCorrectionPeriodsQuery
+import repositories.CachedVatReturnRepository
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import services.corrections.CorrectionService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
@@ -41,7 +42,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -55,7 +56,8 @@ class CheckYourAnswersController @Inject()(
                                             correctionService: CorrectionService,
                                             auditService: AuditService,
                                             emailService: EmailService,
-                                            vatReturnConnector: VatReturnConnector
+                                            vatReturnConnector: VatReturnConnector,
+                                            cachedVatReturnRepository: CachedVatReturnRepository
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -263,6 +265,8 @@ class CheckYourAnswersController @Inject()(
         for {
           updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
           _ <- cc.sessionRepository.set(updatedAnswers)
+          _ <- cachedVatReturnRepository.clear(request.userId, period)
+
         } yield {
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
         }
