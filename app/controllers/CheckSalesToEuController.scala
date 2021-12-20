@@ -22,6 +22,7 @@ import pages.{CheckSalesToEuPage, VatRatesFromEuPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.TitledSummaryList
 import viewmodels.checkAnswers.{NetValueOfSalesFromEuSummary, VatOnSalesFromEuSummary, VatRatesFromEuSummary}
 import viewmodels.govuk.summarylist._
@@ -33,7 +34,7 @@ class CheckSalesToEuController @Inject()(
                                           cc: AuthenticatedControllerComponents,
                                           view: CheckSalesToEuView
                                         )
-  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
+  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport with CompletionChecks {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -62,12 +63,27 @@ class CheckSalesToEuController @Inject()(
                 )
             }).getOrElse(Seq.empty)
 
-          Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo))
+          withCompleteEuSales(countryFromIndex, onFailure = incompleteSales => Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, incompleteSales.map(_.countryOfConsumption.name)))) {
+            Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, Seq.empty))
+          }
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
-    implicit request =>
-      Redirect(CheckSalesToEuPage(countryFromIndex).navigate(mode, request.userAnswers))
+  def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
+    cc.authAndGetData(period) {
+    implicit request => {
+      withCompleteEuSales(countryFromIndex, onFailure = _ =>
+        if(incompletePromptShown) {
+          firstIndexedIncompleteSaleToEu(countryFromIndex) match {
+            case Some(incompleteSales) =>
+              Redirect(routes.VatRatesFromEuController.onPageLoad( mode,  period,  countryFromIndex, Index(incompleteSales._2)))
+            case None =>
+              Redirect(routes.JourneyRecoveryController.onPageLoad())
+          }
+        } else Redirect(routes.CheckSalesToEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex))
+      ) {
+        Redirect(CheckSalesToEuPage(countryFromIndex).navigate(mode, request.userAnswers))
+      }
+    }
   }
 }

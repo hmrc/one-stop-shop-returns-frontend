@@ -19,11 +19,12 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import forms.SalesFromEuListFormProvider
-import models.{Country, Mode, Period}
+import models.{Country, Index, Mode, Period}
 import pages.SalesFromEuListPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.checkAnswers.SalesFromEuSummary
 import views.html.SalesFromEuListView
 
@@ -35,7 +36,7 @@ class SalesFromEuListController @Inject()(
                                            formProvider: SalesFromEuListFormProvider,
                                            view: SalesFromEuListView
                                          )
-  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
+  extends FrontendBaseController with SalesFromEuBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()
@@ -48,25 +49,42 @@ class SalesFromEuListController @Inject()(
           val canAddCountries = number < Country.euCountries.size
           val list            = SalesFromEuSummary.addToListRows(request.userAnswers, mode)
 
-          Ok(view(form, mode, list, period, canAddCountries))
+          withCompleteFromEuSales(onFailure = incompleteSales => {
+            Ok(view(form, mode, list, period, canAddCountries, incompleteSales.map(_.countryOfSale)))
+          })(Ok(view(form, mode, list, period, canAddCountries)))
       }
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      getNumberOfSalesFromEu {
-        number =>
+      withCompleteFromEuSales(onFailure = _ => {
+        if(incompletePromptShown) {
+          firstIndexedIncompleteSaleFromEu match {
+            case Some(incompleteSalesFromCountry) if incompleteSalesFromCountry._1.salesFromCountry.isEmpty =>
+              Redirect(routes.CountryOfConsumptionFromEuController.onPageLoad( mode,  period, Index(incompleteSalesFromCountry._2), Index(0)))
+            case Some(incompleteSalesFromCountry) =>
+              Redirect(routes.SalesToEuListController.onPageLoad( mode,  period, Index(incompleteSalesFromCountry._2)))
+            case None =>
+              Redirect(routes.JourneyRecoveryController.onPageLoad())
+          }
+        } else {
+          Redirect(routes.SalesFromEuListController.onPageLoad( mode,  period))
+        }
+      }) {
+        getNumberOfSalesFromEu {
+          number =>
 
-          val canAddCountries = number < Country.euCountries.size
+            val canAddCountries = number < Country.euCountries.size
 
-          form.bindFromRequest().fold(
-            formWithErrors => {
-              val list = SalesFromEuSummary.addToListRows(request.userAnswers, mode)
-              BadRequest(view(formWithErrors, mode, list, period, canAddCountries))
-            },
-            value =>
-              Redirect(SalesFromEuListPage.navigate(request.userAnswers, mode, value))
-          )
+            form.bindFromRequest().fold(
+              formWithErrors => {
+                val list = SalesFromEuSummary.addToListRows(request.userAnswers, mode)
+                BadRequest(view(formWithErrors, mode, list, period, canAddCountries))
+              },
+              value =>
+                Redirect(SalesFromEuListPage.navigate(request.userAnswers, mode, value))
+            )
+        }
       }
   }
 }

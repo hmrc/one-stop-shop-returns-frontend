@@ -16,12 +16,13 @@
 
 package utils
 
-import models.{Country, Index, Period, SalesFromCountryWithOptionalVat, VatRateAndSales, VatRateAndSalesWithOptionalVat}
+import models.{Country, Index, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, VatRateAndSales, VatRateAndSalesWithOptionalVat}
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
+import org.checkerframework.checker.units.qual.A
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.mvc.{AnyContent, Result}
-import queries.{AllNiVatRateAndSalesQuery, AllNiVatRateAndSalesWithOptionalVatQuery, AllSalesFromNiQuery, AllSalesFromNiWithOptionalVatQuery}
+import queries.{AllNiVatRateAndSalesQuery, AllNiVatRateAndSalesWithOptionalVatQuery, AllSalesFromEuQuery, AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiQuery, AllSalesFromNiWithOptionalVatQuery, AllSalesToEuWithOptionalVatQuery}
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods, DeriveNumberOfCorrections}
 
 import scala.concurrent.Future
@@ -32,6 +33,42 @@ trait CompletionChecks {
     request.userAnswers
       .get(AllCorrectionCountriesQuery(periodIndex))
       .map(_.filter(_.countryVatCorrection.isEmpty)).getOrElse(List.empty)
+  }
+
+  def getIncompleteToEuSales(index: Index)(implicit request: DataRequest[AnyContent]): List[SalesFromCountryWithOptionalVat] = {
+    request.userAnswers
+      .get(AllSalesToEuWithOptionalVatQuery(index))
+      .map(_.filter(sales => sales.vatRates.isEmpty || sales.vatRates.exists(_.exists(_.sales.isEmpty))))
+      .getOrElse(List.empty)
+  }
+
+  def getIncompleteFromEuSales()(implicit request: DataRequest[AnyContent]): List[SalesFromEuWithOptionalVat] = {
+    request.userAnswers
+      .get(AllSalesFromEuQueryWithOptionalVatQuery)
+      .map(_.filter(sales =>
+        sales.salesFromCountry.isEmpty ||
+        sales.salesFromCountry.getOrElse(List.empty).exists(_.vatRates.isEmpty) ||
+        sales.salesFromCountry.getOrElse(List.empty).exists(_.vatRates.exists(_.exists(_.sales.isEmpty)))
+      ))
+      .getOrElse(List.empty)
+  }
+
+  def firstIndexedIncompleteSaleToEu(index: Index)
+                                      (implicit request: DataRequest[AnyContent]): Option[(SalesFromCountryWithOptionalVat, Int)] = {
+    request.userAnswers.get(AllSalesToEuWithOptionalVatQuery(index))
+      .getOrElse(List.empty).zipWithIndex
+      .find(indexedSale => indexedSale._1.vatRates.isEmpty || indexedSale._1.vatRates.exists(_.exists(_.sales.isEmpty)))
+  }
+
+  def firstIndexedIncompleteSaleFromEu()
+                                    (implicit request: DataRequest[AnyContent]): Option[(SalesFromEuWithOptionalVat, Int)] = {
+    request.userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery)
+      .getOrElse(List.empty).zipWithIndex
+      .find(indexedSale =>
+        indexedSale._1.salesFromCountry.isEmpty ||
+        indexedSale._1.salesFromCountry.getOrElse(List.empty).exists(_.vatRates.isEmpty) ||
+        indexedSale._1.salesFromCountry.getOrElse(List.empty).exists(_.vatRates.exists(_.exists(_.sales.isEmpty))
+        ))
   }
 
   def getPeriodsWithIncompleteCorrections()(implicit request: DataRequest[AnyContent]): List[Period] = {
@@ -47,6 +84,30 @@ trait CompletionChecks {
     request.userAnswers.get(AllCorrectionCountriesQuery(periodIndex))
       .getOrElse(List.empty).zipWithIndex
       .find(indexedCorrection => incompleteCorrections.contains(indexedCorrection._1))
+  }
+
+  protected def withCompleteEuSales(index: Index, onFailure: List[SalesFromCountryWithOptionalVat] => Result)
+                                       (onSuccess: => Result)
+                                       (implicit request: DataRequest[AnyContent]): Result = {
+
+    val incomplete = getIncompleteToEuSales(index)
+    if(incomplete.isEmpty) {
+      onSuccess
+    } else {
+      onFailure(incomplete)
+    }
+  }
+
+  protected def withCompleteFromEuSales(onFailure: List[SalesFromEuWithOptionalVat] => Result)
+                                   (onSuccess: => Result)
+                                   (implicit request: DataRequest[AnyContent]): Result = {
+
+    val incomplete = getIncompleteFromEuSales()
+    if(incomplete.isEmpty) {
+      onSuccess
+    } else {
+      onFailure(incomplete)
+    }
   }
 
   protected def withCompleteCorrections(periodIndex: Index, onFailure: List[CorrectionToCountry] => Result)
