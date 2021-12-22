@@ -58,6 +58,45 @@ The VRN can be any 9-digit number.
   
 To be able to use the application you need to be registered for the service (instructions to complete a registration can be found here https://github.com/hmrc/one-stop-shop-registration-frontend).
 
+Unit and Integration Tests
+------------
+
+To run the unit and integration tests, you will need to open an sbt session on the browser.
+
+### Unit Tests
+
+To run all tests, run the following command in your sbt session:
+```
+test
+```
+
+To run a single test, run the following command in your sbt session:
+```
+testOnly <package>.<SpecName>
+```
+
+An asterisk can be used as a wildcard character without having to enter the package, as per the example below:
+```
+testOnly *CheckSalesFromNiControllerSpec
+```
+
+### Integration Tests
+
+To run all tests, run the following command in your sbt session:
+```
+it:test
+```
+
+To run a single test, run the following command in your sbt session:
+```
+it:testOnly <package>.<SpecName>
+```
+
+An asterisk can be used as a wildcard character without having to enter the package, as per the example below:
+```
+it:testOnly *RegistrationRepositorySpec
+```
+
 ### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
