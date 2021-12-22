@@ -37,10 +37,13 @@ object CountryVatCorrectionSummary {
           key = "countryVatCorrection.checkYourAnswersLabel",
           value = ValueViewModel(HtmlContent(Html(currencyFormat(answer)))),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController
-              .onPageLoad(newMode, answers.period, periodIndex, countryIndex).url)
-              .withVisuallyHiddenText(messages("countryVatCorrection.change.hidden"))
-              .withAttribute(("id", "change-correction-amount"))
+            ActionItemViewModel(
+              "site.change",
+              controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+                newMode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
+              ).url
+            ).withVisuallyHiddenText(messages("countryVatCorrection.change.hidden"))
+             .withAttribute(("id", "change-correction-amount"))
           )
         )
     }

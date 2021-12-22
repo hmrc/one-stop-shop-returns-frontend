@@ -39,7 +39,13 @@ class CountryVatCorrectionController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
+  def onPageLoad(
+    mode: Mode,
+    period: Period,
+    periodIndex: Index,
+    countryIndex: Index,
+    undeclaredCountry: Boolean = false
+  ): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
@@ -54,13 +60,25 @@ class CountryVatCorrectionController @Inject()(
               case None => form
               case Some(value) => form.fill(value)
             }
-            Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn))
+            Ok(view(
+              preparedForm, mode, period,
+              country, correctionPeriod,
+              periodIndex, countryIndex,
+              vatOwedToCountryOnPrevReturn,
+              undeclaredCountry
+            ))
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
+  def onSubmit(
+    mode: Mode,
+    period: Period,
+    periodIndex: Index,
+    countryIndex: Index,
+    undeclaredCountry: Boolean = false
+  ): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
@@ -71,8 +89,12 @@ class CountryVatCorrectionController @Inject()(
               val form = formProvider(country.name, minimumCorrectionAmount)
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(
-                    view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex, vatOwedToCountryOnPrevReturn))),
+                  Future.successful(BadRequest(view(
+                    formWithErrors, mode, period,
+                    country, correctionPeriod, periodIndex,
+                    countryIndex, vatOwedToCountryOnPrevReturn,
+                    undeclaredCountry
+                  ))),
 
                 value =>
                   for {

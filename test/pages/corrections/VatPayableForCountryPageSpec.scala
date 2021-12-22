@@ -44,7 +44,7 @@ class VatPayableForCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(VatPayableForCountryPage(index, index), false).success.value
 
         VatPayableForCountryPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index, false))
       }
 
       "to Journey recovery page when answer is invalid" in {
@@ -69,7 +69,7 @@ class VatPayableForCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(VatPayableForCountryPage(index, index), false).success.value
 
         VatPayableForCountryPage(index, index).navigate(CheckMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, index, index, false))
       }
 
       "to Journey recovery page when answer is invalid" in {
@@ -94,7 +94,7 @@ class VatPayableForCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(VatPayableForCountryPage(index, index), false).success.value
 
         VatPayableForCountryPage(index, index).navigate(CheckLoopMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, answers.period, index, index))
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, answers.period, index, index, false))
       }
 
       "to Journey recovery page when answer is invalid" in {
@@ -119,7 +119,7 @@ class VatPayableForCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(VatPayableForCountryPage(index, index), false).success.value
 
         VatPayableForCountryPage(index, index).navigate(CheckSecondLoopMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckSecondLoopMode, answers.period, index, index))
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckSecondLoopMode, answers.period, index, index, false))
       }
 
       "to Journey recovery page when answer is invalid" in {
@@ -144,7 +144,7 @@ class VatPayableForCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(VatPayableForCountryPage(index, index), false).success.value
 
         VatPayableForCountryPage(index, index).navigate(CheckThirdLoopMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index))
+          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index, false))
       }
 
       "to Journey recovery page when answer is invalid" in {
@@ -153,6 +153,5 @@ class VatPayableForCountryPageSpec extends PageBehaviours {
           .mustEqual(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
     }
-
   }
 }

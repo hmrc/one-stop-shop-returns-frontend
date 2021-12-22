@@ -30,19 +30,19 @@ class CountryVatCorrectionSummarySpec extends SpecBase {
   implicit val m: Messages = stubMessages()
 
   private val expectedActionCheckLoop = Seq(
-    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, period, index, index).url)
+    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, period, index, index, false).url)
       .withVisuallyHiddenText("countryVatCorrection.change.hidden")
       .withAttribute(("id", "change-correction-amount"))
   )
 
   private val expectedActionCheckSecondLoop = Seq(
-    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckSecondLoopMode, period, index, index).url)
+    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckSecondLoopMode, period, index, index, false).url)
       .withVisuallyHiddenText("countryVatCorrection.change.hidden")
       .withAttribute(("id", "change-correction-amount"))
   )
 
   private val expectedActionCheckMode = Seq(
-    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, period, index, index).url)
+    ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, period, index, index, false).url)
       .withVisuallyHiddenText("countryVatCorrection.change.hidden")
       .withAttribute(("id", "change-correction-amount"))
   )

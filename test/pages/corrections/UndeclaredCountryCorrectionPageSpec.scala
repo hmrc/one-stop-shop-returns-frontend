@@ -34,23 +34,28 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
     "must navigate in Normal mode" - {
 
       "to What is your correction for the total VAT payable page when answer is yes" in {
-
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
 
         UndeclaredCountryCorrectionPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
+          .mustEqual(
+            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+              NormalMode, answers.period, index, index, undeclaredCountry = true
+            )
+          )
       }
 
       "to Correction country page when answer is no" in {
-
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), false).success.value
 
         UndeclaredCountryCorrectionPage(index, index).navigate(NormalMode, answers)
-          .mustEqual(controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, answers.period, index, index))
+          .mustEqual(
+            controllers.corrections.routes.CorrectionCountryController.onPageLoad(
+              NormalMode, answers.period, index, index
+            )
+          )
       }
 
       "to Journey recovery page when answer is invalid" in {
-
         UndeclaredCountryCorrectionPage(index, index).navigate(NormalMode, emptyUserAnswers)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
@@ -59,15 +64,17 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
     "must navigate in Check mode" - {
 
       "to What is your correction for the total VAT payable page when answer is yes" in {
-
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
 
         UndeclaredCountryCorrectionPage(index, index).navigate(CheckMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
+          .mustEqual(
+            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+              CheckMode, answers.period, index, index, undeclaredCountry = true
+            )
+          )
       }
 
       "to Correction country page when answer is no" in {
-
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), false).success.value
 
         UndeclaredCountryCorrectionPage(index, index).navigate(CheckMode, answers)
@@ -88,12 +95,11 @@ class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
 
         UndeclaredCountryCorrectionPage(index, index).navigate(CheckThirdLoopMode, answers)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index))
+          .mustEqual(
+            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index, true))
       }
 
       "to Correction country page when answer is no" in {
-
-        val country  = arbitrary[Country].sample.value
 
         val answers = emptyUserAnswers.set(UndeclaredCountryCorrectionPage(index, index), false).success.value
 

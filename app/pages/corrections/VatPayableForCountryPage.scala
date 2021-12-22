@@ -30,37 +30,65 @@ case class VatPayableForCountryPage(periodIndex: Index, countryIndex: Index) ext
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
-      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
+      case Some(true) =>
+        controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(
+          NormalMode, answers.period, periodIndex, countryIndex
+        )
+      case Some(false) =>
+        controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+          NormalMode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
+        )
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 
   override def navigateInCheckMode(answers: UserAnswers): Call =
     answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
-      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, periodIndex, countryIndex)
+      case Some(true) =>
+        controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(
+          CheckMode, answers.period, periodIndex, countryIndex
+        )
+      case Some(false) =>
+        controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+          CheckMode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
+        )
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 
   override def navigateInCheckLoopMode(answers: UserAnswers): Call =
     answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, answers.period, periodIndex, countryIndex)
-      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, answers.period, periodIndex, countryIndex)
+      case Some(true) =>
+        controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(
+          NormalMode, answers.period, periodIndex, countryIndex
+        )
+      case Some(false) =>
+        controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+          CheckLoopMode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
+        )
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 
   override def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
     answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckSecondLoopMode, answers.period, periodIndex, countryIndex)
-      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckSecondLoopMode, answers.period, periodIndex, countryIndex)
+      case Some(true) =>
+        controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(
+          CheckSecondLoopMode, answers.period, periodIndex, countryIndex
+        )
+      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+        CheckSecondLoopMode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
+      )
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 
   override def navigateInCheckThirdLoopMode(answers: UserAnswers): Call =
     answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
-      case Some(true) => controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckThirdLoopMode, answers.period, periodIndex, countryIndex)
-      case Some(false) => controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, periodIndex, countryIndex)
+      case Some(true) =>
+        controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(
+          CheckThirdLoopMode, answers.period, periodIndex, countryIndex
+        )
+      case Some(false) =>
+        controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+          CheckThirdLoopMode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
+        )
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
-
 }
