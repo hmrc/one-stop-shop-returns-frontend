@@ -36,6 +36,6 @@ class CountryVatCorrectionFormProvider @Inject() extends Mappings {
             if(undeclaredCountry) "countryVatCorrection.error.outOfRange.undeclared" else "countryVatCorrection.error.outOfRange")
           )
           .verifying("countryVatCorrection.error.nonZero", input => input != 0)
-          .verifying(minimumValue[BigDecimal]( minimiumCorrection, "countryVatCorrection.error.negative"))
+          .verifying(minimumValue(minimiumCorrection, "countryVatCorrection.error.negative"))
     )
 }

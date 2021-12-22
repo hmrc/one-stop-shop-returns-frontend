@@ -19,6 +19,7 @@ import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.behaviours.DecimalFieldBehaviours
 import org.scalacheck.Gen
 import play.api.data.FormError
+import utils.CurrencyFormatter
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -101,7 +102,7 @@ class CountryVatCorrectionFormProviderSpec extends DecimalFieldBehaviours {
         dataItem: String =>
           val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
           result.value.value mustBe dataItem
-          result.errors mustBe List(FormError(fieldName, "countryVatCorrection.error.negative", Seq(minimumAllowedCorrection)))
+          result.errors mustBe List(FormError(fieldName, "countryVatCorrection.error.negative", Seq(CurrencyFormatter.currencyFormat(minimumAllowedCorrection))))
       }
     }
   }
