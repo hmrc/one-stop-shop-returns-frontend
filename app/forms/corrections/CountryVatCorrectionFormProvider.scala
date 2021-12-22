@@ -24,15 +24,18 @@ import javax.inject.Inject
 
 class CountryVatCorrectionFormProvider @Inject() extends Mappings {
 
-  def apply(country:String, minimiumCorrection:BigDecimal): Form[BigDecimal] =
+  def apply(country:String, minimiumCorrection:BigDecimal, undeclaredCountry: Boolean): Form[BigDecimal] =
     Form(
       "value" -> currency(
         "countryVatCorrection.error.required",
         "countryVatCorrection.error.wholeNumber",
         "countryVatCorrection.error.nonNumeric",
         args = Seq(country))
-          .verifying(inRange[BigDecimal](minCurrencyAmount, maxCurrencyAmount, "countryVatCorrection.error.outOfRange"))
-        .verifying("countryVatCorrection.error.nonZero", input => input != 0)
-        .verifying(minimumValue[BigDecimal]( minimiumCorrection, "countryVatCorrection.error.negative"))
+          .verifying(inRange[BigDecimal](
+            minCurrencyAmount, maxCurrencyAmount,
+            if(undeclaredCountry) "countryVatCorrection.error.outOfRange.undeclared" else "countryVatCorrection.error.outOfRange")
+          )
+          .verifying("countryVatCorrection.error.nonZero", input => input != 0)
+          .verifying(minimumValue[BigDecimal]( minimiumCorrection, "countryVatCorrection.error.negative"))
     )
 }

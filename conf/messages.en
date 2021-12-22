@@ -378,6 +378,7 @@ countryVatCorrection.error.nonNumeric = Enter your correction for the total VAT 
 countryVatCorrection.error.required = Enter your correction for the total VAT payable to {0}
 countryVatCorrection.error.wholeNumber = Enter your correction for the total VAT payable to {0} using whole numbers
 countryVatCorrection.error.outOfRange = Correction for the total VAT payable must be between {0} and {1}
+countryVatCorrection.error.outOfRange.undeclared = Correction for the total VAT payable must be less than {1}
 countryVatCorrection.error.nonZero = Correction for the total VAT payable must not be zero
 countryVatCorrection.change.hidden = Correction amount
 

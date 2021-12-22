@@ -51,7 +51,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
   private val selectedCountry = arbitrary[Country].sample.value
 
   private val formProvider = new CountryVatCorrectionFormProvider()
-  private val form = formProvider(selectedCountry.name, BigDecimal(100.0))
+  private val form = formProvider(selectedCountry.name, BigDecimal(100.0), false)
   private val userAnswersWithCountryAndPeriod =
     emptyUserAnswers.set(CorrectionCountryPage(index, index), selectedCountry).success.value
     .set(CorrectionReturnPeriodPage(index), period).success.value
@@ -258,7 +258,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
           FakeRequest(POST, countryVatCorrectionRoute)
             .withFormUrlEncodedBody(("value", "-400.0"))
 
-        val form = formProvider(selectedCountry.name, BigDecimal(-300.0))
+        val form = formProvider(selectedCountry.name, BigDecimal(-300.0), false)
         val boundForm = form.bind(Map("value" -> "-400.0"))
 
         val view = application.injector.instanceOf[CountryVatCorrectionView]
