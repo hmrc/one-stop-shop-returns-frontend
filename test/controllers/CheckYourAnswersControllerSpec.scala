@@ -24,7 +24,7 @@ import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, Submission
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.DataRequest
+import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import models.{Country, NormalMode, TotalVatToCountry}
 import org.mockito.ArgumentMatchers.any
@@ -199,7 +199,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .set(SoldGoodsFromNiPage, false).success.value
               .set(SoldGoodsFromEuPage, false).success.value
 
-          when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
 
@@ -218,7 +218,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
-            verify(vatReturnConnector, times(1)).submit(any())(any())
+            verify(vatReturnConnector, times(1)).submit(any[VatReturnRequest]())(any())
           }
         }
 
@@ -227,7 +227,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-          when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
 
@@ -284,7 +284,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .set(SoldGoodsFromNiPage, false).success.value
               .set(SoldGoodsFromEuPage, false).success.value
 
-          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
+          when(vatReturnConnector.submit(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
 
@@ -302,7 +302,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
-            verify(vatReturnConnector, times(1)).submitWithCorrection(any())(any())
+            verify(vatReturnConnector, times(1)).submit(any[VatReturnWithCorrectionRequest]())(any())
           }
         }
 
@@ -315,7 +315,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
-          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
+          when(vatReturnConnector.submit(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
 
@@ -383,7 +383,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             ).build()
 
         when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
+        when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(ConflictFound))
         doNothing().when(auditService).audit(any())(any(), any())
 
         running(app) {
@@ -418,7 +418,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             ).build()
 
         when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+        when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
         doNothing().when(auditService).audit(any())(any(), any())
 
         running(app) {
@@ -444,7 +444,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .overrides(bind[VatReturnConnector].toInstance(vatReturnConnector))
             .build()
 
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
 
         running(app) {
 
