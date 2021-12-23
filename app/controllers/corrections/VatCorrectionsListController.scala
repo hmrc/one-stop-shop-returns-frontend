@@ -19,6 +19,7 @@ package controllers.corrections
 import controllers.actions._
 import controllers.{routes => baseRoutes}
 import forms.corrections.VatCorrectionsListFormProvider
+import models.corrections.CorrectionToCountry
 import models.{Country, Index, Mode, Period}
 import pages.corrections.VatCorrectionsListPage
 import play.api.i18n.I18nSupport
@@ -45,7 +46,10 @@ class VatCorrectionsListController @Inject()(
       getNumberOfCorrections(periodIndex) { (number, correctionPeriod) =>
         val canAddCountries = number < Country.euCountries.size
         val list = VatCorrectionsListSummary.addToListRows(request.userAnswers, mode, periodIndex)
-        withCompleteCorrections(periodIndex, onFailure = incompleteCorrections => {
+        withCompleteData[CorrectionToCountry](
+          periodIndex,
+          data = getIncompleteCorrections _,
+          onFailure = (incompleteCorrections: Seq[CorrectionToCountry]) => {
             Ok(view(form, mode, list, period, correctionPeriod, periodIndex, canAddCountries, incompleteCorrections.map(_.correctionCountry.name)))
           }) {
           Ok(view(form, mode, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
@@ -55,9 +59,10 @@ class VatCorrectionsListController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
     cc.authAndGetDataAndCorrectionEligible(period) { implicit request =>
-      withCompleteCorrections(
+      withCompleteData[CorrectionToCountry](
         periodIndex,
-        onFailure = incompleteCorrections => {
+        data = getIncompleteCorrections _,
+        onFailure = (incompleteCorrections: Seq[CorrectionToCountry]) => {
           if(incompletePromptShown) {
             firstIndexedIncompleteCorrection(periodIndex, incompleteCorrections) match {
               case Some(incompleteCorrection) =>

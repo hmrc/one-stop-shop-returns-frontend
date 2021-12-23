@@ -28,6 +28,7 @@ import viewmodels.checkAnswers.corrections.{CountryVatCorrectionSummary, NewVatT
 import viewmodels.govuk.summarylist._
 import views.html.corrections.CheckVatPayableAmountView
 import controllers.{routes => baseRoutes}
+import models.corrections.CorrectionToCountry
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,7 +41,8 @@ class CheckVatPayableAmountController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
+    cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
@@ -50,7 +52,6 @@ class CheckVatPayableAmountController @Inject()(
           for {
             originalAmount <- service.getLatestVatAmountForPeriodAndCountry(country, correctionPeriod)
           } yield {
-
             val summaryList = SummaryListViewModel(
               rows = Seq(
                 Some(PreviousVatTotalSummary.row(originalAmount)),
@@ -59,13 +60,14 @@ class CheckVatPayableAmountController @Inject()(
               ).flatten
             ).withCssClass("govuk-!-margin-bottom-9")
 
-            withCompleteCorrections(periodIndex, onFailure = incompleteCorrections => {
-              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, false))
+            withCompleteData[CorrectionToCountry](
+              periodIndex,
+              data = getIncompleteCorrections _,
+              onFailure = (_: Seq[CorrectionToCountry]) => {
+              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = false))
             }) {
-              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, true))
+              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = true))
             }
-
-
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
@@ -73,7 +75,10 @@ class CheckVatPayableAmountController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
     cc.authAndGetDataAndCorrectionEligible(period) { implicit request =>
-      withCompleteCorrections(periodIndex, onFailure = incompleteCorrections => {
+      withCompleteData[CorrectionToCountry](
+        periodIndex,
+        data = getIncompleteCorrections _,
+        onFailure = (_: Seq[CorrectionToCountry]) => {
         Redirect(routes.CorrectionCountryController.onPageLoad(
             mode,
             period,

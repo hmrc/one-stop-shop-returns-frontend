@@ -19,7 +19,8 @@ package controllers
 import controllers.actions.AuthenticatedControllerComponents
 import controllers.corrections.routes
 import forms.SalesToEuListFormProvider
-import models.{Country, Index, Mode, Period}
+import models.corrections.CorrectionToCountry
+import models.{Country, Index, Mode, Period, SalesFromCountryWithOptionalVat}
 import pages.SalesToEuListPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -50,7 +51,10 @@ class SalesToEuListController @Inject()(
           val canAddCountries = number < Country.euCountries.size
           val list            = SalesToEuSummary.addToListRows(request.userAnswers, mode, index)
 
-          withCompleteEuSales(index, onFailure = incompleteSales => {
+          withCompleteData[SalesFromCountryWithOptionalVat](
+            index,
+            data = getIncompleteToEuSales _,
+            onFailure = (incompleteSales: Seq[SalesFromCountryWithOptionalVat]) => {
             Ok(view(form, mode, list, period, index, canAddCountries, country, incompleteSales.map(_.countryOfConsumption.name)))
           })(Ok(view(form, mode, list, period, index, canAddCountries, country, Seq.empty)))
       }
@@ -59,7 +63,10 @@ class SalesToEuListController @Inject()(
   def onSubmit(mode: Mode, period: Period, index: Index, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      withCompleteEuSales(index, onFailure = _ => {
+      withCompleteData[SalesFromCountryWithOptionalVat](
+        index,
+        data = getIncompleteToEuSales _,
+        onFailure = (_: Seq[SalesFromCountryWithOptionalVat]) => {
         if(incompletePromptShown) {
           firstIndexedIncompleteSaleToEu(index) match {
             case Some(incompleteCountryTo) =>

@@ -27,7 +27,8 @@ class SalesAtVatRateService @Inject()() {
   def getNiTotalNetSales(userAnswers: UserAnswers): Option[BigDecimal] = {
     userAnswers.get(AllSalesFromNiQuery).map(allSales =>
       allSales.map(saleFromNi =>
-        saleFromNi.vatRates.map(_.sales.map(_.netValueOfSales).getOrElse(BigDecimal(0))).sum
+        saleFromNi.vatRates
+          .map(_.flatMap(_.sales.map(_.netValueOfSales)).sum).getOrElse(BigDecimal(0))
       ).sum
     )
   }
@@ -35,9 +36,8 @@ class SalesAtVatRateService @Inject()() {
   def getNiTotalVatOnSales(userAnswers: UserAnswers): Option[BigDecimal] = {
     userAnswers.get(AllSalesFromNiQuery).map(allSales =>
       allSales.map(saleFromNi =>
-        saleFromNi.vatRates.map(_.sales.map(
-          _.vatOnSales.amount
-        ).getOrElse(BigDecimal(0))).sum
+        saleFromNi.vatRates
+          .map(_.flatMap(_.sales.flatMap(_.vatOnSales.map(_.amount))).sum).getOrElse(BigDecimal(0))
       ).sum
     )
   }
@@ -79,8 +79,8 @@ class SalesAtVatRateService @Inject()() {
       for {
         allSalesFromNi <- userAnswers.get(AllSalesFromNiQuery).toSeq
         saleFromNi     <- allSalesFromNi
-        salesAtVatRate <- saleFromNi.vatRates
-      } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.sales.map(_.vatOnSales.amount).getOrElse(BigDecimal(0)))
+        salesAtVatRate <- saleFromNi.vatRates.getOrElse(List.empty)
+      } yield TotalVatToCountry(saleFromNi.countryOfConsumption, salesAtVatRate.sales.flatMap(_.vatOnSales.map(_.amount)).getOrElse(BigDecimal(0)))
 
     val correctionCountriesAmount =
       for {

@@ -72,7 +72,9 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
             if(uncompletedCorrectionPeriods.isEmpty) {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
             } else {
-              withCompleteCorrections(onFailure = incompletePeriods => {
+              withCompleteData[Period](
+                data = getPeriodsWithIncompleteCorrections _,
+                onFailure = (incompletePeriods: Seq[Period]) => {
                 Ok(view(form, mode, period, completedCorrectionPeriodsModel, incompletePeriods))
               })(Ok(view(form, mode, period, completedCorrectionPeriodsModel, List.empty)))
             }
@@ -85,8 +87,10 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
-      withCompleteCorrectionsAsync(onFailure = {
-          incompletePeriods => {
+      withCompleteDataAsync[Period](
+        data = getPeriodsWithIncompleteCorrections _ ,
+        onFailure = {
+          (incompletePeriods: Seq[Period]) => {
             if(incompletePromptShown) {
               val correctionPeriods = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
                 .getOrElse(List.empty).zipWithIndex

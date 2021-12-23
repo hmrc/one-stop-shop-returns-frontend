@@ -18,7 +18,7 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Index, Mode, Period}
+import models.{Index, Mode, Period, SalesFromCountryWithOptionalVat, VatRateAndSalesWithOptionalVat}
 import pages.{CheckSalesFromNiPage, VatRatesFromNiPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -63,18 +63,23 @@ class CheckSalesFromNiController @Inject()(
                 )
             }).getOrElse(Seq.empty)
 
-          withCompleteVatRateAndSales(index, onFailure = incomplete => {
+          withCompleteData[VatRateAndSalesWithOptionalVat](
+            index,
+            data = getIncompleteNiVatRateAndSales _,
+            onFailure = (incomplete: Seq[VatRateAndSalesWithOptionalVat]) => {
             Ok(view(mode, mainList, vatRateLists, period, index, country, incomplete))
           }) {
             Ok(view(mode, mainList, vatRateLists, period, index, country))
           }
-
       }
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      withCompleteVatRateAndSales(index, onFailure = incomplete => {
+      withCompleteData[VatRateAndSalesWithOptionalVat](
+        index,
+        data = getIncompleteNiVatRateAndSales _,
+        onFailure = (_: Seq[VatRateAndSalesWithOptionalVat]) => {
         Redirect(routes.VatRatesFromNiController.onPageLoad(
           mode,
           period,
