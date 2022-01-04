@@ -131,6 +131,7 @@ GET         /past-returns                                                       
 GET         /past-returns/:period                                                                            controllers.PreviousReturnController.onPageLoad(period: Period)
 
 GET         /no-other-periods-available                                                                      controllers.NoOtherPeriodsAvailableController.onPageLoad()
+GET         /cannot-start-return                                                                             controllers.CannotStartReturnController.onPageLoad()
 
 GET         /:period/eu-sales-from-northern-ireland/:countryIndex/:vatRateIndex                              controllers.NetValueOfSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, countryIndex: Index, vatRateIndex: Index)
 POST        /:period/eu-sales-from-northern-ireland/:countryIndex/:vatRateIndex                              controllers.NetValueOfSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, countryIndex: Index, vatRateIndex: Index)
