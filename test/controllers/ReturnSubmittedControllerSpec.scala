@@ -18,16 +18,20 @@ package controllers
 
 import base.SpecBase
 import connectors.VatReturnConnector
+import connectors.corrections.CorrectionConnector
 import models.ReturnReference
+import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -43,162 +47,353 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
 
   private val vatReturnConnector = mock[VatReturnConnector]
   private val vatReturnSalesService = mock[VatReturnSalesService]
+  private val correctionConnector = mock[CorrectionConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
     Mockito.reset(vatReturnSalesService)
+    Mockito.reset(correctionConnector)
     super.beforeEach()
   }
 
   private val vatReturn = arbitrary[VatReturn].sample.value
+  private val correctionPayload = arbitrary[CorrectionPayload].sample.value
 
   "ReturnSubmitted controller" - {
 
-    "must return OK and the correct view for a GET with email confirmation" in {
-      val instant = Instant.parse("2021-10-30T00:00:00.00Z")
-      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+    "when correct previous return is false / empty" - {
 
-      val userAnswersWithEmail =
-        emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
+      "must return OK and the correct view for a GET with email confirmation" in {
+        val instant = Instant.parse("2021-10-30T00:00:00.00Z")
+        val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-      val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
-        .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-        ).build()
+        val userAnswersWithEmail =
+          emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
 
-      val vatOnSales = BigDecimal(0)
+        val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+          .overrides(
 
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-      when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn vatOnSales
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          )
+          .build()
 
-      running(app) {
-        val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+        val vatOnSales = BigDecimal(0)
 
-        val result = route(app, request).value
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-        val view = app.injector.instanceOf[ReturnSubmittedView]
-        val returnReference = ReturnReference(vrn, period)
-        val vatOwed = currencyFormat(vatOnSales)
+        running(app) {
+          val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
 
-        status(result) mustEqual OK
+          val result = route(app, request).value
 
-        contentAsString(result) mustEqual
-          view(
-            period,
-            returnReference,
-            vatOwed,
-            true,
-            registration.contactDetails.emailAddress,
-            false,
-            (vatOnSales * 100).toLong,
-            false
-          )(request, messages(app)).toString
+          val view = app.injector.instanceOf[ReturnSubmittedView]
+          val returnReference = ReturnReference(vrn, period)
+          val vatOwed = currencyFormat(vatOnSales)
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual
+            view(
+              period,
+              returnReference,
+              vatOwed,
+              true,
+              registration.contactDetails.emailAddress,
+              false,
+              (vatOnSales * 100).toLong,
+              false
+            )(request, messages(app)).toString
+        }
+      }
+
+      "must return OK and the correct view for a GET without email confirmation" in {
+        val instant = Instant.parse("2021-10-30T00:00:00.00Z")
+        val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val userAnswersWithoutEmail =
+          emptyUserAnswers.copy().set(EmailConfirmationQuery, false).success.value
+
+        val app = applicationBuilder(Some(userAnswersWithoutEmail), clock = Some(stubClock))
+          .overrides(
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          )
+          .build()
+
+        val vatOnSales = arbitrary[BigDecimal].sample.value
+
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        running(app) {
+          val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+
+          val result = route(app, request).value
+
+          val view = app.injector.instanceOf[ReturnSubmittedView]
+          val returnReference = ReturnReference(vrn, period)
+          val vatOwed = currencyFormat(vatOnSales)
+          val displayPayNow = vatOnSales > 0
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual
+            view(
+              period,
+              returnReference,
+              vatOwed,
+              false,
+              registration.contactDetails.emailAddress,
+              displayPayNow,
+              (vatOnSales * 100).toLong,
+              false
+            )(request, messages(app)).toString
+        }
+      }
+
+      "must return OK and the correct view for a GET with email confirmation and overdue return" in {
+        val instant = Instant.parse("2021-11-02T00:00:00.00Z")
+        val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val userAnswersWithEmail =
+          emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
+
+        val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+          .overrides(
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          )
+          .build()
+
+        val vatOnSales = BigDecimal(100)
+
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        running(app) {
+          val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+
+          val result = route(app, request).value
+
+          val view = app.injector.instanceOf[ReturnSubmittedView]
+          val returnReference = ReturnReference(vrn, period)
+          val vatOwed = currencyFormat(vatOnSales)
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual
+            view(
+              period,
+              returnReference,
+              vatOwed,
+              true,
+              registration.contactDetails.emailAddress,
+              true,
+              (vatOnSales * 100).toLong,
+              true
+            )(request, messages(app)).toString
+        }
+      }
+
+      "must return redirect and the correct view" in {
+
+        val app = applicationBuilder(Some(emptyUserAnswers))
+          .overrides(
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          )
+          .build()
+
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        running(app) {
+          val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+        }
       }
     }
 
-    "must return OK and the correct view for a GET without email confirmation" in {
-      val instant = Instant.parse("2021-10-30T00:00:00.00Z")
-      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+    "when correct previous return is true" - {
 
-      val userAnswersWithoutEmail =
-        emptyUserAnswers.copy().set(EmailConfirmationQuery, false).success.value
+      "must return OK and the correct view for a GET with email confirmation" in {
+        val instant = Instant.parse("2021-10-30T00:00:00.00Z")
+        val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-      val app = applicationBuilder(Some(userAnswersWithoutEmail), clock = Some(stubClock))
-        .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-        ).build()
+        val userAnswersWithEmail =
+          emptyUserAnswers
+            .set(EmailConfirmationQuery, true).success.value
+            .set(CorrectPreviousReturnPage, true).success.value
 
-      val vatOnSales = arbitrary[BigDecimal].sample.value
+        val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+          .overrides(
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          )
+          .build()
 
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-      when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn vatOnSales
+        val vatOnSales = BigDecimal(0)
 
-      running(app) {
-        val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
 
-        val result = route(app, request).value
+        running(app) {
+          val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
 
-        val view = app.injector.instanceOf[ReturnSubmittedView]
-        val returnReference = ReturnReference(vrn, period)
-        val vatOwed = currencyFormat(vatOnSales)
-        val displayPayNow = vatOnSales > 0
+          val result = route(app, request).value
 
-        status(result) mustEqual OK
+          val view = app.injector.instanceOf[ReturnSubmittedView]
+          val returnReference = ReturnReference(vrn, period)
+          val vatOwed = currencyFormat(vatOnSales)
 
-        contentAsString(result) mustEqual
-          view(
-            period,
-            returnReference,
-            vatOwed,
-            false,
-            registration.contactDetails.emailAddress,
-            displayPayNow,
-            (vatOnSales * 100).toLong,
-            false
-          )(request, messages(app)).toString
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual
+            view(
+              period,
+              returnReference,
+              vatOwed,
+              true,
+              registration.contactDetails.emailAddress,
+              false,
+              (vatOnSales * 100).toLong,
+              false
+            )(request, messages(app)).toString
+        }
       }
-    }
 
-    "must return OK and the correct view for a GET with email confirmation and overdue return" in {
-      val instant = Instant.parse("2021-11-02T00:00:00.00Z")
-      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+      "must return OK and the correct view for a GET without email confirmation" in {
+        val instant = Instant.parse("2021-10-30T00:00:00.00Z")
+        val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-      val userAnswersWithEmail =
-        emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
+        val userAnswersWithoutEmail =
+          emptyUserAnswers
+            .set(EmailConfirmationQuery, false).success.value
+            .set(CorrectPreviousReturnPage, true).success.value
 
-      val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
-        .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[VatReturnSalesService].toInstance(vatReturnSalesService)
-        ).build()
+        val app = applicationBuilder(Some(userAnswersWithoutEmail), clock = Some(stubClock))
+          .overrides(
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          )
+          .build()
 
-      val vatOnSales = BigDecimal(100)
+        val vatOnSales = arbitrary[BigDecimal].sample.value
 
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-      when(vatReturnSalesService.getTotalVatOnSales(any())) thenReturn vatOnSales
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
 
-      running(app) {
-        val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+        running(app) {
+          val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
 
-        val result = route(app, request).value
+          val result = route(app, request).value
 
-        val view = app.injector.instanceOf[ReturnSubmittedView]
-        val returnReference = ReturnReference(vrn, period)
-        val vatOwed = currencyFormat(vatOnSales)
+          val view = app.injector.instanceOf[ReturnSubmittedView]
+          val returnReference = ReturnReference(vrn, period)
+          val vatOwed = currencyFormat(vatOnSales)
+          val displayPayNow = vatOnSales > 0
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual
-          view(
-            period,
-            returnReference,
-            vatOwed,
-            true,
-            registration.contactDetails.emailAddress,
-            true,
-            (vatOnSales * 100).toLong,
-            true
-          )(request, messages(app)).toString
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual
+            view(
+              period,
+              returnReference,
+              vatOwed,
+              false,
+              registration.contactDetails.emailAddress,
+              displayPayNow,
+              (vatOnSales * 100).toLong,
+              false
+            )(request, messages(app)).toString
+        }
       }
-    }
 
-    "must return redirect and the correct view" in {
+      "must return OK and the correct view for a GET with email confirmation and overdue return" in {
+        val instant = Instant.parse("2021-11-02T00:00:00.00Z")
+        val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-      val app = applicationBuilder(Some(emptyUserAnswers))
-        .overrides(
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[VatReturnSalesService].toInstance(vatReturnSalesService)
-        ).build()
+        val userAnswersWithEmail =
+          emptyUserAnswers
+            .set(EmailConfirmationQuery, true).success.value
+            .set(CorrectPreviousReturnPage, true).success.value
 
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+          .overrides(
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          )
+          .build()
 
-      running(app) {
-        val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+        val vatOnSales = BigDecimal(100)
 
-        val result = route(app, request).value
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
 
-        status(result) mustEqual SEE_OTHER
+        running(app) {
+          val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+
+          val result = route(app, request).value
+
+          val view = app.injector.instanceOf[ReturnSubmittedView]
+          val returnReference = ReturnReference(vrn, period)
+          val vatOwed = currencyFormat(vatOnSales)
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual
+            view(
+              period,
+              returnReference,
+              vatOwed,
+              true,
+              registration.contactDetails.emailAddress,
+              true,
+              (vatOnSales * 100).toLong,
+              true
+            )(request, messages(app)).toString
+        }
+      }
+
+      "must return redirect and the correct view" in {
+
+        val userAnswers = emptyUserAnswers
+          .set(CorrectPreviousReturnPage, true).success.value
+
+        val app = applicationBuilder(Some(userAnswers))
+          .overrides(
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          )
+          .build()
+
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        running(app) {
+          val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+        }
       }
     }
   }

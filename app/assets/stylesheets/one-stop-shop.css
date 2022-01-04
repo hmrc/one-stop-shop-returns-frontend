@@ -81,3 +81,22 @@ th.amount-left-column {
 th.payment-column {
     width: 25%;
 }
+
+td.oss-to-country {
+    width: 30%;
+}
+
+td.oss-vat-rate {
+    width: 20%;
+    text-align: right;
+}
+
+td.oss-sales-excluding-vat {
+    width: 35%;
+    text-align: right;
+}
+
+td.oss-vat {
+    width: 15%;
+    text-align: right;
+}

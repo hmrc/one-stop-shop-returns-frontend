@@ -16,10 +16,10 @@
 
 package controllers.actions
 
-import connectors.{ReturnStatusConnector, VatReturnConnector}
+import connectors.ReturnStatusConnector
 import controllers.routes
-import models.{Period, SubmissionStatus}
-import models.requests.{DataRequest, OptionalDataRequest}
+import models.SubmissionStatus
+import models.requests.DataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -36,7 +36,7 @@ class CheckSubmittedReturnsFilterImpl(connector: ReturnStatusConnector)
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     connector.listStatuses(request.registration.commencementDate) flatMap {
-      case Right(previousPeriods) => if(previousPeriods.filter(p => p.status == SubmissionStatus.Complete).nonEmpty) {
+      case Right(previousPeriods) => if(previousPeriods.exists(p => p.status == SubmissionStatus.Complete)) {
         Future.successful(None)
       } else {
         Future(Some(Redirect(routes.CheckYourAnswersController.onPageLoad(request.userAnswers.period))))

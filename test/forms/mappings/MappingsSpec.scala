@@ -16,12 +16,12 @@
 
 package forms.mappings
 
-import models.Quarter.{Q2, Q3, Q4}
+import models.Quarter.Q3
+import models.{Enumerable, Period}
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.data.{Form, FormError}
-import models.{Enumerable, Period}
 
 object MappingsSpec {
 

@@ -17,11 +17,11 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, Period, UserAnswers}
+import models.{CheckMode, Index, Mode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.corrections.{AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods, DeriveNumberOfCorrections}
+import queries.corrections.{AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods}
 
 import scala.util.Try
 

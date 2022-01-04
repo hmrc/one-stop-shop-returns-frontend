@@ -33,5 +33,4 @@ case class CorrectionPayload(
 object CorrectionPayload {
 
   implicit val format: OFormat[CorrectionPayload] = Json.format[CorrectionPayload]
-
 }

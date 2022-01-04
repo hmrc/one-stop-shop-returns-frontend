@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.VatOnSalesChoice.Standard
-import models.{CheckLoopMode, CheckMode, NormalMode, VatOnSales, VatRate}
+import models.{CheckFinalInnerLoopMode, CheckInnerLoopMode, CheckLoopMode, CheckMode, CheckSecondInnerLoopMode, CheckSecondLoopMode, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import pages.behaviours.PageBehaviours
@@ -53,6 +53,42 @@ class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
           .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(CheckLoopMode, period, index, index))
       }
     }
+
+    "must navigate in Check Second Loop mode" - {
+
+        "to VAT on sales" in {
+
+          NetValueOfSalesFromNiPage(index, index).navigate(CheckSecondLoopMode, emptyUserAnswers)
+            .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(CheckSecondLoopMode, period, index, index))
+        }
+      }
+
+    "must navigate in Check Inner Loop mode" - {
+
+        "to VAT on sales" in {
+
+          NetValueOfSalesFromNiPage(index, index).navigate(CheckInnerLoopMode, emptyUserAnswers)
+            .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(CheckInnerLoopMode, period, index, index))
+        }
+      }
+
+   "must navigate in Check Second Inner Loop mode" - {
+
+        "to VAT on sales" in {
+
+          NetValueOfSalesFromNiPage(index, index).navigate(CheckSecondInnerLoopMode, emptyUserAnswers)
+            .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(CheckSecondInnerLoopMode, period, index, index))
+        }
+      }
+
+   "must navigate in Check Final Inner Loop mode" - {
+
+        "to VAT on sales" in {
+
+          NetValueOfSalesFromNiPage(index, index).navigate(CheckFinalInnerLoopMode, emptyUserAnswers)
+            .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(CheckFinalInnerLoopMode, period, index, index))
+        }
+      }
 
     "must remove VAT on sales for the same index when set" in {
 

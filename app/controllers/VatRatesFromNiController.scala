@@ -18,11 +18,12 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromNiFormProvider
-import models.{Index, Mode, Period, VatRate}
+import models.{Index, Mode, Period, UserAnswers, VatRate, VatRateAndSales}
 import models.requests.DataRequest
 import pages.VatRatesFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import queries.{AllEuVatRateAndSalesQuery, AllNiVatRateAndSalesQuery}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
@@ -52,8 +53,7 @@ class VatRatesFromNiController @Inject()(
 
           val preparedForm = currentValue match {
             case None => form
-            case Some(value) =>
-              form.fill(value)
+            case Some(value) => form.fill(value)
           }
 
           vatRates.size match {
@@ -82,16 +82,30 @@ class VatRatesFromNiController @Inject()(
             formWithErrors =>
               BadRequest(view(formWithErrors, mode, period, index, country, checkboxItems(vatRates))).toFuture,
 
-            value =>
-              updateAndContinue(mode, index, request, value)
+            value => {
+              val existingAnswers = request.userAnswers.get(VatRatesFromNiPage(index)).getOrElse(List.empty)
+              val existingAnswersWithRemovals = existingAnswers.filter(rate => value.contains(rate))
+              val updated = existingAnswersWithRemovals ++ value.filterNot(rate => existingAnswersWithRemovals.contains(rate))
+              updateAndContinue(mode, index, request, updated)
+            }
           )
       }
   }
 
-  private def updateAndContinue(mode: Mode, index: Index, request: DataRequest[AnyContent], value: List[VatRate]): Future[Result] = {
+  def getUpdatedAnswers(countryIndex: Index, existingUserAnswers: UserAnswers, vatRates: List[VatRate]): Seq[VatRateAndSales] = {
+    val existingSales = existingUserAnswers.get(AllNiVatRateAndSalesQuery(countryIndex)).getOrElse(Seq())
+    existingSales.filter(sales => vatRates.exists(_.rate == sales.rate)) ++ vatRates.filterNot(rate => existingSales.exists(_.rate == rate.rate))
+      .map(VatRateAndSales.convert)
+  }
+
+  private def updateAndContinue(mode: Mode, index: Index, request: DataRequest[AnyContent], value: List[VatRate]) = {
     for {
-      updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromNiPage(index), value))
+      updatedAnswers <- Future.fromTry(request.userAnswers.set(
+        AllNiVatRateAndSalesQuery(index),
+        getUpdatedAnswers(index, request.userAnswers, value)))
       _ <- cc.sessionRepository.set(updatedAnswers)
-    } yield Redirect(VatRatesFromNiPage(index).navigate(mode, updatedAnswers))
+    } yield {
+      Redirect(VatRatesFromNiPage(index).navigate(mode, updatedAnswers))
+    }
   }
 }

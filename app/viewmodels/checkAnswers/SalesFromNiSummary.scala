@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, UserAnswers}
+import models.{CheckSecondLoopMode, Index, Mode, NormalMode, UserAnswers}
 import play.twirl.api.HtmlFormat
 import queries.AllSalesFromNiQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
@@ -27,9 +27,10 @@ object SalesFromNiSummary {
   def addToListRows(answers: UserAnswers, currentMode: Mode): Seq[ListItem] =
     answers.get(AllSalesFromNiQuery).getOrElse(List.empty).zipWithIndex.map {
       case (details, index) =>
+        val newMode = if(currentMode == NormalMode) CheckSecondLoopMode else currentMode
         ListItem(
           name      = HtmlFormat.escape(details.countryOfConsumption.name).toString,
-          changeUrl = routes.CheckSalesFromNiController.onPageLoad(CheckMode, answers.period, Index(index)).url,
+          changeUrl = routes.CheckSalesFromNiController.onPageLoad(newMode, answers.period, Index(index)).url,
           removeUrl = routes.DeleteSalesFromNiController.onPageLoad(currentMode, answers.period, Index(index)).url
         )
     }

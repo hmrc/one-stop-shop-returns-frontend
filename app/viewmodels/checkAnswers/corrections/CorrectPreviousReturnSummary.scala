@@ -37,6 +37,7 @@ object CorrectPreviousReturnSummary {
           actions = Seq(
             ActionItemViewModel("site.change", controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(CheckMode, answers.period).url)
               .withVisuallyHiddenText(messages("correctPreviousReturn.change.hidden"))
+              .withAttribute(("id", "change-corrections"))
           )
         )
     }

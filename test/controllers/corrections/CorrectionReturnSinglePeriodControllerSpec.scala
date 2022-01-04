@@ -22,17 +22,16 @@ import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.Quarter.Q4
 import models.SubmissionStatus.Complete
 import models.{Index, NormalMode, Period, PeriodWithStatus}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
+import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
 import views.html.corrections.CorrectionReturnSinglePeriodView
 
 import scala.concurrent.Future

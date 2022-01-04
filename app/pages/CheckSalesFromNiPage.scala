@@ -27,4 +27,7 @@ case object CheckSalesFromNiPage extends Page {
 
   override protected def navigateInCheckMode(answers: UserAnswers): Call =
     routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period)
+
+  override protected def navigateInCheckSecondLoopMode(answers: UserAnswers): Call =
+    routes.SalesFromNiListController.onPageLoad(NormalMode, answers.period)
 }

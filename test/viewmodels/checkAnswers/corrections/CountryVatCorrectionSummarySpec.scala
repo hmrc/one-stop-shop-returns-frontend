@@ -17,7 +17,6 @@
 package viewmodels.checkAnswers.corrections
 
 import base.SpecBase
-import controllers.routes
 import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, Country, NormalMode}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.Messages
@@ -33,16 +32,19 @@ class CountryVatCorrectionSummarySpec extends SpecBase {
   private val expectedActionCheckLoop = Seq(
     ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckLoopMode, period, index, index).url)
       .withVisuallyHiddenText("countryVatCorrection.change.hidden")
+      .withAttribute(("id", "change-correction-amount"))
   )
 
   private val expectedActionCheckSecondLoop = Seq(
     ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckSecondLoopMode, period, index, index).url)
       .withVisuallyHiddenText("countryVatCorrection.change.hidden")
+      .withAttribute(("id", "change-correction-amount"))
   )
 
   private val expectedActionCheckMode = Seq(
     ActionItemViewModel("site.change", controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, period, index, index).url)
       .withVisuallyHiddenText("countryVatCorrection.change.hidden")
+      .withAttribute(("id", "change-correction-amount"))
   )
 
   private val answers = completeUserAnswers.set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value

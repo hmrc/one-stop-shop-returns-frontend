@@ -16,10 +16,8 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, Index, UserAnswers}
-import pages.corrections.CorrectionReturnPeriodPage
+import models.{CheckMode, UserAnswers}
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
 import queries.corrections.AllCorrectionPeriodsQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -27,28 +25,6 @@ import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
 object CorrectionReturnPeriodSummary {
-
-  def row(answers: UserAnswers, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CorrectionReturnPeriodPage(index)).map {
-      answer =>
-
-        val value = ValueViewModel(
-          HtmlContent(
-            HtmlFormat.escape(messages(s"correctionReturnPeriod.$answer"))
-          )
-        )
-
-        SummaryListRowViewModel(
-          key = "correctionReturnPeriod.checkYourAnswersLabel",
-          value = value,
-          actions = Seq(
-            ActionItemViewModel(
-              "site.change",
-              controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(CheckMode, answers.period, index).url)
-              .withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
-          )
-        )
-    }
 
   def getAllRows(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
     val periods =
@@ -66,6 +42,7 @@ object CorrectionReturnPeriodSummary {
             controllers.corrections.routes.VatPeriodCorrectionsListController
               .onPageLoad(CheckMode, answers.period).url
           ).withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
+            .withAttribute(("id", "change-correction-periods"))
         )
       ))
     } else {

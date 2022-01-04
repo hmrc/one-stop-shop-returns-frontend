@@ -20,15 +20,14 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import forms.corrections.UndeclaredCountryCorrectionFormProvider
 import models.{Country, NormalMode}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, UndeclaredCountryCorrectionPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
 import views.html.corrections.UndeclaredCountryCorrectionView
 
 import scala.concurrent.Future

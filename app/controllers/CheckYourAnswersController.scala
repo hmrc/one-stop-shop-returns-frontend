@@ -18,17 +18,15 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.{NormalMode, Period}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
-import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.corrections.CorrectionRequest
 import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
+import models.requests.corrections.CorrectionRequest
 import models.responses.ConflictFound
 import pages.CheckYourAnswersPage
 import pages.corrections.CorrectPreviousReturnPage
@@ -36,6 +34,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import queries.EmailConfirmationQuery
 import queries.corrections.AllCorrectionPeriodsQuery
+import repositories.CachedVatReturnRepository
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import services.corrections.CorrectionService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
@@ -58,7 +57,7 @@ class CheckYourAnswersController @Inject()(
                                             auditService: AuditService,
                                             emailService: EmailService,
                                             vatReturnConnector: VatReturnConnector,
-                                            config: FrontendAppConfig
+                                            cachedVatReturnRepository: CachedVatReturnRepository
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -72,13 +71,13 @@ class CheckYourAnswersController @Inject()(
 
       val salesFromEuSummaryList = getSalesFromEuSummaryList(request)
 
-      val containsCorrections = config.correctionToggle && request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
+      val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
       val totalVatToCountries =
         service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
-      val noPaymentDueCountries = if (config.correctionToggle) {
+      val noPaymentDueCountries =
         service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
-      } else List.empty
+
       val totalVatOnSales =
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
@@ -100,7 +99,7 @@ class CheckYourAnswersController @Inject()(
                                   salesFromNiSummaryList: SummaryList,
                                   salesFromEuSummaryList: SummaryList
                                 )(implicit messages: Messages) =
-    if (config.correctionToggle && request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
+    if (request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
           CorrectPreviousReturnSummary.row(request.userAnswers),
@@ -155,7 +154,7 @@ class CheckYourAnswersController @Inject()(
       val validatedVatReturnRequest =
         vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
 
-      if (config.correctionToggle) {
+      if (request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
         val validatedCorrectionRequest =
           correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate)
 
@@ -266,6 +265,8 @@ class CheckYourAnswersController @Inject()(
         for {
           updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
           _ <- cc.sessionRepository.set(updatedAnswers)
+          _ <- cachedVatReturnRepository.clear(request.userId, period)
+
         } yield {
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
         }

@@ -20,6 +20,7 @@ import models.{Index, VatRate}
 
 import java.time.LocalDate
 import play.api.data.validation.{Constraint, Invalid, Valid}
+import utils.CurrencyFormatter
 
 trait Constraints {
 
@@ -42,6 +43,16 @@ trait Constraints {
           Valid
         } else {
           Invalid(errorKey, minimum)
+        }
+    }
+
+  protected def minimumValue(minimum: BigDecimal, errorKey: String)(implicit ev: Ordering[BigDecimal]): Constraint[BigDecimal] =
+    Constraint {
+      input =>
+        if (input >= minimum) {
+          Valid
+        } else {
+          Invalid(errorKey, CurrencyFormatter.currencyFormat(minimum))
         }
     }
 

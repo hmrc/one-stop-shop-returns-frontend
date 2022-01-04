@@ -36,6 +36,7 @@ object TotalNINetValueOfSalesSummary extends CurrencyFormatter {
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesFromNiListController.onPageLoad(CheckMode, answers.period).url)
               .withVisuallyHiddenText(messages("soldGoodsFromNi.changeNISales.hidden"))
+              .withAttribute(("id", "change-sales-excluding-vat-ni"))
           )
         )
     }
