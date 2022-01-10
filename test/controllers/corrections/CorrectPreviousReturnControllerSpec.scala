@@ -22,9 +22,10 @@ import forms.corrections.CorrectPreviousReturnFormProvider
 import models.{NormalMode, Period, PeriodWithStatus}
 import models.Quarter.{Q3, Q4}
 import models.SubmissionStatus.Complete
+import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.CorrectPreviousReturnPage
@@ -167,6 +168,35 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar wit
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must redirect to Journey Recovery for a POST when the Return Status Connector returns an Unexpected Response Status" in {
+
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
+
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .build()
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Left(UnexpectedResponseStatus(1, "Some Status"))))
+
+      running(application) {
+        val request =
+          FakeRequest(POST, correctPreviousReturnRoute)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
   }

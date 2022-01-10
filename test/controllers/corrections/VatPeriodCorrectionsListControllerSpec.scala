@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.ReturnStatusConnector
 import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.Complete
-import models.{CheckThirdLoopMode, Country, Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
+import models.{Country, Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -32,7 +32,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
-import views.html.corrections.{VatPeriodAvailableCorrectionsListView, VatPeriodCorrectionsListView}
+import views.html.corrections.VatPeriodCorrectionsListView
 
 import scala.concurrent.Future
 
