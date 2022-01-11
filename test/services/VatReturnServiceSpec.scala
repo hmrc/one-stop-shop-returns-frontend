@@ -32,7 +32,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
-import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery}
+import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, NiSalesAtVatRateQuery}
 import services.corrections.CorrectionService
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -207,7 +207,21 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromNiQuery)))
       }
 
+      "when there is a NI VAT rate with no corresponding VAT on sales at that VAT rate" in new Fixture {
 
+        private val answers =
+          emptyUserAnswers
+            .set(SoldGoodsFromNiPage, true).success.value
+            .set(CountryOfConsumptionFromNiPage(Index(0)), country1).success.value
+            .set(VatRatesFromNiPage(Index(0)), List(vatRate1, vatRate2)).success.value
+            .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), netSales1).success.value
+            .set(VatOnSalesFromNiPage(Index(0), Index(0)), vatOnSales1).success.value
+            .set(NetValueOfSalesFromNiPage(Index(0), Index(1)), netSales2).success.value
+            .set(SoldGoodsFromEuPage, false).success.value
+
+        private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(NiSalesAtVatRateQuery(Index(0),Index(1)))))
+      }
 
       "when sold goods from EU is true but there are no sales details" in new Fixture {
 

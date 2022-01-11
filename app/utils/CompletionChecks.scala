@@ -16,11 +16,13 @@
 
 package utils
 
-import models.corrections.CorrectionToCountry
+import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
 import models.requests.DataRequest
-import models.{Country, Index, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, VatRateAndSalesWithOptionalVat}
+import models.{Country, DataMissingError, Index, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, UserAnswers, ValidationResult, VatRateAndSalesWithOptionalVat}
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.mvc.{AnyContent, Result}
-import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery}
+import cats.implicits._
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import queries.{AllNiVatRateAndSalesWithOptionalVatQuery, AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiWithOptionalVatQuery, AllSalesToEuWithOptionalVatQuery}
 
 import scala.concurrent.Future
@@ -62,7 +64,17 @@ trait CompletionChecks {
     }
   }
 
+
+  // validation methods,....
+
+
   // Corrections queries
+
+  def getIncompleteCorrectionToCountry(periodIndex: Index, countryIndex: Index)(implicit request: DataRequest[AnyContent]): Option[CorrectionToCountry] = {
+    request.userAnswers
+      .get(CorrectionToCountryQuery(periodIndex, countryIndex))
+      .find(_.countryVatCorrection.isEmpty)
+  }
 
   def getIncompleteCorrections(periodIndex: Index)(implicit request: DataRequest[AnyContent]): List[CorrectionToCountry] = {
     request.userAnswers

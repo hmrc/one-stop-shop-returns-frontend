@@ -43,6 +43,7 @@ class SalesFromNiListController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+
       getNumberOfSalesFromNi {
         number =>
 
