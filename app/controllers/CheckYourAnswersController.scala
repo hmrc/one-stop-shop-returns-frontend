@@ -35,6 +35,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import queries._
+import repositories.CachedVatReturnRepository
 import services.corrections.CorrectionService
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
@@ -174,8 +175,7 @@ class CheckYourAnswersController @Inject()(
 
   def redirectToMissingData(errorList: List[ValidationError], period: Period): Option[Call] = {
     logMissingData(errorList)
-    val redirect = errorList.headOption.flatMap(error => getRedirect(error, period))
-    redirect
+    errorList.headOption.flatMap(error => getRedirect(error, period))
   }
 
   def onSubmit(period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period).async {

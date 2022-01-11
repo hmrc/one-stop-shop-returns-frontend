@@ -213,7 +213,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .build()
 
           running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, false).url)
             val result = route(app, request).value
 
             status(result) mustEqual SEE_OTHER
@@ -248,7 +248,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .build()
 
           running(application) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period, false).url)
             val result = route(application, request).value
             val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
             val expectedAuditEvent = ReturnsAuditModel.build(
@@ -297,7 +297,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               ).build()
 
           running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, false).url)
             val result = route(app, request).value
 
             status(result) mustEqual SEE_OTHER
@@ -337,7 +337,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .build()
 
           running(application) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period, false).url)
             val result = route(application, request).value
             val dataRequest = DataRequest(request, testCredentials, vrn, registration, answers)
             val expectedAuditEvent = ReturnsAuditModel.build(
@@ -387,7 +387,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         doNothing().when(auditService).audit(any())(any(), any())
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
           val result = route(app, request).value
           val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
           val expectedAuditEvent =
@@ -422,7 +422,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         doNothing().when(auditService).audit(any())(any(), any())
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
           val result = route(app, request).value
           val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
           val expectedAuditEvent =
@@ -435,7 +435,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       }
     }
 
-    "when the user has not answered all necessary questions" - {
+    "when the user has not answered any  questions" - {
 
       "must redirect to Journey Recovery" in {
 
@@ -448,7 +448,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         running(app) {
 
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
           val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
@@ -493,7 +493,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       val answers = completeUserAnswers
 
-      when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
       when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
         .thenReturn(Future.successful(EMAIL_ACCEPTED))
       when(mockCachedVatReturnRepository.clear(any(), any())) thenReturn Future.successful(true)
@@ -507,13 +507,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       running(app) {
 
-        val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
 
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
-        verify(vatReturnConnector, times(1)).submit(any())(any())
+        verify(vatReturnConnector, times(1)).submit(any[VatReturnRequest]())(any())
         verify(mockCachedVatReturnRepository, times(1)).clear(eqTo(answers.userId), eqTo(period))
       }
     }

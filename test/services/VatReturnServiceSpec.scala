@@ -32,7 +32,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
-import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, NiSalesAtVatRateQuery}
+import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery, NiSalesAtVatRateQuery, VatOnSalesFromEuQuery, VatOnSalesFromNiQuery}
 import services.corrections.CorrectionService
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -220,7 +220,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(SoldGoodsFromEuPage, false).success.value
 
         private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
-        result mustEqual Invalid(NonEmptyChain(DataMissingError(NiSalesAtVatRateQuery(Index(0),Index(1)))))
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(VatOnSalesFromNiQuery(Index(0),Index(1)))))
       }
 
       "when sold goods from EU is true but there are no sales details" in new Fixture {
@@ -243,7 +243,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(CountryOfSaleFromEuPage(Index(0)), country1).success.value
 
         private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
-        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesToEuQuery(Index(0)))))
       }
 
       "when there is a country of sale and country of consumption from EU, but no other details" in new Fixture {
@@ -256,7 +256,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), country2).success.value
 
         private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
-        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(VatRatesFromEuPage(Index(0), Index(0)))))
       }
 
       "when there is a VAT rate from the EU with no corresponding net value of sales" in new Fixture {
@@ -286,7 +286,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(NetValueOfSalesFromEuPage(Index(0), Index(0), Index(0)), netSales1).success.value
 
         private val result = service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails)
-        result mustEqual Invalid(NonEmptyChain(DataMissingError(AllSalesFromEuQuery)))
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(VatOnSalesFromEuQuery(Index(0), Index(0), Index(0)))))
       }
     }
   }
