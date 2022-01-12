@@ -16,16 +16,21 @@
 
 package controllers
 
+import cats.data.Validated.{Invalid, Valid}
 import com.typesafe.play.cachecontrol.Seconds
 import config.FrontendAppConfig
+import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import controllers.actions._
 import formats.Format.dateTimeFormatter
+import logging.Logging
+import models.responses.ConflictFound
 
 import javax.inject.Inject
-import models.Period
+import models.{Period, UserAnswers}
 import pages.SavedProgressPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.SaveForLaterService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SavedProgressView
 
@@ -37,20 +42,39 @@ import scala.concurrent.{ExecutionContext, Future}
 class SavedProgressController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: SavedProgressView,
+                                       service: SaveForLaterService,
+                                       connector: SaveForLaterConnector,
                                        appConfig: FrontendAppConfig
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport  with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(period: Period, continueUrl: String): Action[AnyContent] = cc.authAndGetDataSimple(period).async {
     implicit request =>
-      val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.cacheTtl, ChronoUnit.SECONDS)
+      val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.saveForLaterTtl, ChronoUnit.DAYS)
         .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
-      for {
-        updatedAnswers <- Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl))
-        _              <- cc.sessionRepository.set(updatedAnswers)
-      } yield{
-        Ok(view(period, answersExpiry, continueUrl))
+      Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl)).flatMap {
+        updatedAnswers =>
+          val validatedS4LRequest = service.fromUserAnswers(updatedAnswers, request.vrn, period)
+          validatedS4LRequest match {
+            case Valid(s4LRequest) =>
+              connector.submit(s4LRequest).flatMap {
+                case Right(answers: SavedUserAnswers) =>
+                  Future.successful(Ok(view(period, answersExpiry, continueUrl)))
+                case Left(ConflictFound) =>
+                  Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
+                case Left(e) =>
+                  logger.error(s"Unexpected result on submit: ${e.toString}")
+                  Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+              }
+            case Invalid(errors) =>
+              val errorList = errors.toChain.toList
+              val errorMessages = errorList.map(_.errorMessage).mkString("\n")
+              logger.error(s"Unable to save user answers: $errorMessages")
+
+              Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+          }
+
       }
   }
 }
