@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,10 @@ object VatReturnHttpParser extends Logging {
               Left(InvalidJson)
           }
         case NOT_FOUND =>
-          logger.warn("Received NotFound from vat return")
+          logger.warn("Received NotFound for vat return")
           Left(NotFound)
         case CONFLICT =>
-          logger.warn("Received NotFound from vat return")
+          logger.warn("Received Conflict found for vat return")
           Left(ConflictFound)
         case status   =>
           logger.warn("Received unexpected error from vat return")

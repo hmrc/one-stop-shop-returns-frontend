@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def getData: DataRetrievalActionProvider
   def requireData: DataRequiredAction
   def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
+  def checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -45,7 +46,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     auth andThen getRegistration
 
   def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
-    auth andThen getRegistration andThen getData(period) andThen checkCommencementDate() andThen checkReturn(period)
+    auth andThen getRegistration andThen getData(period) andThen checkCommencementDate() andThen checkReturn(period) andThen checkMostOverdueReturn(period)
 
   def authAndGetData(period: Period): ActionBuilder[DataRequest, AnyContent] =
     authAndGetOptionalData(period) andThen requireData
@@ -71,5 +72,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                checkReturn: CheckReturnsFilterProvider,
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,
-                                                               requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
+                                                               requirePreviousReturns:  CheckSubmittedReturnsFilterProvider,
+                                                               checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider
                                                              ) extends AuthenticatedControllerComponents

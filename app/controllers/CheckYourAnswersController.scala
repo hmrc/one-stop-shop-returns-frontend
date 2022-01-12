@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import queries.EmailConfirmationQuery
 import queries.corrections.AllCorrectionPeriodsQuery
+import repositories.CachedVatReturnRepository
 import services.corrections.CorrectionService
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
@@ -56,6 +57,7 @@ class CheckYourAnswersController @Inject()(
                                             auditService: AuditService,
                                             emailService: EmailService,
                                             vatReturnConnector: VatReturnConnector,
+                                            cachedVatReturnRepository: CachedVatReturnRepository
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -264,6 +266,8 @@ class CheckYourAnswersController @Inject()(
         for {
           updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
           _ <- cc.sessionRepository.set(updatedAnswers)
+          _ <- cachedVatReturnRepository.clear(request.userId, period)
+
         } yield {
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
         }

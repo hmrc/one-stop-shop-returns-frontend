@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package generators
 import models.Index
 import org.scalacheck.Arbitrary
 import pages._
-import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage, RemovePeriodCorrectionPage, UndeclaredCountryCorrectionPage, VatCorrectionsListPage, VatPayableForCountryPage, VatPeriodCorrectionsListPage}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage, RemoveCountryCorrectionPage, RemovePeriodCorrectionPage, UndeclaredCountryCorrectionPage, VatCorrectionsListPage, VatPeriodCorrectionsListPage}
 
 trait PageGenerators {
 

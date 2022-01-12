@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,9 @@ import controllers.routes
 import models.requests.OptionalDataRequest
 import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
@@ -31,59 +32,106 @@ import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
+import repositories.{CachedVatReturnRepository, CachedVatReturnWrapper}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  class Harness(connector: VatReturnConnector) extends CheckReturnsFilterImpl(period, connector) {
+  class Harness(repository: CachedVatReturnRepository, connector: VatReturnConnector) extends CheckReturnsFilterImpl(period, repository, connector) {
     def callFilter(request: OptionalDataRequest[_]): Future[Option[Result]] = filter(request)
   }
 
   private val mockConnector = mock[VatReturnConnector]
+  private val mockRepository = mock[CachedVatReturnRepository]
+  private val cachedVatReturnWrapper = CachedVatReturnWrapper(userAnswersId, period, Some(completeVatReturn), arbitraryInstant)
+  private val emptyCachedVatReturnWrapper = CachedVatReturnWrapper(userAnswersId, period, None, arbitraryInstant)
+
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockConnector)
+    Mockito.reset(mockConnector, mockRepository)
   }
 
   ".filter" - {
 
-    "must return None when an existing return is not found" in {
+    "when there is no vat return in the repository" - {
 
-      when(mockConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+      "and a vat return can be retrieved from the backend" - {
 
-      val app = applicationBuilder(None)
-        .overrides(bind[VatReturnConnector].toInstance(mockConnector))
-        .build()
+        "must save the vat return to the repository and return Right" in {
 
-      running(app) {
-        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(emptyUserAnswers))
-        val controller = new Harness(mockConnector)
+          when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(None)
+          when(mockRepository.set(any(), any(), any())) thenReturn Future.successful(true)
+          when(mockConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
 
-        val result = controller.callFilter(request).futureValue
+          val app = applicationBuilder(None)
+            .overrides(bind[CachedVatReturnRepository].toInstance(mockRepository))
+            .overrides(bind[VatReturnConnector].toInstance(mockConnector))
+            .build()
 
-        result must not be defined
+          running(app) {
+            val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(emptyUserAnswers))
+            val controller = new Harness(mockRepository, mockConnector)
+
+            val result = controller.callFilter(request).futureValue
+
+            result.value mustEqual Redirect(routes.PreviousReturnController.onPageLoad(period))
+
+            verify(mockRepository, times(1)).set(eqTo(userAnswersId), eqTo(period), eqTo(Some(completeVatReturn)))
+            verify(mockRepository, times(1)).get(eqTo(userAnswersId), eqTo(period))
+          }
+        }
+
+      }
+
+      "and a vat return cannot be retrieved from the backend" - {
+
+        "must return an empty Cached Vat Return Wrapper when an existing vat return is not found in the backend" in {
+
+          when(mockConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+          when(mockRepository.set(any(), any(), any())) thenReturn Future.successful(true)
+          when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(Some(emptyCachedVatReturnWrapper))
+
+
+          val app = applicationBuilder(None)
+            .overrides(bind[VatReturnConnector].toInstance(mockConnector))
+            .overrides(bind[CachedVatReturnRepository].toInstance(mockRepository))
+            .build()
+
+          running(app) {
+            val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(emptyUserAnswers))
+            val controller = new Harness(mockRepository, mockConnector)
+
+            val result = controller.callFilter(request).futureValue
+
+            result must not be defined
+
+            verify(mockRepository, times(1)).get(eqTo(userAnswersId), eqTo(period))
+          }
+        }
       }
     }
 
-    "must redirect to Vat Return Details page when an existing return is found" in {
+    "when there is a vat return in the repository" - {
 
-      when(mockConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
+      "must redirect to Vat Return Details page when an existing return is found" in {
 
-      val app = applicationBuilder(None)
-        .overrides(bind[VatReturnConnector].toInstance(mockConnector))
-        .build()
+        when(mockRepository.get(userAnswersId, period)) thenReturn Future.successful(Some(cachedVatReturnWrapper))
 
-      running(app) {
-        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(emptyUserAnswers))
-        val controller = new Harness(mockConnector)
+        val app = applicationBuilder(None)
+          .overrides(bind[CachedVatReturnRepository].toInstance(mockRepository))
+          .build()
 
-        val result = controller.callFilter(request).futureValue
+        running(app) {
+          val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(emptyUserAnswers))
+          val controller = new Harness(mockRepository, mockConnector)
 
-        result.value mustEqual Redirect(routes.PreviousReturnController.onPageLoad(period))
+          val result = controller.callFilter(request).futureValue
+
+          result.value mustEqual Redirect(routes.PreviousReturnController.onPageLoad(period))
+        }
       }
     }
   }
-
 }
