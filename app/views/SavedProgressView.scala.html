@@ -28,7 +28,7 @@
 
      @govukPanel(Panel(
       title = Text(messages("savedProgress.title")),
-      content = Text(messages("savedProgress.subtitle", answersExpiry))
+      content = HtmlContent(messages("savedProgress.subtitle", answersExpiry))
      ))
 
     <p class="govuk-body">@messages("savedProgress.return.due", period.paymentDeadlineDisplay)</p>

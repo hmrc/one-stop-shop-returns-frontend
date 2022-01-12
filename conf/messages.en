@@ -446,7 +446,7 @@ vatPayableForCountry.hint = We''ve calculated this total based on your most rece
 vatPayableForCountry.error.required = Select yes if the total VAT payable for {0} is {1}
 
 savedProgress.title = We have saved your progress
-savedProgress.subtitle = We''ll keep your information until {0}
+savedProgress.subtitle = We''ll keep your information until <br>{0}
 savedProgress.return.due = This return is due by {0}.
 savedProgress.nextSteps = What happens next
 savedProgress.listStart = You can:
