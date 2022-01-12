@@ -38,7 +38,7 @@
         <div class="govuk-button-group">
 
             <a class="govuk-button" href="@controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, period, periodIndex)" id="continue">
-                @messages("site.saveAndContinue")
+                @messages("site.continue")
             </a>
 
     <a id="saveProgress" role="button" href="@routes.SavedProgressController.onPageLoad(period, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(mode, period, periodIndex, countryIndex).url)" class="govuk-button govuk-button--secondary" data-module="govuk-button">

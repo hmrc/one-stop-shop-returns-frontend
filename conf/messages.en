@@ -6,7 +6,6 @@ site.change = Change
 site.no = No
 site.yes = Yes
 site.continue = Continue
-site.saveAndContinue = Save and continue
 site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
@@ -456,7 +455,7 @@ savedProgress.your.account = return to your account
 savedProgress.sign.out = sign out and come back later
 savedProgress.heading = savedProgress
 savedProgress.sign.in = If you sign out, you must sign back into your <a href="{0}">Government Gateway</a> to continue.
-saveProgress.button = Come back later
+saveProgress.button = Save and come back later
 yourAccount.return.inProgress = Your return for {0} is in progress
 yourAccount.return.inProgress.due = It is due by {0}
 
