@@ -20,13 +20,14 @@ import base.SpecBase
 import cats.data.Validated.Valid
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
+import controllers.corrections.{routes => correctionsRoutes}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
-import models.{Country, NormalMode, TotalVatToCountry}
+import models.{CheckMode, Country, Index, NormalMode, Period, TotalVatToCountry, VatRate, VatRateType}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -35,7 +36,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
-import pages.{CheckYourAnswersPage, SoldGoodsFromEuPage, SoldGoodsFromNiPage}
+import pages._
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -45,6 +46,7 @@ import services.corrections.CorrectionService
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import viewmodels.govuk.SummaryListFluency
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with SummaryListFluency with BeforeAndAfterEach {
@@ -515,6 +517,249 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
         verify(vatReturnConnector, times(1)).submit(any[VatReturnRequest]())(any())
         verify(mockCachedVatReturnRepository, times(1)).clear(eqTo(answers.userId), eqTo(period))
+      }
+    }
+
+    "when the user has not answered" - {
+
+      "a question but the missing data prompt has not been shown, must refresh page" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, false).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad(period).url
+        }
+      }
+
+      "country of consumption from NI must redirect to CountryOfConsumptionFromNiController" in {
+
+        val answers = emptyUserAnswers
+            .set(SoldGoodsFromNiPage, true).success.value
+            .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, period, Index(0)).url
+        }
+      }
+
+      "vat rates from NI, must redirect to VatRatesFromNiController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(CountryOfConsumptionFromNiPage(Index(0)), Country.euCountries.head).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatRatesFromNiController.onPageLoad(CheckMode, period, Index(0)).url
+        }
+      }
+
+      "net value of sales from NI must redirect to NetValueOfSalesFromNiController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(CountryOfConsumptionFromNiPage(Index(0)), Country.euCountries.head).success.value
+          .set(VatRatesFromNiPage(Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now() ))).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "vat on sales from NI must redirect to VatOnSalesFromNiController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(CountryOfConsumptionFromNiPage(Index(0)), Country.euCountries.head).success.value
+          .set(VatRatesFromNiPage(Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now() ))).success.value
+          .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), BigDecimal(2000.0)).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatOnSalesFromNiController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "country of sale from EU must redirect to CountryOfSaleFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, period, Index(0)).url
+        }
+      }
+
+      "country of consumption from EU must redirect to CountryOfConsumptionFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(CountryOfSaleFromEuPage(Index(0)), Country.euCountries.head).success.value
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "vat rates from EU must redirect to VatRatesFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(CountryOfSaleFromEuPage(Index(0)), Country.euCountries.head).success.value
+          .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), Country.euCountries.tail.head).success.value
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatRatesFromEuController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "net value of sales from EU must redirect to NetValueOfSalesFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(CountryOfSaleFromEuPage(Index(0)), Country.euCountries.head).success.value
+          .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), Country.euCountries.tail.head).success.value
+          .set(VatRatesFromEuPage(Index(0), Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now()))).success.value
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, period, Index(0), Index(0), Index(0)).url
+        }
+      }
+
+      "vat charged on sales from EU must redirect to VatOnSalesFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(CountryOfSaleFromEuPage(Index(0)), Country.euCountries.head).success.value
+          .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), Country.euCountries.tail.head).success.value
+          .set(VatRatesFromEuPage(Index(0), Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now()))).success.value
+          .set(NetValueOfSalesFromEuPage(Index(0), Index(0), Index(0)), BigDecimal(20000.0)).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatOnSalesFromEuController.onPageLoad(CheckMode, period, Index(0), Index(0), Index(0)).url
+        }
+      }
+
+      "period to correct must redirect to CorrectionReturnPeriodController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+          .set(CorrectPreviousReturnPage, true).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual correctionsRoutes.CorrectionReturnPeriodController.onPageLoad(CheckMode, period, Index(0)).url
+        }
+      }
+
+      "country of correction must redirect to CorrectionCountryController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+          .set(CorrectPreviousReturnPage, true).success.value
+          .set(CorrectionReturnPeriodPage(Index(0)), Period("2022", "Q1").get).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual correctionsRoutes.CorrectionCountryController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "amount of correction must redirect to CountryVatCorrectionController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+          .set(CorrectPreviousReturnPage, true).success.value
+          .set(CorrectionReturnPeriodPage(Index(0)), Period("2022", "Q1").get).success.value
+          .set(CorrectionCountryPage(Index(0), Index(0)), Country.euCountries.head).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
       }
     }
   }
