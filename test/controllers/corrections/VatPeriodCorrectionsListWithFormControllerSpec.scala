@@ -199,7 +199,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         .build()
 
       running(application) {
-        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period).url)
+        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period, false).url)
 
         val result = route(application, request).value
         status(result) mustEqual SEE_OTHER
@@ -217,7 +217,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         .build()
 
       running(application) {
-        implicit val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period).url)
+        implicit val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period, false).url)
         val result = route(application, request).value
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
