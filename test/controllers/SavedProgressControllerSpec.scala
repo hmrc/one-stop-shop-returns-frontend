@@ -65,8 +65,7 @@ class SavedProgressControllerSpec extends SpecBase {
       val savedAnswersRequest = SaveForLaterRequest(
         vrn,
         period,
-        Json.toJson("hello"),
-        instantDate
+        Json.toJson("hello")
       )
 
       when(mockAppConfig.cacheTtl) thenReturn 1

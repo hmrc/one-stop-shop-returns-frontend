@@ -18,8 +18,10 @@ package connectors
 
 import config.Service
 import connectors.SaveForLaterHttpParser.{SaveForLaterReads, SaveForLaterResponse}
+import models.Period
 import models.requests.SaveForLaterRequest
 import play.api.Configuration
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
 import javax.inject.Inject
@@ -35,4 +37,11 @@ class SaveForLaterConnector @Inject()(config: Configuration, httpClient: HttpCli
 
     httpClient.POST[SaveForLaterRequest, SaveForLaterResponse](url, s4lRequest)
   }
+
+  def get(vrn: Vrn, period: Period)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
+    val url = s"$baseUrl/save-for-later/$vrn/$period"
+
+    httpClient.GET[SaveForLaterResponse](url)
+  }
+
 }

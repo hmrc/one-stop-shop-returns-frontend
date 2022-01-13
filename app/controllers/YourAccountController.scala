@@ -20,10 +20,9 @@ import connectors.ReturnStatusConnector
 import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.{PeriodWithStatus, SubmissionStatus}
+import models.SubmissionStatus
 import models.financialdata.VatReturnWithFinancialData
 import models.requests.RegistrationRequest
-import pages.SavedProgressPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository

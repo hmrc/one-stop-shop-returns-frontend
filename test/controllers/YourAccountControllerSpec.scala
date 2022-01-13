@@ -32,7 +32,7 @@ import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{SavedProgressPage, SoldGoodsFromNiPage}
+import pages.SavedProgressPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
