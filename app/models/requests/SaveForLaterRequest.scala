@@ -26,8 +26,7 @@ import java.time.{Instant, LocalDate}
 case class SaveForLaterRequest(
                              vrn: Vrn,
                              period: Period,
-                             data: JsValue,
-                             lastUpdated: Instant
+                             data: JsValue
                            )
 
 object SaveForLaterRequest {
