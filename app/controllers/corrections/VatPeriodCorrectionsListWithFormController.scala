@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,27 +107,28 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
               Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
             }
 
+          if(allPeriods.isEmpty) {
+            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+          } else {
+
             val completedCorrectionPeriods: List[Period] = request.userAnswers
               .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
 
             val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
             val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
 
-            if(uncompletedCorrectionPeriods.isEmpty) {
-              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
+            if (uncompletedCorrectionPeriods.isEmpty) {
+              Future.successful(Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period)))
             } else {
               form.bindFromRequest().fold(
-                formWithErrors => BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriodsModel,List.empty )),
-                value => {
-                   Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, value))
-                }
+                formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, period, completedCorrectionPeriodsModel))),
+                value => Future.successful(Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, value)))
               )
             }
-          case Left(value) =>
-            logger.error(s"there was an error $value")
-            throw new Exception(value.toString)
-        }
+          }
+        case Left(value) =>
+          logger.error(s"there was an error $value")
+          throw new Exception(value.toString)
       }
-
   }
 }
