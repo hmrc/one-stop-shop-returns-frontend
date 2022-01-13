@@ -16,11 +16,11 @@
 
 package controllers
 
-import connectors.ReturnStatusConnector
+import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.SubmissionStatus
+import models.{Period, SubmissionStatus}
 import models.financialdata.VatReturnWithFinancialData
 import models.requests.RegistrationRequest
 import play.api.i18n.I18nSupport
@@ -38,6 +38,7 @@ class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
+                                       saveForLaterConnector: SaveForLaterConnector,
                                        financialDataService: FinancialDataService,
                                        vatReturnSalesService: VatReturnSalesService,
                                        view: IndexView,
@@ -64,43 +65,119 @@ class YourAccountController @Inject()(
             .filter(p => p.status == SubmissionStatus.Due || p.status == SubmissionStatus.Overdue).
             sortBy(_.period.firstDay.toEpochDay)
 
-             sortedPeriodsToSubmit.headOption.map(p => sessionRepository.get(request.userId, p.period)).getOrElse(Future.successful(None))
-               .map( answers =>
-                Ok(view(
-                  request.registration.registeredCompanyName,
-                  request.vrn.vrn,
-                  availablePeriodsWithStatus
-                    .filter(_.status == SubmissionStatus.Overdue)
-                    .map(_.period),
-                  availablePeriodsWithStatus
-                    .find(_.status == SubmissionStatus.Due)
-                    .map(_.period),
-                  duePeriodsWithOutstandingAmounts,
-                  overduePeriodsWithOutstandingAmounts,
-                  filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
-                  periodInProgress = answers.map(_.period)
-                )))
+          sortedPeriodsToSubmit.headOption.map{
+            p =>
+              for{
+                saved4Later <- saveForLaterConnector.get(p.period)
+                savedInSession <- sessionRepository.get(request.userId, p.period)
+              } yield{
+                (saved4Later, savedInSession) match {
+                  case (_, Some(_))| (Right(Some(_)), _) =>
+                    Ok(view(
+                      request.registration.registeredCompanyName,
+                      request.vrn.vrn,
+                      availablePeriodsWithStatus
+                        .filter(_.status == SubmissionStatus.Overdue)
+                        .map(_.period),
+                      availablePeriodsWithStatus
+                        .find(_.status == SubmissionStatus.Due)
+                        .map(_.period),
+                      duePeriodsWithOutstandingAmounts,
+                      overduePeriodsWithOutstandingAmounts,
+                      filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
+                      periodInProgress = Some(p.period)
+                    ))
+                  case (_, _) => Ok(view(
+                    request.registration.registeredCompanyName,
+                    request.vrn.vrn,
+                    availablePeriodsWithStatus
+                      .filter(_.status == SubmissionStatus.Overdue)
+                      .map(_.period),
+                    availablePeriodsWithStatus
+                      .find(_.status == SubmissionStatus.Due)
+                      .map(_.period),
+                    duePeriodsWithOutstandingAmounts,
+                    overduePeriodsWithOutstandingAmounts,
+                    filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
+                    periodInProgress = None
+                  ))
+                }
+              }
+          }.getOrElse(
+            Future.successful(Ok(view(
+              request.registration.registeredCompanyName,
+              request.vrn.vrn,
+              availablePeriodsWithStatus
+                .filter(_.status == SubmissionStatus.Overdue)
+                .map(_.period),
+              availablePeriodsWithStatus
+                .find(_.status == SubmissionStatus.Due)
+                .map(_.period),
+              duePeriodsWithOutstandingAmounts,
+              overduePeriodsWithOutstandingAmounts,
+              filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
+              periodInProgress = None
+            )))
+          )
         case (Right(availablePeriodsWithStatus), Left(error)) =>
           logger.warn(s"There was an error with getting payment information $error")
           val sortedPeriodsToSubmit = availablePeriodsWithStatus
             .filter(p => p.status == SubmissionStatus.Due || p.status == SubmissionStatus.Overdue)
             .sortBy(_.period.firstDay.toEpochDay)
-          sortedPeriodsToSubmit.headOption.map(p => sessionRepository.get(request.userId, p.period)).getOrElse(Future.successful(None))
-            .map( answers =>
-              Ok(view(
-                request.registration.registeredCompanyName,
-                request.vrn.vrn,
-                availablePeriodsWithStatus
-                  .filter(_.status == SubmissionStatus.Overdue)
-                  .map(_.period),
-                availablePeriodsWithStatus
-                  .find(_.status == SubmissionStatus.Due)
-                  .map(_.period),
-                Seq.empty,
-                Seq.empty,
-                paymentError = true,
-                periodInProgress = answers.map(_.period)
-              )))
+          sortedPeriodsToSubmit.headOption.map{
+            p =>
+              for{
+                saved4Later <- saveForLaterConnector.get(p.period)
+                savedInSession <- sessionRepository.get(request.userId, p.period)
+              } yield{
+                (saved4Later, savedInSession) match {
+                  case (_, Some(_))| (Right(Some(_)), _) =>
+                    Ok(view(
+                      request.registration.registeredCompanyName,
+                      request.vrn.vrn,
+                      availablePeriodsWithStatus
+                        .filter(_.status == SubmissionStatus.Overdue)
+                        .map(_.period),
+                      availablePeriodsWithStatus
+                        .find(_.status == SubmissionStatus.Due)
+                        .map(_.period),
+                      Seq.empty,
+                      Seq.empty,
+                      paymentError = true,
+                      periodInProgress = Some(p.period)
+                    ))
+                  case (_, _) => Ok(view(
+                    request.registration.registeredCompanyName,
+                    request.vrn.vrn,
+                    availablePeriodsWithStatus
+                      .filter(_.status == SubmissionStatus.Overdue)
+                      .map(_.period),
+                    availablePeriodsWithStatus
+                      .find(_.status == SubmissionStatus.Due)
+                      .map(_.period),
+                    Seq.empty,
+                    Seq.empty,
+                    paymentError = true,
+                    periodInProgress = None
+                  ))
+                }
+              }
+          }.getOrElse(
+            Future.successful(Ok(view(
+              request.registration.registeredCompanyName,
+              request.vrn.vrn,
+              availablePeriodsWithStatus
+                .filter(_.status == SubmissionStatus.Overdue)
+                .map(_.period),
+              availablePeriodsWithStatus
+                .find(_.status == SubmissionStatus.Due)
+                .map(_.period),
+              Seq.empty,
+              Seq.empty,
+              paymentError = true,
+              periodInProgress = None
+            )))
+          )
         case (Left(error), Left(error2)) =>
           logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
           throw new Exception(error.toString)
@@ -135,5 +212,20 @@ class YourAccountController @Inject()(
       vatReturnsWithFinancialData <- financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate)
     } yield (availablePeriodsWithStatus, vatReturnsWithFinancialData)
   }
+
+//  private def getSavedAnswers(period: Period)(implicit request: RegistrationRequest[AnyContent] ) = {
+//    saveForLaterConnector.get(period).flatMap{
+//      s4LaterResponse =>
+//        s4LaterResponse match {
+//          case Right(savedAnswers) =>
+//            for{
+//              updatedAnswers <- request.
+//            }
+//        }
+//    }
+//    for {
+//      savedAnswers <- saveForLaterConnector.get(period)
+//    } yield (savedAnswers)
+//  }
 
 }

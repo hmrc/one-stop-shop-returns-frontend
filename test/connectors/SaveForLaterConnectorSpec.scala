@@ -107,12 +107,12 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[SaveForLaterConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/${vrn}/${period.toString}"))
+          get(urlEqualTo(s"$url/${period.toString}"))
           .willReturn(
             aResponse().withStatus(OK).withBody(responseJson.toString())
           ))
 
-        connector.get(vrn, period).futureValue mustBe Right(savedUserAnswers)
+        connector.get(period).futureValue mustBe Right(savedUserAnswers)
       }
     }
 
@@ -122,12 +122,12 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[SaveForLaterConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/${vrn}/${period.toString}"))
+          get(urlEqualTo(s"$url/${period.toString}"))
             .willReturn(
               aResponse().withStatus(NOT_FOUND)
             ))
 
-        connector.get(vrn, period).futureValue mustBe Left(NotFound)
+        connector.get(period).futureValue mustBe Left(NotFound)
       }
     }
   }

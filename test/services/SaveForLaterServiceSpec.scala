@@ -48,18 +48,18 @@ class SaveForLaterServiceSpec extends SpecBase with MockitoSugar with BeforeAndA
       }
   }
 
-  ".get" - {
-
-    "must return a " in {
-
-      val answers =
-        emptyUserAnswers
-          .set(SoldGoodsFromNiPage, false).success.value
-          .set(SoldGoodsFromEuPage, false).success.value
-
-      val expectedResult = SaveForLaterRequest(vrn, period, answers.data)
-
-      mockSaveForLaterService.get(answers, vrn, period) mustEqual Valid(expectedResult)
-    }
-  }
+//  ".get" - {
+//
+//    "must return a " in {
+//
+//      val answers =
+//        emptyUserAnswers
+//          .set(SoldGoodsFromNiPage, false).success.value
+//          .set(SoldGoodsFromEuPage, false).success.value
+//
+//      val expectedResult = SaveForLaterRequest(vrn, period, answers.data)
+//
+//      mockSaveForLaterService.get(answers, vrn, period) mustEqual Valid(expectedResult)
+//    }
+//  }
 }

@@ -30,21 +30,21 @@ import java.time.Instant
 
 object SaveForLaterHttpParser extends Logging {
 
-  type SaveForLaterResponse = Either[ErrorResponse, SavedUserAnswers]
+  type SaveForLaterResponse = Either[ErrorResponse, Option[SavedUserAnswers]]
 
   implicit object SaveForLaterReads extends HttpReads[SaveForLaterResponse] {
     override def read(method: String, url: String, response: HttpResponse): SaveForLaterResponse = {
       response.status match {
         case OK | CREATED =>
           response.json.validate[SavedUserAnswers] match {
-            case JsSuccess(answers, _) => Right(answers)
+            case JsSuccess(answers, _) => Right(Some(answers))
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
               Left(InvalidJson)
           }
         case NOT_FOUND =>
           logger.warn("Received NotFound for saved user answers")
-          Left(NotFound)
+          Right(None)
         case CONFLICT =>
           logger.warn("Received Conflict found for saved user answers")
           Left(ConflictFound)
