@@ -21,7 +21,7 @@ import models.{Period, UserAnswers}
 import models.domain.VatReturn
 import models.responses._
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json, OFormat}
+import play.api.libs.json.{JsError, JsObject, JsSuccess, JsValue, Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
@@ -59,7 +59,7 @@ object SaveForLaterHttpParser extends Logging {
 case class SavedUserAnswers(
                              vrn: Vrn,
                              period: Period,
-                             data: JsValue,
+                             data: JsObject,
                              lastUpdated: Instant
                            )
 
