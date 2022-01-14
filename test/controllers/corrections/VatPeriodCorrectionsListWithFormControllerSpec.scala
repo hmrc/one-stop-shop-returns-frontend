@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           }
         }
 
-        "and there are no uncompleted correction periods must redirect to page without form"  in {
+        "and there are no uncompleted correction periods must redirect to page without form" in {
 
           when(mockReturnStatusConnector.listStatuses(any())(any()))
             .thenReturn(getStatusResponse(allPeriods))
@@ -186,6 +186,41 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
             redirectLocation(result).value mustEqual controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period).url
           }
         }
+      }
+    }
+
+    "and there are no uncompleted correction periods must redirect to page without form for a POST" in {
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(getStatusResponse(allPeriods, Complete))
+
+      val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, allPeriods))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period, false).url)
+
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period).url
+      }
+    }
+
+    "when there are no previous return periods must redirect to JourneyRecovery for a POST" in {
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(getStatusResponse(allPeriods, Overdue))
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      running(application) {
+        implicit val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period, false).url)
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
   }

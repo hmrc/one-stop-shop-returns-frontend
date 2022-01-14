@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package controllers.corrections
 
 import base.SpecBase
-import models.{Country, NormalMode}
+import models.{CheckSecondLoopMode, Country, NormalMode}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -34,7 +34,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
 
   "CheckVatPayableAmount Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view in Normal mode for a GET" in {
       val mockService = mock[VatReturnService]
       when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(20))
       val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
@@ -48,8 +48,26 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
         val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index).url)
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[CheckVatPayableAmountView]
+        status(result) mustEqual OK
+        contentAsString(result).contains("Correction amount") mustBe true
+        contentAsString(result).contains("Previous VAT total declared") mustBe true
+        contentAsString(result).contains("New VAT total") mustBe true
+      }
+    }
 
+    "must return OK and the correct view in Check Second Loop Mode for a GET" in {
+      val mockService = mock[VatReturnService]
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(20))
+      val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(bind[VatReturnService].toInstance(mockService))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(CheckSecondLoopMode, period, index, index).url)
+        val result = route(application, request).value
 
         status(result) mustEqual OK
         contentAsString(result).contains("Correction amount") mustBe true

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,13 @@ import models.Period
 import models.requests.OptionalDataRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
+import repositories.CachedVatReturnRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeCheckReturnsFilter() extends CheckReturnsFilterImpl(
   mock[Period],
+  mock[CachedVatReturnRepository],
   mock[VatReturnConnector]
 )(ExecutionContext.Implicits.global) {
 
@@ -36,7 +38,7 @@ class FakeCheckReturnsFilter() extends CheckReturnsFilterImpl(
 }
 
 class FakeCheckReturnsFilterProvider()
-  extends CheckReturnsFilterProvider(mock[VatReturnConnector])(ExecutionContext.Implicits.global) {
+  extends CheckReturnsFilterProvider(mock[CachedVatReturnRepository], mock[VatReturnConnector])(ExecutionContext.Implicits.global) {
 
   override def apply(period: Period): CheckReturnsFilterImpl = new FakeCheckReturnsFilter()
 

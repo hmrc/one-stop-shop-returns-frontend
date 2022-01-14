@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import models.corrections.CorrectionPayload
 import models.{Country, Period}
 import models.domain.VatReturn
 import models.financialdata.Charge
-import models.responses.{NotFound => NotFoundResponse}
+import models.responses.{ConflictFound, InvalidJson, UnexpectedResponseStatus, NotFound => NotFoundResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -41,7 +41,6 @@ import play.api.test.Helpers._
 import services.VatReturnSalesService
 import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary}
 import viewmodels.govuk.summarylist._
-import viewmodels.TitledSummaryList
 import viewmodels.previousReturn.corrections.CorrectionSummary
 import views.html.PreviousReturnView
 
@@ -368,5 +367,88 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       }
     }
 
+    "must redirect to Your Account for a GET if vatReturnResult NotFound" in {
+
+      val application = applicationBuilder(Some(emptyUserAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+          bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
+        )
+        .build()
+
+      val correctionAmount = BigDecimal(100)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
+      when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+
+      running(application) {
+        val request = FakeRequest(GET, previousReturnRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad().url
+      }
+    }
+
+    "must redirect to Journey Recovery when an unexpected error received from vat return" in {
+
+      val application = applicationBuilder(Some(emptyUserAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+          bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
+        )
+        .build()
+
+      val correctionAmount = BigDecimal(100)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+      when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+
+      running(application) {
+        val request = FakeRequest(GET, previousReturnRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must redirect to Journey Recovery and throw an exception when an unexpected result is returned" in {
+
+      val application = applicationBuilder(Some(emptyUserAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+          bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
+        )
+        .build()
+
+      val correctionAmount = BigDecimal(100)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.failed(new Exception("Some exception"))
+      when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+
+      running(application) {
+        val request = FakeRequest(GET, previousReturnRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
   }
 }

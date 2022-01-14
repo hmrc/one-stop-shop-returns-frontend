@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.Quarter._
 import models.SubmissionStatus.Complete
+import models.responses.UnexpectedResponseStatus
 import models.{Index, NormalMode, Period, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
@@ -128,6 +129,24 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
         contentAsString(result) mustEqual view(
           form.fill(Period(2021, Q3)), NormalMode, period, Seq(Period(2021, Q3), Period(2021, Q4)), index)(request, messages(application)
         ).toString
+      }
+    }
+
+    "must throw and Exception for a GET when Return Status Connector returns an error" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Left(UnexpectedResponseStatus(1, "Some error"))))
+
+      running(application) {
+        val request = FakeRequest(GET, correctionReturnPeriodRoute)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
       }
     }
 
@@ -243,6 +262,24 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
         status(result) mustEqual SEE_OTHER
 
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must throw and Exception for a POST when Return Status Connector returns an error" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(Future.successful(Left(UnexpectedResponseStatus(1, "Some error"))))
+
+      running(application) {
+        val request = FakeRequest(POST, correctionReturnPeriodRoute)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
       }
     }
   }
