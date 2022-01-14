@@ -44,4 +44,9 @@ class SaveForLaterConnector @Inject()(config: Configuration, httpClient: HttpCli
     httpClient.GET[SaveForLaterResponse](url)
   }
 
+  def delete(period: Period)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
+    val url = s"$baseUrl/save-for-later/delete/$period"
+
+    httpClient.GET[SaveForLaterResponse](url)
+  }
 }

@@ -16,6 +16,7 @@
 
 package controllers
 
+import connectors.SaveForLaterConnector
 import controllers.actions._
 import forms.DeleteReturnFormProvider
 
@@ -31,7 +32,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class DeleteReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: DeleteReturnFormProvider,
-                                       view: DeleteReturnView
+                                       view: DeleteReturnView,
+                                       saveForLaterConnector: SaveForLaterConnector
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
@@ -52,6 +54,7 @@ class DeleteReturnController @Inject()(
           if(value){
             for{
               _ <- cc.sessionRepository.clear(request.userId)
+              _ <- saveForLaterConnector.delete(period)
             } yield Redirect(controllers.routes.YourAccountController.onPageLoad())
           } else {
             Future.successful(Redirect(controllers.routes.ContinueReturnController.onPageLoad(request.userAnswers.period)))

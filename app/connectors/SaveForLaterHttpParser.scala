@@ -31,6 +31,7 @@ import java.time.Instant
 object SaveForLaterHttpParser extends Logging {
 
   type SaveForLaterResponse = Either[ErrorResponse, Option[SavedUserAnswers]]
+  type DeleteSaveForLaterResponse = Either[ErrorResponse, Boolean]
 
   implicit object SaveForLaterReads extends HttpReads[SaveForLaterResponse] {
     override def read(method: String, url: String, response: HttpResponse): SaveForLaterResponse = {
@@ -45,6 +46,29 @@ object SaveForLaterHttpParser extends Logging {
         case NOT_FOUND =>
           logger.warn("Received NotFound for saved user answers")
           Right(None)
+        case CONFLICT =>
+          logger.warn("Received Conflict found for saved user answers")
+          Left(ConflictFound)
+        case status   =>
+          logger.warn("Received unexpected error from saved user answers")
+          Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
+      }
+    }
+  }
+
+  implicit object DeleteSaveForLaterReads extends HttpReads[DeleteSaveForLaterResponse] {
+    override def read(method: String, url: String, response: HttpResponse): DeleteSaveForLaterResponse = {
+      response.status match {
+        case OK =>
+          response.json.validate[Boolean] match {
+            case JsSuccess(deleted, _) => Right(deleted)
+            case JsError(errors) =>
+              logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
+              Left(InvalidJson)
+          }
+        case NOT_FOUND =>
+          logger.warn("Received NotFound for saved user answers")
+          Left(NotFound)
         case CONFLICT =>
           logger.warn("Received Conflict found for saved user answers")
           Left(ConflictFound)
