@@ -64,10 +64,6 @@ trait CompletionChecks {
     }
   }
 
-
-  // validation methods,....
-
-
   // Corrections queries
 
   def getIncompleteCorrectionToCountry(periodIndex: Index, countryIndex: Index)(implicit request: DataRequest[AnyContent]): Option[CorrectionToCountry] = {
