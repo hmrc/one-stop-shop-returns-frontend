@@ -27,7 +27,7 @@ import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject.bind
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
@@ -58,19 +58,19 @@ class SavedProgressControllerSpec extends SpecBase {
       val savedAnswers = SavedUserAnswers(
         vrn,
         period,
-        Json.toJson("hello"),
+        JsObject(Seq("test" -> Json.toJson("test"))),
         instantDate
       )
 
       val savedAnswersRequest = SaveForLaterRequest(
         vrn,
         period,
-        Json.toJson("hello")
+        JsObject(Seq("test" -> Json.toJson("test")))
       )
 
       when(mockAppConfig.cacheTtl) thenReturn 1
-      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Right(savedAnswers))
-      when(mockSaveForLaterService.fromUserAnswers(any(), any(), any())) thenReturn Valid(savedAnswersRequest)
+      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(savedAnswers)))
+      when(mockSaveForLaterService.fromUserAnswers(any(), any(), any())) thenReturn savedAnswersRequest
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
 
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
@@ -147,30 +147,5 @@ class SavedProgressControllerSpec extends SpecBase {
       }
     }
 
-    //    "must redirect to Your Account Controller when the Save for Later Service returns Invalid" in {
-//
-//      val mockSaveForLaterService = mock[SaveForLaterService]
-//      val mockSessionRepository = mock[SessionRepository]
-//
-//      when(mockSaveForLaterService.fromUserAnswers(any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError())))
-//      when(mockSessionRepository.clear(any())) thenReturn Future.successful(false)
-//
-//      val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
-//        .overrides(
-//          bind[SaveForLaterService].toInstance(mockSaveForLaterService),
-//          bind[SessionRepository].toInstance(mockSessionRepository),
-//        ).build()
-//
-//      running(app) {
-//
-//        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, "test").url)
-//
-//        val result = route(app, request).value
-//
-//        status(result) mustEqual SEE_OTHER
-//        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-//        verify(mockSessionRepository, times(0)).clear(eqTo(completeUserAnswers.userId))
-//      }
-//    }
   }
 }

@@ -17,7 +17,7 @@
 package connectors
 
 import config.Service
-import connectors.SaveForLaterHttpParser.{SaveForLaterReads, SaveForLaterResponse}
+import connectors.SaveForLaterHttpParser.{DeleteSaveForLaterResponse, DeleteSaveForLaterReads, SaveForLaterReads, SaveForLaterResponse}
 import models.Period
 import models.requests.SaveForLaterRequest
 import play.api.Configuration
@@ -44,9 +44,9 @@ class SaveForLaterConnector @Inject()(config: Configuration, httpClient: HttpCli
     httpClient.GET[SaveForLaterResponse](url)
   }
 
-  def delete(period: Period)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
+  def delete(period: Period)(implicit hc: HeaderCarrier): Future[DeleteSaveForLaterResponse] = {
     val url = s"$baseUrl/save-for-later/delete/$period"
 
-    httpClient.GET[SaveForLaterResponse](url)
+    httpClient.GET[DeleteSaveForLaterResponse](url)
   }
 }

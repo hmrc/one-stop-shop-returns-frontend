@@ -35,7 +35,7 @@ import scala.concurrent.ExecutionContext
 
 class SaveForLaterService @Inject()() {
 
-  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): ValidationResult[SaveForLaterRequest] =
-    SaveForLaterRequest(vrn, period, answers.data).validNec
+  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): SaveForLaterRequest =
+    SaveForLaterRequest(vrn, period, answers.data)
 
 }

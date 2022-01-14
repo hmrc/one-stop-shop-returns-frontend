@@ -25,7 +25,7 @@ import models.financialdata.Charge
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate, ZoneOffset}
@@ -303,7 +303,7 @@ trait ModelGenerators {
       for {
         vrn         <- arbitrary[Vrn]
         period      <- arbitrary[Period]
-        data        = Json.toJson("test")
+        data        = JsObject(Seq("test" -> Json.toJson("test")))
         now         = Instant.now
       } yield SavedUserAnswers(vrn, period, data, now)
     }

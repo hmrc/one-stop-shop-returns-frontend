@@ -19,12 +19,12 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.requests.SaveForLaterRequest
-import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
+import models.responses.{ConflictFound, InvalidJson, NotFound, UnexpectedResponseStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
 import play.api.http.Status._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsBoolean, JsObject, JsValue, Json}
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -42,13 +42,13 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
 
   ".submit" - {
 
-    "must return Right(SavedUserAnswers) when the server responds with CREATED" in {
+    "must return Right(Some(SavedUserAnswers)) when the server responds with CREATED" in {
 
       running(application) {
         val saveForLaterRequest = SaveForLaterRequest(vrn, period, Json.toJson("test"))
         val expectedSavedUserAnswers =
           SavedUserAnswers(
-            vrn, period, Json.toJson("Hello"),
+            vrn, period, JsObject(Seq("test" -> Json.toJson("test"))),
             Instant.now(stubClockAtArbitraryDate)
           )
         val responseJson = Json.toJson(expectedSavedUserAnswers)
@@ -61,7 +61,7 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
 
         val result = connector.submit(saveForLaterRequest).futureValue
 
-        result.value mustEqual expectedSavedUserAnswers
+        result.value mustEqual Some(expectedSavedUserAnswers)
       }
     }
 
@@ -112,11 +112,11 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
             aResponse().withStatus(OK).withBody(responseJson.toString())
           ))
 
-        connector.get(period).futureValue mustBe Right(savedUserAnswers)
+        connector.get(period).futureValue mustBe Right(Some(savedUserAnswers))
       }
     }
 
-    "must return Left(NotFound) when the server responds with NOT_FOUND" in {
+    "must return Right(None) when the server responds with NOT_FOUND" in {
 
       running(application) {
         val connector = application.injector.instanceOf[SaveForLaterConnector]
@@ -127,7 +127,130 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
               aResponse().withStatus(NOT_FOUND)
             ))
 
-        connector.get(period).futureValue mustBe Left(NotFound)
+        connector.get(period).futureValue mustBe Right(None)
+      }
+    }
+
+    "must return Left(InvalidJson) when the response body is not a valid Saved Answers Json" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[SaveForLaterConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(Json.toJson("test").toString())
+            ))
+
+        connector.get(period).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(ConflictFound) when the server responds with CONFLICT" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[SaveForLaterConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(CONFLICT)
+            ))
+
+        connector.get(period).futureValue mustBe Left(ConflictFound)
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with error" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[SaveForLaterConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(123)
+            ))
+
+        connector.get(period).futureValue mustBe Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
+      }
+    }
+  }
+
+  ".delete" - {
+
+    "must return Right(true) when the server responds with OK" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[SaveForLaterConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/delete/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(JsBoolean(true).toString())
+            ))
+
+        connector.delete(period).futureValue mustBe Right(true)
+      }
+    }
+
+    "must return Left(InvalidJson) when the server responds with an invalid json body" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[SaveForLaterConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/delete/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(Json.toJson("test").toString())
+            ))
+
+        connector.delete(period).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(NotFound) when the server responds with NOT_FOUND" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[SaveForLaterConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/delete/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(NOT_FOUND)
+            ))
+
+        connector.delete(period).futureValue mustBe Left(NotFound)
+      }
+    }
+
+    "must return Left(ConflictFound) when the server responds with CONFLICT" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[SaveForLaterConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/delete/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(CONFLICT)
+            ))
+
+        connector.delete(period).futureValue mustBe Left(ConflictFound)
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with error" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[SaveForLaterConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/delete/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(123)
+            ))
+
+        connector.delete(period).futureValue mustBe Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
       }
     }
   }

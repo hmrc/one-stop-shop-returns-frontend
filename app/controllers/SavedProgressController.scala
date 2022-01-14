@@ -37,12 +37,12 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class SavedProgressController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       view: SavedProgressView,
-                                       service: SaveForLaterService,
-                                       connector: SaveForLaterConnector,
-                                       appConfig: FrontendAppConfig
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport  with Logging {
+                                         cc: AuthenticatedControllerComponents,
+                                         view: SavedProgressView,
+                                         service: SaveForLaterService,
+                                         connector: SaveForLaterConnector,
+                                         appConfig: FrontendAppConfig
+                                       )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -53,26 +53,19 @@ class SavedProgressController @Inject()(
         .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
       Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl)).flatMap {
         updatedAnswers =>
-          val validatedS4LRequest = service.fromUserAnswers(updatedAnswers, request.vrn, period)
-          validatedS4LRequest match {
-            case Valid(s4LRequest) =>
-              connector.submit(s4LRequest).flatMap {
-                case Right(Some(_ : SavedUserAnswers)) =>
-                  for {
-                    _ <- cc.sessionRepository.clear(request.userId)
-                  } yield {
-                    Ok(view(period, answersExpiry, continueUrl))
-                  }
-                case Left(ConflictFound) =>
-                  Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
-                case Left(e) =>
-                  logger.error(s"Unexpected result on submit: ${e.toString}")
-                  Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+          val s4LRequest = service.fromUserAnswers(updatedAnswers, request.vrn, period)
+
+          connector.submit(s4LRequest).flatMap {
+            case Right(Some(_: SavedUserAnswers)) =>
+              for {
+                _ <- cc.sessionRepository.clear(request.userId)
+              } yield {
+                Ok(view(period, answersExpiry, continueUrl))
               }
-            case Invalid(errors) =>
-              val errorList = errors.toChain.toList
-              val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-              logger.error(s"Unable to save user answers: $errorMessages")
+            case Left(ConflictFound) =>
+              Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
+            case Left(e) =>
+              logger.error(s"Unexpected result on submit: ${e.toString}")
               Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
           }
       }
