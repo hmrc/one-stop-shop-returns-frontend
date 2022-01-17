@@ -17,7 +17,6 @@
 package services
 
 import base.SpecBase
-import cats.data.Validated.Valid
 import models.requests.SaveForLaterRequest
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar

@@ -158,6 +158,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must save the answer and redirect to the next page when valid data is submitted and corrected vat return is not empty" in {
 
+      val country = completeVatReturn.salesFromNi.map(_.countryOfConsumption).head
       val mockSessionRepository = mock[SessionRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
@@ -183,7 +184,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq()).url
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq(country)).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
       }
     }

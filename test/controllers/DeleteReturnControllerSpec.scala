@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import connectors.SaveForLaterConnector
 import forms.DeleteReturnFormProvider
 import models.{NormalMode, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
@@ -75,12 +76,16 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to the Your Account page and delete answers if the answer is Yes" in {
       val mockSessionRepository = mock[SessionRepository]
+      val save4LaterConnector = mock[SaveForLaterConnector]
 
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
-
+      when(save4LaterConnector.delete(any())(any())) thenReturn(Future.successful(Right(true)))
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(
+            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          )
           .build()
 
       running(application) {

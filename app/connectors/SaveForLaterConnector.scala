@@ -17,11 +17,10 @@
 package connectors
 
 import config.Service
-import connectors.SaveForLaterHttpParser.{DeleteSaveForLaterResponse, DeleteSaveForLaterReads, SaveForLaterReads, SaveForLaterResponse}
+import connectors.SaveForLaterHttpParser.{DeleteSaveForLaterReads, DeleteSaveForLaterResponse, SaveForLaterReads, SaveForLaterResponse}
 import models.Period
 import models.requests.SaveForLaterRequest
 import play.api.Configuration
-import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
 import javax.inject.Inject

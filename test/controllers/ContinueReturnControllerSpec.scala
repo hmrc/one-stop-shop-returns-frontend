@@ -18,18 +18,12 @@ package controllers
 
 import base.SpecBase
 import forms.ContinueReturnFormProvider
-import models.{NormalMode, ContinueReturn, UserAnswers}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{times, verify, when}
+import models.ContinueReturn
 import org.scalatestplus.mockito.MockitoSugar
 import pages.ContinueReturnPage
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
 import views.html.ContinueReturnView
-
-import scala.concurrent.Future
 
 class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 

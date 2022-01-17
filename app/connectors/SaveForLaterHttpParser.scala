@@ -17,11 +17,10 @@
 package connectors
 
 import logging.Logging
-import models.{Period, UserAnswers}
-import models.domain.VatReturn
+import models.Period
 import models.responses._
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsObject, JsSuccess, JsValue, Json, OFormat}
+import play.api.libs.json._
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 

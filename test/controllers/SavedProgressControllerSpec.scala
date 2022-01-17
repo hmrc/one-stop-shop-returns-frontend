@@ -17,7 +17,6 @@
 package controllers
 
 import base.SpecBase
-import cats.data.Validated.Valid
 import config.FrontendAppConfig
 import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import models.requests.SaveForLaterRequest

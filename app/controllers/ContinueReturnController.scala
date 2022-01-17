@@ -18,15 +18,15 @@ package controllers
 
 import controllers.actions._
 import forms.ContinueReturnFormProvider
-import javax.inject.Inject
-import models.{Mode, Period}
+import models.Period
 import pages.ContinueReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ContinueReturnView
 
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class ContinueReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,

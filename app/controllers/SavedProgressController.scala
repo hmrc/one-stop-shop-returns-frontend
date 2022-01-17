@@ -16,7 +16,6 @@
 
 package controllers
 
-import cats.data.Validated.{Invalid, Valid}
 import config.FrontendAppConfig
 import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import controllers.actions._

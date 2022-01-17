@@ -16,22 +16,11 @@
 
 package services
 
-import cats.implicits._
-import connectors.VatReturnConnector
 import models._
-import models.domain.EuTaxIdentifierType.Vat
-import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
-import models.registration.{EuVatRegistration, Registration, RegistrationWithFixedEstablishment}
-import models.requests.{SaveForLaterRequest, VatReturnRequest}
-import pages._
-import play.api.i18n.Lang.logger
-import queries._
-import services.corrections.CorrectionService
+import models.requests.SaveForLaterRequest
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class SaveForLaterService @Inject()() {
 
