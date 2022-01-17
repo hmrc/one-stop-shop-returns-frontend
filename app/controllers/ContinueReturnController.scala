@@ -19,7 +19,7 @@ package controllers
 import controllers.actions._
 import forms.ContinueReturnFormProvider
 import models.Period
-import pages.ContinueReturnPage
+import pages.{ContinueReturnPage, SavedProgressPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -39,7 +39,12 @@ class ContinueReturnController @Inject()(
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      Ok(view(form, period))
+      request.userAnswers.get(SavedProgressPage).map(
+        _ => Ok(view(form, period))
+      ).getOrElse(
+        Redirect(controllers.routes.StartReturnController.onPageLoad(period))
+      )
+
   }
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period) {

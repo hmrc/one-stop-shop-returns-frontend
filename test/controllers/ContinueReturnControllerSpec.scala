@@ -20,7 +20,7 @@ import base.SpecBase
 import forms.ContinueReturnFormProvider
 import models.ContinueReturn
 import org.scalatestplus.mockito.MockitoSugar
-import pages.ContinueReturnPage
+import pages.{ContinueReturnPage, SavedProgressPage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.ContinueReturnView
@@ -36,7 +36,7 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers.set(SavedProgressPage, "test").success.value)).build()
 
       running(application) {
         val request = FakeRequest(GET, continueReturnRoute)
@@ -47,6 +47,22 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(form, period)(request, messages(application)).toString
+      }
+    }
+
+    "must redirect for a GET if there is no continue url saved in user answers" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, continueReturnRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[ContinueReturnView]
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.StartReturnController.onPageLoad(period).url
       }
     }
 
