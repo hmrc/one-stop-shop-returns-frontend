@@ -396,7 +396,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Duplicate, None, None, dataRequest)
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
           verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
