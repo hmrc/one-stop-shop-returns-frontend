@@ -25,6 +25,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar.mock
+import pages.SavedProgressPage
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
@@ -71,12 +72,13 @@ class SavedProgressControllerSpec extends SpecBase {
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(savedAnswers)))
       when(mockSaveForLaterService.fromUserAnswers(any(), any(), any())) thenReturn savedAnswersRequest
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
-
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
         .overrides(
           bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
           bind[SaveForLaterService].toInstance(mockSaveForLaterService),
-          bind[SessionRepository].toInstance(mockSessionRepository),
+          bind[SessionRepository].toInstance(mockSessionRepository)
         ).build()
 
       running(app) {
@@ -89,7 +91,7 @@ class SavedProgressControllerSpec extends SpecBase {
 
 
         status(result) mustEqual OK
-        verify(mockSessionRepository, times(1)).clear(eqTo(completeUserAnswers.userId))
+        verify(mockSessionRepository, times(1)).set(eqTo(completeUserAnswers.set(SavedProgressPage, "test").success.value.copy(lastUpdated = instantDate)))
         contentAsString(result) mustEqual view(period, date.format(dateTimeFormatter), "test")(request, messages(app)).toString
       }
     }

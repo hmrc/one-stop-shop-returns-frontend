@@ -18,7 +18,7 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
-import connectors.VatReturnConnector
+import connectors.{SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
@@ -57,7 +57,8 @@ class CheckYourAnswersController @Inject()(
                                             auditService: AuditService,
                                             emailService: EmailService,
                                             vatReturnConnector: VatReturnConnector,
-                                            cachedVatReturnRepository: CachedVatReturnRepository
+                                            cachedVatReturnRepository: CachedVatReturnRepository,
+                                            saveForLaterConnector: SaveForLaterConnector
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -267,7 +268,7 @@ class CheckYourAnswersController @Inject()(
           updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
           _ <- cc.sessionRepository.set(updatedAnswers)
           _ <- cachedVatReturnRepository.clear(request.userId, period)
-
+          _ <- saveForLaterConnector.delete(period)
         } yield {
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
         }

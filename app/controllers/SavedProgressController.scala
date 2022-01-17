@@ -57,7 +57,7 @@ class SavedProgressController @Inject()(
           connector.submit(s4LRequest).flatMap {
             case Right(Some(_: SavedUserAnswers)) =>
               for {
-                _ <- cc.sessionRepository.clear(request.userId)
+                _ <- cc.sessionRepository.set(updatedAnswers)
               } yield {
                 Ok(view(period, answersExpiry, continueUrl))
               }
