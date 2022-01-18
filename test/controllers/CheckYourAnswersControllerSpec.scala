@@ -405,134 +405,182 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
     "when the submission to the backend fails" - {
 
-      "must redirect to Journey Recovery when an Unexpected Status Result ius returned from the connector" in {
+      "and the question on the Correct Previous Return Page has been answered" - {
 
-        val answers =
-          emptyUserAnswers
-            .set(SoldGoodsFromNiPage, false).success.value
-            .set(SoldGoodsFromEuPage, false).success.value
+        "must redirect to Journey Recovery when an Unexpected Status Result is returned from the connector" in {
 
-        val app =
-          applicationBuilder(Some(answers))
-            .overrides(
-              bind[VatReturnService].toInstance(vatReturnService),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
-              bind[AuditService].toInstance(auditService)
-            ).build()
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
 
-        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
-        doNothing().when(auditService).audit(any())(any(), any())
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[AuditService].toInstance(auditService)
+              ).build()
 
-        running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
-          val result = route(app, request).value
-          val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
-          val expectedAuditEvent =
-            ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Failure, None, None, dataRequest)
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          doNothing().when(auditService).audit(any())(any(), any())
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-          verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val result = route(app, request).value
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+            val expectedAuditEvent =
+              ReturnsAuditModel.build(vatReturnRequest, Some(correctionRequest), SubmissionResult.Failure, None, None, dataRequest)
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+            verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+          }
+        }
+
+        "must redirect to Journey Recovery when an Invalid Vat Return and Correction Request are returned" in {
+
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
+
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[CorrectionService].toInstance(correctionService)
+              ).build()
+
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(SoldGoodsFromNiPage)))
+          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(CorrectPreviousReturnPage)))
+
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val result = route(app, request).value
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          }
+        }
+
+        "must redirect to Journey Recovery when an Invalid Vat Return is returned and a Valid Correction Request is returned" in {
+
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
+
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[CorrectionService].toInstance(correctionService)
+              ).build()
+
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(SoldGoodsFromNiPage)))
+          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
+
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val result = route(app, request).value
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          }
+        }
+
+        "must redirect to Journey Recovery when an Valid Vat Return is returned and a Invalid Correction Request is returned" in {
+
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
+
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[CorrectionService].toInstance(correctionService)
+              ).build()
+
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(CorrectPreviousReturnPage)))
+
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val result = route(app, request).value
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          }
+        }
+
+        "must redirect to Your Account Controller when connector returns Conflict Found" in {
+
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
+
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[AuditService].toInstance(auditService),
+                bind[CorrectionService].toInstance(correctionService)
+              ).build()
+
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(ConflictFound))
+          when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
+          doNothing().when(auditService).audit(any())(any(), any())
+
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val result = route(app, request).value
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+            val expectedAuditEvent =
+              ReturnsAuditModel.build(vatReturnRequest, Some(correctionRequest), SubmissionResult.Duplicate, None, None, dataRequest)
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad().url
+            verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+          }
         }
       }
 
-      "must redirect to Journey Recovery when an Invalid Vat Return and Correction Request are returned" in {
+      "and the question on the Correct Previous Return Page has not been answered" - {
 
-        val app =
-          applicationBuilder(Some(emptyUserAnswers))
-            .overrides(
-              bind[VatReturnService].toInstance(vatReturnService),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
-              bind[CorrectionService].toInstance(correctionService)
-            ).build()
+        "must redirect to Journey Recovery when an Unexpected Status Result is returned from the connector" in {
 
-        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(SoldGoodsFromNiPage)))
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
-        when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(CorrectPreviousReturnPage)))
+          val app =
+            applicationBuilder(Some(emptyUserAnswers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[AuditService].toInstance(auditService)
+              ).build()
 
-        running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
-          val result = route(app, request).value
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          doNothing().when(auditService).audit(any())(any(), any())
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val result = route(app, request).value
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+            val expectedAuditEvent =
+              ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Failure, None, None, dataRequest)
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+            verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+          }
         }
-      }
-
-      "must redirect to Journey Recovery when an Invalid Vat Return is returned and a Valid Correction Request is returned" in {
-
-        val app =
-          applicationBuilder(Some(emptyUserAnswers))
-            .overrides(
-              bind[VatReturnService].toInstance(vatReturnService),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
-              bind[CorrectionService].toInstance(correctionService)
-            ).build()
-
-        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(SoldGoodsFromNiPage)))
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
-        when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
-
-        running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
-          val result = route(app, request).value
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-        }
-      }
-
-      "must redirect to Journey Recovery when an Valid Vat Return is returned and a Invalid Correction Request is returned" in {
-
-        val app =
-          applicationBuilder(Some(emptyUserAnswers))
-            .overrides(
-              bind[VatReturnService].toInstance(vatReturnService),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
-              bind[CorrectionService].toInstance(correctionService)
-            ).build()
-
-        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
-        when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(CorrectPreviousReturnPage)))
-
-        running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
-          val result = route(app, request).value
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-        }
-      }
-    }
-
-    "must redirect to Your Account Controller when connector returns Conflict Found" in {
-
-      val app =
-        applicationBuilder(Some(emptyUserAnswers))
-          .overrides(
-            bind[VatReturnService].toInstance(vatReturnService),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[AuditService].toInstance(auditService),
-            bind[CorrectionService].toInstance(correctionService)
-          ).build()
-
-      when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-      when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
-      when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
-      doNothing().when(auditService).audit(any())(any(), any())
-
-      running(app) {
-        val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
-        val result = route(app, request).value
-        val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
-        val expectedAuditEvent =
-          ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Duplicate, None, None, dataRequest)
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad().url
-        verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
       }
     }
 

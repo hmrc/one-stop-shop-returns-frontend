@@ -23,7 +23,7 @@ import generators.Generators
 import models.Quarter._
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.financialdata.{Charge, VatReturnWithFinancialData}
-import models.responses.InvalidJson
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import models.{Country, Period, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -798,6 +798,102 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             periodInProgress = Some(period)
           )(request, messages(application)).toString
         }
+      }
+
+      "when a user has previously saved their return progress and their session has renewed" in {
+
+        val instant = Instant.parse("2021-11-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val period = Period(2021, Q3)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Overdue))))
+
+        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
+        when(sessionRepository.get(any(), any())) thenReturn Future.successful(None)
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get(any())(any())) thenReturn Future.successful(Right(Some(arbitrarySavedUserAnswers.arbitrary.sample.value)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(Period(2021, Q3)),
+            None,
+            Seq.empty,
+            Seq.empty,
+            paymentError = false,
+            periodInProgress = Some(period)
+          )(request, messages(application)).toString
+
+        }
+      }
+
+    }
+
+    "must throw and exception when an error is returned from both connectors" in {
+
+      when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+        Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        Future.successful(
+          Left(UnexpectedResponseStatus(1, "error")))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
+      }
+    }
+
+    "must throw and exception when an error is returned from the Return Status connector" in {
+
+      when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+        Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        Future.successful(
+          Right(Seq.empty))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
       }
     }
   }

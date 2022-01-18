@@ -64,9 +64,6 @@ class YourAccountController @Inject()(
         case (Left(error), _) =>
           logger.error(s"there was an error during period with status $error")
           throw new Exception(error.toString)
-        case (_, Left(error)) =>
-          logger.error(s"there was an error getting periods with outstanding amounts $error")
-          throw new Exception(error.toString)
       }
   }
 

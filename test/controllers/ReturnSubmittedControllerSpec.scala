@@ -425,5 +425,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         verify(mockSessionRepository, times(1)).clear(eqTo(answers.userId))
       }
     }
+
+    "must throw an exception when "
   }
 }
