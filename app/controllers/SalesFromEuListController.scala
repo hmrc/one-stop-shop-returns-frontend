@@ -19,7 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import forms.SalesFromEuListFormProvider
-import models.{Country, Index, Mode, Period}
+import models.{Country, Index, Mode, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat}
 import pages.SalesFromEuListPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -49,7 +49,9 @@ class SalesFromEuListController @Inject()(
           val canAddCountries = number < Country.euCountries.size
           val list            = SalesFromEuSummary.addToListRows(request.userAnswers, mode)
 
-          withCompleteFromEuSales(onFailure = incompleteSales => {
+          withCompleteData[SalesFromEuWithOptionalVat](
+            data = getIncompleteFromEuSales _,
+            onFailure = (incompleteSales: Seq[SalesFromEuWithOptionalVat]) => {
             Ok(view(form, mode, list, period, canAddCountries, incompleteSales.map(_.countryOfSale)))
           })(Ok(view(form, mode, list, period, canAddCountries)))
       }
@@ -57,7 +59,9 @@ class SalesFromEuListController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      withCompleteFromEuSales(onFailure = _ => {
+      withCompleteData[SalesFromEuWithOptionalVat](
+        data = getIncompleteFromEuSales _,
+        onFailure = (_: Seq[SalesFromEuWithOptionalVat]) => {
         if(incompletePromptShown) {
           firstIndexedIncompleteSaleFromEu match {
             case Some(incompleteSalesFromCountry) if incompleteSalesFromCountry._1.salesFromCountry.isEmpty =>

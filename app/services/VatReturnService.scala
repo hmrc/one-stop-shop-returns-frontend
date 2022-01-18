@@ -25,7 +25,7 @@ import models.registration.{EuVatRegistration, Registration, RegistrationWithFix
 import models.requests.VatReturnRequest
 import pages._
 import play.api.i18n.Lang.logger
-import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery, EuSalesAtVatRateQuery, NiSalesAtVatRateQuery}
+import queries.{AllSalesFromEuQuery, AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiQuery, AllSalesToEuQuery, EuSalesAtVatRateQuery, EuSalesAtVatRateWithOptionalVatQuery, NiSalesAtVatRateQuery, NiSalesAtVatRateWithOptionalVatQuery, VatOnSalesFromEuQuery, VatOnSalesFromNiQuery}
 import services.corrections.CorrectionService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
@@ -112,16 +112,18 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
     }
 
   private def processSalesFromNiAtVatRate(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index, vatRate: VatRate): ValidationResult[SalesDetails] =
-    answers.get(NiSalesAtVatRateQuery(countryIndex, vatRateIndex)) match {
-      case Some(sales) =>
+    answers.get(NiSalesAtVatRateWithOptionalVatQuery(countryIndex, vatRateIndex)) match {
+      case Some(SalesAtVatRateWithOptionalVat(netValueOfSales, Some(vatOnSales))) =>
         SalesDetails(
           vatRate         = toDomainVatRate(vatRate),
-          netValueOfSales = sales.netValueOfSales,
-          vatOnSales      = sales.vatOnSales
+          netValueOfSales = netValueOfSales,
+          vatOnSales      = vatOnSales
         ).validNec
-
+      case Some(SalesAtVatRateWithOptionalVat(_, None)) =>
+        DataMissingError(VatOnSalesFromNiQuery(countryIndex, vatRateIndex)).invalidNec
       case None =>
-        DataMissingError(NiSalesAtVatRateQuery(countryIndex, vatRateIndex)).invalidNec
+        DataMissingError(NiSalesAtVatRateQuery(countryIndex,  vatRateIndex)).invalidNec
+
     }
 
 
@@ -138,7 +140,7 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
     }
 
   private def processSalesFromEu(answers: UserAnswers, registration: Registration): ValidationResult[List[SalesFromEuCountry]] =
-    answers.get(AllSalesFromEuQuery) match {
+    answers.get(AllSalesFromEuQueryWithOptionalVatQuery) match {
       case Some(salesFromEu) if salesFromEu.nonEmpty =>
         salesFromEu.zipWithIndex.map {
           case (_, index) =>
@@ -197,14 +199,15 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
                                            vatRateIndex: Index,
                                            vatRate: VatRate
                                          ): ValidationResult[SalesDetails] =
-    answers.get(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)) match {
-      case Some(sales) =>
+    answers.get(EuSalesAtVatRateWithOptionalVatQuery(countryFromIndex, countryToIndex, vatRateIndex)) match {
+      case Some(SalesAtVatRateWithOptionalVat(netValueOfSales, Some(vatOnSales))) =>
         SalesDetails(
           vatRate         = toDomainVatRate(vatRate),
-          netValueOfSales = sales.netValueOfSales,
-          vatOnSales      = sales.vatOnSales
+          netValueOfSales = netValueOfSales,
+          vatOnSales      = vatOnSales
         ).validNec
-
+      case Some(SalesAtVatRateWithOptionalVat(_, None)) =>
+        DataMissingError(VatOnSalesFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
       case None =>
         DataMissingError(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
     }

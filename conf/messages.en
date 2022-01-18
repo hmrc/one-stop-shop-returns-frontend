@@ -44,6 +44,7 @@ error.invalidPeriod = Please enter a valid period
 error.missing_answers = Some of your information is missing. You must complete this before you can submit your changes.
 error.missing_answers_header = Some information is missing.
 error.missing_answers_prompt = You need to complete the missing information for {0} before you continue.
+error.missing_answers_prompt.general = You need to complete the missing information before you continue.
 error.resolve_missing_answers = Resolve missing answers
 
 index.title = Your account

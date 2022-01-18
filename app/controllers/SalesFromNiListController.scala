@@ -43,6 +43,7 @@ class SalesFromNiListController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+
       getNumberOfSalesFromNi {
         number =>
 
@@ -50,18 +51,21 @@ class SalesFromNiListController @Inject()(
           val list            = SalesFromNiSummary.addToListRows(request.userAnswers, mode)
 
           Ok(view(form, mode, list, period, canAddCountries))
-          withCompleteNiSalesForCountry(onFailure = incomplete => {
+         withCompleteData[Country](
+           data = getNiCountriesWithIncompleteSales _,
+           onFailure = (incomplete: Seq[Country]) => {
             Ok(view(form, mode, list, period, canAddCountries, incomplete))
-          }) {
-            Ok(view(form, mode, list, period, canAddCountries))
-          }
+            }) {
+              Ok(view(form, mode, list, period, canAddCountries))
+            }
       }
   }
 
   def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request => {
-      withCompleteNiSalesForCountry(
-        onFailure = incompleteCountries => {
+      withCompleteData[Country](
+        data = getNiCountriesWithIncompleteSales _,
+        onFailure = (incompleteCountries: Seq[Country]) => {
           if (incompletePromptShown) {
             firstIndexedIncompleteNiCountrySales(incompleteCountries) match {
               case Some(incompleteCountry) =>
@@ -77,7 +81,7 @@ class SalesFromNiListController @Inject()(
             Redirect(routes.SalesFromNiListController.onPageLoad(mode, period))
           }
         }
-      )(onSuccess = getNumberOfSalesFromNi {
+      )( getNumberOfSalesFromNi {
         number =>
 
           val canAddCountries = number < Country.euCountries.size

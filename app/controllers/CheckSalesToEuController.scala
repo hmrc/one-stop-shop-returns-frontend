@@ -17,7 +17,7 @@
 package controllers
 
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Index, Mode, Period}
+import models.{Index, Mode, Period, SalesFromCountryWithOptionalVat}
 import pages.{CheckSalesToEuPage, VatRatesFromEuPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -63,7 +63,12 @@ class CheckSalesToEuController @Inject()(
                 )
             }).getOrElse(Seq.empty)
 
-          withCompleteEuSales(countryFromIndex, onFailure = incompleteSales => Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, incompleteSales.map(_.countryOfConsumption.name)))) {
+          withCompleteData[SalesFromCountryWithOptionalVat](
+            index = countryFromIndex,
+            data = getIncompleteToEuSales _,
+            onFailure = (incompleteSales: Seq[SalesFromCountryWithOptionalVat]) =>
+              Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, incompleteSales.map(_.countryOfConsumption.name))))
+          {
             Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, Seq.empty))
           }
       }
@@ -72,14 +77,15 @@ class CheckSalesToEuController @Inject()(
   def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
     cc.authAndGetData(period) {
     implicit request => {
-      withCompleteEuSales(countryFromIndex, onFailure = _ =>
-        if(incompletePromptShown) {
-          firstIndexedIncompleteSaleToEu(countryFromIndex) match {
-            case Some(incompleteSales) =>
-              Redirect(routes.VatRatesFromEuController.onPageLoad( mode,  period,  countryFromIndex, Index(incompleteSales._2)))
-            case None =>
-              Redirect(routes.JourneyRecoveryController.onPageLoad())
-          }
+      withCompleteData[SalesFromCountryWithOptionalVat](
+        index = countryFromIndex,
+        data = getIncompleteToEuSales _,
+        onFailure = (_ : Seq[SalesFromCountryWithOptionalVat]) =>
+        if(incompletePromptShown) firstIndexedIncompleteSaleToEu(countryFromIndex) match {
+          case Some(incompleteSales) =>
+            Redirect(routes.VatRatesFromEuController.onPageLoad( mode,  period,  countryFromIndex, Index(incompleteSales._2)))
+          case None =>
+            Redirect(routes.JourneyRecoveryController.onPageLoad())
         } else Redirect(routes.CheckSalesToEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex))
       ) {
         Redirect(CheckSalesToEuPage(countryFromIndex).navigate(mode, request.userAnswers))

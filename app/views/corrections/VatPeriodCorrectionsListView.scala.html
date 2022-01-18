@@ -26,7 +26,7 @@
     addToList: components.addToSimpleList
 )
 
-@(mode: Mode, period: Period, periodList: Seq[ListItem], incompletePeriods: List[Period])(implicit request: Request[_], messages: Messages)
+@(mode: Mode, period: Period, periodList: Seq[ListItem], incompletePeriods: Seq[Period])(implicit request: Request[_], messages: Messages)
 
 @defining(if(periodList.size == 0) {
     messages("vatPeriodCorrectionsList.title.empty")

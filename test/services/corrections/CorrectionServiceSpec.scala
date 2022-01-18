@@ -23,7 +23,7 @@ import cats.data.Validated.{Invalid, Valid}
 import models.requests.corrections.CorrectionRequest
 import models.responses.UnexpectedResponseStatus
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
-import models.{Country, DataMissingError, Period, VatOnSales}
+import models.{Country, DataMissingError, Index, Period, VatOnSales}
 import models.Quarter.{Q1, Q2, Q3, Q4}
 import models.domain.{SalesDetails, SalesToCountry}
 import models.VatOnSalesChoice.Standard
@@ -36,7 +36,7 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
-import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery}
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import services.PeriodService
 import uk.gov.hmrc.domain.Vrn
 import viewmodels.previousReturn.corrections.CorrectionSummary
@@ -189,8 +189,30 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
         result mustEqual Invalid(NonEmptyChain(DataMissingError(AllCorrectionCountriesQuery(index))))
       }
 
-    }
+      "when user is expected adds a correction period and country but not the amount" in new Fixture {
 
+        private val country1 = arbitrary[Country].sample.value
+        private val country2 = arbitrary[Country].sample.value
+        private val correctionPeriod1 = Period(2021, Q1)
+
+        val periodIndex: Index = Index(0)
+
+        private val answers =
+          emptyUserAnswers
+            .set(CorrectPreviousReturnPage, true).success.value
+            .set(CorrectionReturnPeriodPage(periodIndex), correctionPeriod1).success.value
+            .set(CorrectionCountryPage(periodIndex, Index(0)), country1).success.value
+            .set(CountryVatCorrectionPage(periodIndex, Index(0)), BigDecimal(1.0)).success.value
+            .set(CorrectionReturnPeriodPage(periodIndex), correctionPeriod1).success.value
+            .set(CorrectionCountryPage(periodIndex, Index(1)), country2).success.value
+
+        when(periodService.getReturnPeriods(any())) thenReturn Seq.empty
+
+        private val result = service.fromUserAnswers(answers, vrn, period, registration.commencementDate)
+
+        result mustEqual Invalid(NonEmptyChain(DataMissingError(CorrectionToCountryQuery(Index(0),Index(1)))))
+      }
+    }
   }
 
   ".getCorrectionsForPeriod" - {

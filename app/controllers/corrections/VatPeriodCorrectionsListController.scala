@@ -62,7 +62,9 @@ class VatPeriodCorrectionsListController @Inject()(
             val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
 
             if(uncompletedCorrectionPeriods.isEmpty) {
-              withCompleteCorrections(onFailure = incompletePeriods =>
+              withCompleteData[Period](
+                data = getPeriodsWithIncompleteCorrections _,
+                onFailure = (incompletePeriods: Seq[Period]) =>
                 Ok(view(mode, period, completedCorrectionPeriodsModel, incompletePeriods)))(Ok(view(mode, period, completedCorrectionPeriodsModel, List.empty)))
             } else {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period))
@@ -79,8 +81,9 @@ class VatPeriodCorrectionsListController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
     implicit request =>
-      withCompleteCorrections(onFailure = {
-        incompletePeriods =>
+        withCompleteData[Period](
+        data = getPeriodsWithIncompleteCorrections _,
+        onFailure = (incompletePeriods: Seq[Period]) =>
           if (incompletePromptShown) {
             val correctionPeriods = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
               .getOrElse(List.empty).zipWithIndex
@@ -90,7 +93,7 @@ class VatPeriodCorrectionsListController @Inject()(
           } else {
             Redirect(routes.VatPeriodCorrectionsListController.onPageLoad(mode, period))
           }
-      }) {
+      ) {
         Redirect(VatPeriodCorrectionsListPage.navigate(mode, request.userAnswers, false))
       }
   }

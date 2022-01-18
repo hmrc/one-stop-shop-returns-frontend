@@ -23,7 +23,7 @@ GET         /account/signed-out                                                 
 GET         /cannot-use-not-registered                                                                       controllers.NotRegisteredController.onPageLoad()
 
 GET         /:period/check-your-answers                                                                      controllers.CheckYourAnswersController.onPageLoad(period: Period)
-POST        /:period/check-your-answers                                                                      controllers.CheckYourAnswersController.onSubmit(period: Period)
+POST        /:period/check-your-answers                                                                      controllers.CheckYourAnswersController.onSubmit(period: Period, incompletePromptShown:Boolean)
 
 GET         /:period/check-sales-from-northern-ireland/:index                                                controllers.CheckSalesFromNiController.onPageLoad(mode: Mode = NormalMode, period: Period, index: Index)
 POST        /:period/check-sales-from-northern-ireland/:index                                                controllers.CheckSalesFromNiController.onSubmit(mode: Mode = NormalMode, period: Period, index: Index)

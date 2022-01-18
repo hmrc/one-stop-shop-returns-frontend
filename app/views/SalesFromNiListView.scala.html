@@ -26,7 +26,7 @@
         addToList: components.addToList
 )
 
-@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, canAddCountries: Boolean, incompleteCountries: List[Country] = List.empty)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, canAddCountries: Boolean, incompleteCountries: Seq[Country] = List.empty)(implicit request: Request[_], messages: Messages)
 @defining(if(list.size == 1) ".singular" else "") { messageSuffix =>
 
     @layout(pageTitle = title(

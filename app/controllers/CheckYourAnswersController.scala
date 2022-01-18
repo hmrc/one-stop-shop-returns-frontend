@@ -20,23 +20,24 @@ import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
+import controllers.corrections.{routes => correctionsRoutes}
 import logging.Logging
-import models.{CheckMode, NormalMode, Period}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.requests.corrections.CorrectionRequest
+import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.ConflictFound
-import pages.CheckYourAnswersPage
+import models.{CheckMode, DataMissingError, Index, NormalMode, Period, ValidationError}
 import pages.corrections.{CorrectPreviousReturnPage, VatPeriodCorrectionsListPage}
+import pages.{CheckYourAnswersPage, VatRatesFromEuPage, VatRatesFromNiPage}
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import queries.EmailConfirmationQuery
-import queries.corrections.AllCorrectionPeriodsQuery
+import play.api.mvc._
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
+import queries._
 import repositories.CachedVatReturnRepository
-import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import services.corrections.CorrectionService
+import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -46,7 +47,6 @@ import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, Correc
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
-import scala.concurrent.Future.fromTry
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckYourAnswersController @Inject()(
@@ -65,31 +65,14 @@ class CheckYourAnswersController @Inject()(
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
-      VatPeriodCorrectionsListPage.cleanup(request.userAnswers, cc).flatMap{result =>
-        result.fold(
-          _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())),
-          answers =>
-            {
-            if(answers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).isEmpty) {
-              for{
-                updatedAnwers <- fromTry(request.userAnswers.set(CorrectPreviousReturnPage, false))
-                _ <- cc.sessionRepository.set(updatedAnwers)
-              }yield {
-                displayPage()
-              }
-            }else{
-              Future.successful(displayPage())
-            }
-          }
-        )}
-  }
 
-  private def displayPage()(implicit request: DataRequest[AnyContent]): Result = {
-    val businessSummaryList = getBusinessSummaryList(request)
+      val errors = validate(period)
 
-    val salesFromNiSummaryList = getSalesFromNiSummaryList(request)
+      val businessSummaryList = getBusinessSummaryList(request)
 
-    val salesFromEuSummaryList = getSalesFromEuSummaryList(request)
+      val salesFromNiSummaryList = getSalesFromNiSummaryList(request)
+
+      val salesFromEuSummaryList = getSalesFromEuSummaryList(request)
 
       val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
@@ -101,17 +84,19 @@ class CheckYourAnswersController @Inject()(
       val totalVatOnSales =
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
-    val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromNiSummaryList, salesFromEuSummaryList)
+      val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromNiSummaryList, salesFromEuSummaryList)
 
-    Ok(view(
-      summaryLists,
-      request.userAnswers.period,
-      totalVatToCountries,
-      totalVatOnSales,
-      noPaymentDueCountries,
-      containsCorrections
-    ))
+      Future.successful(Ok(view(
+        summaryLists,
+        request.userAnswers.period,
+        totalVatToCountries,
+        totalVatOnSales,
+        noPaymentDueCountries,
+        containsCorrections,
+        errors.map(_.errorMessage)
+      )))
   }
+
 
   private def getAllSummaryLists(
                                   request: DataRequest[AnyContent],
@@ -169,81 +154,143 @@ class CheckYourAnswersController @Inject()(
     ).withCssClass("govuk-!-margin-bottom-9")
   }
 
-  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
+  def validate(period: Period)( implicit request: DataRequest[AnyContent]): List[ValidationError] = {
+
+    val validatedVatReturnRequest =
+      vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
+
+    val validatedCorrectionRequest = request.userAnswers.get(CorrectPreviousReturnPage).map(_ =>
+      correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate))
+
+    (validatedVatReturnRequest, validatedCorrectionRequest) match {
+      case (Invalid(vatReturnErrors), Some(Invalid(correctionErrors))) =>
+        (vatReturnErrors ++ correctionErrors).toChain.toList
+      case (Invalid(errors), _) =>
+        errors.toChain.toList
+      case (_, Some(Invalid(errors))) =>
+        errors.toChain.toList
+      case _ => List.empty[ValidationError]
+    }
+  }
+
+  def onSubmit(period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
-      val validatedVatReturnRequest =
-        vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
 
-      if (request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
-        val validatedCorrectionRequest =
-          correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate)
+      val redirectToFirstError = getRedirect(validate(period), period).headOption
 
-        (validatedVatReturnRequest, validatedCorrectionRequest) match {
-          case (Valid(vatReturnRequest), Valid(correctionRequest)) =>
-            val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
-            vatReturnConnector.submitWithCorrection(vatReturnWithCorrectionRequest).flatMap {
-              case Right((vatReturn: VatReturn, _)) =>
-                auditEmailAndRedirect(vatReturnRequest, Some(correctionRequest), vatReturn, period)
-              case Left(ConflictFound) =>
-                auditService.audit(ReturnsAuditModel.build(
-                  vatReturnRequest, Some(correctionRequest), SubmissionResult.Duplicate, None, None, request
-                ))
-                Redirect(routes.YourAccountController.onPageLoad()).toFuture
-              case Left(e) =>
-                logger.error(s"Unexpected result on submit: ${e.toString}")
-                auditService.audit(ReturnsAuditModel.build(
-                  vatReturnRequest, Some(correctionRequest), SubmissionResult.Failure, None, None, request
-                ))
-                Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-            }
+      (redirectToFirstError, incompletePromptShown) match {
+        case (Some(c), true) => Future.successful(Redirect(c))
+        case (Some(_), false) => Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad(period)))
+        case _ =>
+          val validatedVatReturnRequest =
+            vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
 
-          case (Invalid(vatReturnErrors), Invalid(correctionErrors)) =>
-            val errors = vatReturnErrors ++ correctionErrors
-            val errorList = errors.toChain.toList
-            val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-            logger.error(s"Unable to create a vat return and correction request from user answers: $errorMessages")
+          val validatedCorrectionRequest = request.userAnswers.get(CorrectPreviousReturnPage).map(_ =>
+            correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate))
 
-            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-          case (Invalid(errors), _) =>
-            val errorList = errors.toChain.toList
-            val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-            logger.error(s"Unable to create a vat return request from user answers: $errorMessages")
-
-            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-          case (_, Invalid(errors)) =>
-            val errorList = errors.toChain.toList
-            val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-            logger.error(s"Unable to create a Corrections request from user answers: $errorMessages")
-
-            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-        }
-      } else {
-        validatedVatReturnRequest match {
-          case Valid(vatReturnRequest) =>
-            vatReturnConnector.submit(vatReturnRequest).flatMap {
-              case Right(vatReturn: VatReturn) =>
-                auditEmailAndRedirect(vatReturnRequest, None, vatReturn, period)
-              case Left(ConflictFound) =>
-                auditService.audit(ReturnsAuditModel.build(
-                  vatReturnRequest, None, SubmissionResult.Duplicate, None, None, request
-                ))
-                Redirect(routes.YourAccountController.onPageLoad()).toFuture
-              case Left(e) =>
-                logger.error(s"Unexpected result on submit: ${e.toString}")
-                auditService.audit(ReturnsAuditModel.build(
-                  vatReturnRequest, None, SubmissionResult.Failure, None, None, request
-                ))
-                Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-            }
-          case Invalid(errors) =>
-            val errorList = errors.toChain.toList
-            val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-            logger.error(s"Unable to create a VAT return request from user answers: $errorMessages")
-
-            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-        }
+          (validatedVatReturnRequest, validatedCorrectionRequest) match {
+            case (Valid(vatReturnRequest), Some(Valid(correctionRequest))) =>
+              submitReturn(vatReturnRequest, Option(correctionRequest), period)
+            case (Valid(vatReturnRequest), None) =>
+              submitReturn(vatReturnRequest, None, period)
+            case (Invalid(vatReturnErrors), Some(Invalid(correctionErrors))) =>
+              val errors = vatReturnErrors ++ correctionErrors
+              val errorList = errors.toChain.toList
+              val errorMessages = errorList.map(_.errorMessage).mkString("\n")
+              logger.error(s"Unable to create a vat return and correction request from user answers: $errorMessages")
+              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+            case (Invalid(errors), _) =>
+              val errorList = errors.toChain.toList
+              val errorMessages = errorList.map(_.errorMessage).mkString("\n")
+              logger.error(s"Unable to create a vat return request from user answers: $errorMessages")
+              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+            case (_, Some(Invalid(errors))) =>
+              val errorList = errors.toChain.toList
+              val errorMessages = errorList.map(_.errorMessage).mkString("\n")
+              logger.error(s"Unable to create a Corrections request from user answers: $errorMessages")
+              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+          }
       }
+  }
 
+  //noinspection ScalaStyle
+  def getRedirect(errors: List[ValidationError], period: Period): List[Call] = {
+    errors.flatMap {
+      case DataMissingError(AllSalesFromNiQuery) =>
+        logger.error(s"Data missing - no data provided for NI sales")
+        Some(routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, period, Index(0)))
+      case DataMissingError(VatRatesFromNiPage(index)) =>
+        logger.error(s"Data missing - vat rates with index ${index.position}")
+        Some(routes.VatRatesFromNiController.onPageLoad(CheckMode, period, index))
+      case DataMissingError(NiSalesAtVatRateQuery(countryIndex, vatRateIndex)) =>
+        logger.error(s"Data missing - net value of sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
+        Some(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, period, countryIndex, vatRateIndex))
+      case DataMissingError(VatOnSalesFromNiQuery(countryIndex, vatRateIndex)) =>
+        logger.error(s"Data missing - vat charged on sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
+        Some(routes.VatOnSalesFromNiController.onPageLoad(CheckMode, period, countryIndex, vatRateIndex))
+
+      case DataMissingError(AllSalesFromEuQuery) =>
+        logger.error(s"Data missing - no data provided for EU sales")
+        Some(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, period, Index(0)))
+      case DataMissingError(AllSalesToEuQuery(countryFromIndex)) =>
+        logger.error(s"Data missing - country of consumption from country ${countryFromIndex.position}")
+        Some(routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, period, countryFromIndex, Index(0)))
+      case DataMissingError(VatRatesFromEuPage(countryFromIndex, countryToIndex)) =>
+        logger.error(s"Data missing - vat rates for sales from country ${countryFromIndex.position} to country ${countryToIndex.position}")
+        Some(routes.VatRatesFromEuController.onPageLoad(CheckMode, period, countryFromIndex, countryToIndex))
+      case DataMissingError(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)) =>
+        logger.error(s"Data missing - net value of sales from country ${countryFromIndex.position} to country " +
+          s"${countryToIndex.position} at vat rate ${vatRateIndex.position} ")
+        Some(routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, period, countryFromIndex, countryToIndex, vatRateIndex))
+      case DataMissingError(VatOnSalesFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex)) =>
+        logger.error(s"Data missing - vat charged on sales from country ${countryFromIndex.position} to country " +
+          s"${countryToIndex.position} at vat rate ${vatRateIndex.position} ")
+        Some(routes.VatOnSalesFromEuController.onPageLoad(CheckMode, period, countryFromIndex, countryToIndex, vatRateIndex))
+
+      case DataMissingError(AllCorrectionPeriodsQuery) =>
+        logger.error(s"Data missing - no data provided for corrections")
+        Some(correctionsRoutes.CorrectionReturnPeriodController.onPageLoad(CheckMode, period, Index(0)))
+      case DataMissingError(AllCorrectionCountriesQuery(periodIndex)) =>
+        logger.error(s"Data missing - no countries found for corrections to period ${periodIndex.position}")
+        Some(correctionsRoutes.CorrectionCountryController.onPageLoad(CheckMode, period, periodIndex, Index(0)))
+      case DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)) =>
+        logger.error(s"Data missing - correction to country ${countryIndex.position} in period ${periodIndex.position}")
+        Some(correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, periodIndex, countryIndex))
+
+      case DataMissingError(_) =>
+        logger.error(s"Unhandled DataMissingError")
+        None
+      case _ =>
+        logger.error(s"Unhandled ValidationError")
+        None
+    }
+  }
+
+  def submitReturn(vatReturnRequest: VatReturnRequest, correctionRequest: Option[CorrectionRequest], period: Period)
+                  (implicit request: DataRequest[AnyContent]): Future[Result] = {
+
+    val submission = correctionRequest match {
+      case Some(cr) => vatReturnConnector.submit(VatReturnWithCorrectionRequest(vatReturnRequest, cr))
+      case _ => vatReturnConnector.submit(vatReturnRequest)
+    }
+
+    submission.flatMap {
+      case Right(vatReturn: VatReturn) =>
+        auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period)
+      case Right((vatReturn: VatReturn, _)) =>
+        auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period)
+      case Left(ConflictFound) =>
+        auditService.audit(ReturnsAuditModel.build(
+          vatReturnRequest, correctionRequest, SubmissionResult.Duplicate, None, None, request
+        ))
+        Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+    case Left(e) =>
+      logger.error(s"Unexpected result on submit: ${e.toString}")
+      auditService.audit(ReturnsAuditModel.build(
+        vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
+      ))
+      Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+    }
   }
 
   private def auditEmailAndRedirect(

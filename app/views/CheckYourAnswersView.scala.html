@@ -29,14 +29,24 @@
     totalVatToCountries: List[TotalVatToCountry],
     totalVatOnSales: BigDecimal,
     noPaymentDueCountries: List[TotalVatToCountry],
-    containsCorrections: Boolean
+    containsCorrections: Boolean,
+    missingData: List[String]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
 
-    @formHelper(action = routes.CheckYourAnswersController.onSubmit(period)) {
 
         <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
+
+        @if(!missingData.isEmpty) {
+            <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                    <span class="govuk-warning-text__assistive">Warning</span>
+                    @messages("error.missing_answers")
+                </strong>
+            </div>
+        }
 
         @summaryLists.map { case (heading, summaryList) =>
             @if(heading.isDefined) {
@@ -106,9 +116,20 @@
                 </dd>
             </div>
         </dl>
+    @if(missingData.isEmpty) {
+        @formHelper(action = routes.CheckYourAnswersController.onSubmit(period, false)) {
+            @govukButton(
+                ButtonViewModel(messages("site.submit"))
+            )
+        }
+    } else {
+        <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+        <p class="govuk-body">@messages("error.missing_answers_prompt.general")</p>
 
-        @govukButton(
-            ButtonViewModel(messages("site.submit"))
-        )
+        @formHelper(action = routes.CheckYourAnswersController.onSubmit(period, true)) {
+            @govukButton(
+                ButtonViewModel(messages("error.resolve_missing_answers"))
+            )
+        }
     }
 }

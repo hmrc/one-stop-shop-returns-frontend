@@ -136,7 +136,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
             .willReturn(aResponse().withStatus(CREATED).withBody(responseJson.toString()))
         )
 
-        val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
+        val result = connector.submit(vatReturnWithCorrectionRequest).futureValue
 
         result.value mustEqual expectedVatReturnWithCorrection
       }
@@ -153,7 +153,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
         server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(CONFLICT)))
 
-        val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
+        val result = connector.submit(vatReturnWithCorrectionRequest).futureValue
 
         result.left.value mustEqual ConflictFound
       }
@@ -170,7 +170,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
         server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
 
-        val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
+        val result = connector.submit(vatReturnWithCorrectionRequest).futureValue
 
         result.left.value mustBe an[UnexpectedResponseStatus]
       }
