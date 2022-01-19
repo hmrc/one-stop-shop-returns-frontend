@@ -31,7 +31,6 @@ import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import services.SaveForLaterService
 import views.html.SavedProgressView
 
 import java.time.format.DateTimeFormatter
@@ -52,7 +51,6 @@ class SavedProgressControllerSpec extends SpecBase {
 
       val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
       val mockSaveForLaterConnector = mock[SaveForLaterConnector]
-      val mockSaveForLaterService = mock[SaveForLaterService]
       val mockSessionRepository = mock[SessionRepository]
 
       val savedAnswers = SavedUserAnswers(
@@ -70,14 +68,12 @@ class SavedProgressControllerSpec extends SpecBase {
 
       when(mockAppConfig.cacheTtl) thenReturn 1
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(savedAnswers)))
-      when(mockSaveForLaterService.fromUserAnswers(any(), any(), any())) thenReturn savedAnswersRequest
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
         .overrides(
           bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
-          bind[SaveForLaterService].toInstance(mockSaveForLaterService),
           bind[SessionRepository].toInstance(mockSessionRepository)
         ).build()
 

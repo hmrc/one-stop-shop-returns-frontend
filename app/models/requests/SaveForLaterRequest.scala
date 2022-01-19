@@ -16,12 +16,9 @@
 
 package models.requests
 
-import models.Period
-import models.domain.{SalesFromEuCountry, SalesToCountry}
+import models.{Period, UserAnswers}
 import play.api.libs.json.{JsValue, Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
-
-import java.time.{Instant, LocalDate}
 
 case class SaveForLaterRequest(
                              vrn: Vrn,
@@ -32,4 +29,6 @@ case class SaveForLaterRequest(
 object SaveForLaterRequest {
 
   implicit val format: OFormat[SaveForLaterRequest] = Json.format[SaveForLaterRequest]
+
+  def apply(answers: UserAnswers, vrn: Vrn, period: Period): SaveForLaterRequest = SaveForLaterRequest(vrn, period, answers.data)
 }

@@ -21,11 +21,11 @@ import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import controllers.actions._
 import logging.Logging
 import models.Period
+import models.requests.SaveForLaterRequest
 import models.responses.ConflictFound
 import pages.SavedProgressPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.SaveForLaterService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SavedProgressView
 
@@ -38,7 +38,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class SavedProgressController @Inject()(
                                          cc: AuthenticatedControllerComponents,
                                          view: SavedProgressView,
-                                         service: SaveForLaterService,
                                          connector: SaveForLaterConnector,
                                          appConfig: FrontendAppConfig
                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
@@ -52,7 +51,7 @@ class SavedProgressController @Inject()(
         .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
       Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl)).flatMap {
         updatedAnswers =>
-          val s4LRequest = service.fromUserAnswers(updatedAnswers, request.vrn, period)
+          val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, period)
 
           connector.submit(s4LRequest).flatMap {
             case Right(Some(_: SavedUserAnswers)) =>
