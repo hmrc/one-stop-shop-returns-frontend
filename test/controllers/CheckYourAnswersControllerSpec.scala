@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
-import connectors.VatReturnConnector
+import connectors.{SaveForLaterConnector, VatReturnConnector}
 import connectors.corrections.CorrectionConnector
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.corrections.CorrectionPayload
@@ -57,6 +57,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val auditService = mock[AuditService]
   private val salesAtVatRateService = mock[SalesAtVatRateService]
   private val emailService =  mock[EmailService]
+  private val s4lConnector = mock[SaveForLaterConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector, correctionConnector, vatReturnService, auditService, salesAtVatRateService, emailService)
@@ -203,13 +204,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
+          when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
+
 
           val app =
             applicationBuilder(Some(answers))
               .overrides(
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[CorrectionConnector].toInstance(correctionConnector),
-                bind[EmailService].toInstance(emailService)
+                bind[EmailService].toInstance(emailService),
+                bind[SaveForLaterConnector].toInstance(s4lConnector)
               )
               .build()
 
@@ -233,6 +237,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
+          when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
           val totalVatOnSales = BigDecimal(100)
           when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
@@ -247,6 +252,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               bind[AuditService].toInstance(auditService),
               bind[EmailService].toInstance(emailService),
               bind[SessionRepository].toInstance(mockSessionRepository),
+              bind[SaveForLaterConnector].toInstance(s4lConnector)
             )
             .build()
 
@@ -290,13 +296,15 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
+          when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
           val app =
             applicationBuilder(Some(answers))
               .overrides(
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[CorrectionConnector].toInstance(correctionConnector),
-                bind[EmailService].toInstance(emailService)
+                bind[EmailService].toInstance(emailService),
+                bind[SaveForLaterConnector].toInstance(s4lConnector)
               ).build()
 
           running(app) {
@@ -321,6 +329,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
+          when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
           val totalVatOnSales = BigDecimal(100)
           when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
@@ -336,6 +345,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               bind[AuditService].toInstance(auditService),
               bind[EmailService].toInstance(emailService),
               bind[SessionRepository].toInstance(mockSessionRepository),
+              bind[SaveForLaterConnector].toInstance(s4lConnector)
             )
             .build()
 
@@ -646,12 +656,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
         .thenReturn(Future.successful(EMAIL_ACCEPTED))
       when(mockCachedVatReturnRepository.clear(any(), any())) thenReturn Future.successful(true)
+      when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
       val app = applicationBuilder(userAnswers = Some(answers))
         .overrides(
           bind[CachedVatReturnRepository].toInstance(mockCachedVatReturnRepository),
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[EmailService].toInstance(emailService),
+          bind[SaveForLaterConnector].toInstance(s4lConnector)
         ).build()
 
       running(app) {
