@@ -16,13 +16,13 @@
 
 @import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLabel
 @import viewmodels.InputWidth
-
+@import components.ButtonGroup
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukInput: GovukInput,
-    govukButton: GovukButton,
+    button: ButtonGroup,
     govukSelect: GovukSelect
 )
 
@@ -50,8 +50,6 @@
         )
 
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue",  period, routes.CountryOfConsumptionFromNiController.onPageLoad(mode, period, index).url)
     }
 }

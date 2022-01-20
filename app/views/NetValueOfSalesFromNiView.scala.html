@@ -16,13 +16,14 @@
 
 @import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLabel
 @import viewmodels.InputWidth._
+@import components.ButtonGroup
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukInput: GovukInput,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period, countryIndex: Index, vatRateIndex: Index, country: Country, vatRate: VatRate)(implicit request: Request[_], messages: Messages)
@@ -53,8 +54,6 @@
             .withHint(HintViewModel(messages("netValueOfSalesFromNi.hint")))
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue",  period, routes.NetValueOfSalesFromNiController.onPageLoad(mode, period, countryIndex, vatRateIndex).url)
     }
 }

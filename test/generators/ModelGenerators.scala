@@ -16,6 +16,7 @@
 
 package generators
 
+import connectors.SavedUserAnswers
 import models.VatOnSalesChoice.Standard
 import models.{domain, _}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
@@ -24,12 +25,18 @@ import models.financialdata.Charge
 import models.registration._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate, ZoneOffset}
 import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
+
+  implicit lazy val arbitraryContinueReturn: Arbitrary[ContinueReturn] =
+    Arbitrary {
+      Gen.oneOf(ContinueReturn.values.toSeq)
+    }
 
   implicit val arbitraryVatOnSales: Arbitrary[VatOnSales] =
     Arbitrary {
@@ -289,5 +296,15 @@ trait ModelGenerators {
         corrections <- Gen.listOfN(amount, arbitrary[PeriodWithCorrections])
         now = Instant.now
       } yield CorrectionPayload(vrn, period, corrections, now, now)
+    }
+
+  implicit val arbitrarySavedUserAnswers: Arbitrary[SavedUserAnswers] =
+    Arbitrary {
+      for {
+        vrn         <- arbitrary[Vrn]
+        period      <- arbitrary[Period]
+        data        = JsObject(Seq("test" -> Json.toJson("test")))
+        now         = Instant.now
+      } yield SavedUserAnswers(vrn, period, data, now)
     }
 }
