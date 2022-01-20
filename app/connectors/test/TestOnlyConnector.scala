@@ -29,7 +29,7 @@ class TestOnlyConnector @Inject()(
                              )(implicit ec: ExecutionContext) {
 
   private val service = config.get[Service]("microservice.services.one-stop-shop-returns")
-  lazy val url = s"$service.protocol://$service.host:$service.port/test-only/delete-accounts"
+  lazy val url = s"${service.protocol}://${service.host}:${service.port}/test-only/delete-accounts"
 
   def dropAccounts()(implicit hc: HeaderCarrier): Future[HttpResponse] = httpClient.DELETE(url)
 }
