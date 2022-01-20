@@ -11,4 +11,4 @@
 
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
-GET       /test-only/delete-accounts  @controllers.test.TestOnlyController.deleteAccounts()
+GET       /one-stop-shop-returns-frontend/test-only/delete-accounts  @controllers.test.TestOnlyController.deleteAccounts()
