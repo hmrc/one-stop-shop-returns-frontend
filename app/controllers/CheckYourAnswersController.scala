@@ -18,7 +18,7 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
-import connectors.VatReturnConnector
+import connectors.{SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import controllers.corrections.{routes => correctionsRoutes}
 import logging.Logging
@@ -58,7 +58,8 @@ class CheckYourAnswersController @Inject()(
                                             auditService: AuditService,
                                             emailService: EmailService,
                                             vatReturnConnector: VatReturnConnector,
-                                            cachedVatReturnRepository: CachedVatReturnRepository
+                                            cachedVatReturnRepository: CachedVatReturnRepository,
+                                            saveForLaterConnector: SaveForLaterConnector
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -116,13 +117,14 @@ class CheckYourAnswersController @Inject()(
         (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
         (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
         (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
-      )} else {
-        Seq(
-          (None, businessSummaryList),
-          (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-          (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
-        )
-      }
+      )
+    } else {
+      Seq(
+        (None, businessSummaryList),
+        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
+        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
+      )
+    }
 
   private def getSalesFromEuSummaryList(request: DataRequest[AnyContent])(implicit messages: Messages) = {
     SummaryListViewModel(
@@ -294,11 +296,11 @@ class CheckYourAnswersController @Inject()(
   }
 
   private def auditEmailAndRedirect(
-   returnRequest: VatReturnRequest,
-   correctionRequest: Option[CorrectionRequest],
-   vatReturn: VatReturn,
-   period: Period
-  )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
+                                     returnRequest: VatReturnRequest,
+                                     correctionRequest: Option[CorrectionRequest],
+                                     vatReturn: VatReturn,
+                                     period: Period
+                                   )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
     auditService.audit(
       ReturnsAuditModel.build(
         returnRequest,
@@ -333,7 +335,7 @@ class CheckYourAnswersController @Inject()(
           updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
           _ <- cc.sessionRepository.set(updatedAnswers)
           _ <- cachedVatReturnRepository.clear(request.userId, period)
-
+          _ <- saveForLaterConnector.delete(period)
         } yield {
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
         }

@@ -43,9 +43,22 @@
 
     @if(countryCorrectionComplete) {
         @formHelper(action = controllers.corrections.routes.CheckVatPayableAmountController.onSubmit(mode, period, periodIndex, countryIndex), 'missingPrompt -> "false") {
-            @govukButton(
-                ButtonViewModel(messages("site.continue"))
-            )
+
+            <p class="govuk-!-margin-bottom-9" style="margin-top:50px;">
+
+                <div class="govuk-button-group">
+
+                    @govukButton(
+                        ButtonViewModel(messages("site.continue"))
+                    )
+
+                    <a id="saveProgress" role="button" href="@routes.SavedProgressController.onPageLoad(period, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(mode, period, periodIndex, countryIndex).url)" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                        @messages("saveProgress.button")
+                    </a>
+                </div>
+
+            </p>
+
         }
     } else {
         <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>

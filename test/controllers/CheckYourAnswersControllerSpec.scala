@@ -17,8 +17,9 @@
 package controllers
 
 import base.SpecBase
-import cats.data.Validated.Valid
-import connectors.VatReturnConnector
+import cats.data.NonEmptyChain
+import cats.data.Validated.{Invalid, Valid}
+import connectors.{SaveForLaterConnector, VatReturnConnector}
 import connectors.corrections.CorrectionConnector
 import controllers.corrections.{routes => correctionsRoutes}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
@@ -27,7 +28,7 @@ import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
-import models.{CheckMode, Country, Index, NormalMode, Period, TotalVatToCountry, VatRate, VatRateType}
+import models.{CheckMode, Country, DataMissingError, Index, NormalMode, Period, TotalVatToCountry, VatRate, VatRateType}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -58,6 +59,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val auditService = mock[AuditService]
   private val salesAtVatRateService = mock[SalesAtVatRateService]
   private val emailService =  mock[EmailService]
+  private val s4lConnector = mock[SaveForLaterConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector, correctionConnector, vatReturnService, auditService, salesAtVatRateService, emailService)
@@ -204,13 +206,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
+          when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
+
 
           val app =
             applicationBuilder(Some(answers))
               .overrides(
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[CorrectionConnector].toInstance(correctionConnector),
-                bind[EmailService].toInstance(emailService)
+                bind[EmailService].toInstance(emailService),
+                bind[SaveForLaterConnector].toInstance(s4lConnector)
               )
               .build()
 
@@ -227,17 +232,20 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         "must audit the event and redirect to the next page and successfully send email confirmation" in {
           val mockSessionRepository = mock[SessionRepository]
 
+          val answers = completeUserAnswers
+
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
           when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
+          when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
           val totalVatOnSales = BigDecimal(100)
           when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
           doNothing().when(auditService).audit(any())(any(), any())
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+          val application = applicationBuilder(userAnswers = Some(answers))
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
@@ -246,13 +254,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               bind[AuditService].toInstance(auditService),
               bind[EmailService].toInstance(emailService),
               bind[SessionRepository].toInstance(mockSessionRepository),
+              bind[SaveForLaterConnector].toInstance(s4lConnector)
             )
             .build()
 
           running(application) {
             val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period, false).url)
             val result = route(application, request).value
-            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, answers)
             val expectedAuditEvent = ReturnsAuditModel.build(
               vatReturnRequest, None, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
             )
@@ -289,13 +298,15 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(vatReturnConnector.submit(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
+          when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
           val app =
             applicationBuilder(Some(answers))
               .overrides(
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[CorrectionConnector].toInstance(correctionConnector),
-                bind[EmailService].toInstance(emailService)
+                bind[EmailService].toInstance(emailService),
+                bind[SaveForLaterConnector].toInstance(s4lConnector)
               ).build()
 
           running(app) {
@@ -320,6 +331,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(vatReturnConnector.submit(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
+          when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
           val totalVatOnSales = BigDecimal(100)
           when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
@@ -335,6 +347,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               bind[AuditService].toInstance(auditService),
               bind[EmailService].toInstance(emailService),
               bind[SessionRepository].toInstance(mockSessionRepository),
+              bind[SaveForLaterConnector].toInstance(s4lConnector)
             )
             .build()
 
@@ -404,20 +417,165 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
     "when the submission to the backend fails" - {
 
-      "must redirect to Journey Recovery" in {
+      "and the question on the Correct Previous Return Page has been answered" - {
 
-        val answers =
-          emptyUserAnswers
-            .set(SoldGoodsFromNiPage, false).success.value
-            .set(SoldGoodsFromEuPage, false).success.value
+        "must redirect to Journey Recovery when an Unexpected Status Result is returned from the connector" in {
 
-        val app =
-          applicationBuilder(Some(answers))
-            .overrides(
-              bind[VatReturnService].toInstance(vatReturnService),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
-              bind[AuditService].toInstance(auditService)
-            ).build()
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
+
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[AuditService].toInstance(auditService)
+              ).build()
+
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnConnector.submit(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          doNothing().when(auditService).audit(any())(any(), any())
+
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
+            val result = route(app, request).value
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+            val expectedAuditEvent =
+              ReturnsAuditModel.build(vatReturnRequest, Some(correctionRequest), SubmissionResult.Failure, None, None, dataRequest)
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+            verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+          }
+        }
+
+        "must redirect to Journey Recovery when an Invalid Vat Return and Correction Request are returned" in {
+
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
+
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[CorrectionService].toInstance(correctionService)
+              ).build()
+
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(SoldGoodsFromNiPage)))
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(CorrectPreviousReturnPage)))
+
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
+            val result = route(app, request).value
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          }
+        }
+
+        "must redirect to Journey Recovery when an Invalid Vat Return is returned and a Valid Correction Request is returned" in {
+
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
+
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[CorrectionService].toInstance(correctionService)
+              ).build()
+
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(SoldGoodsFromNiPage)))
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
+
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
+            val result = route(app, request).value
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          }
+        }
+
+        "must redirect to Journey Recovery when an Valid Vat Return is returned and a Invalid Correction Request is returned" in {
+
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
+
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[CorrectionService].toInstance(correctionService)
+              ).build()
+
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(CorrectPreviousReturnPage)))
+
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
+            val result = route(app, request).value
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          }
+        }
+
+        "must redirect to Journey Recovery when connector returns Conflict Found" in {
+
+          val answers =
+            completeUserAnswers
+              .set(CorrectPreviousReturnPage, false).success.value
+
+          val app =
+            applicationBuilder(Some(answers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[AuditService].toInstance(auditService),
+                bind[CorrectionService].toInstance(correctionService)
+              ).build()
+
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnConnector.submit(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Left(ConflictFound))
+          when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
+          doNothing().when(auditService).audit(any())(any(), any())
+
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
+            val result = route(app, request).value
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+            val expectedAuditEvent =
+              ReturnsAuditModel.build(vatReturnRequest, Some(correctionRequest), SubmissionResult.Duplicate, None, None, dataRequest)
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+            verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+          }
+        }
+      }
+
+      "and the question on the Correct Previous Return Page has not been answered" - {
+
+        "must redirect to Journey Recovery when an Unexpected Status Result is returned from the connector" in {
+
+          val app =
+            applicationBuilder(Some(emptyUserAnswers))
+              .overrides(
+                bind[VatReturnService].toInstance(vatReturnService),
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[AuditService].toInstance(auditService)
+              ).build()
 
         when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
         when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
@@ -430,9 +588,10 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val expectedAuditEvent =
             ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Failure, None, None, dataRequest)
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-          verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+            verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+          }
         }
       }
     }
@@ -499,12 +658,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
         .thenReturn(Future.successful(EMAIL_ACCEPTED))
       when(mockCachedVatReturnRepository.clear(any(), any())) thenReturn Future.successful(true)
+      when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
       val app = applicationBuilder(userAnswers = Some(answers))
         .overrides(
           bind[CachedVatReturnRepository].toInstance(mockCachedVatReturnRepository),
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[EmailService].toInstance(emailService),
+          bind[SaveForLaterConnector].toInstance(s4lConnector)
         ).build()
 
       running(app) {

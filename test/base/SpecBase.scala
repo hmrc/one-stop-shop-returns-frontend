@@ -64,7 +64,7 @@ trait SpecBase
 
   val address: UkAddress = UkAddress("line 1", None, "town", None, "AA11 1AA")
   val registration: Registration = Registration(
-    vrn                   = Vrn("123456789"),
+    vrn                   = vrn,
     registeredCompanyName = arbitrary[String].sample.value,
     vatDetails            = VatDetails(LocalDate.of(2000, 1, 1), address, false, VatDetailSource.Mixed),
     euRegistrations       = Nil,
@@ -101,8 +101,8 @@ trait SpecBase
 
   val completeVatReturn: VatReturn =
       VatReturn(
-        Vrn("063407423"),
-        Period("2086", "Q3").get,
+        vrn,
+        period,
         ReturnReference("XI/XI063407423/Q3.2086"),
         PaymentReference("NI063407423Q386"),
         None,
@@ -149,8 +149,8 @@ trait SpecBase
 
   val simpleCompleteVatReturn: VatReturn =
     VatReturn(
-      Vrn("063407423"),
-      Period("2086", "Q3").get,
+      vrn,
+      period,
       ReturnReference("XI/XI063407423/Q3.2086"),
       PaymentReference("XI063407423Q386"),
       None,
@@ -197,10 +197,10 @@ trait SpecBase
 
   val emptyVatReturn: VatReturn =
     VatReturn(
-      Vrn("063407423"),
-      Period("2086", "Q3").get,
-      ReturnReference("XI/XI063407423/Q3.2086"),
-      PaymentReference("XI063407423Q386"),
+      vrn,
+      period,
+      ReturnReference(s"XI/XI$vrn/Q3.2021"),
+      PaymentReference(s"XI${vrn}Q321"),
       None,
       None,
       List.empty,
@@ -211,8 +211,8 @@ trait SpecBase
 
   val emptyCorrectionPayload: CorrectionPayload =
     CorrectionPayload(
-      Vrn("063407423"),
-      Period("2086", "Q3").get,
+      vrn,
+      period,
       List.empty,
       Instant.ofEpochSecond(1630670836),
       Instant.ofEpochSecond(1630670836)
@@ -220,8 +220,8 @@ trait SpecBase
 
   val vatReturnRequest: VatReturnRequest =
     VatReturnRequest(
-      Vrn("063407423"),
-      Period("2086", "Q3").get,
+      vrn,
+      period,
       Some(LocalDate.now()),
       Some(LocalDate.now().plusDays(1)),
       List.empty,
@@ -230,8 +230,8 @@ trait SpecBase
 
   val correctionRequest: CorrectionRequest =
     CorrectionRequest(
-      Vrn("063407423"),
-      Period(2086, Q3),
+      vrn,
+      period,
       List.empty
     )
 

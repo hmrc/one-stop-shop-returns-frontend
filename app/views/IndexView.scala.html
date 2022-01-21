@@ -29,7 +29,8 @@
         duePeriod: Option[Period],
         dueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
         overdueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
-        paymentError: Boolean
+        paymentError: Boolean,
+        periodInProgress: Option[Period] = None
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -67,28 +68,79 @@
                 <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
 
 
-                @overduePeriods.size match {
-                    case 0 => {}
-                    case 1 => {
-                        <p class="govuk-body">@messages("index.yourReturns.returnOverdue", overduePeriods.head.displayText)</p>
-                    }
-                    case x => {
-                        <p class="govuk-body">@messages("index.yourReturns.returnsOverdue", x)</p>
-                    }
+
+        @(periodInProgress, duePeriod, overduePeriods.size) match {
+                case (None, None, 0) => {}
+                case (None, None, 1) => {<p class="govuk-body">@messages("index.yourReturns.returnOverdue", overduePeriods.head.displayText)</p>}
+                case (None, None, x) => {<p class="govuk-body">@messages("index.yourReturns.onlyReturnsOverdue", x)</p>}
+                case (Some(inProgress), None, 1) => {
+                <p class="govuk-body">@messages("index.yourReturns.returnOverdue", overduePeriods.head.displayText)</p>
+                <p class="govuk-body">@messages("yourAccount.return.inProgress", inProgress.displayText)</p>
+                }
+                case (Some(inProgress), None, x) => {
+                <p class="govuk-body">@messages("index.yourReturns.onlyReturnsOverdue", x)</p>
+                <p class="govuk-body">@messages("yourAccount.return.inProgress", inProgress.displayText)</p>
                 }
 
-                @duePeriod match {
-                    case None => {}
-                    case Some(period) => {
+                case (None, Some(period), 0) => {
                         <p class="govuk-body">@messages("index.yourReturns.returnDue", period.displayText, period.paymentDeadlineDisplay)</p>
                     }
+                case (None, Some(period), 1) => {
+                <p class="govuk-body">@messages("index.yourReturns.returnDue", period.displayText, period.paymentDeadlineDisplay)</p>
+                <p class="govuk-body">@messages("index.yourReturns.returnOverdue", overduePeriods.head.displayText)</p>
+                }
+                case (None, Some(period), x) => {
+                <p class="govuk-body">@messages("index.yourReturns.returnDue", period.displayText, period.paymentDeadlineDisplay)</p>
+                <p class="govuk-body">@messages("index.yourReturns.returnsOverdue", x)</p>
+                }
+                case (Some(inProgress), Some(due), 0) => {
+                        @if(due == inProgress){
+                            <p class="govuk-body">@messages("yourAccount.return.inProgress", due.displayText)</p>
+                            <p class="govuk-body">@messages("yourAccount.return.inProgress.due", due.paymentDeadlineDisplay)</p>
+                        } else{
+                             <p class="govuk-body">@messages("index.yourReturns.returnDue", due.displayText, due.paymentDeadlineDisplay)</p>
+                             <p class="govuk-body">@messages("yourAccount.return.inProgress", inProgress.displayText)</p>
+                            }
+                    }
+
+                case (Some(inProgress), Some(due), 1) => {
+                    @if(due == inProgress){
+                        <p class="govuk-body">@messages("yourAccount.return.inProgress", due.displayText)</p>
+                        <p class="govuk-body">@messages("index.yourReturns.returnOverdue", overduePeriods.head.displayText)</p>
+                        <p class="govuk-body">@messages("yourAccount.return.inProgress.due", due.paymentDeadlineDisplay)</p>
+                    } else{
+                        <p class="govuk-body">@messages("index.yourReturns.returnDue", due.displayText, due.paymentDeadlineDisplay)</p>
+                        <p class="govuk-body">@messages("index.yourReturns.returnOverdue", overduePeriods.head.displayText)</p>
+                        <p class="govuk-body">@messages("yourAccount.return.inProgress", inProgress.displayText)</p>
+                    }
                 }
 
-                @(duePeriod, overduePeriods.size) match {
-                    case (None, 0) => {
+                case (Some(inProgress), Some(due), x) => {
+                    @if(due == inProgress){
+                        <p class="govuk-body">@messages("yourAccount.return.inProgress", due.displayText)</p>
+                        <p class="govuk-body">@messages("index.yourReturns.returnsOverdue", x)</p>
+                        <p class="govuk-body">@messages("yourAccount.return.inProgress.due", due.paymentDeadlineDisplay)</p>
+                    } else{
+                        <p class="govuk-body">@messages("index.yourReturns.returnDue", due.displayText, due.paymentDeadlineDisplay)</p>
+                        <p class="govuk-body">@messages("index.yourReturns.returnsOverdue", x)</p>
+                        <p class="govuk-body">@messages("yourAccount.return.inProgress", inProgress.displayText)</p>
+                    }
+                }
+
+                }
+
+                @(periodInProgress, duePeriod, overduePeriods.size) match {
+                    case (Some(inProgress), _, _) => {
+                        <p class="govuk-body">
+                            <a class="govuk-link" href="@controllers.routes.ContinueReturnController.onPageLoad(inProgress).url" id="continue-your-return">
+                                @messages("index.yourReturns.continueReturn")
+                            </a>
+                        </p>
+                    }
+                    case (None, None, 0) => {
                         <p class="govuk-body">@messages("index.yourReturns.nothingDue")</p>
                     }
-                    case (Some(period), 0) => {
+                    case (None, Some(period), 0) => {
                         <p class="govuk-body">
                             <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period).url" id="start-your-return">
                             @messages("index.yourReturns.startReturn")

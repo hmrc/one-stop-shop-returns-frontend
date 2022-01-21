@@ -55,4 +55,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val cacheTtl: Int = configuration.get[Int]("mongodb.timeToLiveInSeconds")
   val cachedVatReturnTtl: Int = configuration.get[Int]("mongodb.cachedTimeToLiveInSeconds")
+  val saveForLaterTtl: Int = configuration.get[Int]("mongodb.saveForLaterTTLInDays")
+
 }

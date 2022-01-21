@@ -15,13 +15,14 @@
  *@
 
 @import viewmodels.InputWidth._
+@import components.ButtonGroup
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukSelect: GovukSelect,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
@@ -47,8 +48,6 @@
             .withCssClass("autocomplete")
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue",  period, routes.CountryOfSaleFromEuController.onPageLoad(mode, period, index).url)
     }
 }

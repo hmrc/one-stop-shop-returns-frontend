@@ -21,6 +21,7 @@ import connectors.ReturnStatusConnector
 import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.{Complete, Overdue}
+import models.responses.UnexpectedResponseStatus
 import models.{CheckThirdLoopMode, Country, Index, NormalMode, Period, PeriodWithStatus, SubmissionStatus, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
@@ -73,7 +74,23 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
   "VatPeriodCorrectionsListWithFormController" - {
 
-    "when there are no complete return periods available for correction must redirect to JourneyRecovery" in {
+    "must throw an exception when Return Status Connector returns an error" in {
+
+      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      running(application) {
+        implicit val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
+      }
+    }
+
+    "when there are no previous return periods must redirect to JourneyRecovery" in {
 
       when(mockReturnStatusConnector.listStatuses(any())(any()))
         .thenReturn(getStatusResponse(allPeriods, Overdue))
@@ -221,6 +238,23 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         val result = route(application, request).value
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must throw an exception when the Return Status Connector returns an Unexpected Response" in {
+
+      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, allPeriods))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period, false).url)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
       }
     }
   }
