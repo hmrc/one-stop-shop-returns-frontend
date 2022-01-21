@@ -22,6 +22,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 class TestOnlyConnector @Inject()(
                                config: Configuration,
