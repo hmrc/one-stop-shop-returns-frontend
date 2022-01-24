@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,15 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SoldGoodsFromNiView
 
+import java.time.{Clock, Instant}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SoldGoodsFromNiController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       formProvider: SoldGoodsFromNiFormProvider,
-                                       view: SoldGoodsFromNiView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                           cc: AuthenticatedControllerComponents,
+                                           formProvider: SoldGoodsFromNiFormProvider,
+                                           view: SoldGoodsFromNiView,
+                                           clock: Clock
+                                         )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -58,8 +60,13 @@ class SoldGoodsFromNiController @Inject()(
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.getOrElse(UserAnswers(request.userId, period)).set(SoldGoodsFromNiPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
+            updatedAnswers <- Future.fromTry(request.userAnswers
+              .getOrElse(UserAnswers(
+                userId = request.userId,
+                period = period,
+                lastUpdated = Instant.now(clock))
+              ).set(SoldGoodsFromNiPage, value))
+            _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(SoldGoodsFromNiPage.navigate(mode, updatedAnswers))
       )
   }

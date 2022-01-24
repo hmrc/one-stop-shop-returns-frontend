@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 package controllers
 
 import base.SpecBase
-import connectors.ReturnStatusConnector
+import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import connectors.financialdata.FinancialDataConnector
 import generators.Generators
 import models.Quarter._
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.financialdata.{Charge, VatReturnWithFinancialData}
-import models.responses.InvalidJson
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import models.{Country, Period, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -32,9 +32,11 @@ import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import pages.SavedProgressPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import services.VatReturnSalesService
 import uk.gov.hmrc.domain.Vrn
 import views.html.IndexView
@@ -47,27 +49,26 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val returnStatusConnector = mock[ReturnStatusConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
   private val vatReturnSalesService = mock[VatReturnSalesService]
+  private val sessionRepository = mock[SessionRepository]
+  private val save4LaterConnector = mock[SaveForLaterConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(returnStatusConnector)
     Mockito.reset(financialDataConnector)
+    Mockito.reset(vatReturnSalesService)
+    Mockito.reset(sessionRepository)
+    Mockito.reset(save4LaterConnector)
     super.beforeEach()
   }
 
   "Your Account Controller" - {
 
-    "must return OK and the correct view" - {
+    "must return OK and the correct view with no saved answers" - {
 
       "when there are no returns due" in {
 
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
-          ).build()
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
           Future.successful(
@@ -76,6 +77,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
+
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -102,21 +113,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
-          ).build()
-
         val period = Period(2021, Q3)
-
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn
           Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -131,7 +144,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             Seq.empty,
-            Some(Period(2021, Q3)),
+            Some(period),
             Seq.empty,
             Seq.empty,
             paymentError = false
@@ -144,12 +157,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-11-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
-          ).build()
-
         val period = Period(2021, Q3)
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Overdue))))
@@ -157,6 +164,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -184,12 +201,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2022-01-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
-          ).build()
-
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
 
@@ -202,6 +213,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
+
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
+          ).build()
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -229,11 +251,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2022-02-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
-          ).build()
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
 
@@ -245,6 +262,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
+
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
+          ).build()
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -272,12 +300,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2022-01-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
-          ).build()
-
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
 
@@ -291,6 +313,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
+
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -317,12 +350,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val instant = Instant.parse("2021-10-25T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
-          ).build()
 
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
@@ -355,6 +382,18 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
           )
 
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
+
+
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
@@ -380,13 +419,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val instant = Instant.parse("2021-10-25T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService)
-          ).build()
 
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
@@ -432,6 +464,18 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
+
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
@@ -460,13 +504,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val instant = Instant.parse("2021-10-25T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService)
-          ).build()
 
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
@@ -503,6 +540,18 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
+
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
@@ -531,12 +580,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val instant = Instant.parse("2022-01-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
-          ).build()
 
         val firstPeriod = Period(2021, Q1)
         val secondPeriod = Period(2021, Q2)
@@ -568,6 +611,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
           )
 
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
+
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
@@ -594,12 +648,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2022-01-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
-          ).build()
-
         val firstPeriod = Period(2021, Q1)
         val secondPeriod = Period(2021, Q2)
 
@@ -616,6 +664,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               InvalidJson
             )
           )
+
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -642,13 +701,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
         val vatOwed = BigDecimal(1563.49)
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService)
-          ).build()
-
         val firstPeriod = Period(2021, Q3)
         val vatReturn = completeVatReturn.copy(period = firstPeriod)
         val vatReturnWithFinancialData = VatReturnWithFinancialData(
@@ -670,6 +722,18 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
           vatOwed
 
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
+
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
@@ -689,6 +753,147 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = true
           )(request, messages(application)).toString
         }
+      }
+
+      "when there is 1 return due and it is in progress" in {
+
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+        val period = Period(2021, Q3)
+        val userAnswers = emptyUserAnswers.set(SavedProgressPage, "test").success.value
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+          Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))))
+
+        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
+        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(Some(userAnswers)))
+        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq.empty,
+            Some(period),
+            Seq.empty,
+            Seq.empty,
+            paymentError = false,
+            periodInProgress = Some(period)
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when a user has previously saved their return progress and their session has renewed" in {
+
+        val instant = Instant.parse("2021-11-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val period = Period(2021, Q3)
+
+        when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Overdue))))
+
+        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+          Future.successful(
+            Right(Seq.empty))
+        when(sessionRepository.get(any(), any())) thenReturn Future.successful(None)
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get(any())(any())) thenReturn Future.successful(Right(Some(arbitrarySavedUserAnswers.arbitrary.sample.value)))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+          ).build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            Seq(Period(2021, Q3)),
+            None,
+            Seq.empty,
+            Seq.empty,
+            paymentError = false,
+            periodInProgress = Some(period)
+          )(request, messages(application)).toString
+
+        }
+      }
+
+    }
+
+    "must throw and exception when an error is returned from both connectors" in {
+
+      when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+        Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        Future.successful(
+          Left(UnexpectedResponseStatus(1, "error")))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
+      }
+    }
+
+    "must throw and exception when an error is returned from the Return Status connector" in {
+
+      when(returnStatusConnector.listStatuses(any())(any())) thenReturn
+        Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        Future.successful(
+          Right(Seq.empty))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
       }
     }
   }

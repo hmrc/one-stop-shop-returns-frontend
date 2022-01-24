@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,6 +97,22 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
             ))
 
         connector.getCharge(period).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("")
+            ))
+
+        connector.getCharge(period)
+          .futureValue mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, ""))
       }
     }
   }

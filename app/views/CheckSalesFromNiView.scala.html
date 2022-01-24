@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
  *@
 
 @import viewmodels.TitledSummaryList
+@import components.ButtonGroup
 
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukSummaryList: GovukSummaryList,
-        govukButton: GovukButton
+        button: ButtonGroup
 )
 
 @(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: Country)(implicit request: Request[_], messages: Messages)
@@ -47,8 +48,6 @@
             @govukSummaryList(list.list)
         }
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue", period, routes.CheckSalesFromNiController.onPageLoad(mode, period, index).url)
     }
 }

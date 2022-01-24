@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -36,6 +36,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.EmailConfirmationQuery
+import repositories.SessionRepository
 import services.VatReturnSalesService
 import utils.CurrencyFormatter._
 import views.html.ReturnSubmittedView
@@ -396,5 +397,35 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         }
       }
     }
+
+    "must clear user-answers on Page Load after return submitted" in {
+      val mockSessionRepository = mock[SessionRepository]
+
+      val answers = completeUserAnswers
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
+
+      val app = applicationBuilder(userAnswers = Some(answers))
+        .overrides(
+          bind[SessionRepository].toInstance(mockSessionRepository),
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector),
+        ).build()
+
+      running(app) {
+
+        val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        verify(mockSessionRepository, times(1)).clear(eqTo(answers.userId))
+      }
+    }
+
+    "must throw an exception when "
   }
 }

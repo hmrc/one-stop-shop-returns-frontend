@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,29 @@
 package controllers
 
 import base.SpecBase
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
+import org.mockito.Mockito.when
+import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.inject._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import views.html.corrections.NoOtherCorrectionPeriodsAvailableView
 
-class NoOtherCorrectionPeriodsAvailableControllerSpec extends SpecBase {
+import scala.concurrent.Future
+
+class NoOtherCorrectionPeriodsAvailableControllerSpec extends SpecBase with BeforeAndAfterEach{
+
+  private lazy val NoOtherCorrectionPeriodsAvailableRoute = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(period).url
+
+  val mockSessionRepository = mock[SessionRepository]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockSessionRepository)
+    super.beforeEach()
+  }
 
   "NoOtherCorrectionPeriodsAvailable Controller" - {
 
@@ -30,7 +48,7 @@ class NoOtherCorrectionPeriodsAvailableControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(period).url)
+        val request = FakeRequest(GET, NoOtherCorrectionPeriodsAvailableRoute)
 
         val result = route(application, request).value
 
@@ -38,6 +56,57 @@ class NoOtherCorrectionPeriodsAvailableControllerSpec extends SpecBase {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(period)(request, messages(application)).toString
+      }
+    }
+
+    "must redirect to CheckYourAnswersController when completed correction periods are empty for a POST" in {
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[SessionRepository].toInstance(mockSessionRepository)
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(POST, NoOtherCorrectionPeriodsAvailableRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad(period).url
+      }
+    }
+
+    "must redirect to CheckYourAnswersController when completed correction periods are not empty for a POST" in {
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswersWithCorrections)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, NoOtherCorrectionPeriodsAvailableRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad(period).url
+      }
+    }
+
+    "must throw an Exception when Session Repository returns an Exception" in {
+
+      when(mockSessionRepository.set(any())) thenReturn Future.failed(new Exception("Some exception"))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[SessionRepository].toInstance(mockSessionRepository)
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(POST, NoOtherCorrectionPeriodsAvailableRoute)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
       }
     }
   }

@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  * limitations under the License.
  *@
 
+@import components.ButtonGroup
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukCheckboxes: GovukCheckboxes,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, countryFrom: Country, countryTo: Country, checkboxItems: Seq[CheckboxItem])(implicit request: Request[_], messages: Messages)
@@ -48,8 +49,6 @@
             ).withHint(HintViewModel(messages("vatRatesFromEu.hint")))
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
+        @button("site.continue",  period, routes.VatRatesFromEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex).url)
     }
 }

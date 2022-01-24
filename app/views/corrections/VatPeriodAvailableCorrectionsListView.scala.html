@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 @import viewmodels.LegendSize
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
+@import components.ButtonGroup
 
 @this(
 layout: templates.Layout,
 formHelper: FormWithCSRF,
 govukErrorSummary: GovukErrorSummary,
 govukRadios: GovukRadios,
-govukButton: GovukButton,
+button: ButtonGroup,
 addToList: components.addToSimpleList
 )
 
@@ -58,9 +59,7 @@ else {
                 )
             )
 
-            @govukButton(
-                ButtonViewModel(messages("site.continue"))
-            )
+            @button("site.continue",  period, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period).url)
         }
     }
 }

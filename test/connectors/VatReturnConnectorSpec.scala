@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.domain.VatReturn
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
-import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
+import models.responses.{ConflictFound, InvalidJson, NotFound, UnexpectedResponseStatus}
 import models.{PaymentReference, ReturnReference}
 import models.corrections.CorrectionPayload
 import models.requests.corrections.CorrectionRequest
@@ -69,6 +69,22 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         val result = connector.submit(vatReturnRequest).futureValue
 
         result.value mustEqual expectedVatReturn
+      }
+    }
+
+    "must return Left(InvalidJson) when the server responds with an incorrectly formatted JSON payload" in {
+
+      running(application) {
+
+        val responseJson = """{ "foo": "bar" }"""
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(OK).withBody(responseJson)))
+
+        val result = connector.submit(vatReturnRequest).futureValue
+
+        result.left.value mustEqual InvalidJson
       }
     }
 
@@ -139,6 +155,40 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
 
         result.value mustEqual expectedVatReturnWithCorrection
+      }
+    }
+
+    "must return Left(InvalidJson) when the server responds with an incorrectly formatted JSON payload" in {
+
+      running(application) {
+
+        val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
+
+        val responseJson = """{ "foo": "bar" }"""
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(OK).withBody(responseJson)))
+
+        val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
+
+        result.left.value mustEqual InvalidJson
+      }
+    }
+
+    "must return Left(NotFound) when the server response with NOT_FOUND" in {
+
+      val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
+
+      running(application) {
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+        val result = connector.submitWithCorrection(vatReturnWithCorrectionRequest).futureValue
+
+        result.left.value mustEqual NotFound
       }
     }
 

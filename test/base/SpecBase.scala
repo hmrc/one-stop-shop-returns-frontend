@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,14 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.VatOnSalesChoice.Standard
-import models.PaymentReference
 import models.Quarter.{Q1, Q2, Q3, Q4}
+import models.VatOnSalesChoice.Standard
 import models.corrections.CorrectionPayload
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
 import models.requests.corrections.CorrectionRequest
-import models.{Country, Index, Period, Quarter, ReturnReference, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
+import models.{Country, Index, PaymentReference, Period, Quarter, ReturnReference, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -65,7 +64,7 @@ trait SpecBase
 
   val address: UkAddress = UkAddress("line 1", None, "town", None, "AA11 1AA")
   val registration: Registration = Registration(
-    vrn                   = Vrn("123456789"),
+    vrn                   = vrn,
     registeredCompanyName = arbitrary[String].sample.value,
     vatDetails            = VatDetails(LocalDate.of(2000, 1, 1), address, false, VatDetailSource.Mixed),
     euRegistrations       = Nil,
@@ -102,8 +101,8 @@ trait SpecBase
 
   val completeVatReturn: VatReturn =
       VatReturn(
-        Vrn("063407423"),
-        Period("2086", "Q3").get,
+        vrn,
+        period,
         ReturnReference("XI/XI063407423/Q3.2086"),
         PaymentReference("NI063407423Q386"),
         None,
@@ -150,8 +149,8 @@ trait SpecBase
 
   val simpleCompleteVatReturn: VatReturn =
     VatReturn(
-      Vrn("063407423"),
-      Period("2086", "Q3").get,
+      vrn,
+      period,
       ReturnReference("XI/XI063407423/Q3.2086"),
       PaymentReference("XI063407423Q386"),
       None,
@@ -198,10 +197,10 @@ trait SpecBase
 
   val emptyVatReturn: VatReturn =
     VatReturn(
-      Vrn("063407423"),
-      Period("2086", "Q3").get,
-      ReturnReference("XI/XI063407423/Q3.2086"),
-      PaymentReference("XI063407423Q386"),
+      vrn,
+      period,
+      ReturnReference(s"XI/XI$vrn/Q3.2021"),
+      PaymentReference(s"XI${vrn}Q321"),
       None,
       None,
       List.empty,
@@ -212,8 +211,8 @@ trait SpecBase
 
   val emptyCorrectionPayload: CorrectionPayload =
     CorrectionPayload(
-      Vrn("063407423"),
-      Period("2086", "Q3").get,
+      vrn,
+      period,
       List.empty,
       Instant.ofEpochSecond(1630670836),
       Instant.ofEpochSecond(1630670836)
@@ -221,8 +220,8 @@ trait SpecBase
 
   val vatReturnRequest: VatReturnRequest =
     VatReturnRequest(
-      Vrn("063407423"),
-      Period("2086", "Q3").get,
+      vrn,
+      period,
       Some(LocalDate.now()),
       Some(LocalDate.now().plusDays(1)),
       List.empty,
@@ -231,8 +230,8 @@ trait SpecBase
 
   val correctionRequest: CorrectionRequest =
     CorrectionRequest(
-      Vrn("063407423"),
-      Period(2086, Q3),
+      vrn,
+      period,
       List.empty
     )
 
@@ -257,7 +256,8 @@ trait SpecBase
         bind[CheckReturnsFilterProvider].toInstance(new FakeCheckReturnsFilterProvider()),
         bind[CheckCommencementDateFilterProvider].toInstance(new FakeCheckCommencementDateFilterProvider()),
         bind[Clock].toInstance(clockToBind),
-        bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
+        bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider()),
+        bind[CheckMostOverdueReturnFilterProvider].toInstance(new FakeCheckMostOverdueReturnFilterProvider())
       )
   }
 

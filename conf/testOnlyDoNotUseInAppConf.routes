@@ -11,3 +11,4 @@
 
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
+GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-only/delete-accounts  @controllers.test.TestOnlyController.deleteAccounts()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import formats.Format
 import models.PeriodWithStatus
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
@@ -59,7 +60,41 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
 
         connector.listStatuses(commencementDate).futureValue mustBe Right(Seq(periodWithStatus))
       }
+    }
 
+    "must return Left(InvalidJson) when the server responds with an incorrectly formatted JSON payload" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[ReturnStatusConnector]
+
+        val responseJson = """{ "foo": "bar" }"""
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/statuses/${Format.dateTimeFormatter.format(commencementDate)}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson)
+            )
+        )
+
+        connector.listStatuses(commencementDate).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[ReturnStatusConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/statuses/${Format.dateTimeFormatter.format(commencementDate)}"))
+            .willReturn(
+              aResponse().withStatus(INTERNAL_SERVER_ERROR)
+            )
+        )
+
+        val result = connector.listStatuses(commencementDate).futureValue
+        result.left.value mustBe an[UnexpectedResponseStatus]
+      }
     }
   }
 }

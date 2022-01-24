@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import connectors.ReturnStatusConnector
 import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.{Complete, Overdue}
+import models.responses.UnexpectedResponseStatus
 import models.{CheckThirdLoopMode, Country, Index, NormalMode, Period, PeriodWithStatus, SubmissionStatus, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
@@ -72,6 +73,22 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
   )
 
   "VatPeriodCorrectionsListWithFormController" - {
+
+    "must throw an exception when Return Status Connector returns an error" in {
+
+      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      running(application) {
+        implicit val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
+      }
+    }
 
     "when there are no previous return periods must redirect to JourneyRecovery" in {
 
@@ -169,7 +186,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           }
         }
 
-        "and there are no uncompleted correction periods must redirect to page without form"  in {
+        "and there are no uncompleted correction periods must redirect to page without form" in {
 
           when(mockReturnStatusConnector.listStatuses(any())(any()))
             .thenReturn(getStatusResponse(allPeriods))
@@ -186,6 +203,84 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
             redirectLocation(result).value mustEqual controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period).url
           }
         }
+      }
+    }
+
+    "must redirect to page without form for a POST when there are no uncompleted correction periods" in {
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(getStatusResponse(allPeriods, Complete))
+
+      val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, allPeriods))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period).url)
+
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period).url
+      }
+    }
+
+    "must display filled table and form when there are uncompleted correction periods " in {
+
+      val periodQ3 = Period(2021, Q3)
+
+      val completedCorrections = List(periodQ3)
+
+      val ua = addCorrectionPeriods(completeUserAnswers, completedCorrections)
+
+      val application = applicationBuilder(userAnswers = ua)
+        .configure("bootstrap.filters.csrf.enabled" -> false)
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(getStatusResponse(allPeriods))
+
+      running(application) {
+        val request = FakeRequest(POST, vatPeriodCorrectionsListRoute)
+          .withFormUrlEncodedBody(("value", "true"))
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
+
+        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(1)).url
+      }
+    }
+
+    "must redirect to JourneyRecovery for a POST when there are no previous return periods" in {
+
+      when(mockReturnStatusConnector.listStatuses(any())(any()))
+        .thenReturn(getStatusResponse(allPeriods, Overdue))
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      running(application) {
+        implicit val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period).url)
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must throw an exception when the Return Status Connector returns an Unexpected Response" in {
+
+      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, allPeriods))
+        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period).url)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
       }
     }
   }

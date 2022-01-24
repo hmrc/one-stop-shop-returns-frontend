@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package connectors.payments
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.{PaymentConnector, WireMockHelper}
-import models.responses.UnexpectedResponseStatus
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import models.requests.{PaymentPeriod, PaymentRequest, PaymentResponse}
 import org.scalatest.EitherValues
 import play.api.Application
@@ -69,7 +69,7 @@ class PaymentConnectorSpec extends SpecBase with WireMockHelper with EitherValue
       }
     }
 
-    "must return Left(UnexpectedResponseStatus) when the server response with an error code" in {
+    "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
 
       running(application) {
         val connector = application.injector.instanceOf[PaymentConnector]
@@ -79,6 +79,24 @@ class PaymentConnectorSpec extends SpecBase with WireMockHelper with EitherValue
         val result = connector.submit(paymentRequest).futureValue
 
         result.left.value mustBe an[UnexpectedResponseStatus]
+      }
+    }
+
+    "must return Left(Invalid JSON) when the server responds with an incorrectly formatted JSON payload" in {
+
+      running(application) {
+        val responseJson = """{ "foo": "bar" }"""
+
+        val connector = application.injector.instanceOf[PaymentConnector]
+
+        server.stubFor(
+          post(urlEqualTo(url))
+            .willReturn(aResponse().withStatus(CREATED).withBody(responseJson))
+        )
+
+        val result = connector.submit(paymentRequest).futureValue
+
+        result.left.value mustBe InvalidJson
       }
     }
   }

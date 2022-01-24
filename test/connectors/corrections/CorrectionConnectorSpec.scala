@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.WireMockHelper
 import models.corrections.CorrectionPayload
-import models.responses.{ConflictFound, NotFound, UnexpectedResponseStatus}
+import models.responses.{ConflictFound, InvalidJson, NotFound, UnexpectedResponseStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
@@ -59,6 +59,23 @@ class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherVa
       }
     }
 
+    "must return Left(Invalid JSON) when the server responds with an incorrectly formatted JSON payload" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        val responseJson = """{ "foo": "bar" }"""
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson))
+            )
+
+        connector.get(period).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
     "must return Left(NotFound) when the server responds with NOT_FOUND" in {
 
       running(application) {
@@ -71,6 +88,36 @@ class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherVa
             ))
 
         connector.get(period).futureValue mustBe Left(NotFound)
+      }
+    }
+
+    "must return Left(ConflictFound) when the server responds with CONFLICT" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(CONFLICT)
+            ))
+
+        connector.get(period).futureValue mustBe Left(ConflictFound)
+      }
+    }
+
+    "must return Left(UnexpectedResponse) when the server responds with an unexpected error from correction" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(IM_A_TEAPOT)
+            ))
+
+        connector.get(period).futureValue mustBe Left(UnexpectedResponseStatus(418, "Unexpected response, status 418 returned"))
       }
     }
   }
@@ -137,6 +184,23 @@ class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherVa
             ))
 
         connector.getForCorrectionPeriod(period).futureValue mustBe Left(ConflictFound)
+      }
+    }
+
+    "must return Left(Invalid JSON) when the server responds with an incorrectly formatted JSON payload" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        val responseJson = """{ "foo": "bar" }"""
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson))
+        )
+
+        connector.getForCorrectionPeriod(period).futureValue mustBe Left(InvalidJson)
       }
     }
   }
