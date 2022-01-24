@@ -84,6 +84,13 @@ class SessionRepository @Inject()(
           .headOption
     }
 
+  def get(userId: String): Future[Seq[UserAnswers]] =
+    keepAlive(userId).flatMap {
+      _ =>
+        collection
+          .find(byUserId(userId)).toFuture()
+    }
+
   def set(answers: UserAnswers): Future[Boolean] = {
 
     val updatedAnswers = answers copy (lastUpdated = Instant.now(clock))
