@@ -181,7 +181,7 @@ class CheckYourAnswersController @Inject()(
       val redirectToFirstError = getRedirect(validate(period), period).headOption
 
       (redirectToFirstError, incompletePromptShown) match {
-        case (Some(c), true) => Future.successful(Redirect(c))
+        case (Some(redirect), true) => Future.successful(Redirect(redirect))
         case (Some(_), false) => Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad(period)))
         case _ =>
           val validatedVatReturnRequest =
