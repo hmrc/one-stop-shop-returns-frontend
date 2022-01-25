@@ -37,8 +37,8 @@ class SaveForLaterConnector @Inject()(config: Configuration, httpClient: HttpCli
     httpClient.POST[SaveForLaterRequest, SaveForLaterResponse](url, s4lRequest)
   }
 
-  def get(period: Period)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
-    val url = s"$baseUrl/save-for-later/$period"
+  def get()(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
+    val url = s"$baseUrl/save-for-later"
 
     httpClient.GET[SaveForLaterResponse](url)
   }

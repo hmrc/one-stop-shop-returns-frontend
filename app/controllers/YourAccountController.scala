@@ -51,17 +51,17 @@ class YourAccountController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      val results = getPeriodsAndFinancialData()
+      val results = getPeriodsAndFinancialDataAndSavedAnswers()
       results.flatMap {
-        case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData)) =>
-          prepareViewWithFinancialData(availablePeriodsWithStatus, vatReturnsWithFinancialData)
-        case (Right(availablePeriodsWithStatus), Left(error)) =>
+        case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
+          prepareViewWithFinancialData(availablePeriodsWithStatus, vatReturnsWithFinancialData, answers.map(_.period))
+        case (Right(availablePeriodsWithStatus), Left(error), answers) =>
           logger.warn(s"There was an error with getting payment information $error")
-          prepareViewWithNoFinancialData(availablePeriodsWithStatus)
-        case (Left(error), Left(error2)) =>
+          prepareViewWithNoFinancialData(availablePeriodsWithStatus, answers.map(_.period))
+        case (Left(error), Left(error2), _) =>
           logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
           throw new Exception(error.toString)
-        case (Left(error), _) =>
+        case (Left(error), _, _) =>
           logger.error(s"there was an error during period with status $error")
           throw new Exception(error.toString)
       }
@@ -76,101 +76,85 @@ class YourAccountController @Inject()(
           case _ =>
             vatReturnWithFinancialData.copy(
               vatOwed = Some(
-                (vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturnWithFinancialData.vatReturn, vatReturnWithFinancialData.corrections) * 100).toLong
+                (vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturnWithFinancialData.vatReturn,
+                  vatReturnWithFinancialData.corrections) * 100).toLong
               )
             )
         }
       )
   }
 
-  private def getPeriodsAndFinancialData()(implicit request: RegistrationRequest[AnyContent]) = {
+  private def getPeriodsAndFinancialDataAndSavedAnswers()(implicit request: RegistrationRequest[AnyContent]) = {
     for {
       availablePeriodsWithStatus <- returnStatusConnector.listStatuses(request.registration.commencementDate)
       vatReturnsWithFinancialData <- financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate)
-    } yield (availablePeriodsWithStatus, vatReturnsWithFinancialData)
+      userAnswers <- getSavedAnswers()
+    } yield {
+      userAnswers.map(answers => sessionRepository.set(answers))
+      (availablePeriodsWithStatus, vatReturnsWithFinancialData, userAnswers)
+    }
   }
 
-  private def getSavedAnswers(period: Period, userId: String)(implicit request: RegistrationRequest[AnyContent]): Future[Option[UserAnswers]] = {
-    sessionRepository.get(userId, period).flatMap(
-      answersInSession =>
-        answersInSession match {
-          case Some(_) => Future.successful(answersInSession)
-          case _ => saveForLaterConnector.get(period).flatMap {
-            case Right(Some(savedAnswers)) =>
-              val updatedAnswers = UserAnswers(request.userId, period, savedAnswers.data, savedAnswers.lastUpdated)
-              for {
-                _ <- sessionRepository.set(updatedAnswers)
-              } yield {
-                Some(updatedAnswers)
-              }
-            case _ => Future.successful(None)
-          }
+  private def getSavedAnswers()(implicit request: RegistrationRequest[AnyContent]): Future[Option[UserAnswers]] = {
+    for {
+      answersInSession <- sessionRepository.get(request.userId)
+      savedForLater <- saveForLaterConnector.get()
+    } yield {
+      val latestInSession = answersInSession.sortBy(_.lastUpdated).headOption
+      val answers = if (latestInSession.isEmpty) {
+        savedForLater match {
+          case Right(Some(answers)) => Some(UserAnswers(request.userId, answers.period, answers.data, answers.lastUpdated))
+          case _ => None
         }
-    )
+      } else {
+        latestInSession
+      }
+      answers
+    }
   }
 
   private def prepareViewWithFinancialData(availablePeriodsWithStatus: Seq[PeriodWithStatus],
-                                           vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData])(implicit request: RegistrationRequest[AnyContent]) = {
+                                           vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData],
+                                           periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
     val filteredPeriodsWithOutstandingAmounts =
       getFilteredPeriodsWithOutstandingAmounts(vatReturnsWithFinancialData)
     val duePeriodsWithOutstandingAmounts =
       filteredPeriodsWithOutstandingAmounts.filterNot(_.vatReturn.period.isOverdue(clock))
     val overduePeriodsWithOutstandingAmounts =
       filteredPeriodsWithOutstandingAmounts.filter(_.vatReturn.period.isOverdue(clock))
-    val sortedPeriodsToSubmit = availablePeriodsWithStatus
-      .filter(p => p.status == SubmissionStatus.Due || p.status == SubmissionStatus.Overdue).
-      sortBy(_.period.firstDay.toEpochDay)
-    sortedPeriodsToSubmit.headOption.map {
-      p =>
-        getSavedAnswers(p.period, request.userId).map {
-          case Some(_) => Some(p.period)
-          case None => None
-        }
-    }.getOrElse(Future.successful(None)).flatMap(
-      periodInProgress =>
-        Future.successful(Ok(view(
-          request.registration.registeredCompanyName,
-          request.vrn.vrn,
-          availablePeriodsWithStatus
-            .filter(_.status == SubmissionStatus.Overdue)
-            .map(_.period),
-          availablePeriodsWithStatus
-            .find(_.status == SubmissionStatus.Due)
-            .map(_.period),
-          duePeriodsWithOutstandingAmounts,
-          overduePeriodsWithOutstandingAmounts,
-          filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
-          periodInProgress = periodInProgress
-        ))))
+
+    Future.successful(Ok(view(
+      request.registration.registeredCompanyName,
+      request.vrn.vrn,
+      availablePeriodsWithStatus
+        .filter(_.status == SubmissionStatus.Overdue)
+        .map(_.period),
+      availablePeriodsWithStatus
+        .find(_.status == SubmissionStatus.Due)
+        .map(_.period),
+      duePeriodsWithOutstandingAmounts,
+      overduePeriodsWithOutstandingAmounts,
+      filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty),
+      periodInProgress = periodInProgress
+    )))
   }
 
-  private def prepareViewWithNoFinancialData(availablePeriodsWithStatus: Seq[PeriodWithStatus])(implicit request: RegistrationRequest[AnyContent]) = {
-    val sortedPeriodsToSubmit = availablePeriodsWithStatus
-      .filter(p => p.status == SubmissionStatus.Due || p.status == SubmissionStatus.Overdue)
-      .sortBy(_.period.firstDay.toEpochDay)
-    sortedPeriodsToSubmit.headOption.map {
-      p =>
-        getSavedAnswers(p.period, request.userId).map {
-          case Some(_) => Some(p.period)
-          case None => None
-        }
-    }.getOrElse(Future.successful(None)).flatMap(
-      periodInProgress =>
-        Future.successful(Ok(view(
-          request.registration.registeredCompanyName,
-          request.vrn.vrn,
-          availablePeriodsWithStatus
-            .filter(_.status == SubmissionStatus.Overdue)
-            .map(_.period),
-          availablePeriodsWithStatus
-            .find(_.status == SubmissionStatus.Due)
-            .map(_.period),
-          Seq.empty,
-          Seq.empty,
-          paymentError = true,
-          periodInProgress = periodInProgress
-        )))
-    )
+  private def prepareViewWithNoFinancialData(availablePeriodsWithStatus: Seq[PeriodWithStatus], periodInProgress: Option[Period])
+                                            (implicit request: RegistrationRequest[AnyContent]) = {
+    Future.successful(Ok(view(
+      request.registration.registeredCompanyName,
+      request.vrn.vrn,
+      availablePeriodsWithStatus
+        .filter(_.status == SubmissionStatus.Overdue)
+        .map(_.period),
+      availablePeriodsWithStatus
+        .find(_.status == SubmissionStatus.Due)
+        .map(_.period),
+      Seq.empty,
+      Seq.empty,
+      paymentError = true,
+      periodInProgress = periodInProgress
+    )))
   }
 
 }

@@ -78,8 +78,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(Seq.empty))
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
@@ -120,8 +121,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -164,8 +167,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -214,8 +218,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(Seq.empty))
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -263,8 +268,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(Seq.empty))
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -314,8 +320,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(Seq.empty))
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -382,8 +389,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
           )
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -464,8 +472,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -540,8 +549,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -611,8 +621,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
           )
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -665,8 +676,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
           )
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -722,8 +733,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
           vatOwed
 
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(None))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -767,8 +778,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
-        when(sessionRepository.get(any(), any())) thenReturn(Future.successful(Some(userAnswers)))
-        when(save4LaterConnector.get(any())(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq(userAnswers)))
+        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
 
         val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
           .overrides(
@@ -806,15 +818,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val period = Period(2021, Q3)
+        val answers = arbitrarySavedUserAnswers.arbitrary.sample.value.copy(period = period)
 
         when(returnStatusConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Overdue))))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
-        when(sessionRepository.get(any(), any())) thenReturn Future.successful(None)
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
-        when(save4LaterConnector.get(any())(any())) thenReturn Future.successful(Right(Some(arbitrarySavedUserAnswers.arbitrary.sample.value)))
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(Some(answers)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
