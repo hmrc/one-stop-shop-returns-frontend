@@ -74,17 +74,21 @@ class CheckSalesFromNiController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
+  def onSubmit(mode: Mode, period: Period, index: Index, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
       withCompleteData[VatRateAndSalesWithOptionalVat](
         index,
         data = getIncompleteNiVatRateAndSales _,
         onFailure = (_: Seq[VatRateAndSalesWithOptionalVat]) => {
-        Redirect(routes.VatRatesFromNiController.onPageLoad(
-          mode,
-          period,
-          index))
-      }) {
+          if(incompletePromptShown) {
+            Redirect(routes.VatRatesFromNiController.onPageLoad(
+              mode,
+              period,
+              index))
+          } else {
+            Redirect(routes.CheckSalesFromNiController.onPageLoad(mode, period, index))
+          }
+        }) {
         Redirect(CheckSalesFromNiPage.navigate(mode, request.userAnswers))
       }
   }

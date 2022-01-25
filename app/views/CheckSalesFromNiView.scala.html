@@ -30,8 +30,6 @@
     Some(messages("caption.fromNi.periodAndCountry", period.displayText, country.name))
 ) {
 
-    @formHelper(action = routes.CheckSalesFromNiController.onSubmit(mode, period, index)) {
-
         <header class="hmrc-page-heading">
             <h1 class="govuk-heading-xl">@messages("checkSalesFromNi.heading")</h1>
             <p class="govuk-caption-xl hmrc-caption-xl">@messages("caption.fromNi.periodAndCountry", period.displayText, country.name)</p>
@@ -57,22 +55,21 @@
             @govukSummaryList(list.list)
         }
 
-
         @if(incompleteVatRates.isEmpty) {
-            @formHelper(action = controllers.routes.CheckSalesFromNiController.onSubmit(mode, period, index), 'missingPrompt -> "false") {
+            @formHelper(action = controllers.routes.CheckSalesFromNiController.onSubmit(mode, period, index, false)) {
+
                 @govukButton(
-                    ButtonViewModel(messages("site.continue"))
+                    ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
                 )
             }
         } else {
             <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
             <p class="govuk-body">@messages("error.missing_answers_prompt", if(incompleteVatRates.size > 1) {incompleteVatRates.map(_.rateForDisplay).reverse.tail.mkString(", ") + " and " + incompleteVatRates.last.rateForDisplay + " VAT rates"} else {incompleteVatRates.head.rateForDisplay + " VAT rate"})</p>
 
-            @formHelper(action = controllers.routes.CheckSalesFromNiController.onSubmit(mode, period, index).withFragment("missing"), 'missingPrompt -> "true") {
+            @formHelper(action = controllers.routes.CheckSalesFromNiController.onSubmit(mode, period, index, true)) {
                 @govukButton(
                     ButtonViewModel(messages("error.resolve_missing_answers"))
                 )
             }
-        }
     }
 }

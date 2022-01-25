@@ -215,7 +215,6 @@ class CheckYourAnswersController @Inject()(
       }
   }
 
-  //noinspection ScalaStyle
   def getRedirect(errors: List[ValidationError], period: Period): List[Call] = {
     errors.flatMap {
       case DataMissingError(AllSalesFromNiQuery) =>
@@ -272,7 +271,7 @@ class CheckYourAnswersController @Inject()(
                   (implicit request: DataRequest[AnyContent]): Future[Result] = {
 
     val submission = correctionRequest match {
-      case Some(cr) => vatReturnConnector.submit(VatReturnWithCorrectionRequest(vatReturnRequest, cr))
+      case Some(cr) => vatReturnConnector.submitWithCorrections(VatReturnWithCorrectionRequest(vatReturnRequest, cr))
       case _ => vatReturnConnector.submit(vatReturnRequest)
     }
 

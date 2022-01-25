@@ -74,10 +74,10 @@
                     <input type="hidden" name="value" id="value" value="false"/>
                 }
 
-
                 @govukButton(
-                    ButtonViewModel(messages("site.continue"))
+                    ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
                 )
+
                 }
             } else {
                 @formHelper(action = controllers.routes.SalesFromNiListController.onSubmit(mode, period, true)) {

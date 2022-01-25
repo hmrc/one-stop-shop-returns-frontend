@@ -56,7 +56,7 @@ else {
         @if(incompletePeriods.isEmpty) {
             @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, false), 'autoComplete -> "off") {
                 @govukButton(
-                    ButtonViewModel(messages("site.continue"))
+                    ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
                 )
             }
         } else {

@@ -73,17 +73,21 @@ class CheckVatPayableAmountController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
     cc.authAndGetDataAndCorrectionEligible(period) { implicit request =>
       val incomplete = getIncompleteCorrectionToCountry(periodIndex, countryIndex)
       if(incomplete.isEmpty) {
         Redirect(controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, period, periodIndex))
       } else {
+        if(incompletePromptShown) {
           Redirect(routes.CorrectionCountryController.onPageLoad(
             mode,
             period,
             periodIndex,
             countryIndex))
+        } else {
+          Redirect(routes.CheckVatPayableAmountController.onPageLoad(mode, period, periodIndex, countryIndex))
+        }
       }
   }
 }

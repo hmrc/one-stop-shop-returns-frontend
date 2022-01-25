@@ -118,10 +118,11 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
       val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value
       val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .configure("bootstrap.filters.csrf.enabled" -> false)
         .build()
 
       running(application) {
-        val request = FakeRequest(POST, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index).url)
+        val request = FakeRequest(POST, controllers.corrections.routes.CheckVatPayableAmountController.onSubmit(NormalMode, period, index, index, true).url)
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
@@ -141,7 +142,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
         .build()
 
       running(application) {
-        val request = FakeRequest(POST, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index).url)
+        val request = FakeRequest(POST, controllers.corrections.routes.CheckVatPayableAmountController.onSubmit(NormalMode, period, index, index, false).url)
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
