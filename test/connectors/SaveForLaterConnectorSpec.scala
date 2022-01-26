@@ -24,7 +24,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
 import play.api.http.Status._
-import play.api.libs.json.{JsBoolean, JsObject, JsValue, Json}
+import play.api.libs.json.{JsBoolean, JsObject, Json}
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -107,12 +107,12 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[SaveForLaterConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/${period.toString}"))
+          get(urlEqualTo(s"$url"))
           .willReturn(
             aResponse().withStatus(OK).withBody(responseJson.toString())
           ))
 
-        connector.get(period).futureValue mustBe Right(Some(savedUserAnswers))
+        connector.get().futureValue mustBe Right(Some(savedUserAnswers))
       }
     }
 
@@ -122,12 +122,12 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[SaveForLaterConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/${period.toString}"))
+          get(urlEqualTo(s"$url"))
             .willReturn(
               aResponse().withStatus(NOT_FOUND)
             ))
 
-        connector.get(period).futureValue mustBe Right(None)
+        connector.get().futureValue mustBe Right(None)
       }
     }
 
@@ -137,12 +137,12 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[SaveForLaterConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/${period.toString}"))
+          get(urlEqualTo(s"$url"))
             .willReturn(
               aResponse().withStatus(OK).withBody(Json.toJson("test").toString())
             ))
 
-        connector.get(period).futureValue mustBe Left(InvalidJson)
+        connector.get().futureValue mustBe Left(InvalidJson)
       }
     }
 
@@ -152,12 +152,12 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[SaveForLaterConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/${period.toString}"))
+          get(urlEqualTo(s"$url"))
             .willReturn(
               aResponse().withStatus(CONFLICT)
             ))
 
-        connector.get(period).futureValue mustBe Left(ConflictFound)
+        connector.get().futureValue mustBe Left(ConflictFound)
       }
     }
 
@@ -167,12 +167,12 @@ class SaveForLaterConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[SaveForLaterConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/${period.toString}"))
+          get(urlEqualTo(s"$url"))
             .willReturn(
               aResponse().withStatus(123)
             ))
 
-        connector.get(period).futureValue mustBe Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
+        connector.get().futureValue mustBe Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
       }
     }
   }

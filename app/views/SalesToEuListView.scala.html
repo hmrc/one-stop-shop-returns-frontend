@@ -16,12 +16,14 @@
 
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
 @import viewmodels.LegendSize
+@import components.ButtonGroup
 
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
         govukRadios: GovukRadios,
+        button: ButtonGroup,
         govukButton: GovukButton,
         addToList: components.addToList
 )
@@ -77,10 +79,8 @@
                         <input type="hidden" name="value" id="value" value="false"/>
                     }
 
-                    @govukButton(
-                        ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
-                    )
-                }
+                @button("site.continue",  period, routes.SalesToEuListController.onPageLoad(mode, period, index).url)
+            }
         } else {
             @formHelper(action = controllers.routes.SalesToEuListController.onSubmit(mode, period, index, true)) {
 

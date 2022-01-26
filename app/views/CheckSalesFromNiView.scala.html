@@ -15,12 +15,14 @@
  *@
 
 @import viewmodels.TitledSummaryList
+@import components.ButtonGroup
 
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukSummaryList: GovukSummaryList,
-        govukButton: GovukButton
+        govukButton: GovukButton,
+        button: ButtonGroup
 )
 
 @(mode: Mode, mainList: SummaryList, vatRateLists: Seq[TitledSummaryList], period: Period, index: Index, country: Country, incompleteVatRates: Seq[VatRateAndSalesWithOptionalVat] = List.empty)(implicit request: Request[_], messages: Messages)
@@ -57,10 +59,7 @@
 
         @if(incompleteVatRates.isEmpty) {
             @formHelper(action = controllers.routes.CheckSalesFromNiController.onSubmit(mode, period, index, false)) {
-
-                @govukButton(
-                    ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
-                )
+                @button("site.continue", period, routes.CheckSalesFromNiController.onPageLoad(mode, period, index).url)
             }
         } else {
             <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>

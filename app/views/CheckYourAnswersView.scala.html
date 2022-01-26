@@ -15,11 +15,13 @@
  *@
 
 @import utils.CurrencyFormatter.currencyFormat
+@import components.ButtonGroup
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukSummaryList: GovukSummaryList,
+    button: ButtonGroup,
     govukButton: GovukButton
 )
 
@@ -116,11 +118,10 @@
                 </dd>
             </div>
         </dl>
+
     @if(missingData.isEmpty) {
         @formHelper(action = routes.CheckYourAnswersController.onSubmit(period, false)) {
-            @govukButton(
-                ButtonViewModel(messages("site.submit")).withAttribute(("id", "continue"))
-            )
+            @button("site.submit", period, routes.CheckYourAnswersController.onPageLoad(period).url)
         }
     } else {
         <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
