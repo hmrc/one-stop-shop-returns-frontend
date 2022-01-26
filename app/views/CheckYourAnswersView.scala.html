@@ -119,7 +119,7 @@
     @if(missingData.isEmpty) {
         @formHelper(action = routes.CheckYourAnswersController.onSubmit(period, false)) {
             @govukButton(
-                ButtonViewModel(messages("site.submit"))
+                ButtonViewModel(messages("site.submit")).withAttribute(("id", "continue"))
             )
         }
     } else {
