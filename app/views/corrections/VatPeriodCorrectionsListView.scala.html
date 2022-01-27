@@ -15,13 +15,14 @@
  *@
 
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
-
+@import components.ButtonGroup
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukSummaryList: GovukSummaryList,
     govukRadios: GovukRadios,
+    button: ButtonGroup,
     govukButton: GovukButton,
     addToList: components.addToSimpleList
 )
@@ -55,9 +56,7 @@ else {
 
         @if(incompletePeriods.isEmpty) {
             @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, false), 'autoComplete -> "off") {
-                @govukButton(
-                    ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
-                )
+                @button("site.continue",  period, controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period).url)
             }
         } else {
             @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, true), 'autoComplete -> "off") {

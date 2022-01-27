@@ -16,12 +16,14 @@
 
 @import viewmodels.LegendSize
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
+@import components.ButtonGroup
 
 @this(
 layout: templates.Layout,
 formHelper: FormWithCSRF,
 govukErrorSummary: GovukErrorSummary,
 govukRadios: GovukRadios,
+button: ButtonGroup,
 govukButton: GovukButton,
 addToList: components.addToSimpleList
 )
@@ -68,9 +70,7 @@ else {
                             ).withSize(LegendSize.Medium)
                         )
                     )
-                    @govukButton(
-                        ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
-                    )
+                    @button("site.continue",  period, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period).url)
                 }
             } else {
                 @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(mode, period, true), 'autoComplete -> "off") {
