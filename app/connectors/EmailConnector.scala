@@ -18,10 +18,11 @@ package connectors
 
 import com.google.inject.Inject
 import config.Service
-import models.emails.EmailSendingResult.{EMAIL_ACCEPTED, EMAIL_NOT_SENT, EMAIL_UNSENDABLE}
+import connectors.EmailHttpParser._
+import models.emails.EmailSendingResult.EMAIL_NOT_SENT
 import models.emails.{EmailSendingResult, EmailToSendRequest}
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderCarrier, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,21 +32,14 @@ class EmailConnector @Inject()(
 ) {
 
   private val baseUrl = config.get[Service]("microservice.services.email")
-  private val identityReads: HttpReads[HttpResponse] = (_: String, _: String, response: HttpResponse) => response
 
   def send(email: EmailToSendRequest)
           (implicit ec: ExecutionContext, hc: HeaderCarrier): Future[EmailSendingResult] = {
-    client.POST[EmailToSendRequest, HttpResponse](
+    client.POST[EmailToSendRequest, EmailSendingResult](
       s"${baseUrl}hmrc/email", email
-    )(implicitly, identityReads, implicitly, implicitly).map {
-      case r if r.status >= 200 && r.status < 300 =>
-        EMAIL_ACCEPTED
-      case r if r.status >= 400 && r.status < 500 =>
-        EMAIL_UNSENDABLE
-      case r if r.status >= 500 && r.status < 600 =>
-        EMAIL_NOT_SENT
-      case r =>
-        EMAIL_ACCEPTED
+    ).recover {
+      case e: BadGatewayException => EMAIL_NOT_SENT
+      case e: GatewayTimeoutException => EMAIL_NOT_SENT
     }
   }
 
