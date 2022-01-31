@@ -23,10 +23,11 @@
     govukSummaryList: GovukSummaryList,
     govukRadios: GovukRadios,
     button: ButtonGroup,
+    govukButton: GovukButton,
     addToList: components.addToSimpleList
 )
 
-@(mode: Mode, period: Period, periodList: Seq[ListItem])(implicit request: Request[_], messages: Messages)
+@(mode: Mode, period: Period, periodList: Seq[ListItem], incompletePeriods: Seq[Period])(implicit request: Request[_], messages: Messages)
 
 @defining(if(periodList.size == 0) {
     messages("vatPeriodCorrectionsList.title.empty")
@@ -37,15 +38,32 @@ else {
 
     @layout(pageTitle = dynamicTitle ) {
 
-        @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period), 'autoComplete -> "off") {
+        <header class="hmrc-page-heading">
+            <h1 class="govuk-heading-xl">@dynamicTitle</h1>
+        </header>
 
-            <header class="hmrc-page-heading">
-                <h1 class="govuk-heading-xl">@dynamicTitle</h1>
-            </header>
+        @if(incompletePeriods.nonEmpty) {
+        <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+                <span class="govuk-warning-text__assistive">Warning</span>
+                @messages("error.missing_answers")
+            </strong>
+        </div>
+        }
 
-            @addToList(periodList, itemSize = Long, "vatPeriodCorrectionsList.change.hidden", "vatPeriodCorrectionsList.remove.hidden")
+        @addToList(periodList, itemSize = Long, "vatPeriodCorrectionsList.change.hidden", "vatPeriodCorrectionsList.remove.hidden")
 
-            @button("site.continue",  period, controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period).url)
+        @if(incompletePeriods.isEmpty) {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, false), 'autoComplete -> "off") {
+                @button("site.continue",  period, controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period).url)
+            }
+        } else {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, true), 'autoComplete -> "off") {
+                @govukButton(
+                    ButtonViewModel(messages("error.resolve_missing_answers"))
+                )
+            }
         }
     }
 }

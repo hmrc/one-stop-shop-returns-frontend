@@ -39,7 +39,6 @@ class CorrectionService @Inject()(
                                  ) {
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, commencementDate: LocalDate): ValidationResult[CorrectionRequest] = {
-
     if (firstPeriod(period, commencementDate)) {
       CorrectionRequest(vrn, period, List.empty).validNec
     } else {
@@ -95,7 +94,11 @@ class CorrectionService @Inject()(
   private def processCorrectionToCountry(answers: UserAnswers, periodIndex: Index, countryIndex: Index): ValidationResult[CorrectionToCountry] = {
     answers.get(CorrectionToCountryQuery(periodIndex, countryIndex)) match {
       case Some(value) =>
-        value.validNec
+        value match {
+          case CorrectionToCountry(_, Some(_)) =>      value.validNec
+          case CorrectionToCountry(_, None) =>         DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
+
+        }
       case _ =>
         DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
     }
@@ -103,12 +106,13 @@ class CorrectionService @Inject()(
 
   def getCorrectionsForPeriod(period: Period)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Seq[CorrectionToCountry]] = {
     connector.getForCorrectionPeriod(period).map{
-      case Right(payloads) => {
-        payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry}}}
-      case Left(error) =>
-        logger.error(s"there was an error when getting corrections for period: $error")
-        throw new Exception(error.toString)
+      response => response match {
+        case Right(payloads) => {
+          payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry.getOrElse(List.empty)}}}
+        case Left(error) =>
+          logger.error(s"there was an error when getting corrections for period: $error")
+          throw new Exception(error.toString)
+      }
     }
   }
-
 }

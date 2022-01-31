@@ -80,7 +80,7 @@ case class ReturnForDataEntryAuditModel(
     correctionRequest.corrections.map {
       correctionsToCountry =>
 
-        val correctionToCountry = correctionsToCountry.correctionsToCountry.map {
+        val correctionToCountry = correctionsToCountry.correctionsToCountry.getOrElse(List.empty).map {
           correctionCountry =>
             Json.obj(
               "correctionCountry" -> Json.toJson(correctionCountry.correctionCountry.name),

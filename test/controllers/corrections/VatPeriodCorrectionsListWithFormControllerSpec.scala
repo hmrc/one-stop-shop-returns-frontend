@@ -137,7 +137,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           doc.getElementsByClass("govuk-table__row").size() mustBe expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
-          responseString mustEqual view(form, NormalMode, period, completedCorrectionsModel)(request, messages(application)).toString
+          responseString mustEqual view(form, NormalMode, period, completedCorrectionsModel, List.empty)(request, messages(application)).toString
         }
       }
 
@@ -182,7 +182,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
             doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
 
             val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
-            responseString mustEqual view(form, NormalMode, period, completedCorrectionsModel)(request, messages(application)).toString
+            responseString mustEqual view(form, NormalMode, period, completedCorrectionsModel, List.empty)(request, messages(application)).toString
           }
         }
 
@@ -206,7 +206,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
       }
     }
 
-    "must redirect to page without form for a POST when there are no uncompleted correction periods" in {
+    "and there are no uncompleted correction periods must redirect to page without form for a POST" in {
 
       when(mockReturnStatusConnector.listStatuses(any())(any()))
         .thenReturn(getStatusResponse(allPeriods, Complete))
@@ -216,7 +216,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         .build()
 
       running(application) {
-        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period).url)
+        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period, false).url)
 
         val result = route(application, request).value
         status(result) mustEqual SEE_OTHER
@@ -224,33 +224,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
       }
     }
 
-    "must display filled table and form when there are uncompleted correction periods " in {
-
-      val periodQ3 = Period(2021, Q3)
-
-      val completedCorrections = List(periodQ3)
-
-      val ua = addCorrectionPeriods(completeUserAnswers, completedCorrections)
-
-      val application = applicationBuilder(userAnswers = ua)
-        .configure("bootstrap.filters.csrf.enabled" -> false)
-        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
-        .build()
-
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(getStatusResponse(allPeriods))
-
-      running(application) {
-        val request = FakeRequest(POST, vatPeriodCorrectionsListRoute)
-          .withFormUrlEncodedBody(("value", "true"))
-        val result = route(application, request).value
-        status(result) mustEqual SEE_OTHER
-
-        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(NormalMode, period, Index(1)).url
-      }
-    }
-
-    "must redirect to JourneyRecovery for a POST when there are no previous return periods" in {
+    "when there are no previous return periods must redirect to JourneyRecovery for a POST" in {
 
       when(mockReturnStatusConnector.listStatuses(any())(any()))
         .thenReturn(getStatusResponse(allPeriods, Overdue))
@@ -260,7 +234,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         .build()
 
       running(application) {
-        implicit val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period).url)
+        implicit val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period, false).url)
         val result = route(application, request).value
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
@@ -276,7 +250,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         .build()
 
       running(application) {
-        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period).url)
+        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(NormalMode, period, false).url)
 
         val result = route(application, request).value
 

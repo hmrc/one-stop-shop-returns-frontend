@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Country, Index, NormalMode}
+import models.{CheckMode, CheckThirdLoopMode, Country, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 

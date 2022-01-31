@@ -18,7 +18,6 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 
-// TODO: This will eventually be fleshed out to represent all the data of a sale from NI
 case class SalesFromEu(
                         countryOfSale: Country,
                         salesFromCountry: List[SalesFromCountry]

@@ -19,7 +19,7 @@ package models.corrections
 import models.Country
 import play.api.libs.json.{Format, Json}
 
-case class CorrectionToCountry(correctionCountry: Country, countryVatCorrection: BigDecimal)
+case class CorrectionToCountry(correctionCountry: Country, countryVatCorrection: Option[BigDecimal])
 
 object CorrectionToCountry {
   implicit val format: Format[CorrectionToCountry] = Json.format[CorrectionToCountry]

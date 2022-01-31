@@ -23,9 +23,12 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.checkAnswers.corrections.{CountryVatCorrectionSummary, NewVatTotalSummary, PreviousVatTotalSummary}
 import viewmodels.govuk.summarylist._
 import views.html.corrections.CheckVatPayableAmountView
+import controllers.{routes => baseRoutes}
+import models.corrections.CorrectionToCountry
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,11 +37,12 @@ class CheckVatPayableAmountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: CheckVatPayableAmountView,
                                        service: VatReturnService
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
+    cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
@@ -48,7 +52,6 @@ class CheckVatPayableAmountController @Inject()(
           for {
             originalAmount <- service.getLatestVatAmountForPeriodAndCountry(country, correctionPeriod)
           } yield {
-
             val summaryList = SummaryListViewModel(
               rows = Seq(
                 Some(PreviousVatTotalSummary.row(originalAmount)),
@@ -57,9 +60,34 @@ class CheckVatPayableAmountController @Inject()(
               ).flatten
             ).withCssClass("govuk-!-margin-bottom-9")
 
-            Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex))
+            withCompleteData[CorrectionToCountry](
+              periodIndex,
+              data = getIncompleteCorrections _,
+              onFailure = (_: Seq[CorrectionToCountry]) => {
+              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = false))
+            }) {
+              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = true))
+            }
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      }
+  }
+
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
+    cc.authAndGetDataAndCorrectionEligible(period) { implicit request =>
+      val incomplete = getIncompleteCorrectionToCountry(periodIndex, countryIndex)
+      if(incomplete.isEmpty) {
+        Redirect(controllers.corrections.routes.VatCorrectionsListController.onPageLoad(mode, period, periodIndex))
+      } else {
+        if(incompletePromptShown) {
+          Redirect(routes.CorrectionCountryController.onPageLoad(
+            mode,
+            period,
+            periodIndex,
+            countryIndex))
+        } else {
+          Redirect(routes.CheckVatPayableAmountController.onPageLoad(mode, period, periodIndex, countryIndex))
+        }
       }
   }
 }

@@ -17,12 +17,14 @@
 package controllers
 
 import controllers.actions.AuthenticatedControllerComponents
+import controllers.corrections.routes
 import forms.SalesFromNiListFormProvider
-import models.{Country, Mode, Period}
+import models.{Country, Index, Mode, Period}
 import pages.SalesFromNiListPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.checkAnswers.SalesFromNiSummary
 import views.html.SalesFromNiListView
 
@@ -34,13 +36,14 @@ class SalesFromNiListController @Inject()(
                                            formProvider: SalesFromNiListFormProvider,
                                            view: SalesFromNiListView
                                          )
-  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
+  extends FrontendBaseController with SalesFromNiBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()
 
   def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
+
       getNumberOfSalesFromNi {
         number =>
 
@@ -48,12 +51,37 @@ class SalesFromNiListController @Inject()(
           val list            = SalesFromNiSummary.addToListRows(request.userAnswers, mode)
 
           Ok(view(form, mode, list, period, canAddCountries))
+         withCompleteData[Country](
+           data = getNiCountriesWithIncompleteSales _,
+           onFailure = (incomplete: Seq[Country]) => {
+            Ok(view(form, mode, list, period, canAddCountries, incomplete))
+            }) {
+              Ok(view(form, mode, list, period, canAddCountries))
+            }
       }
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
-    implicit request =>
-      getNumberOfSalesFromNi {
+  def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period) {
+    implicit request => {
+      withCompleteData[Country](
+        data = getNiCountriesWithIncompleteSales _,
+        onFailure = (incompleteCountries: Seq[Country]) => {
+          if (incompletePromptShown) {
+            firstIndexedIncompleteNiCountrySales(incompleteCountries) match {
+              case Some(incompleteCountry) =>
+                if(incompleteCountry._1.vatRates.isEmpty) {
+                  Redirect(routes.VatRatesFromNiController.onPageLoad(mode, period, Index(incompleteCountry._2)))
+                } else {
+                  Redirect(routes.CheckSalesFromNiController.onPageLoad(mode, period, Index(incompleteCountry._2)))
+                }
+              case None =>
+                Redirect(routes.JourneyRecoveryController.onPageLoad())
+            }
+          } else {
+            Redirect(routes.SalesFromNiListController.onPageLoad(mode, period))
+          }
+        }
+      )( getNumberOfSalesFromNi {
         number =>
 
           val canAddCountries = number < Country.euCountries.size
@@ -66,6 +94,7 @@ class SalesFromNiListController @Inject()(
             value =>
               Redirect(SalesFromNiListPage.navigate(request.userAnswers, mode, value))
           )
-      }
+      })
+    }
   }
 }

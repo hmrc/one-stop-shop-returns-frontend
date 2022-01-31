@@ -24,7 +24,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
 import play.api.http.Status._
-import play.api.libs.json.{JsBoolean, JsObject, JsValue, Json}
+import play.api.libs.json.{JsBoolean, JsObject, Json}
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 

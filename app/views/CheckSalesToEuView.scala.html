@@ -16,11 +16,13 @@
 
 @import viewmodels.TitledSummaryList
 @import components.ButtonGroup
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukSummaryList: GovukSummaryList,
-        button: ButtonGroup
+        button: ButtonGroup,
+        govukButton: GovukButton
 )
 
 @(
@@ -31,7 +33,8 @@
     countryFromIndex: Index,
     countryToIndex: Index,
     countryFrom: Country,
-    countryTo: Country
+    countryTo: Country,
+    incompleteSales: Seq[String]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(
@@ -39,23 +42,43 @@
     Some(messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name))
 )) {
 
-    @formHelper(action = routes.CheckSalesToEuController.onSubmit(mode, period, countryFromIndex, countryToIndex)) {
+    @if(incompleteSales.nonEmpty) {
+        <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+                <span class="govuk-warning-text__assistive">Warning</span>
+                @messages("error.missing_answers")
+            </strong>
+        </div>
+    }
 
-        <header class="hmrc-page-heading">
-            <h1 class="govuk-heading-xl">@messages("checkSalesToEu.heading")</h1>
-            <p class="govuk-caption-xl hmrc-caption-xl">@messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)</p>
-        </header>
+    <header class="hmrc-page-heading">
+        <h1 class="govuk-heading-xl">@messages("checkSalesToEu.heading")</h1>
+        <p class="govuk-caption-xl hmrc-caption-xl">@messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)</p>
+    </header>
 
-        @govukSummaryList(mainList)
+    @if(incompleteSales.isEmpty) {
+        @formHelper(action = routes.CheckSalesToEuController.onSubmit(mode, period, countryFromIndex, countryToIndex, false)) {
 
-        @for(list <- vatRateLists) {
-            <h2 class="govuk-heading-m">@{
-                list.title
-            }</h2>
+            @govukSummaryList(mainList)
 
-            @govukSummaryList(list.list)
+            @for(list <- vatRateLists) {
+                <h2 class="govuk-heading-m">@{list.title}</h2>
+                @govukSummaryList(list.list)
+            }
+
+            @button("site.continue",  period, routes.CheckSalesToEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex).url)
+
         }
+    } else {
+        @formHelper(action = routes.CheckSalesToEuController.onSubmit(mode, period, countryFromIndex, countryToIndex, true)) {
 
-        @button("site.continue",  period, routes.CheckSalesToEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex).url)
+            <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+            <p class="govuk-body">@messages("error.missing_answers_prompt", incompleteSales.head)</p>
+
+            @govukButton(
+                ButtonViewModel(messages("error.resolve_missing_answers"))
+            )
+        }
     }
 }

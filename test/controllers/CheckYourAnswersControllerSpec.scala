@@ -21,13 +21,14 @@ import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import connectors.{SaveForLaterConnector, VatReturnConnector}
 import connectors.corrections.CorrectionConnector
+import controllers.corrections.{routes => correctionsRoutes}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.DataRequest
+import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
-import models.{Country, DataMissingError, NormalMode, TotalVatToCountry}
+import models.{CheckMode, Country, DataMissingError, Index, NormalMode, Period, TotalVatToCountry, VatRate, VatRateType}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -36,7 +37,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
-import pages.{CheckYourAnswersPage, SoldGoodsFromEuPage, SoldGoodsFromNiPage}
+import pages._
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -46,6 +47,7 @@ import services.corrections.CorrectionService
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import viewmodels.govuk.SummaryListFluency
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with SummaryListFluency with BeforeAndAfterEach {
@@ -201,7 +203,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .set(SoldGoodsFromNiPage, false).success.value
               .set(SoldGoodsFromEuPage, false).success.value
 
-          when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
@@ -218,12 +220,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .build()
 
           running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, false).url)
             val result = route(app, request).value
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
-            verify(vatReturnConnector, times(1)).submit(any())(any())
+            verify(vatReturnConnector, times(1)).submit(any[VatReturnRequest]())(any())
           }
         }
 
@@ -234,7 +236,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-          when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
@@ -257,7 +259,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .build()
 
           running(application) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period, false).url)
             val result = route(application, request).value
             val dataRequest = DataRequest(request, testCredentials, vrn, registration, answers)
             val expectedAuditEvent = ReturnsAuditModel.build(
@@ -293,7 +295,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .set(SoldGoodsFromNiPage, false).success.value
               .set(SoldGoodsFromEuPage, false).success.value
 
-          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
+          when(vatReturnConnector.submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
@@ -308,12 +310,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               ).build()
 
           running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, false).url)
             val result = route(app, request).value
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
-            verify(vatReturnConnector, times(1)).submitWithCorrection(any())(any())
+            verify(vatReturnConnector, times(1)).submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any())
           }
         }
 
@@ -326,7 +328,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
-          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
+          when(vatReturnConnector.submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Right(vatReturn, correctionPayload))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
@@ -350,7 +352,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .build()
 
           running(application) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period, false).url)
             val result = route(application, request).value
             val dataRequest = DataRequest(request, testCredentials, vrn, registration, answers)
             val expectedAuditEvent = ReturnsAuditModel.build(
@@ -396,18 +398,18 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             ).build()
 
         when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
+        when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(ConflictFound))
         doNothing().when(auditService).audit(any())(any(), any())
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
           val result = route(app, request).value
           val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
           val expectedAuditEvent =
             ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Duplicate, None, None, dataRequest)
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
           verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
@@ -432,11 +434,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               ).build()
 
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(vatReturnConnector.submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
           doNothing().when(auditService).audit(any())(any(), any())
 
           running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
             val result = route(app, request).value
             val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
             val expectedAuditEvent =
@@ -463,11 +465,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               ).build()
 
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(SoldGoodsFromNiPage)))
-          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(CorrectPreviousReturnPage)))
 
           running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
             val result = route(app, request).value
 
             status(result) mustEqual SEE_OTHER
@@ -490,11 +492,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               ).build()
 
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(SoldGoodsFromNiPage)))
-          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
 
           running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
             val result = route(app, request).value
 
             status(result) mustEqual SEE_OTHER
@@ -517,11 +519,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               ).build()
 
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Invalid(NonEmptyChain(DataMissingError(CorrectPreviousReturnPage)))
 
           running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
             val result = route(app, request).value
 
             status(result) mustEqual SEE_OTHER
@@ -529,7 +531,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           }
         }
 
-        "must redirect to Your Account Controller when connector returns Conflict Found" in {
+        "must redirect to Journey Recovery when connector returns Conflict Found" in {
 
           val answers =
             completeUserAnswers
@@ -545,19 +547,19 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               ).build()
 
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-          when(vatReturnConnector.submitWithCorrection(any())(any())) thenReturn Future.successful(Left(ConflictFound))
+          when(vatReturnConnector.submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Left(ConflictFound))
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
           doNothing().when(auditService).audit(any())(any(), any())
 
           running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
             val result = route(app, request).value
             val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
             val expectedAuditEvent =
               ReturnsAuditModel.build(vatReturnRequest, Some(correctionRequest), SubmissionResult.Duplicate, None, None, dataRequest)
 
             status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad().url
+            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
             verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
           }
         }
@@ -575,16 +577,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
                 bind[AuditService].toInstance(auditService)
               ).build()
 
-          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-          when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
-          doNothing().when(auditService).audit(any())(any(), any())
+        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+        when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+        doNothing().when(auditService).audit(any())(any(), any())
 
-          running(app) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
-            val result = route(app, request).value
-            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
-            val expectedAuditEvent =
-              ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Failure, None, None, dataRequest)
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
+          val result = route(app, request).value
+          val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+          val expectedAuditEvent =
+            ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Failure, None, None, dataRequest)
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
@@ -594,7 +596,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       }
     }
 
-    "when the user has not answered all necessary questions" - {
+    "when the user has not answered any  questions" - {
 
       "must redirect to Journey Recovery" in {
 
@@ -603,11 +605,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .overrides(bind[VatReturnConnector].toInstance(vatReturnConnector))
             .build()
 
-        when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
 
         running(app) {
 
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
           val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
@@ -652,7 +654,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       val answers = completeUserAnswers
 
-      when(vatReturnConnector.submit(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
       when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
         .thenReturn(Future.successful(EMAIL_ACCEPTED))
       when(mockCachedVatReturnRepository.clear(any(), any())) thenReturn Future.successful(true)
@@ -668,14 +670,257 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       running(app) {
 
-        val request = FakeRequest(POST, routes.CheckYourAnswersController.onPageLoad(period).url)
+        val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
 
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.ReturnSubmittedController.onPageLoad(period).url
-        verify(vatReturnConnector, times(1)).submit(any())(any())
+        verify(vatReturnConnector, times(1)).submit(any[VatReturnRequest]())(any())
         verify(mockCachedVatReturnRepository, times(1)).clear(eqTo(answers.userId), eqTo(period))
+      }
+    }
+
+    "when the user has not answered" - {
+
+      "a question but the missing data prompt has not been shown, must refresh page" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, false).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad(period).url
+        }
+      }
+
+      "country of consumption from NI must redirect to CountryOfConsumptionFromNiController" in {
+
+        val answers = emptyUserAnswers
+            .set(SoldGoodsFromNiPage, true).success.value
+            .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, period, Index(0)).url
+        }
+      }
+
+      "vat rates from NI, must redirect to VatRatesFromNiController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(CountryOfConsumptionFromNiPage(Index(0)), Country.euCountries.head).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatRatesFromNiController.onPageLoad(CheckMode, period, Index(0)).url
+        }
+      }
+
+      "net value of sales from NI must redirect to NetValueOfSalesFromNiController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(CountryOfConsumptionFromNiPage(Index(0)), Country.euCountries.head).success.value
+          .set(VatRatesFromNiPage(Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now() ))).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "vat on sales from NI must redirect to VatOnSalesFromNiController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(CountryOfConsumptionFromNiPage(Index(0)), Country.euCountries.head).success.value
+          .set(VatRatesFromNiPage(Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now() ))).success.value
+          .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), BigDecimal(2000.0)).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatOnSalesFromNiController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "country of sale from EU must redirect to CountryOfSaleFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, period, Index(0)).url
+        }
+      }
+
+      "country of consumption from EU must redirect to CountryOfConsumptionFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(CountryOfSaleFromEuPage(Index(0)), Country.euCountries.head).success.value
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "vat rates from EU must redirect to VatRatesFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(CountryOfSaleFromEuPage(Index(0)), Country.euCountries.head).success.value
+          .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), Country.euCountries.tail.head).success.value
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatRatesFromEuController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "net value of sales from EU must redirect to NetValueOfSalesFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(CountryOfSaleFromEuPage(Index(0)), Country.euCountries.head).success.value
+          .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), Country.euCountries.tail.head).success.value
+          .set(VatRatesFromEuPage(Index(0), Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now()))).success.value
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, period, Index(0), Index(0), Index(0)).url
+        }
+      }
+
+      "vat charged on sales from EU must redirect to VatOnSalesFromEuController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(CountryOfSaleFromEuPage(Index(0)), Country.euCountries.head).success.value
+          .set(CountryOfConsumptionFromEuPage(Index(0), Index(0)), Country.euCountries.tail.head).success.value
+          .set(VatRatesFromEuPage(Index(0), Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now()))).success.value
+          .set(NetValueOfSalesFromEuPage(Index(0), Index(0), Index(0)), BigDecimal(20000.0)).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatOnSalesFromEuController.onPageLoad(CheckMode, period, Index(0), Index(0), Index(0)).url
+        }
+      }
+
+      "period to correct must redirect to CorrectionReturnPeriodController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+          .set(CorrectPreviousReturnPage, true).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual correctionsRoutes.CorrectionReturnPeriodController.onPageLoad(CheckMode, period, Index(0)).url
+        }
+      }
+
+      "country of correction must redirect to CorrectionCountryController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+          .set(CorrectPreviousReturnPage, true).success.value
+          .set(CorrectionReturnPeriodPage(Index(0)), Period("2022", "Q1").get).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual correctionsRoutes.CorrectionCountryController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
+      }
+
+      "amount of correction must redirect to CountryVatCorrectionController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromNiPage, false).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
+          .set(CorrectPreviousReturnPage, true).success.value
+          .set(CorrectionReturnPeriodPage(Index(0)), Period("2022", "Q1").get).success.value
+          .set(CorrectionCountryPage(Index(0), Index(0)), Country.euCountries.head).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+        }
       }
     }
   }

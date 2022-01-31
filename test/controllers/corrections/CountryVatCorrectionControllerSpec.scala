@@ -239,7 +239,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
 
       val previousCorrection = CorrectionToCountry(
         selectedCountry,
-        BigDecimal(100.0)
+        Some(BigDecimal(100.0))
       )
 
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(previousVatReturn))

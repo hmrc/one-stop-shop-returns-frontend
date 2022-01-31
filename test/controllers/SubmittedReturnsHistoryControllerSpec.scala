@@ -226,7 +226,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           Period("2086", "Q3").get,
           List(PeriodWithCorrections(
             period,
-            List(Arbitrary.arbitrary[CorrectionToCountry].sample.value)
+            Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
           )),
           Instant.ofEpochSecond(1630670836),
           Instant.ofEpochSecond(1630670836)
@@ -269,7 +269,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           Period("2086", "Q3").get,
           List(PeriodWithCorrections(
             period,
-            List(Arbitrary.arbitrary[CorrectionToCountry].sample.value)
+            Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
           )),
           Instant.ofEpochSecond(1630670836),
           Instant.ofEpochSecond(1630670836)

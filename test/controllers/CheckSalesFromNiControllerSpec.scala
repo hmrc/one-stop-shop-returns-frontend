@@ -34,7 +34,8 @@ class CheckSalesFromNiControllerSpec extends SpecBase with SummaryListFluency {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers))
+        .configure("bootstrap.filters.csrf.enabled" -> false).build()
 
       running(application) {
         val request = FakeRequest(GET, routes.CheckSalesFromNiController.onPageLoad(NormalMode, period, index).url)
@@ -54,7 +55,7 @@ class CheckSalesFromNiControllerSpec extends SpecBase with SummaryListFluency {
       val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(POST, routes.CheckSalesFromNiController.onPageLoad(NormalMode, period, index).url)
+        val request = FakeRequest(POST, routes.CheckSalesFromNiController.onSubmit(NormalMode, period, index, false).url)
 
         val result = route(application, request).value
 

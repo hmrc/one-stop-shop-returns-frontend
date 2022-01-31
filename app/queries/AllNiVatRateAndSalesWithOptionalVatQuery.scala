@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package models
+package queries
 
-import play.api.libs.json.{Json, OFormat}
+import models.{Index, VatRateAndSales, VatRateAndSalesWithOptionalVat}
+import pages.PageConstants.{salesFromNi, vatRates}
+import play.api.libs.json.JsPath
 
-case class SalesToEu(
-                        countryOfConsumption: Country
-                      )
+case class AllNiVatRateAndSalesWithOptionalVatQuery(countryIndex: Index)
+  extends Gettable[Seq[VatRateAndSalesWithOptionalVat]] with Settable[Seq[VatRateAndSalesWithOptionalVat]] {
 
-object SalesToEu {
+  override def path: JsPath =
+    JsPath \ salesFromNi \ countryIndex.position \ vatRates
 
-  implicit val format: OFormat[SalesToEu] =
-    Json.format[SalesToEu]
 }

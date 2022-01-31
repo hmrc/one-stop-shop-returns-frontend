@@ -18,12 +18,15 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class SalesToEu(
-                        countryOfConsumption: Country
-                      )
+case class SalesAtVatRateWithOptionalVat(
+                             netValueOfSales: BigDecimal,
+                             vatOnSales: Option[VatOnSales]
+                           )
 
-object SalesToEu {
+object SalesAtVatRateWithOptionalVat {
 
-  implicit val format: OFormat[SalesToEu] =
-    Json.format[SalesToEu]
+  implicit val format: OFormat[SalesAtVatRateWithOptionalVat] = Json.format[SalesAtVatRateWithOptionalVat]
 }
+
+
+

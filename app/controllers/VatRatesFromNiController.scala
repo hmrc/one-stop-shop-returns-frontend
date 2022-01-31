@@ -18,12 +18,12 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromNiFormProvider
-import models.{Index, Mode, Period, UserAnswers, VatRate, VatRateAndSales}
+import models.{Index, Mode, Period, UserAnswers, VatRate, VatRateAndSales, VatRateAndSalesWithOptionalVat}
 import models.requests.DataRequest
 import pages.VatRatesFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import queries.{AllEuVatRateAndSalesQuery, AllNiVatRateAndSalesQuery}
+import queries.{AllEuVatRateAndSalesQuery, AllNiVatRateAndSalesQuery, AllNiVatRateAndSalesWithOptionalVatQuery}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
@@ -92,16 +92,16 @@ class VatRatesFromNiController @Inject()(
       }
   }
 
-  def getUpdatedAnswers(countryIndex: Index, existingUserAnswers: UserAnswers, vatRates: List[VatRate]): Seq[VatRateAndSales] = {
-    val existingSales = existingUserAnswers.get(AllNiVatRateAndSalesQuery(countryIndex)).getOrElse(Seq())
+  def getUpdatedAnswers(countryIndex: Index, existingUserAnswers: UserAnswers, vatRates: List[VatRate]): Seq[VatRateAndSalesWithOptionalVat] = {
+    val existingSales = existingUserAnswers.get(AllNiVatRateAndSalesWithOptionalVatQuery(countryIndex)).getOrElse(Seq())
     existingSales.filter(sales => vatRates.exists(_.rate == sales.rate)) ++ vatRates.filterNot(rate => existingSales.exists(_.rate == rate.rate))
-      .map(VatRateAndSales.convert)
+      .map(VatRateAndSalesWithOptionalVat.convert)
   }
 
   private def updateAndContinue(mode: Mode, index: Index, request: DataRequest[AnyContent], value: List[VatRate]) = {
     for {
       updatedAnswers <- Future.fromTry(request.userAnswers.set(
-        AllNiVatRateAndSalesQuery(index),
+        AllNiVatRateAndSalesWithOptionalVatQuery(index),
         getUpdatedAnswers(index, request.userAnswers, value)))
       _ <- cc.sessionRepository.set(updatedAnswers)
     } yield {

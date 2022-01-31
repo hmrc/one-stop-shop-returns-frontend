@@ -438,7 +438,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Period("2086", "Q3").get,
             List(PeriodWithCorrections(
               firstPeriod,
-              List(CorrectionToCountry(Country("ES", "Spain"), BigDecimal(1000.00)))
+              Some(List(CorrectionToCountry(Country("ES", "Spain"), Some(BigDecimal(1000.00)))))
             )),
             Instant.ofEpochSecond(1630670836),
             Instant.ofEpochSecond(1630670836)
@@ -524,7 +524,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Period("2086", "Q3").get,
             List(PeriodWithCorrections(
               firstPeriod,
-              List(Arbitrary.arbitrary[CorrectionToCountry].sample.value)
+              Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
             )),
             Instant.ofEpochSecond(1630670836),
             Instant.ofEpochSecond(1630670836)

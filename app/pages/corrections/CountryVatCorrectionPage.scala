@@ -17,8 +17,8 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
-import pages.PageConstants.{correctionsToCountry, corrections}
+import models.{Index, Mode, UserAnswers}
+import pages.PageConstants.{corrections, correctionsToCountry}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call

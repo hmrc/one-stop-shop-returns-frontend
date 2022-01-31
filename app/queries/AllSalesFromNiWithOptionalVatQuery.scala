@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package models
+package queries
 
-import play.api.libs.json.{Json, OFormat}
+import models.SalesFromCountryWithOptionalVat
+import pages.PageConstants
+import play.api.libs.json.JsPath
 
-case class SalesToEu(
-                        countryOfConsumption: Country
-                      )
+case object AllSalesFromNiWithOptionalVatQuery extends Gettable[List[SalesFromCountryWithOptionalVat]] with Settable[List[SalesFromCountryWithOptionalVat]] {
 
-object SalesToEu {
-
-  implicit val format: OFormat[SalesToEu] =
-    Json.format[SalesToEu]
+  override def path: JsPath = JsPath \ PageConstants.salesFromNi
 }

@@ -17,12 +17,15 @@
 package controllers
 
 import controllers.actions.AuthenticatedControllerComponents
+import controllers.corrections.routes
 import forms.SalesToEuListFormProvider
-import models.{Country, Index, Mode, Period}
+import models.corrections.CorrectionToCountry
+import models.{Country, Index, Mode, Period, SalesFromCountryWithOptionalVat}
 import pages.SalesToEuListPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.checkAnswers.SalesToEuSummary
 import views.html.SalesToEuListView
 
@@ -34,7 +37,7 @@ class SalesToEuListController @Inject()(
                                            formProvider: SalesToEuListFormProvider,
                                            view: SalesToEuListView
                                          )
-  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport {
+  extends FrontendBaseController with SalesFromEuBaseController with I18nSupport with CompletionChecks {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -48,26 +51,48 @@ class SalesToEuListController @Inject()(
           val canAddCountries = number < Country.euCountries.size
           val list            = SalesToEuSummary.addToListRows(request.userAnswers, mode, index)
 
-          Ok(view(form, mode, list, period, index, canAddCountries, country))
+          withCompleteData[SalesFromCountryWithOptionalVat](
+            index,
+            data = getIncompleteToEuSales _,
+            onFailure = (incompleteSales: Seq[SalesFromCountryWithOptionalVat]) => {
+            Ok(view(form, mode, list, period, index, canAddCountries, country, incompleteSales.map(_.countryOfConsumption.name)))
+          })(Ok(view(form, mode, list, period, index, canAddCountries, country, Seq.empty)))
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
+  def onSubmit(mode: Mode, period: Period, index: Index, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      getNumberOfSalesToEuAndCountry(index) {
-        case (number, country) =>
 
-          val form = formProvider(country)
-          val canAddCountries = number < Country.euCountries.size
+      withCompleteData[SalesFromCountryWithOptionalVat](
+        index,
+        data = getIncompleteToEuSales _,
+        onFailure = (_: Seq[SalesFromCountryWithOptionalVat]) => {
+        if(incompletePromptShown) {
+          firstIndexedIncompleteSaleToEu(index) match {
+            case Some(incompleteCountryTo) =>
+              Redirect(routes.CheckSalesToEuController.onPageLoad( mode,  period, index, Index(incompleteCountryTo._2)))
+            case None =>
+              Redirect(routes.JourneyRecoveryController.onPageLoad())
+          }
+        } else {
+          Redirect(routes.SalesToEuListController.onPageLoad( mode,  period, index))
+        }
+      }) {
+        getNumberOfSalesToEuAndCountry(index) {
+          case (number, country) =>
 
-          form.bindFromRequest().fold(
-            formWithErrors => {
-              val list = SalesToEuSummary.addToListRows(request.userAnswers, mode, index)
-              BadRequest(view(formWithErrors, mode, list, period, index, canAddCountries, country))
-            },
-            value =>
-              Redirect(SalesToEuListPage(index).navigate(request.userAnswers, mode, value))
-          )
+            val form = formProvider(country)
+            val canAddCountries = number < Country.euCountries.size
+
+            form.bindFromRequest().fold(
+              formWithErrors => {
+                val list = SalesToEuSummary.addToListRows(request.userAnswers, mode, index)
+                BadRequest(view(formWithErrors, mode, list, period, index, canAddCountries, country, Seq()))
+              },
+              value =>
+                Redirect(SalesToEuListPage(index).navigate(request.userAnswers, mode, value))
+            )
+        }
       }
   }
 }

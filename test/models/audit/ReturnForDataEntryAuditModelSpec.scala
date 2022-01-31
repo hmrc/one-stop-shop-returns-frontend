@@ -227,10 +227,10 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
 
       private val corrections = List(PeriodWithCorrections(
         correctionPeriod1,
-        List(CorrectionToCountry(
+        Some(List(CorrectionToCountry(
           country3,
-          correctionAmount
-        ))
+          Some(correctionAmount)
+        )))
       ))
 
       private val vatReturnRequest = VatReturnRequest(vrn, period, None, None, salesFromNi, salesFromEu)
@@ -373,21 +373,21 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
       private val corrections = List(
         PeriodWithCorrections(
           correctionPeriod1,
-          List(
+          Some(List(
             CorrectionToCountry(
             country3,
-            correctionAmount
+              Some(correctionAmount)
             )
-          )
+          ))
         ),
         PeriodWithCorrections(
           correctionPeriod2,
-          List(
+          Some(List(
             CorrectionToCountry(
               country4,
-              correctionAmount
+              Some(correctionAmount)
             )
-          )
+          ))
         )
       )
 

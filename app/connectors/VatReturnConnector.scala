@@ -38,7 +38,7 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
     httpClient.POST[VatReturnRequest, VatReturnResponse](url, vatReturnRequest)
   }
 
-  def submitWithCorrection(vatReturnRequest: VatReturnWithCorrectionRequest)(implicit hc: HeaderCarrier): Future[VatReturnWithCorrectionResponse] = {
+  def submitWithCorrections(vatReturnRequest: VatReturnWithCorrectionRequest)(implicit hc: HeaderCarrier): Future[VatReturnWithCorrectionResponse] = {
     val url = s"$baseUrl/vat-return-with-corrections"
 
     httpClient.POST[VatReturnWithCorrectionRequest, VatReturnWithCorrectionResponse](url, vatReturnRequest)
