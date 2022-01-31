@@ -39,7 +39,7 @@
         @govukSelect(
             SelectViewModel(
                 field = form("value"),
-                items = Country.euCountrySelectItems,
+                items = Country.euCountryWithNISelectItems,
                 label = HmrcPageHeadingLabel(
                     content = messages("correctionCountry.heading"),
                     caption = messages("correctionCountry.caption", correctionPeriod.displayText)

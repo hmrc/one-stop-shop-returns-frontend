@@ -46,7 +46,7 @@ class CorrectionCountryFormProviderSpec extends StringFieldBehaviours {
 
     "must not bind any values other than valid country codes" in {
 
-      val invalidAnswers = arbitrary[String] suchThat (x => !Country.euCountries.map(_.code).contains(x))
+      val invalidAnswers = arbitrary[String] suchThat (x => !Country.euCountriesWithNI.map(_.code).contains(x))
 
       forAll(invalidAnswers) {
         answer =>
@@ -56,14 +56,13 @@ class CorrectionCountryFormProviderSpec extends StringFieldBehaviours {
     }
 
     "must fail to bind when given a duplicate value" in {
-      val answer = Country.euCountries.tail.head
-      val existingAnswers = Seq(Country.euCountries.head, Country.euCountries.tail.head)
+      val answer = Country.euCountriesWithNI.tail.head
+      val existingAnswers = Seq(Country.euCountriesWithNI.head, Country.euCountriesWithNI.tail.head)
 
       val duplicateForm = new CorrectionCountryFormProvider()(index, existingAnswers)
 
       val result = duplicateForm.bind(Map(fieldName ->  answer.code)).apply(fieldName)
       result.errors must contain only FormError(fieldName, "correctionCountry.error.duplicate")
     }
-
   }
 }

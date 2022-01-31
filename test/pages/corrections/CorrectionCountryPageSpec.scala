@@ -42,7 +42,11 @@ class CorrectionCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
         CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
+          .mustEqual(
+            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+              NormalMode, answers.period, index, index, undeclaredCountry = false
+            )
+          )
       }
 
       "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
@@ -72,7 +76,11 @@ class CorrectionCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
         CorrectionCountryPage(index, index).navigate(CheckMode, answers, countries)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
+          .mustEqual(
+            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+              CheckMode, answers.period, index, index, undeclaredCountry = false
+            )
+          )
       }
 
       "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
@@ -102,7 +110,11 @@ class CorrectionCountryPageSpec extends PageBehaviours {
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
         CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, countries)
-          .mustEqual(controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index))
+          .mustEqual(
+            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+              CheckThirdLoopMode, answers.period, index, index, undeclaredCountry = false
+            )
+          )
       }
 
       "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
