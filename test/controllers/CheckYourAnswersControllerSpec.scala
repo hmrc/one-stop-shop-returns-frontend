@@ -919,7 +919,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, Index(0), Index(0)).url
+          redirectLocation(result).value mustEqual correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, Index(0), Index(0), false).url
         }
       }
     }
