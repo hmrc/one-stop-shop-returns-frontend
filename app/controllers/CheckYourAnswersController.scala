@@ -256,7 +256,7 @@ class CheckYourAnswersController @Inject()(
         Some(correctionsRoutes.CorrectionCountryController.onPageLoad(CheckMode, period, periodIndex, Index(0)))
       case DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)) =>
         logger.error(s"Data missing - correction to country ${countryIndex.position} in period ${periodIndex.position}")
-        Some(correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, periodIndex, countryIndex))
+        Some(correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, periodIndex, countryIndex, false))
 
       case DataMissingError(_) =>
         logger.error(s"Unhandled DataMissingError")
