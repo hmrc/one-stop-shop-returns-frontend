@@ -21,13 +21,13 @@ import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.responses._
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsSuccess}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object VatReturnWithCorrectionHttpParser extends Logging {
 
   type VatReturnWithCorrectionResponse = Either[ErrorResponse, (VatReturn, CorrectionPayload)]
-
+  private val REGISTRATION_NOT_FOUND = "OSS_009"
   implicit object VatReturnWithCorrectionReads extends HttpReads[VatReturnWithCorrectionResponse] {
     override def read(method: String, url: String, response: HttpResponse): VatReturnWithCorrectionResponse = {
       response.status match {
@@ -39,10 +39,15 @@ object VatReturnWithCorrectionHttpParser extends Logging {
               Left(InvalidJson)
           }
         case NOT_FOUND =>
-          logger.warn("Received NotFound from vat return")
-          Left(NotFound)
+          if(response.body.contains(REGISTRATION_NOT_FOUND)){
+            logger.warn("Received Registration NotFound from core")
+            Left(RegistrationNotFound)
+          } else {
+            logger.warn("Received NotFound from vat return")
+            Left(NotFound)
+          }
         case CONFLICT =>
-          logger.warn("Received NotFound from vat return")
+          logger.warn("Received Conflict from vat return")
           Left(ConflictFound)
         case status   =>
           logger.warn("Received unexpected error from vat return")

@@ -25,8 +25,9 @@ object SubmissionResult extends Enumerable.Implicits {
   case object Success extends WithName("success") with SubmissionResult
   case object Failure extends WithName("failure") with SubmissionResult
   case object Duplicate extends WithName("failure-duplicate-submission") with SubmissionResult
+  case object NotYetRegistered extends WithName("failure-missing-registration") with SubmissionResult
 
-  val values = Seq(Success, Failure, Duplicate)
+  val values = Seq(Success, Failure, Duplicate, NotYetRegistered)
 
   implicit val enumerable: Enumerable[SubmissionResult] =
     Enumerable(values.map(v => v.toString -> v): _*)
