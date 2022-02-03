@@ -356,8 +356,7 @@ class CheckYourAnswersController @Inject()(
           for {
             _ <- cc.sessionRepository.set(updatedAnswers)
           } yield {
-           //TODO new error page
-            Redirect(routes.JourneyRecoveryController.onPageLoad())
+            Redirect(routes.NoRegistrationFoundInCoreController.onPageLoad())
           }
         case Left(ConflictFound) =>
           Future.successful(Redirect(routes.YourAccountController.onPageLoad()))

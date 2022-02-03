@@ -477,3 +477,10 @@ deleteReturn.title = Are you sure you want to delete this return?
 deleteReturn.heading = Are you sure you want to delete this return?
 deleteReturn.error.required = Select yes if you want to delete this return
 deleteReturn.button = Delete return
+
+notRegisteredCore.title = Return not submitted
+notRegisteredCore.heading = Your registration is being reviewed
+notRegisteredCore.registrationNeedsApproval = You cannot submit your return until we have approved your One Stop Shop registration.
+notRegisteredCore.time = This can take up to 7 working days.
+notRegisteredCore.savedAnswers = We have saved the information in your return. You can submit it from your account.
+notRegisteredCore.your.account = Back to your account

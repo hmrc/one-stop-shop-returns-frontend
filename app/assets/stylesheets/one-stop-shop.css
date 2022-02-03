@@ -100,3 +100,7 @@ td.oss-vat {
     width: 15%;
     text-align: right;
 }
+
+.red-background {
+    background-color: #d4351c;
+}

@@ -301,3 +301,5 @@ GET        /:period/return-delete-confirm                                       
 POST       /:period/return-delete-confirm                                                                    controllers.DeleteReturnController.onSubmit(period: Period)
 
 GET        /:period/progress-saved                                                                           controllers.SavedProgressController.onPageLoad(period: Period, continueUrl: String)
+
+GET        /return-not-submitted                                                                             controllers.NoRegistrationFoundInCoreController.onPageLoad()
