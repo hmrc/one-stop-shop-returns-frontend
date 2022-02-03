@@ -19,20 +19,20 @@ package controllers
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
-import connectors.{SaveForLaterConnector, VatReturnConnector}
+import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
 import connectors.corrections.CorrectionConnector
 import controllers.corrections.{routes => correctionsRoutes}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
-import models.responses.{ConflictFound, UnexpectedResponseStatus}
+import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
+import models.responses.{ConflictFound, RegistrationNotFound, UnexpectedResponseStatus}
 import models.{CheckMode, Country, DataMissingError, Index, NormalMode, Period, TotalVatToCountry, VatRate, VatRateType}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
-import org.mockito.Mockito.{doNothing, times, verify, when}
+import org.mockito.Mockito.{doNothing, times, verify, verifyNoInteractions, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -920,6 +920,38 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, Index(0), Index(0), false).url
+        }
+      }
+    }
+
+    "when submission fails due to registration not being present in core" - {
+      "must not save the return, save answers for later and redirect to the No Registration Found In Core page" in {
+
+        val answers =
+          emptyUserAnswers
+            .set(SoldGoodsFromNiPage, false).success.value
+            .set(SoldGoodsFromEuPage, false).success.value
+
+        when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(RegistrationNotFound))
+        when(s4lConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(SavedUserAnswers(vrn, period, answers.data, answers.lastUpdated))))
+
+
+        val app =
+          applicationBuilder(Some(answers))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[CorrectionConnector].toInstance(correctionConnector),
+              bind[SaveForLaterConnector].toInstance(s4lConnector)
+            )
+            .build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, false).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.NoRegistrationFoundInCoreController.onPageLoad().url
+          verify(s4lConnector, times(1)).submit(any[SaveForLaterRequest]())(any())
         }
       }
     }
