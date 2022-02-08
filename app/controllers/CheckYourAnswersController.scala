@@ -18,7 +18,7 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
-import connectors.{SaveForLaterConnector, VatReturnConnector}
+import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import controllers.corrections.{routes => correctionsRoutes}
 import logging.Logging
@@ -26,11 +26,11 @@ import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, Submission
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.corrections.CorrectionRequest
-import models.requests.{DataRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
-import models.responses.ConflictFound
+import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
+import models.responses.{ConflictFound, RegistrationNotFound}
 import models.{CheckMode, DataMissingError, Index, NormalMode, Period, ValidationError}
 import pages.corrections.{CorrectPreviousReturnPage, VatPeriodCorrectionsListPage}
-import pages.{CheckYourAnswersPage, VatRatesFromEuPage, VatRatesFromNiPage}
+import pages.{CheckYourAnswersPage, SavedProgressPage, VatRatesFromEuPage, VatRatesFromNiPage}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
@@ -280,6 +280,11 @@ class CheckYourAnswersController @Inject()(
         auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period)
       case Right((vatReturn: VatReturn, _)) =>
         auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period)
+      case Left(RegistrationNotFound) =>
+        auditService.audit(ReturnsAuditModel.build(
+          vatReturnRequest, correctionRequest, SubmissionResult.NotYetRegistered, None, None, request
+        ))
+        saveUserAnswersOnMissingRegistration(period)
       case Left(ConflictFound) =>
         auditService.audit(ReturnsAuditModel.build(
           vatReturnRequest, correctionRequest, SubmissionResult.Duplicate, None, None, request
@@ -339,5 +344,25 @@ class CheckYourAnswersController @Inject()(
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
         }
     }
+  }
+
+  private def saveUserAnswersOnMissingRegistration(period: Period)(implicit request: DataRequest[AnyContent]): Future[Result] =
+    Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad(period).url)).flatMap {
+    updatedAnswers =>
+      val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, period)
+
+      saveForLaterConnector.submit(s4LRequest).flatMap {
+        case Right(Some(_: SavedUserAnswers)) =>
+          for {
+            _ <- cc.sessionRepository.set(updatedAnswers)
+          } yield {
+            Redirect(routes.NoRegistrationFoundInCoreController.onPageLoad())
+          }
+        case Left(ConflictFound) =>
+          Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
+        case Left(e) =>
+          logger.error(s"Unexpected result on submit: ${e.toString}")
+          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      }
   }
 }

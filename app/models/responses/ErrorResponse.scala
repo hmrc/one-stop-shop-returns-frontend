@@ -28,6 +28,10 @@ case object NotFound extends ErrorResponse {
   override val body = "Not found"
 }
 
+case object RegistrationNotFound extends ErrorResponse {
+  override val body = "Registration not found"
+}
+
 case object ConflictFound extends ErrorResponse {
   override val body = "Conflict"
 }
