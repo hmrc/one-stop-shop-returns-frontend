@@ -484,3 +484,9 @@ notRegisteredCore.registrationNeedsApproval = You cannot submit your return unti
 notRegisteredCore.time = This can take up to 2 working days.
 notRegisteredCore.savedAnswers = We have saved the information in your return. You can submit it from your account once it has been approved.
 notRegisteredCore.your.account = Back to your account
+
+
+errorFromCore.title = There is a problem with the service
+errorFromCore.heading = Your return is not submitted
+errorFromCore.savedAnswers = We have saved your answers and you can submit it from your account later.
+errorFromCore.your.account = Back to your account

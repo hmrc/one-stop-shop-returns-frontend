@@ -28,7 +28,6 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 object VatReturnHttpParser extends Logging {
 
   type VatReturnResponse = Either[ErrorResponse, VatReturn]
-  private val REGISTRATION_NOT_FOUND = "OSS_009"
 
   implicit object VatReturnReads extends HttpReads[VatReturnResponse] {
     override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {
@@ -41,13 +40,16 @@ object VatReturnHttpParser extends Logging {
               Left(InvalidJson)
           }
         case NOT_FOUND =>
-          if(response.body.contains(REGISTRATION_NOT_FOUND)){
+          if(response.body.contains(CoreErrorResponse.REGISTRATION_NOT_FOUND)){
             logger.warn("Received Registration NotFound from core")
             Left(RegistrationNotFound)
           } else {
             logger.warn("Received NotFound for vat return")
             Left(NotFound)
           }
+        case SERVICE_UNAVAILABLE if(response.json.validate[CoreErrorResponse].isSuccess) =>
+          logger.warn("Received error when submitting to core")
+          Left(ReceivedErrorFromCore)
         case CONFLICT =>
           logger.warn("Received Conflict found for vat return")
           Left(ConflictFound)

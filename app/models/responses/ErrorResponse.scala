@@ -32,6 +32,10 @@ case object RegistrationNotFound extends ErrorResponse {
   override val body = "Registration not found"
 }
 
+case object ReceivedErrorFromCore extends ErrorResponse {
+  override val body = "Received an error when submitting to core"
+}
+
 case object ConflictFound extends ErrorResponse {
   override val body = "Conflict"
 }
