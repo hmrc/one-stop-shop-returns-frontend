@@ -27,12 +27,12 @@ import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
-import models.responses.{ConflictFound, RegistrationNotFound, UnexpectedResponseStatus}
+import models.responses.{ConflictFound, ReceivedErrorFromCore, RegistrationNotFound, UnexpectedResponseStatus}
 import models.{CheckMode, Country, DataMissingError, Index, NormalMode, Period, TotalVatToCountry, VatRate, VatRateType}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
-import org.mockito.Mockito.{doNothing, times, verify, verifyNoInteractions, when}
+import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -62,7 +62,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val s4lConnector = mock[SaveForLaterConnector]
 
   override def beforeEach(): Unit = {
-    Mockito.reset(vatReturnConnector, correctionConnector, vatReturnService, auditService, salesAtVatRateService, emailService)
+    Mockito.reset(vatReturnConnector, correctionConnector, vatReturnService, auditService, salesAtVatRateService, emailService, s4lConnector)
     super.beforeEach()
   }
 
@@ -951,6 +951,38 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.NoRegistrationFoundInCoreController.onPageLoad().url
+          verify(s4lConnector, times(1)).submit(any[SaveForLaterRequest]())(any())
+        }
+      }
+    }
+
+    "when submission fails due to error received from core" - {
+      "must not save the return, save answers for later and redirect to the Received Error From Core page" in {
+
+        val answers =
+          emptyUserAnswers
+            .set(SoldGoodsFromNiPage, false).success.value
+            .set(SoldGoodsFromEuPage, false).success.value
+
+        when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(ReceivedErrorFromCore))
+        when(s4lConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(SavedUserAnswers(vrn, period, answers.data, answers.lastUpdated))))
+
+
+        val app =
+          applicationBuilder(Some(answers))
+            .overrides(
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[CorrectionConnector].toInstance(correctionConnector),
+              bind[SaveForLaterConnector].toInstance(s4lConnector)
+            )
+            .build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, false).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.ReceivedErrorFromCoreController.onPageLoad().url
           verify(s4lConnector, times(1)).submit(any[SaveForLaterRequest]())(any())
         }
       }
