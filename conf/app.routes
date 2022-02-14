@@ -304,4 +304,4 @@ GET        /:period/progress-saved                                              
 
 GET        /return-not-submitted                                                                             controllers.NoRegistrationFoundInCoreController.onPageLoad()
 
-GET        /return-api-down                                                                                  controllers.ReceivedErrorFromCoreController.onPageLoad()
+GET        /return-service-down                                                                              controllers.ReceivedErrorFromCoreController.onPageLoad()
