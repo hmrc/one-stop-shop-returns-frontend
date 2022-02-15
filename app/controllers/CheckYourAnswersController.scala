@@ -27,7 +27,7 @@ import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.corrections.CorrectionRequest
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
-import models.responses.{ConflictFound, RegistrationNotFound}
+import models.responses.{ConflictFound, ReceivedErrorFromCore, RegistrationNotFound}
 import models.{CheckMode, DataMissingError, Index, NormalMode, Period, ValidationError}
 import pages.corrections.{CorrectPreviousReturnPage, VatPeriodCorrectionsListPage}
 import pages.{CheckYourAnswersPage, SavedProgressPage, VatRatesFromEuPage, VatRatesFromNiPage}
@@ -284,7 +284,12 @@ class CheckYourAnswersController @Inject()(
         auditService.audit(ReturnsAuditModel.build(
           vatReturnRequest, correctionRequest, SubmissionResult.NotYetRegistered, None, None, request
         ))
-        saveUserAnswersOnMissingRegistration(period)
+        saveUserAnswersOnCoreError(period, routes.NoRegistrationFoundInCoreController.onPageLoad())
+      case Left(ReceivedErrorFromCore) =>
+        auditService.audit(ReturnsAuditModel.build(
+          vatReturnRequest, correctionRequest, SubmissionResult.NotYetRegistered, None, None, request
+        ))
+        saveUserAnswersOnCoreError(period, routes.ReceivedErrorFromCoreController.onPageLoad())
       case Left(ConflictFound) =>
         auditService.audit(ReturnsAuditModel.build(
           vatReturnRequest, correctionRequest, SubmissionResult.Duplicate, None, None, request
@@ -346,7 +351,7 @@ class CheckYourAnswersController @Inject()(
     }
   }
 
-  private def saveUserAnswersOnMissingRegistration(period: Period)(implicit request: DataRequest[AnyContent]): Future[Result] =
+  private def saveUserAnswersOnCoreError(period: Period, redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] =
     Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad(period).url)).flatMap {
     updatedAnswers =>
       val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, period)
@@ -356,7 +361,7 @@ class CheckYourAnswersController @Inject()(
           for {
             _ <- cc.sessionRepository.set(updatedAnswers)
           } yield {
-            Redirect(routes.NoRegistrationFoundInCoreController.onPageLoad())
+            Redirect(redirectLocation)
           }
         case Left(ConflictFound) =>
           Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
