@@ -24,10 +24,10 @@ import java.util.UUID
 case class CoreErrorResponse(
                               timestamp: Instant,
                               transactionId: Option[UUID],
-                              error: String,
+                              errorCode: String,
                               errorMessage: String
                             ) {
-  val asException: Exception = new Exception(s"$timestamp $transactionId $error $errorMessage")
+  val asException: Exception = new Exception(s"$timestamp $transactionId $errorCode $errorMessage")
 }
 
 object CoreErrorResponse {
