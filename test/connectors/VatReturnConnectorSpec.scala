@@ -20,7 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.domain.VatReturn
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
-import models.responses.{ConflictFound, InvalidJson, NotFound, UnexpectedResponseStatus}
+import models.responses.{ConflictFound, CoreErrorResponse, InvalidJson, NotFound, ReceivedErrorFromCore, UnexpectedResponseStatus}
 import models.{PaymentReference, ReturnReference}
 import models.corrections.CorrectionPayload
 import models.requests.corrections.CorrectionRequest
@@ -33,6 +33,7 @@ import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.Instant
+import java.util.UUID
 
 class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 
@@ -43,6 +44,13 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
     applicationBuilder()
       .configure("microservice.services.one-stop-shop-returns.port" -> server.port)
       .build()
+
+  private val coreErrorResponse = CoreErrorResponse(
+    Instant.now(),
+    Some(UUID.randomUUID()),
+    "error",
+    "Error message"
+  )
 
   ".submit" - {
 
@@ -100,6 +108,22 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         val result = connector.submit(vatReturnRequest).futureValue
 
         result.left.value mustEqual ConflictFound
+      }
+    }
+
+    "must return Left(ReceivedErrorFromCore) when the server responds with a core error" in {
+
+      running(application) {
+        val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)
+          .withBody(Json.toJson(coreErrorResponse).toString())))
+
+        val result = connector.submit(vatReturnRequest).futureValue
+
+        result.left.value mustEqual ReceivedErrorFromCore
       }
     }
 
@@ -206,6 +230,24 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         val result = connector.submitWithCorrections(vatReturnWithCorrectionRequest).futureValue
 
         result.left.value mustEqual ConflictFound
+      }
+    }
+
+    "must return Left(ReceivedErrorFromCore) when the server responds with a core error" in {
+
+      running(application) {
+        val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
+        val correctionRequest = CorrectionRequest(vrn, period, List.empty)
+        val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)
+          .withBody(Json.toJson(coreErrorResponse).toString())))
+
+        val result = connector.submitWithCorrections(vatReturnWithCorrectionRequest).futureValue
+
+        result.left.value mustEqual ReceivedErrorFromCore
       }
     }
 
