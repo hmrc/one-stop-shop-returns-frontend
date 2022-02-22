@@ -19,7 +19,7 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import formats.Format
-import models.PeriodWithStatus
+import models.{Period, PeriodWithStatus}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
@@ -28,6 +28,7 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
+import viewmodels.yourAccount.{Return, Returns}
 
 import java.time.LocalDate
 
@@ -93,6 +94,63 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
         )
 
         val result = connector.listStatuses(commencementDate).futureValue
+        result.left.value mustBe an[UnexpectedResponseStatus]
+      }
+    }
+  }
+
+  ".getCurrentReturns" - {
+
+    val period = arbitrary[Period].sample.value
+    val responseJson = Json.toJson(Returns(None, Some(Return.fromPeriod(period)), Seq.empty))
+    val commencementDate = LocalDate.now()
+
+    "return a Returns model" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[ReturnStatusConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/current-returns/${Format.dateTimeFormatter.format(commencementDate)}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getCurrentReturns(commencementDate).futureValue mustBe Right(Returns(None, Some(Return.fromPeriod(period)), Seq.empty))
+      }
+    }
+
+    "must return Left(InvalidJson) when the server responds with an incorrectly formatted JSON payload" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[ReturnStatusConnector]
+
+        val responseJson = """{ "foo": "bar" }"""
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/current-returns/${Format.dateTimeFormatter.format(commencementDate)}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson)
+            )
+        )
+
+        connector.getCurrentReturns(commencementDate).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[ReturnStatusConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/current-returns/${Format.dateTimeFormatter.format(commencementDate)}"))
+            .willReturn(
+              aResponse().withStatus(INTERNAL_SERVER_ERROR)
+            )
+        )
+
+        val result = connector.getCurrentReturns(commencementDate).futureValue
         result.left.value mustBe an[UnexpectedResponseStatus]
       }
     }
