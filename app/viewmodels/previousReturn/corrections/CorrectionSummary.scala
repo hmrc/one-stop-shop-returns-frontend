@@ -59,25 +59,23 @@ object CorrectionSummary {
   }
 
   private[this] def summaryRowsOfCorrectionToCountry(periodsWithCorrections: List[PeriodWithCorrections])(implicit messages: Messages): Seq[Seq[TableRow]] = {
-    for {
-      periodWithCorrections <- periodsWithCorrections
-      correctionToCountry <- periodWithCorrections.correctionsToCountry
-    } yield {
-      correctionToCountry.groupBy(_.correctionCountry).flatMap {
-        case (country, corrections) =>
-          Seq(
-            TableRowViewModel(
-              content = Text(periodWithCorrections.correctionReturnPeriod.displayText)
-            ),
-            TableRowViewModel(
-              content = Text(country.name)
-            ),
-            TableRowViewModel(
-              content = HtmlContent(currencyFormat(corrections.map(_.countryVatCorrection.getOrElse(BigDecimal(0))).sum))
-            ).withCssClass("govuk-table__cell--numeric")
-          )
-      }
-    }.toSeq
+    periodsWithCorrections.flatMap{
+      periodWithCorrections =>
+          periodWithCorrections.correctionsToCountry.getOrElse(List.empty).groupBy(_.correctionCountry).map{
+            case (country, corrections) =>
+              Seq(
+                TableRowViewModel(
+                  content = Text(periodWithCorrections.correctionReturnPeriod.displayText)
+                ),
+                TableRowViewModel(
+                  content = Text(country.name)
+                ),
+                TableRowViewModel(
+                  content = HtmlContent(currencyFormat(corrections.map(_.countryVatCorrection.getOrElse(BigDecimal(0))).sum))
+                ).withCssClass("govuk-table__cell--numeric")
+              )
+          }
+    }
   }
 
   def getDeclaredVat(maybeCorrectionPayload: Option[CorrectionPayload], vatReturn: VatReturn)
