@@ -16,6 +16,7 @@
 
 package connectors
 
+import connectors.VatReturnHttpParser.logger
 import logging.Logging
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
@@ -46,6 +47,9 @@ object VatReturnWithCorrectionHttpParser extends Logging {
             logger.warn("Received NotFound from vat return")
             Left(NotFound)
           }
+        case SERVICE_UNAVAILABLE if(response.json.validate[CoreErrorResponse].isSuccess) =>
+          logger.warn("Received error when submitting to core")
+          Left(ReceivedErrorFromCore)
         case CONFLICT =>
           logger.warn("Received Conflict from vat return")
           Left(ConflictFound)
