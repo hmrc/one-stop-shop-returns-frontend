@@ -17,6 +17,7 @@
 package connectors.financialdata
 
 import config.Service
+import connectors.financialdata.CurrentPaymentsHttpParser._
 import connectors.financialdata.FinancialDataHttpParser._
 import connectors.financialdata.VatReturnWithFinancialDataHttpParser._
 import formats.Format
@@ -46,5 +47,10 @@ class FinancialDataConnector @Inject()(config: Configuration, httpClient: HttpCl
   def getVatReturnWithFinancialData(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[VatReturnWithFinancialDataResponse] = {
     val url = s"$baseUrl/financial-data/charge-history/${Format.dateTimeFormatter.format(commencementDate)}"
     httpClient.GET[VatReturnWithFinancialDataResponse](url)
+  }
+
+  def getCurrentPayments(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] = {
+    val url = s"$baseUrl/financial-data/prepare/${Format.dateTimeFormatter.format(commencementDate)}"
+    httpClient.GET[CurrentPaymentsResponse](url)
   }
 }

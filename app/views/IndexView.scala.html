@@ -15,18 +15,19 @@
  *@
 
 @import models.financialdata.VatReturnWithFinancialData
+@import models.financialdata.CurrentPayments
 @import utils.CurrencyFormatter.currencyFormat
 
 @this(
         layout: templates.Layout,
         govukButton: GovukButton
 )
-
 @(
         businessName: String,
         vrn: String,
         overduePeriods: Seq[Period],
         duePeriod: Option[Period],
+        currentPayments: CurrentPayments,
         dueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
         overdueVatReturnWithFinancialData: Seq[VatReturnWithFinancialData],
         paymentError: Boolean,
@@ -162,7 +163,7 @@
         <div class="tile tile-no-border">
             <div id="payments" class="tile-body">
                 <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
-                @(dueVatReturnWithFinancialData.size + overdueVatReturnWithFinancialData.size) match {
+                @(currentPayments.duePayments.size + currentPayments.overduePayments.size) match {
                     case 0 => {
                         <p class="govuk-body">
                         @messages("index.payment.nothingOwed")
@@ -176,10 +177,10 @@
                                 @messages("index.payment.pendingPayments")
                             </strong>
                         </div>
-                        @if(dueVatReturnWithFinancialData.nonEmpty) {
+                        @if(currentPayments.duePayments.nonEmpty) {
                             <h3 class="govuk-heading-s push--top">@messages("index.payment.dueHeading")</h3>
                         }
-                        @for(vatReturnWithFinancialData <- dueVatReturnWithFinancialData) {
+                        @for(vatReturnWithFinancialData <- currentPayments.duePayments) {
                             @vatReturnWithFinancialData.charge match {
                                 case Some(charge) => {
                                     <p class="govuk-body">
