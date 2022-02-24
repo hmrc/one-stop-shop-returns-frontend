@@ -22,17 +22,17 @@ import models.responses._
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-import viewmodels.yourAccount.Returns
+import viewmodels.yourAccount.OpenReturns
 
 object CurrentReturnsHttpParser extends Logging {
 
-  type CurrentReturnsResponse = Either[ErrorResponse, Returns]
+  type CurrentReturnsResponse = Either[ErrorResponse, OpenReturns]
 
   implicit object CurrentReturnsReads extends HttpReads[CurrentReturnsResponse] {
     override def read(method: String, url: String, response: HttpResponse): CurrentReturnsResponse = {
       response.status match {
         case OK | CREATED =>
-          response.json.validate[Returns] match {
+          response.json.validate[OpenReturns] match {
             case JsSuccess(returnsModel, _) => Right(returnsModel)
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)

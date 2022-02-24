@@ -19,12 +19,12 @@ package viewmodels.yourAccount
 import play.api.libs.json.{Json, OFormat}
 
 
-case class Returns(
+case class OpenReturns(
                            currentReturn: Option[Return],
                            dueReturn: Option[Return],
                            overdueReturns: Seq[Return]
                            )
 
-object Returns {
-  implicit val format: OFormat[Returns] = Json.format[Returns]
+object OpenReturns {
+  implicit val format: OFormat[OpenReturns] = Json.format[OpenReturns]
 }

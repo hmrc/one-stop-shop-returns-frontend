@@ -39,7 +39,7 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.VatReturnSalesService
 import uk.gov.hmrc.domain.Vrn
-import viewmodels.yourAccount.{Return, Returns}
+import viewmodels.yourAccount.{Return, OpenReturns}
 import views.html.IndexView
 
 import java.time.{Clock, Instant, ZoneId}
@@ -73,7 +73,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, None, Seq.empty)))
+            Right(OpenReturns(None, None, Seq.empty)))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -102,7 +102,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               None,
               Seq.empty
@@ -121,7 +121,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val period = Period(2021, Q3)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, Some(Return.fromPeriod(period)), Seq.empty)))
+            Right(OpenReturns(None, Some(Return.fromPeriod(period)), Seq.empty)))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -151,7 +151,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               Some(Return.fromPeriod(period)),
               Seq.empty
@@ -171,7 +171,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val period = Period(2021, Q3)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, None, Seq(Return.fromPeriod(period)))))
+            Right(OpenReturns(None, None, Seq(Return.fromPeriod(period)))))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -200,7 +200,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               None,
               Seq(
@@ -222,7 +222,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val secondPeriod = Period(2021, Q4)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, Some(Return.fromPeriod(secondPeriod)), Seq(Return.fromPeriod(firstPeriod)))))
+            Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq(Return.fromPeriod(firstPeriod)))))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -252,7 +252,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               Some(Return.fromPeriod(secondPeriod)),
               Seq(
@@ -275,7 +275,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, None, Seq(Return.fromPeriod(firstPeriod), Return.fromPeriod(secondPeriod)))))
+            Right(OpenReturns(None, None, Seq(Return.fromPeriod(firstPeriod), Return.fromPeriod(secondPeriod)))))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -305,7 +305,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               None,
               Seq(
@@ -328,7 +328,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val secondPeriod = Period(2021, Q4)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
+            Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -358,7 +358,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               Some(Return.fromPeriod(secondPeriod)),
               Seq.empty
@@ -392,7 +392,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         )
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
+            Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -426,7 +426,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               Some(Return.fromPeriod(secondPeriod)),
               Seq.empty
@@ -471,7 +471,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         )
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
+            Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -507,7 +507,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               Some(Return.fromPeriod(secondPeriod)),
               Seq.empty
@@ -550,7 +550,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         )
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
+            Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
           .thenReturn(Future.successful(Right(Seq(vatReturnWithFinancialData))))
@@ -582,7 +582,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               Some(Return.fromPeriod(secondPeriod)),
               Seq.empty
@@ -620,7 +620,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, None, Seq(Return.fromPeriod(secondPeriod)))))
+            Right(OpenReturns(None, None, Seq(Return.fromPeriod(secondPeriod)))))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -653,7 +653,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               None,
               Seq(Return.fromPeriod(secondPeriod))
@@ -675,7 +675,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, None, Seq(Return.fromPeriod(secondPeriod)))))
+            Right(OpenReturns(None, None, Seq(Return.fromPeriod(secondPeriod)))))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -707,7 +707,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               None,
               Seq(Return.fromPeriod(secondPeriod))
@@ -734,7 +734,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(None, None, Seq.empty)))
+            Right(OpenReturns(None, None, Seq.empty)))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(Right(Seq(vatReturnWithFinancialData)))
@@ -766,7 +766,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               None,
               None,
               Seq.empty
@@ -786,7 +786,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val userAnswers = emptyUserAnswers.set(SavedProgressPage, "test").success.value
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(Some(Return.fromPeriod(period)), Some(Return.fromPeriod(period)), Seq.empty)))
+            Right(OpenReturns(Some(Return.fromPeriod(period)), Some(Return.fromPeriod(period)), Seq.empty)))
 
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
@@ -815,7 +815,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               Some(Return.fromPeriod(period)),
               Some(Return.fromPeriod(period)),
               Seq.empty
@@ -836,7 +836,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val answers = arbitrarySavedUserAnswers.arbitrary.sample.value.copy(period = period)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Returns(Some(Return.fromPeriod(period)), None, Seq(Return.fromPeriod(period)))))
+            Right(OpenReturns(Some(Return.fromPeriod(period)), None, Seq(Return.fromPeriod(period)))))
         when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
           Future.successful(
             Right(Seq.empty))
@@ -864,7 +864,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            Returns(
+            OpenReturns(
               Some(Return.fromPeriod(period)),
               None,
               Seq(Return.fromPeriod(Period(2021, Q3)))

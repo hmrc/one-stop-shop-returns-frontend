@@ -114,7 +114,7 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def prepareViewWithFinancialData(returnsViewModel: Returns,
+  private def prepareViewWithFinancialData(returnsViewModel: OpenReturns,
                                            vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData],
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
     val filteredPeriodsWithOutstandingAmounts =
@@ -134,7 +134,7 @@ class YourAccountController @Inject()(
     )))
   }
 
-  private def prepareViewWithNoFinancialData(returnsViewModel: Returns, periodInProgress: Option[Period])
+  private def prepareViewWithNoFinancialData(returnsViewModel: OpenReturns, periodInProgress: Option[Period])
                                             (implicit request: RegistrationRequest[AnyContent]) = {
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
