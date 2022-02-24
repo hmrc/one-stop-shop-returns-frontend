@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.WireMockHelper
 import formats.Format
 import models.Period
-import models.Quarter.Q3
+import models.Quarter.{Q1, Q3}
 import models.financialdata.{Charge, CurrentPayments, Payment, PaymentStatus, PeriodWithOutstandingAmount, VatReturnWithFinancialData}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalatest.EitherValues
@@ -267,10 +267,11 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
   ".getCurrentPayments" - {
 
     val commencementDate = LocalDate.now()
+    val period = Period(2022, Q1)
 
     val url = s"$baseUrl/prepare/${Format.dateTimeFormatter.format(commencementDate)}"
 
-    val payment = Payment(1000L, LocalDate.now(), Some(PaymentStatus.Unpaid))
+    val payment = Payment(period, 1000L, period.paymentDeadline, PaymentStatus.Unpaid)
 
     val currentPayments = CurrentPayments(Seq(payment), Seq(payment))
     val responseJson = Json.toJson(currentPayments)

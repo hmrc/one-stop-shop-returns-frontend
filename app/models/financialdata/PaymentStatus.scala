@@ -26,8 +26,10 @@ object PaymentStatus extends Enumerable.Implicits {
 
   case object Partial extends WithName("PARTIAL") with PaymentStatus
 
+  case object Unknown extends WithName("UNKNOWN") with PaymentStatus
 
-  val values: Seq[PaymentStatus] = Seq(Unpaid, Partial)
+
+  val values: Seq[PaymentStatus] = Seq(Unpaid, Partial, Unknown)
 
   implicit val enumerable: Enumerable[PaymentStatus] =
     Enumerable(values.map(v => v.toString -> v): _*)
