@@ -305,7 +305,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(firstPeriod),
                 Return.fromPeriod(secondPeriod))
             ),
-            CurrentPayments(Seq.empty, Seq.empty)
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }

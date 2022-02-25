@@ -72,8 +72,8 @@
                 case (None, None, 1) => {<p class="govuk-body">@messages("index.yourReturns.returnOverdue", returnsViewModel.overdueReturns.head.period.displayText)</p>}
                 case (None, None, x) => {<p class="govuk-body">@messages("index.yourReturns.onlyReturnsOverdue", x)</p>}
                 case (Some(inProgress), None, 1) => {
-                <p class="govuk-body">@messages("index.yourReturns.returnOverdue", overduePeriods.head.displayText)</p>
-                <p class="govuk-body">@messages("yourAccount.return.inProgress", inProgress.displayText)</p>
+                <p class="govuk-body">@messages("index.yourReturns.returnOverdue", returnsViewModel.overdueReturns.head.period.displayText)</p>
+                <p class="govuk-body">@messages("yourAccount.return.inProgress", inProgress.period.displayText)</p>
                 }
                 case (Some(inProgress), None, x) => {
                 <p class="govuk-body">@messages("index.yourReturns.onlyReturnsOverdue", x)</p>
