@@ -29,6 +29,7 @@ import repositories.SessionRepository
 import services.{FinancialDataService, VatReturnSalesService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IndexView
+import viewmodels.yourAccount._
 
 import java.time.Clock
 import javax.inject.Inject
@@ -51,7 +52,7 @@ class YourAccountController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      val results = getPeriodsAndFinancialDataAndSavedAnswers()
+      val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
       results.flatMap {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
           prepareViewWithFinancialData(availablePeriodsWithStatus, vatReturnsWithFinancialData, answers.map(_.period))
@@ -69,12 +70,12 @@ class YourAccountController @Inject()(
 
   private def getPeriodsAndFinancialDataAndSavedAnswers()(implicit request: RegistrationRequest[AnyContent]) = {
     for {
-      availablePeriodsWithStatus <- returnStatusConnector.listStatuses(request.registration.commencementDate)
+      currentReturns <- returnStatusConnector.getCurrentReturns(request.registration.commencementDate)
       currentPayments <- financialDataConnector.getCurrentPayments(request.registration.commencementDate)
       userAnswers <- getSavedAnswers()
     } yield {
       userAnswers.map(answers => sessionRepository.set(answers))
-      (availablePeriodsWithStatus, currentPayments, userAnswers)
+      (currentReturns, currentPayments, userAnswers)
     }
   }
 
@@ -96,39 +97,27 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def prepareViewWithFinancialData(availablePeriodsWithStatus: Seq[PeriodWithStatus],
+  private def prepareViewWithFinancialData(returnsViewModel: OpenReturns,
                                            currentPayments: CurrentPayments,
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
 
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      availablePeriodsWithStatus
-        .filter(_.status == SubmissionStatus.Overdue)
-        .map(_.period),
-      availablePeriodsWithStatus
-        .find(_.status == SubmissionStatus.Due)
-        .map(_.period),
+      returnsViewModel.copy(currentReturn = periodInProgress.map(period => Return.fromPeriod(period))),
       currentPayments,
       (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
-      periodInProgress = periodInProgress
     )))
   }
 
-  private def prepareViewWithNoFinancialData(availablePeriodsWithStatus: Seq[PeriodWithStatus], periodInProgress: Option[Period])
+  private def prepareViewWithNoFinancialData(returnsViewModel: OpenReturns, periodInProgress: Option[Period])
                                             (implicit request: RegistrationRequest[AnyContent]) = {
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      availablePeriodsWithStatus
-        .filter(_.status == SubmissionStatus.Overdue)
-        .map(_.period),
-      availablePeriodsWithStatus
-        .find(_.status == SubmissionStatus.Due)
-        .map(_.period),
+      returnsViewModel.copy(currentReturn = periodInProgress.map(period => Return.fromPeriod(period))),
       CurrentPayments(Seq.empty, Seq.empty),
-      paymentError = true,
-      periodInProgress = periodInProgress
+      paymentError = true
     )))
   }
 
