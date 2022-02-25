@@ -20,7 +20,7 @@ import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.financialdata.VatReturnWithFinancialData
+import models.financialdata.{CurrentPayments, PaymentStatus, VatReturnWithFinancialData}
 import models.requests.RegistrationRequest
 import models.{Period, PeriodWithStatus, SubmissionStatus, UserAnswers}
 import play.api.i18n.I18nSupport
@@ -68,31 +68,14 @@ class YourAccountController @Inject()(
       }
   }
 
-  private def getFilteredPeriodsWithOutstandingAmounts(vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData]) = {
-    financialDataService
-      .filterIfPaymentIsOutstanding(vatReturnsWithFinancialData)
-      .map(vatReturnWithFinancialData =>
-        vatReturnWithFinancialData.vatOwed match {
-          case Some(_) => vatReturnWithFinancialData
-          case _ =>
-            vatReturnWithFinancialData.copy(
-              vatOwed = Some(
-                (vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturnWithFinancialData.vatReturn,
-                  vatReturnWithFinancialData.corrections) * 100).toLong
-              )
-            )
-        }
-      )
-  }
-
   private def getCurrentReturnsAndFinancialDataAndUserAnswers()(implicit request: RegistrationRequest[AnyContent]) = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.registration.commencementDate)
-      vatReturnsWithFinancialData <- financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate)
+      currentPayments <- financialDataConnector.getCurrentPayments(request.registration.commencementDate)
       userAnswers <- getSavedAnswers()
     } yield {
       userAnswers.map(answers => sessionRepository.set(answers))
-      (currentReturns, vatReturnsWithFinancialData, userAnswers)
+      (currentReturns, currentPayments, userAnswers)
     }
   }
 
@@ -115,22 +98,15 @@ class YourAccountController @Inject()(
   }
 
   private def prepareViewWithFinancialData(returnsViewModel: OpenReturns,
-                                           vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData],
+                                           currentPayments: CurrentPayments,
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
-    val filteredPeriodsWithOutstandingAmounts =
-      getFilteredPeriodsWithOutstandingAmounts(vatReturnsWithFinancialData)
-    val duePeriodsWithOutstandingAmounts =
-      filteredPeriodsWithOutstandingAmounts.filterNot(_.vatReturn.period.isOverdue(clock))
-    val overduePeriodsWithOutstandingAmounts =
-      filteredPeriodsWithOutstandingAmounts.filter(_.vatReturn.period.isOverdue(clock))
 
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
       returnsViewModel.copy(currentReturn = periodInProgress.map(period => Return.fromPeriod(period))),
-      duePeriodsWithOutstandingAmounts,
-      overduePeriodsWithOutstandingAmounts,
-      filteredPeriodsWithOutstandingAmounts.exists(_.charge.isEmpty)
+      currentPayments,
+      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
     )))
   }
 
@@ -140,8 +116,7 @@ class YourAccountController @Inject()(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
       returnsViewModel.copy(currentReturn = periodInProgress.map(period => Return.fromPeriod(period))),
-      Seq.empty,
-      Seq.empty,
+      CurrentPayments(Seq.empty, Seq.empty),
       paymentError = true
     )))
   }

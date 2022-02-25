@@ -17,19 +17,16 @@
 package controllers
 
 import base.SpecBase
-import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import connectors.financialdata.FinancialDataConnector
+import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import generators.Generators
 import models.Quarter._
-import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
-import models.financialdata.{Charge, VatReturnWithFinancialData}
+import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
-import models.{Country, Period, PeriodWithStatus, SubmissionStatus}
+import models.{Period, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
-import org.scalacheck.Arbitrary
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.SavedProgressPage
@@ -75,9 +72,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(OpenReturns(None, None, Seq.empty)))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentPayments(Seq.empty, Seq.empty)))
 
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
@@ -107,8 +104,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               Seq.empty
             ),
-            Seq.empty,
-            Seq.empty,
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -123,9 +119,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(OpenReturns(None, Some(Return.fromPeriod(period)), Seq.empty)))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentPayments(Seq.empty, Seq.empty)))
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
 
@@ -156,8 +152,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(Return.fromPeriod(period)),
               Seq.empty
             ),
-            Seq.empty,
-            Seq.empty,
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -173,9 +168,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(OpenReturns(None, None, Seq(Return.fromPeriod(period)))))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentPayments(Seq.empty, Seq.empty)))
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
@@ -206,8 +201,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(Period(2021, Q3)))
             ),
-            Seq.empty,
-            Seq.empty,
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -224,9 +218,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq(Return.fromPeriod(firstPeriod)))))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentPayments(Seq.empty, Seq.empty)))
 
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
@@ -258,8 +252,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(firstPeriod))
             ),
-            Seq.empty,
-            Seq.empty,
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -277,9 +270,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(OpenReturns(None, None, Seq(Return.fromPeriod(firstPeriod), Return.fromPeriod(secondPeriod)))))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentPayments(Seq.empty, Seq.empty)))
 
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
@@ -312,8 +305,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(firstPeriod),
                 Return.fromPeriod(secondPeriod))
             ),
-            Seq.empty,
-            Seq.empty,
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -330,9 +322,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentPayments(Seq.empty, Seq.empty)))
 
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
@@ -363,8 +355,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(Return.fromPeriod(secondPeriod)),
               Seq.empty
             ),
-            Seq.empty,
-            Seq.empty,
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -378,27 +369,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
         val outstandingAmount = BigDecimal(1000)
-        val vatReturn = completeVatReturn.copy(period = firstPeriod)
-        val vatReturnWithFinancialData = VatReturnWithFinancialData(
-          vatReturn = vatReturn,
-          charge = Some(Charge(
-            period = firstPeriod,
-            outstandingAmount = outstandingAmount,
-            originalAmount = outstandingAmount,
-            clearedAmount = BigDecimal(0)
-          )),
-          vatOwed = Some(outstandingAmount.toLong),
-          None
-        )
+        val payment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(
-              Seq(vatReturnWithFinancialData)
-            )
+            Right(CurrentPayments(Seq(payment), Seq.empty))
           )
 
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
@@ -431,8 +410,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(Return.fromPeriod(secondPeriod)),
               Seq.empty
             ),
-            Seq(vatReturnWithFinancialData),
-            Seq.empty,
+            CurrentPayments(
+              Seq(payment),
+              Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -445,39 +425,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
-        val outstandingAmount = BigDecimal(1000)
-        val vatReturn = completeVatReturn.copy(period = firstPeriod)
-        val completedCorrectionPayload: CorrectionPayload =
-          CorrectionPayload(
-            Vrn("063407423"),
-            Period("2086", "Q3").get,
-            List(PeriodWithCorrections(
-              firstPeriod,
-              Some(List(CorrectionToCountry(Country("ES", "Spain"), Some(BigDecimal(1000.00)))))
-            )),
-            Instant.ofEpochSecond(1630670836),
-            Instant.ofEpochSecond(1630670836)
-          )
-        val vatReturnWithFinancialData = VatReturnWithFinancialData(
-          vatReturn = vatReturn,
-          charge = Some(Charge(
-            period = firstPeriod,
-            outstandingAmount = outstandingAmount,
-            originalAmount = outstandingAmount,
-            clearedAmount = BigDecimal(0)
-          )),
-          vatOwed = None,
-          corrections = Some(completedCorrectionPayload)
-        )
+
+        val payment = Payment(firstPeriod, 0, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(
-              Seq(vatReturnWithFinancialData)
-            )
+            Right(CurrentPayments(Seq(payment), Seq.empty))
           )
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
@@ -512,13 +469,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(Return.fromPeriod(secondPeriod)),
               Seq.empty
             ),
-            Seq(vatReturnWithFinancialData),
-            Seq.empty,
+            CurrentPayments(Seq(payment),
+              Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
 
-          verify(vatReturnSalesService, times(1))
-            .getTotalVatOnSalesAfterCorrection(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
         }
       }
 
@@ -529,31 +484,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val firstPeriod = Period(2021, Q3)
         val secondPeriod = Period(2021, Q4)
-        val vatReturn = emptyVatReturn.copy(period = firstPeriod)
-
-        val completedCorrectionPayload: CorrectionPayload =
-          CorrectionPayload(
-            Vrn("063407423"),
-            Period("2086", "Q3").get,
-            List(PeriodWithCorrections(
-              firstPeriod,
-              Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
-            )),
-            Instant.ofEpochSecond(1630670836),
-            Instant.ofEpochSecond(1630670836)
-          )
-        val vatReturnWithFinancialData = VatReturnWithFinancialData(
-          vatReturn = vatReturn,
-          charge = None,
-          vatOwed = None,
-          corrections = Some(completedCorrectionPayload)
-        )
+        val payment = Payment(firstPeriod, 1000, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(OpenReturns(None, Some(Return.fromPeriod(secondPeriod)), Seq.empty)))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
-          .thenReturn(Future.successful(Right(Seq(vatReturnWithFinancialData))))
+        when(financialDataConnector.getCurrentPayments(any())(any()))
+          .thenReturn(Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty))))
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
@@ -587,13 +524,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(Return.fromPeriod(secondPeriod)),
               Seq.empty
             ),
-            Seq(vatReturnWithFinancialData.copy(vatOwed = Some(100000L))),
-            Seq.empty,
+            CurrentPayments(
+              Seq(payment),
+              Seq.empty),
             paymentError = true
           )(request, messages(application)).toString
-
-          verify(vatReturnSalesService, times(2))
-            .getTotalVatOnSalesAfterCorrection(eqTo(vatReturn), eqTo(Some(completedCorrectionPayload)))
         }
       }
 
@@ -605,27 +540,19 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val firstPeriod = Period(2021, Q1)
         val secondPeriod = Period(2021, Q2)
         val outstandingAmount = BigDecimal(1000)
-        val vatReturn = completeVatReturn.copy(period = firstPeriod)
-        val vatReturnWithFinancialData = VatReturnWithFinancialData(
-          vatReturn = vatReturn,
-          charge = Some(Charge(
-            period = firstPeriod,
-            outstandingAmount = outstandingAmount,
-            originalAmount = outstandingAmount,
-            clearedAmount = BigDecimal(0)
-          )),
-          vatOwed = Some(outstandingAmount.toLong),
-          None
-        )
+        val overduePayment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(OpenReturns(None, None, Seq(Return.fromPeriod(secondPeriod)))))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
             Right(
-              Seq(vatReturnWithFinancialData)
+              CurrentPayments(
+                Seq.empty,
+                Seq(overduePayment)
+              )
             )
           )
 
@@ -658,8 +585,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               Seq(Return.fromPeriod(secondPeriod))
             ),
-            Seq.empty,
-            Seq(vatReturnWithFinancialData),
+            CurrentPayments(Seq.empty, Seq(overduePayment)),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -677,7 +603,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(OpenReturns(None, None, Seq(Return.fromPeriod(secondPeriod)))))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
             Left(
               InvalidJson
@@ -712,8 +638,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               Seq(Return.fromPeriod(secondPeriod))
             ),
-            Seq.empty,
-            Seq.empty,
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = true
           )(request, messages(application)).toString
         }
@@ -722,22 +647,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       "when there is 1 return completed and charge is not in ETMP" in {
         val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
         val vatOwed = BigDecimal(1563.49)
-
         val firstPeriod = Period(2021, Q3)
-        val vatReturn = completeVatReturn.copy(period = firstPeriod)
-        val vatReturnWithFinancialData = VatReturnWithFinancialData(
-          vatReturn = vatReturn,
-          charge = None,
-          vatOwed = None,
-          None
-        )
-
+        val payment = Payment(firstPeriod, vatOwed, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(OpenReturns(None, None, Seq.empty)))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
-          Future.successful(Right(Seq(vatReturnWithFinancialData)))
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty)))
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
           vatOwed
@@ -771,8 +688,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               Seq.empty
             ),
-            Seq(vatReturnWithFinancialData.copy(vatOwed = Some((vatOwed * 100).toLong))),
-            Seq.empty,
+            CurrentPayments(
+              Seq(payment),
+              Seq.empty
+            ),
             paymentError = true
           )(request, messages(application)).toString
         }
@@ -788,9 +707,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(OpenReturns(Some(Return.fromPeriod(period)), Some(Return.fromPeriod(period)), Seq.empty)))
 
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentPayments(Seq.empty, Seq.empty)))
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq(userAnswers)))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
@@ -820,8 +739,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(Return.fromPeriod(period)),
               Seq.empty
             ),
-            Seq.empty,
-            Seq.empty,
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -837,9 +755,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(OpenReturns(Some(Return.fromPeriod(period)), None, Seq(Return.fromPeriod(period)))))
-        when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentPayments(Seq.empty, Seq.empty)))
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(Some(answers)))
@@ -869,8 +787,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               Seq(Return.fromPeriod(Period(2021, Q3)))
             ),
-            Seq.empty,
-            Seq.empty,
+            CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
 
@@ -884,7 +801,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(Left(UnexpectedResponseStatus(1, "error")))
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
         Future.successful(
           Left(UnexpectedResponseStatus(1, "error")))
 
@@ -908,9 +825,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(Left(UnexpectedResponseStatus(1, "error")))
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
         Future.successful(
-          Right(Seq.empty))
+          Right(CurrentPayments(Seq.empty, Seq.empty)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
