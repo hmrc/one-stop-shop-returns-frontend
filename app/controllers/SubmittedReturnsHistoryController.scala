@@ -50,31 +50,17 @@ class SubmittedReturnsHistoryController @Inject()(
           val displayBanner = {
             if (vatReturnsWithFinancialData.nonEmpty) {
               vatReturnsWithFinancialData.exists { data =>
-                data.charge.isEmpty && data.vatOwed
-                  .getOrElse(
-                    (
-                      vatReturnSalesService.getTotalVatOnSalesAfterCorrection(
-                        data.vatReturn,
-                        data.corrections
-                      ) * 100
-                    ).toLong) > 0
+                data.showUpdating
               }
             } else {
               false
             }
           }
 
-          val vatReturnsWithFinancialDataWithVatOwedCalculated = vatReturnsWithFinancialData.map { vatReturnWithFinancialData =>
-            val vatOwed = vatReturnWithFinancialData.vatOwed
-              .getOrElse((vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturnWithFinancialData.vatReturn, vatReturnWithFinancialData.corrections) * 100).toLong)
-
-            vatReturnWithFinancialData.copy(vatOwed = Some(vatOwed))
-          }
-
-          Ok(view(vatReturnsWithFinancialDataWithVatOwedCalculated, displayBanner))
+          Ok(view(vatReturnsWithFinancialData, displayBanner))
         case Left(e) =>
-          logger.warn(s"There were some errors: $e")
-          Ok(view(Seq.empty, true))
+          logger.error(s"There were some errors: $e")
+          throw new Exception(s"$e")
       }
 
   }

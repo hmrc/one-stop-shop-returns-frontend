@@ -87,7 +87,7 @@
                                 </td>
                                 <td class="govuk-table__cell">
                                 @if(vatReturnWithFinancialData.paymentState == PaymentDue) {
-                                    <a class="govuk-link" href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, vatReturnWithFinancialData.vatOwed.get)">@messages(vatReturnWithFinancialData.paymentState.toString)</a>
+                                    <a class="govuk-link" href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, (vatReturnWithFinancialData.vatOwed * 100).toLong)">@messages(vatReturnWithFinancialData.paymentState.toString)</a>
                                 } else {
                                     @messages(vatReturnWithFinancialData.paymentState.toString)
                                 }
