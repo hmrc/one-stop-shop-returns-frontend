@@ -24,29 +24,29 @@ import org.scalatest.matchers.must.Matchers
 class VatReturnWithFinancialDataSpec extends AnyFreeSpec
   with Matchers
   with SpecBase {
-  val vatAmount = 1000L
-  val outstandingCharge = Charge(completeVatReturn.period, BigDecimal(vatAmount), BigDecimal(vatAmount), BigDecimal(0))
-  val payedCharge = Charge(completeVatReturn.period, BigDecimal(vatAmount), BigDecimal(0), BigDecimal(vatAmount))
+  val vatAmount = BigDecimal(1000)
+  val outstandingCharge = Charge(completeVatReturn.period, vatAmount, vatAmount, BigDecimal(0))
+  val payedCharge = Charge(completeVatReturn.period, vatAmount, BigDecimal(0), vatAmount)
   "showPayNow" - {
 
     "is true when" - {
 
       "the return is not nil and there is an outstanding charge" in {
         val returnWithData = VatReturnWithFinancialData(
-          completeVatReturn, Some(outstandingCharge), Some(vatAmount), None)
+          completeVatReturn, Some(outstandingCharge), vatAmount, None)
         returnWithData.showPayNow mustBe true
         returnWithData.paymentState mustBe PaymentDue
       }
 
       "the return is not nil and there is no charge" in {
-        val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, Some(vatAmount), None)
+        val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, vatAmount, None)
         returnWithData.showPayNow mustBe true
         returnWithData.paymentState mustBe PaymentDue
       }
 
       "the return is not nil and there is an outstanding charge and a correction" in {
         val returnWithData = VatReturnWithFinancialData(
-          completeVatReturn, Some(outstandingCharge), Some(vatAmount), Some(emptyCorrectionPayload)
+          completeVatReturn, Some(outstandingCharge), vatAmount, Some(emptyCorrectionPayload)
         )
         returnWithData.showPayNow mustBe true
         returnWithData.paymentState mustBe PaymentDue
@@ -56,7 +56,7 @@ class VatReturnWithFinancialDataSpec extends AnyFreeSpec
     "is false when" - {
 
       "the return is nil and there is no charge" in {
-        val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, Some(0L), None)
+        val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, 0, None)
         returnWithData.showPayNow mustBe false
         returnWithData.paymentState mustBe NoneDue
       }
@@ -64,21 +64,21 @@ class VatReturnWithFinancialDataSpec extends AnyFreeSpec
       "the return is not nil and there is zero outstanding charge" - {
 
         "and there is an initial charge" in {
-          val returnWithData = VatReturnWithFinancialData(completeVatReturn, Some(payedCharge), Some(0L), None)
+          val returnWithData = VatReturnWithFinancialData(completeVatReturn, Some(payedCharge), 0, None)
           returnWithData.showPayNow mustBe false
           returnWithData.paymentState mustBe Paid
         }
 
         "and there is no initial charge" in {
           val noCharge = Charge(emptyVatReturn.period, BigDecimal(0), BigDecimal(0), BigDecimal(0))
-          val returnWithData = VatReturnWithFinancialData(emptyVatReturn, Some(noCharge), Some(0L), None)
+          val returnWithData = VatReturnWithFinancialData(emptyVatReturn, Some(noCharge), 0, None)
           returnWithData.showPayNow mustBe false
           returnWithData.paymentState mustBe NoneDue
         }
       }
 
       "the vat owed is none and there is no outstanding charge and no correction" in {
-        val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, None, None)
+        val returnWithData = VatReturnWithFinancialData(completeVatReturn, None, 0, None)
         returnWithData.showPayNow mustBe false
         returnWithData.paymentState mustBe NoneDue
       }

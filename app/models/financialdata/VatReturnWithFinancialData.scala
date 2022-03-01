@@ -25,14 +25,13 @@ import play.api.libs.json.{Json, OFormat}
 case class VatReturnWithFinancialData(
                                        vatReturn: VatReturn,
                                        charge: Option[Charge],
-                                       vatOwed: Option[Long],
+                                       vatOwed: BigDecimal,
                                        corrections: Option[CorrectionPayload]
                                      ){
 
-  val showPayNow: Boolean = (vatOwed.isDefined && vatOwed.getOrElse(0L) > 0L) &&
-    (charge.isEmpty || charge.exists(c => c.outstandingAmount > 0))
+  val showPayNow: Boolean = vatOwed > 0
 
-  val showUpdating: Boolean = charge.isEmpty && vatOwed.getOrElse(0L) > 0L
+  val showUpdating: Boolean = charge.isEmpty && vatOwed > 0
 
   def paymentState: PaymentState = {
     if(showPayNow) {

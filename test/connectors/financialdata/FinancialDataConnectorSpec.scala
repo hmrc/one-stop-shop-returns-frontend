@@ -182,7 +182,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
         VatReturnWithFinancialData(
           completeVatReturn,
           Some(Charge(period, BigDecimal(100), BigDecimal(100), BigDecimal(100))),
-          Some(100L),
+          100,
           None
         )
       val responseJson = Json.toJson(Seq(vatReturnWithFinancialData))
@@ -209,7 +209,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
         VatReturnWithFinancialData(
           completeVatReturn,
           Some(Charge(period, BigDecimal(100), BigDecimal(100), BigDecimal(100))),
-          Some(100L),
+          100,
           Some(emptyCorrectionPayload)
         )
       val responseJson = Json.toJson(Seq(vatReturnWithFinancialData))

@@ -23,6 +23,7 @@ import models.Period
 import models.Quarter.{Q1, Q2}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.financialdata.{Charge, VatReturnWithFinancialData}
+import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -54,7 +55,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   private val vatOwed = (charge.outstandingAmount * 100).toLong
   private val vatOwed2 = (charge2.outstandingAmount * 100).toLong
 
-  private val vatReturnWithFinancialData = VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed), None)
+  private val vatReturnWithFinancialData = VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, None)
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
@@ -80,7 +81,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed), None)),
+          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, None)),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -126,6 +127,23 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       }
     }
 
+    "must throw an exception when the connector returns Left(ErrorResponse)" in {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
+
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
+      }
+    }
+
     "must return OK and correct view when a vat return exists but no charge is found" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -135,7 +153,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
-          vatReturnWithFinancialData.copy(charge = None, vatOwed = Some(66666))
+          vatReturnWithFinancialData.copy(charge = None, vatOwed = 66666)
         ))))
 
       running(application) {
@@ -146,12 +164,11 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, None, Some(66666), None)),
+          Seq(VatReturnWithFinancialData(completeVatReturn, None, 66666, None)),
           displayBanner = true
         )(request, messages(application)).toString
       }
     }
-
 
     "must return OK and correct view when a nil vat return exists and no charge is found" in {
 
@@ -162,7 +179,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
-          vatReturnWithFinancialData.copy(charge = None, vatOwed = Some(0))
+          vatReturnWithFinancialData.copy(charge = None, vatOwed = 0)
         ))))
 
       running(application) {
@@ -173,7 +190,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, None, Some(0), None)),
+          Seq(VatReturnWithFinancialData(completeVatReturn, None, 0, None)),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -191,7 +208,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
           vatReturnWithFinancialData,
-          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), Some(vatOwed2), None)
+          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), vatOwed2, None)
         ))))
 
       running(application) {
@@ -201,8 +218,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         val vatReturnsWithFinancialData = List(
-          VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed), None),
-          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), Some(vatOwed2), None)
+          VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, None),
+          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), vatOwed2, None)
         )
 
         status(result) mustEqual OK
@@ -210,50 +227,6 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           vatReturnsWithFinancialData,
           displayBanner = false
         )(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and correct view when a correction exists and vat owed is not in the response" in {
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnSalesService].toInstance(vatReturnsSalesService)
-        ).build()
-
-      val completedCorrectionPayload: CorrectionPayload =
-        CorrectionPayload(
-          Vrn("063407423"),
-          Period("2086", "Q3").get,
-          List(PeriodWithCorrections(
-            period,
-            Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
-          )),
-          Instant.ofEpochSecond(1630670836),
-          Instant.ofEpochSecond(1630670836)
-        )
-      val vatReturnWithFinancialData = VatReturnWithFinancialData(
-        vatReturn = completeVatReturn,
-        charge = None,
-        vatOwed = None,
-        corrections = Some(completedCorrectionPayload)
-      )
-
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
-      when(vatReturnsSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(completedCorrectionPayload)))) thenReturn BigDecimal(1000)
-
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, None, Some(vatOwed), Some(completedCorrectionPayload))),
-          displayBanner = true
-        )(request, messages(application)).toString
-
-        verify(vatReturnsSalesService, times(2)).getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(completedCorrectionPayload)))
       }
     }
 
@@ -277,7 +250,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val vatReturnWithFinancialData = VatReturnWithFinancialData(
         vatReturn = completeVatReturn,
         charge = Some(charge),
-        vatOwed = Some(vatOwed),
+        vatOwed = vatOwed,
         corrections = Some(completedCorrectionPayload)
       )
 
@@ -291,7 +264,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), Some(vatOwed), Some(completedCorrectionPayload))),
+          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, Some(completedCorrectionPayload))),
           displayBanner = false
         )(request, messages(application)).toString
       }
