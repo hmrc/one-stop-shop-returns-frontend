@@ -52,13 +52,15 @@
 
     <h1 class="govuk-heading-xl" style="margin-bottom:0px;">@messages("submittedReturnsHistory.heading")</h1>
 
-   <br>
-
     @vatReturnsWithFinancialData.size match {
         case 0 => {
+            <br>
             <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
         }
         case _ => {
+            <p class="govuk-caption-m hmrc-caption-m" style="margin-bottom:50px;">
+            @messages("submittedReturnsHistory.caption")
+            </p>
             @vatReturnsWithFinancialData.groupBy(_.vatReturn.period.year).map {
                 case (year, vatReturnsWithFinancialData) => {
                     <table class="govuk-table">
