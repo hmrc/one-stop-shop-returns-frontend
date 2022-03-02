@@ -52,9 +52,7 @@
 
     <h1 class="govuk-heading-xl" style="margin-bottom:0px;">@messages("submittedReturnsHistory.heading")</h1>
 
-    <p class="govuk-caption-m hmrc-caption-m" style="margin-bottom:50px;">
-        @messages("submittedReturnsHistory.caption")
-    </p>
+   <br>
 
     @vatReturnsWithFinancialData.size match {
         case 0 => {
@@ -99,9 +97,6 @@
                 }
                 case _ => {}
             }
-
         }
     }
-
-
 }
