@@ -266,10 +266,9 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
 
   ".getCurrentPayments" - {
 
-    val commencementDate = LocalDate.now()
     val period = Period(2022, Q1)
 
-    val url = s"$baseUrl/prepare"
+    val url = s"$baseUrl/prepare/${vrn.vrn}"
 
     val payment = Payment(period, 1000L, period.paymentDeadline, PaymentStatus.Unpaid)
 
@@ -287,7 +286,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCurrentPayments().futureValue mustBe Right(currentPayments)
+        connector.getCurrentPayments(vrn).futureValue mustBe Right(currentPayments)
       }
     }
 
@@ -304,7 +303,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCurrentPayments().futureValue mustBe Left(InvalidJson)
+        connector.getCurrentPayments(vrn).futureValue mustBe Left(InvalidJson)
       }
     }
 
@@ -319,7 +318,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("")
             ))
 
-        connector.getCurrentPayments()
+        connector.getCurrentPayments(vrn)
           .futureValue mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, ""))
       }
     }
