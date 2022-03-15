@@ -34,8 +34,13 @@
 
     <p class="govuk-body">@messages("errorFromCore.savedAnswers")</p>
 
+    <p class="govuk-body">@Html(messages("errorFromCore.knownIssues"))</p>
 
-    <p class="govuk-body">
-        <a href="@routes.YourAccountController.onPageLoad()" id="backToYourAccount">@messages("errorFromCore.your.account")</a>
-    </p>
+    <p class="govuk-body">@Html(messages("errorFromCore.contactUs"))</p>
+
+@govukButton(
+ButtonViewModel(messages("errorFromCore.your.account"))
+.asLink(routes.YourAccountController.onPageLoad().url)
+.withAttribute(("id", "backToYourAccount"))
+)
 }
