@@ -49,8 +49,8 @@ class FinancialDataConnector @Inject()(config: Configuration, httpClient: HttpCl
     httpClient.GET[VatReturnWithFinancialDataResponse](url)
   }
 
-  def getCurrentPayments(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] = {
-    val url = s"$baseUrl/financial-data/prepare/${Format.dateTimeFormatter.format(commencementDate)}"
+  def getCurrentPayments()(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] = {
+    val url = s"$baseUrl/financial-data/prepare"
     httpClient.GET[CurrentPaymentsResponse](url)
   }
 }

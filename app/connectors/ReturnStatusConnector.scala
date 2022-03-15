@@ -39,8 +39,8 @@ class ReturnStatusConnector @Inject()(config: Configuration, httpClient: HttpCli
     httpClient.GET[ReturnStatusesResponse](url)
   }
 
-  def getCurrentReturns(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[CurrentReturnsResponse] = {
-    val url =s"$baseUrl/vat-returns/current-returns/${Format.dateTimeFormatter.format(commencementDate)}"
+  def getCurrentReturns()(implicit hc: HeaderCarrier): Future[CurrentReturnsResponse] = {
+    val url =s"$baseUrl/vat-returns/current-returns"
 
     httpClient.GET[CurrentReturnsResponse](url)
   }

@@ -280,7 +280,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         val connector = application.injector.instanceOf[VatReturnConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/${period.toString}"))
+          get(urlEqualTo(s"$url/period/${period.toString}"))
           .willReturn(
             aResponse().withStatus(OK).withBody(responseJson.toString())
           ))
@@ -295,7 +295,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         val connector = application.injector.instanceOf[VatReturnConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/${period.toString}"))
+          get(urlEqualTo(s"$url/period/${period.toString}"))
             .willReturn(
               aResponse().withStatus(NOT_FOUND)
             ))

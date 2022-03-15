@@ -70,8 +70,8 @@ class YourAccountController @Inject()(
 
   private def getCurrentReturnsAndFinancialDataAndUserAnswers()(implicit request: RegistrationRequest[AnyContent]) = {
     for {
-      currentReturns <- returnStatusConnector.getCurrentReturns(request.registration.commencementDate)
-      currentPayments <- financialDataConnector.getCurrentPayments(request.registration.commencementDate)
+      currentReturns <- returnStatusConnector.getCurrentReturns()
+      currentPayments <- financialDataConnector.getCurrentPayments()
       userAnswers <- getSavedAnswers()
     } yield {
       userAnswers.map(answers => sessionRepository.set(answers))
