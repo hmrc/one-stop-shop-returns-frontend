@@ -21,6 +21,7 @@ import connectors.CurrentReturnsHttpParser._
 import connectors.ReturnStatusesHttpParser._
 import formats.Format
 import play.api.Configuration
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
 import java.time.LocalDate
@@ -39,8 +40,8 @@ class ReturnStatusConnector @Inject()(config: Configuration, httpClient: HttpCli
     httpClient.GET[ReturnStatusesResponse](url)
   }
 
-  def getCurrentReturns(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[CurrentReturnsResponse] = {
-    val url =s"$baseUrl/vat-returns/current-returns/${Format.dateTimeFormatter.format(commencementDate)}"
+  def getCurrentReturns(vrn: Vrn)(implicit hc: HeaderCarrier): Future[CurrentReturnsResponse] = {
+    val url =s"$baseUrl/vat-returns/current-returns/${vrn.vrn}"
 
     httpClient.GET[CurrentReturnsResponse](url)
   }

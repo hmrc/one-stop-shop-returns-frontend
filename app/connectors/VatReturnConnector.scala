@@ -45,7 +45,7 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
   }
 
   def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
-    val url = s"$baseUrl/vat-returns/${period.toString}"
+    val url = s"$baseUrl/vat-returns/period/${period.toString}"
 
     httpClient.GET[VatReturnResponse](url)
   }

@@ -111,12 +111,12 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[ReturnStatusConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/current-returns/${Format.dateTimeFormatter.format(commencementDate)}"))
+          get(urlEqualTo(s"$url/current-returns/${vrn.vrn}"))
             .willReturn(
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCurrentReturns(commencementDate).futureValue mustBe Right(OpenReturns(None, Some(Return.fromPeriod(period)), Seq.empty))
+        connector.getCurrentReturns(vrn).futureValue mustBe Right(OpenReturns(None, Some(Return.fromPeriod(period)), Seq.empty))
       }
     }
 
@@ -128,13 +128,13 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
         val responseJson = """{ "foo": "bar" }"""
 
         server.stubFor(
-          get(urlEqualTo(s"$url/current-returns/${Format.dateTimeFormatter.format(commencementDate)}"))
+          get(urlEqualTo(s"$url/current-returns/${vrn.vrn}"))
             .willReturn(
               aResponse().withStatus(OK).withBody(responseJson)
             )
         )
 
-        connector.getCurrentReturns(commencementDate).futureValue mustBe Left(InvalidJson)
+        connector.getCurrentReturns(vrn).futureValue mustBe Left(InvalidJson)
       }
     }
 
@@ -144,13 +144,13 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
         val connector = application.injector.instanceOf[ReturnStatusConnector]
 
         server.stubFor(
-          get(urlEqualTo(s"$url/current-returns/${Format.dateTimeFormatter.format(commencementDate)}"))
+          get(urlEqualTo(s"$url/current-returns/${vrn.vrn}"))
             .willReturn(
               aResponse().withStatus(INTERNAL_SERVER_ERROR)
             )
         )
 
-        val result = connector.getCurrentReturns(commencementDate).futureValue
+        val result = connector.getCurrentReturns(vrn).futureValue
         result.left.value mustBe an[UnexpectedResponseStatus]
       }
     }

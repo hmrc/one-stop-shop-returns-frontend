@@ -23,6 +23,7 @@ import connectors.financialdata.VatReturnWithFinancialDataHttpParser._
 import formats.Format
 import models.Period
 import play.api.Configuration
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
 import java.time.LocalDate
@@ -49,8 +50,8 @@ class FinancialDataConnector @Inject()(config: Configuration, httpClient: HttpCl
     httpClient.GET[VatReturnWithFinancialDataResponse](url)
   }
 
-  def getCurrentPayments(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] = {
-    val url = s"$baseUrl/financial-data/prepare/${Format.dateTimeFormatter.format(commencementDate)}"
+  def getCurrentPayments(vrn: Vrn)(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] = {
+    val url = s"$baseUrl/financial-data/prepare/${vrn.vrn}"
     httpClient.GET[CurrentPaymentsResponse](url)
   }
 }
