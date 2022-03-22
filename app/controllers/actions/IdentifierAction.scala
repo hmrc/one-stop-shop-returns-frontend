@@ -52,32 +52,30 @@ class IdentifierAction @Inject()(
       AuthProviders(AuthProvider.GovernmentGateway) and
         (AffinityGroup.Individual or AffinityGroup.Organisation) and
         CredentialStrength(CredentialStrength.strong)
-    ).retrieve(
-      Retrievals.credentials and
-        Retrievals.allEnrolments and
-        Retrievals.affinityGroup and
-        Retrievals.confidenceLevel and
-        Retrievals.credentialRole) {
+    ).retrieve( Retrievals.credentials and
+                Retrievals.allEnrolments and
+                Retrievals.affinityGroup and
+                Retrievals.confidenceLevel and
+                Retrievals.credentialRole ) {
 
       case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == User =>
-        findVrnFromEnrolments(enrolments) match {
-          case Some(vrn) => Right(IdentifierRequest(request, credentials, vrn)).toFuture
-          case None      => throw InsufficientEnrolments()
+        (findVrnFromEnrolments(enrolments), hasOssEnrolment(enrolments)) match {
+          case (Some(vrn), true) => Right(IdentifierRequest(request, credentials, vrn)).toFuture
+          case _     => throw InsufficientEnrolments()
         }
 
       case _ ~ _ ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
         throw UnsupportedCredentialRole()
 
       case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
-        findVrnFromEnrolments(enrolments) match {
-          case Some(vrn) =>
+        (findVrnFromEnrolments(enrolments), hasOssEnrolment(enrolments)) match {
+          case (Some(vrn), true) =>
             if (confidence >= ConfidenceLevel.L200) {
               Right(IdentifierRequest(request, credentials, vrn)).toFuture
             } else {
               throw InsufficientConfidenceLevel()
             }
-
-          case None =>
+          case _ =>
             throw InsufficientEnrolments()
         }
 
@@ -92,14 +90,13 @@ class IdentifierAction @Inject()(
     }
   }
 
+  private def hasOssEnrolment(enrolments: Enrolments): Boolean = {
+    !config.ossEnrolmentEnabled ||  enrolments.enrolments.exists(_.key == config.ossEnrolment)
+  }
+
   private def findVrnFromEnrolments(enrolments: Enrolments): Option[Vrn] =
     enrolments.enrolments.find(_.key == "HMRC-MTD-VAT")
-      .flatMap {
-        enrolment =>
-          enrolment.identifiers.find(_.key == "VRN").map(e => Vrn(e.value))
+      .flatMap { enrolment => enrolment.identifiers.find(_.key == "VRN").map(e => Vrn(e.value))
       } orElse enrolments.enrolments.find(_.key == "HMCE-VATDEC-ORG")
-      .flatMap {
-        enrolment =>
-          enrolment.identifiers.find(_.key == "VATRegNo").map(e => Vrn(e.value))
-      }
+      .flatMap { enrolment => enrolment.identifiers.find(_.key == "VATRegNo").map(e => Vrn(e.value)) }
 }
