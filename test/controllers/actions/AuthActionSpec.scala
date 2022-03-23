@@ -41,7 +41,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private type RetrievalsType = Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ ConfidenceLevel ~ Option[CredentialRole]
-  private val vatEnrolment = Enrolments(Set(Enrolment("HMRC-MTD-VAT", Seq(EnrolmentIdentifier("VRN", "123456789")), "Activated")))
+  private val vatEnrolmentWithNoOssEnrolment = Enrolments(Set(Enrolment("HMRC-MTD-VAT", Seq(EnrolmentIdentifier("VRN", "123456789")), "Activated")))
+  private val vatEnrolmentWithOss = Enrolments(Set(Enrolment("HMRC-MTD-VAT", Seq(EnrolmentIdentifier("VRN", "123456789")), "Activated"), Enrolment("HMRC-OSS-ORG")))
 
   class Harness(authAction: IdentifierAction, defaultAction: DefaultActionBuilder) extends  {
     def onPageLoad(): Action[AnyContent] = (defaultAction andThen authAction) { _ => Results.Ok }
@@ -61,7 +62,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
         val application = applicationBuilder(None).build()
         when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-          .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolment ~ Some(Organisation) ~ ConfidenceLevel.L50 ~ Some(User)))
+          .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithNoOssEnrolment ~ Some(Organisation) ~ ConfidenceLevel.L50 ~ Some(User)))
 
         running(application) {
           val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
@@ -72,6 +73,52 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustBe OK
+        }
+      }
+
+      "when ossEnrolments toggle is on" - {
+
+        val config = ("features.oss-enrolment" -> true)
+
+        "when user has ossEnrolments must succeed" in {
+
+          val application = applicationBuilder(None)
+            .configure(config).build()
+
+          when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
+            .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithOss ~ Some(Organisation) ~ ConfidenceLevel.L50 ~ Some(User)))
+
+          running(application) {
+            val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
+            val appConfig     = application.injector.instanceOf[FrontendAppConfig]
+
+            val authAction = new IdentifierAction(mockAuthConnector, appConfig)
+            val controller = new Harness(authAction, actionBuilder)
+            val result = controller.onPageLoad()(FakeRequest())
+
+            status(result) mustBe OK
+          }
+        }
+
+        "when user does not have ossEnrolments must be redirected to the Not Registered page" in {
+
+          val application = applicationBuilder(None)
+            .configure(config).build()
+
+          when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
+            .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithNoOssEnrolment ~ Some(Organisation) ~ ConfidenceLevel.L50 ~ Some(User)))
+
+          running(application) {
+            val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
+            val appConfig     = application.injector.instanceOf[FrontendAppConfig]
+
+            val authAction = new IdentifierAction(mockAuthConnector, appConfig)
+            val controller = new Harness(authAction, actionBuilder)
+            val result = controller.onPageLoad()(FakeRequest())
+
+            status(result) mustBe SEE_OTHER
+            redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
+          }
         }
       }
     }
@@ -87,7 +134,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
 
           when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-            .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolment ~ Some(Individual) ~ ConfidenceLevel.L200 ~ None))
+            .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithNoOssEnrolment ~ Some(Individual) ~ ConfidenceLevel.L200 ~ None))
 
           val action = new IdentifierAction(mockAuthConnector, appConfig)
           val controller = new Harness(action, actionBuilder)
@@ -109,7 +156,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
 
           when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-            .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolment ~ Some(Organisation) ~ ConfidenceLevel.L50 ~ Some(Assistant)))
+            .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithNoOssEnrolment ~ Some(Organisation) ~ ConfidenceLevel.L50 ~ Some(Assistant)))
 
           val action = new IdentifierAction(mockAuthConnector, appConfig)
           val controller = new Harness(action, actionBuilder)
@@ -155,7 +202,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
           val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
 
           when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-            .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolment ~ Some(Individual) ~ ConfidenceLevel.L50 ~ None))
+            .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithNoOssEnrolment ~ Some(Individual) ~ ConfidenceLevel.L50 ~ None))
 
           val action = new IdentifierAction(mockAuthConnector, appConfig)
           val controller = new Harness(action, actionBuilder)

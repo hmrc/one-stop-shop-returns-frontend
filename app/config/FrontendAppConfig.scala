@@ -45,6 +45,11 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("features.welsh-translation")
 
+  val ossEnrolment: String       = configuration.get[String]("oss-enrolment")
+
+  val ossEnrolmentEnabled: Boolean =
+    configuration.get[Boolean]("features.oss-enrolment")
+
   def languageMap: Map[String, Lang] = Map(
     "en" -> Lang("en"),
     "cy" -> Lang("cy")
