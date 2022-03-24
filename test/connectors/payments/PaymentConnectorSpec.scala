@@ -19,9 +19,11 @@ package connectors.payments
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.{PaymentConnector, WireMockHelper}
-import models.responses.{InvalidJson, UnexpectedResponseStatus}
+import models.responses.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import models.requests.{PaymentPeriod, PaymentRequest, PaymentResponse}
 import org.scalatest.EitherValues
+import org.scalatest.concurrent.PatienceConfiguration.Timeout
+import org.scalatest.time.{Seconds, Span}
 import play.api.Application
 import play.api.http.Status._
 import play.api.libs.json.Json
@@ -66,6 +68,24 @@ class PaymentConnectorSpec extends SpecBase with WireMockHelper with EitherValue
         val result = connector.submit(paymentRequest).futureValue
 
         result.value mustEqual expectedReturnPaymentResponse
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with an Http Exception" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[PaymentConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(
+          aResponse()
+            .withStatus(504)
+            .withFixedDelay(21000)
+        ))
+
+        whenReady(connector.submit(paymentRequest), Timeout(Span(30, Seconds))) { exp =>
+          exp.isLeft mustBe true
+          exp.left.get mustBe a[ErrorResponse]
+        }
       }
     }
 
