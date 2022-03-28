@@ -20,12 +20,12 @@ import cats.implicits._
 import connectors.VatReturnConnector
 import models._
 import models.domain.EuTaxIdentifierType.Vat
-import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration.{EuVatRegistration, Registration, RegistrationWithFixedEstablishment}
 import models.requests.VatReturnRequest
 import pages._
 import play.api.i18n.Lang.logger
-import queries.{AllSalesFromEuQuery, AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiQuery, AllSalesToEuQuery, EuSalesAtVatRateQuery, EuSalesAtVatRateWithOptionalVatQuery, NiSalesAtVatRateQuery, NiSalesAtVatRateWithOptionalVatQuery, VatOnSalesFromEuQuery, VatOnSalesFromNiQuery}
+import queries._
 import services.corrections.CorrectionService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier

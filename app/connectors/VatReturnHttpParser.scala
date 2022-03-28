@@ -16,12 +16,11 @@
 
 package connectors
 
-import connectors.VatReturnWithCorrectionHttpParser.{REGISTRATION_NOT_FOUND, logger}
+import logging.Logging
 import models.domain.VatReturn
 import models.responses._
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
-import logging.Logging
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 

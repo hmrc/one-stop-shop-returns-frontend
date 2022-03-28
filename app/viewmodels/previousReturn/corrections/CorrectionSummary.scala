@@ -16,19 +16,19 @@
 
 package viewmodels.previousReturn.corrections
 
+import models.Country
 import models.corrections.{CorrectionPayload, PeriodWithCorrections}
 import models.domain.VatReturn
-import models.Country
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.{HtmlContent, Text}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.table.TableRow
 import utils.CorrectionUtils
 import utils.CurrencyFormatter._
-import viewmodels.{TitledSummaryList, TitledTable}
 import viewmodels.govuk.summarylist._
 import viewmodels.govuk.table._
 import viewmodels.implicits._
+import viewmodels.{TitledSummaryList, TitledTable}
 
 object CorrectionSummary {
 

@@ -17,11 +17,10 @@
 package models.audit
 
 import base.SpecBase
-import models.Quarter.{Q2, Q4}
-import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
-import models.requests.VatReturnRequest
 import models._
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
+import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.requests.VatReturnRequest
 import models.requests.corrections.CorrectionRequest
 import org.scalacheck.Arbitrary.arbitrary
 import play.api.libs.json.Json

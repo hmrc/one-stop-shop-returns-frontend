@@ -17,7 +17,6 @@
 package connectors
 
 import logging.Logging
-import models.PeriodWithStatus
 import models.responses._
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}

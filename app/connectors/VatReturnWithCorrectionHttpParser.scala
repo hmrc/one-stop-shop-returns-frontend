@@ -16,13 +16,12 @@
 
 package connectors
 
-import connectors.VatReturnHttpParser.logger
 import logging.Logging
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.responses._
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object VatReturnWithCorrectionHttpParser extends Logging {

@@ -16,10 +16,9 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import forms.SalesFromEuListFormProvider
-import models.{Country, Index, Mode, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat}
+import models.{Country, Index, Mode, Period, SalesFromEuWithOptionalVat}
 import pages.SalesFromEuListPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}

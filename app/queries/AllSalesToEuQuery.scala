@@ -17,7 +17,7 @@
 package queries
 
 import models.{Index, SalesToEu}
-import pages.PageConstants.{salesFromEu, salesFromCountry}
+import pages.PageConstants.{salesFromCountry, salesFromEu}
 import play.api.libs.json.JsPath
 
 case class AllSalesToEuQuery(index: Index) extends Gettable[List[SalesToEu]] with Settable[List[SalesToEu]] {

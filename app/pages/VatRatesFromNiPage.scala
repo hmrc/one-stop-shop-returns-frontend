@@ -20,7 +20,7 @@ import controllers.routes
 import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers, VatRate}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
-import queries.{AllNiVatRateAndSalesQuery, AllNiVatRateAndSalesWithOptionalVatQuery}
+import queries.AllNiVatRateAndSalesWithOptionalVatQuery
 
 case class VatRatesFromNiPage(index: Index) extends QuestionPage[List[VatRate]] {
 

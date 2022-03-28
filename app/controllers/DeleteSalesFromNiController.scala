@@ -18,8 +18,6 @@ package controllers
 
 import controllers.actions._
 import forms.DeleteSalesFromNiFormProvider
-
-import javax.inject.Inject
 import models.{Index, Mode, Period}
 import pages.DeleteSalesFromNiPage
 import play.api.i18n.I18nSupport
@@ -29,6 +27,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import views.html.DeleteSalesFromNiView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DeleteSalesFromNiController @Inject()(

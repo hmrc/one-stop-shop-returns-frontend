@@ -16,9 +16,9 @@
 
 package utils
 
+import models.Country
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
-import models.Country
 
 object CorrectionUtils {
 

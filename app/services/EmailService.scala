@@ -23,8 +23,8 @@ import models.emails.{EmailSendingResult, EmailToSendRequest, ReturnsConfirmatio
 import play.api.i18n.Messages
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.{Clock, LocalDate}
 import java.time.format.DateTimeFormatter
+import java.time.{Clock, LocalDate}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 

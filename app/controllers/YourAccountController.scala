@@ -20,16 +20,16 @@ import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.financialdata.{CurrentPayments, PaymentStatus, VatReturnWithFinancialData}
+import models.financialdata.{CurrentPayments, PaymentStatus}
 import models.requests.RegistrationRequest
-import models.{Period, PeriodWithStatus, SubmissionStatus, UserAnswers}
+import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.{FinancialDataService, VatReturnSalesService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.IndexView
 import viewmodels.yourAccount._
+import views.html.IndexView
 
 import java.time.Clock
 import javax.inject.Inject

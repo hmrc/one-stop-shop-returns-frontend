@@ -19,7 +19,6 @@ package forms.corrections
 import forms.VatPayableForCountryFormProvider
 import forms.behaviours.BooleanFieldBehaviours
 import models.Country
-import org.scalacheck.{Arbitrary, Gen}
 import play.api.data.FormError
 
 class VatPayableForCountryFormProviderSpec extends BooleanFieldBehaviours {

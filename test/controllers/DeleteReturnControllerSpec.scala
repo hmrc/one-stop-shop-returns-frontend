@@ -19,7 +19,6 @@ package controllers
 import base.SpecBase
 import connectors.SaveForLaterConnector
 import forms.DeleteReturnFormProvider
-import models.{NormalMode, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar

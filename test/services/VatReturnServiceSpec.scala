@@ -32,7 +32,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
-import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery, AllSalesToEuQuery, NiSalesAtVatRateQuery, VatOnSalesFromEuQuery, VatOnSalesFromNiQuery}
+import queries._
 import services.corrections.CorrectionService
 import uk.gov.hmrc.http.HeaderCarrier
 

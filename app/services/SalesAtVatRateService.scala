@@ -17,8 +17,8 @@
 package services
 
 import models.{TotalVatToCountry, UserAnswers}
-import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery}
 import queries.corrections.AllCorrectionPeriodsQuery
+import queries.{AllSalesFromEuQuery, AllSalesFromNiQuery}
 
 import javax.inject.Inject
 

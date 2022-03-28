@@ -19,7 +19,7 @@ package viewmodels.checkAnswers
 import controllers.routes
 import models.{CheckSecondLoopMode, Index, Mode, NormalMode, UserAnswers}
 import play.twirl.api.HtmlFormat
-import queries.{AllSalesFromNiQuery, AllSalesFromNiWithOptionalVatQuery}
+import queries.AllSalesFromNiWithOptionalVatQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object SalesFromNiSummary {

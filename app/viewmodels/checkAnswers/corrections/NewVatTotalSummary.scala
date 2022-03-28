@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, Index, UserAnswers}
+import models.{Index, UserAnswers}
 import pages.corrections.CountryVatCorrectionPage
 import play.api.i18n.Messages
 import play.twirl.api.Html

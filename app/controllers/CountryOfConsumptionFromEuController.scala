@@ -18,7 +18,7 @@ package controllers
 
 import controllers.actions._
 import forms.CountryOfConsumptionFromEuFormProvider
-import models.Country.{euCountriesWithNI}
+import models.Country.euCountriesWithNI
 import models.{Country, Index, Mode, Period}
 import pages.CountryOfConsumptionFromEuPage
 import play.api.i18n.I18nSupport

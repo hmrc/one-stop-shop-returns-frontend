@@ -16,11 +16,12 @@
 
 package forms
 
-import javax.inject.Inject
 import forms.mappings.Mappings
 import models.Country
 import play.api.data.Form
 import utils.CurrencyFormatter.currencyFormat
+
+import javax.inject.Inject
 
 class VatPayableForCountryFormProvider @Inject() extends Mappings {
 

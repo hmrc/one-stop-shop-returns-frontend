@@ -17,11 +17,11 @@
 package utils
 
 import base.SpecBase
+import models.Quarter.{Q3, Q4}
 import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.domain.{SalesDetails, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.{Country, Period, VatOnSales}
-import models.Quarter.{Q3, Q4}
 import org.scalacheck.Arbitrary.arbitrary
 import uk.gov.hmrc.domain.Vrn
 

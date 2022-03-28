@@ -17,8 +17,8 @@
 package services
 
 import base.SpecBase
-import models.{Country, Index, TotalVatToCountry, VatOnSales, VatRate, VatRateType}
 import models.VatOnSalesChoice.Standard
+import models.{Country, Index, TotalVatToCountry, VatOnSales, VatRate, VatRateType}
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}

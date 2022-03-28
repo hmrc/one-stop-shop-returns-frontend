@@ -18,12 +18,12 @@ package connectors
 
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.domain.VatReturn
-import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
-import models.responses.{ConflictFound, CoreErrorResponse, InvalidJson, NotFound, ReceivedErrorFromCore, UnexpectedResponseStatus}
-import models.{PaymentReference, ReturnReference}
 import models.corrections.CorrectionPayload
+import models.domain.VatReturn
 import models.requests.corrections.CorrectionRequest
+import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
+import models.responses._
+import models.{PaymentReference, ReturnReference}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application

@@ -28,8 +28,8 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatReturnSalesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.govuk.summarylist._
-import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary}
 import viewmodels.previousReturn.corrections.CorrectionSummary
+import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary}
 import views.html.PreviousReturnView
 
 import javax.inject.Inject

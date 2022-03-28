@@ -16,8 +16,8 @@
 
 package controllers.actions
 
-import models.{Period, UserAnswers}
 import models.requests.{OptionalDataRequest, RegistrationRequest}
+import models.{Period, UserAnswers}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import repositories.SessionRepository
 

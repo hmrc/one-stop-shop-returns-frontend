@@ -22,10 +22,10 @@ import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
 import models.Quarter.Q3
 import models.corrections.CorrectionPayload
-import models.{Country, Period}
 import models.domain.VatReturn
 import models.financialdata.Charge
-import models.responses.{ConflictFound, InvalidJson, UnexpectedResponseStatus, NotFound => NotFoundResponse}
+import models.responses.{UnexpectedResponseStatus, NotFound => NotFoundResponse}
+import models.{Country, Period}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -39,9 +39,9 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.VatReturnSalesService
-import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary}
 import viewmodels.govuk.summarylist._
 import viewmodels.previousReturn.corrections.CorrectionSummary
+import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary}
 import views.html.PreviousReturnView
 
 import scala.concurrent.Future

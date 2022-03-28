@@ -17,10 +17,10 @@
 package forms.mappings
 
 import models.{Index, VatRate}
-
-import java.time.LocalDate
 import play.api.data.validation.{Constraint, Invalid, Valid}
 import utils.CurrencyFormatter
+
+import java.time.LocalDate
 
 trait Constraints {
 

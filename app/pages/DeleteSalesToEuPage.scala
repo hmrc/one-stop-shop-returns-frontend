@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.{CheckMode, CheckThirdLoopMode, Index, NormalMode, UserAnswers}
-import PageConstants._
+import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.DeriveNumberOfSalesToEu

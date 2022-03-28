@@ -17,7 +17,7 @@
 package models
 
 import play.api.libs.functional.syntax.{toAlternativeOps, toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{JsString, JsValue, OWrites, Reads, Writes, __}
+import play.api.libs.json._
 
 import java.time.LocalDate
 

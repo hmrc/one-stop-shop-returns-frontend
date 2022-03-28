@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckLoopMode, CheckMode, Index, Mode, NormalMode, UserAnswers}
+import models.{CheckLoopMode, Index, Mode, NormalMode, UserAnswers}
 import pages.VatRatesFromNiPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat

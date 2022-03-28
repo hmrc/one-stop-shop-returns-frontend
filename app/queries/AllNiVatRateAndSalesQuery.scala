@@ -17,7 +17,7 @@
 package queries
 
 import models.{Index, VatRateAndSales}
-import pages.PageConstants.{salesFromCountry, salesFromEu, salesFromNi, vatRates}
+import pages.PageConstants.{salesFromNi, vatRates}
 import play.api.libs.json.JsPath
 
 case class AllNiVatRateAndSalesQuery(countryIndex: Index)

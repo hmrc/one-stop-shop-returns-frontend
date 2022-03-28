@@ -29,12 +29,12 @@ import models.requests.corrections.CorrectionRequest
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, ReceivedErrorFromCore, RegistrationNotFound}
 import models.{CheckMode, DataMissingError, Index, NormalMode, Period, ValidationError}
-import pages.corrections.{CorrectPreviousReturnPage, VatPeriodCorrectionsListPage}
+import pages.corrections.CorrectPreviousReturnPage
 import pages.{CheckYourAnswersPage, SavedProgressPage, VatRatesFromEuPage, VatRatesFromNiPage}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
-import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import queries._
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import repositories.CachedVatReturnRepository
 import services.corrections.CorrectionService
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}

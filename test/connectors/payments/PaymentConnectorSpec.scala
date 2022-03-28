@@ -19,8 +19,8 @@ package connectors.payments
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.{PaymentConnector, WireMockHelper}
-import models.responses.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import models.requests.{PaymentPeriod, PaymentRequest, PaymentResponse}
+import models.responses.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}

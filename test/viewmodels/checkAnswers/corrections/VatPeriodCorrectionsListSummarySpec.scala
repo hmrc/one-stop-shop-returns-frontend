@@ -17,14 +17,11 @@
 package viewmodels.checkAnswers.corrections
 
 import base.SpecBase
-import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Country, Index, Mode, NormalMode}
+import models.{CheckMode, CheckThirdLoopMode, Country, Mode, NormalMode}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
 
 class VatPeriodCorrectionsListSummarySpec extends SpecBase {
 

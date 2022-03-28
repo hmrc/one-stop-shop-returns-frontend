@@ -18,8 +18,6 @@ package controllers
 
 import controllers.actions._
 import forms.VatOnSalesFromNiFormProvider
-
-import javax.inject.Inject
 import models.{Index, Mode, Period}
 import pages.VatOnSalesFromNiPage
 import play.api.i18n.I18nSupport
@@ -28,6 +26,7 @@ import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.VatOnSalesFromNiView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class VatOnSalesFromNiController @Inject()(

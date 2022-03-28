@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.ContinueReturn.{Continue, Delete}
-import models.{ContinueReturn, NormalMode, UserAnswers}
+import models.{ContinueReturn, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import uk.gov.hmrc.http.HttpVerbs.GET

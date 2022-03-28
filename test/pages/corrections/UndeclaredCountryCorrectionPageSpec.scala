@@ -17,8 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, CheckThirdLoopMode, Country, NormalMode}
-import org.scalacheck.Arbitrary.arbitrary
+import models.{CheckMode, CheckThirdLoopMode, NormalMode}
 import pages.behaviours.PageBehaviours
 
 class UndeclaredCountryCorrectionPageSpec extends PageBehaviours {

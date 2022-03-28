@@ -18,11 +18,11 @@ package generators
 
 import connectors.SavedUserAnswers
 import models.VatOnSalesChoice.Standard
-import models.{domain, _}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.financialdata.Charge
 import models.registration._
+import models.{domain, _}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}

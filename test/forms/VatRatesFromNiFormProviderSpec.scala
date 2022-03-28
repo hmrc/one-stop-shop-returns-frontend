@@ -19,13 +19,9 @@ package forms
 import forms.behaviours.CheckboxFieldBehaviours
 import generators.Generators
 import models.VatRate
-import models.VatRateType.{Reduced, Standard}
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.data.FormError
-
-import java.time.LocalDate
 
 class VatRatesFromNiFormProviderSpec extends CheckboxFieldBehaviours with ScalaCheckPropertyChecks with Generators {
 

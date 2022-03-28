@@ -17,14 +17,14 @@
 package services
 
 import base.SpecBase
-import models.domain.VatReturn
-import models.financialdata.{Charge, VatReturnWithFinancialData}
 import models.Period
 import models.Quarter.Q3
 import models.corrections.CorrectionPayload
+import models.domain.VatReturn
+import models.financialdata.{Charge, VatReturnWithFinancialData}
+import org.mockito.Mockito._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import org.mockito.Mockito._
 
 class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
 
