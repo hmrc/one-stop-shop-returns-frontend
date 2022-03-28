@@ -490,5 +490,5 @@ errorFromCore.title = There is a problem with the service
 errorFromCore.heading = Your return is not submitted
 errorFromCore.savedAnswers = We have saved your answers and you can submit it from your account later.
 errorFromCore.knownIssues = Check our <a class="govuk-link" href="https://www.gov.uk/government/publications/one-stop-shop-union-scheme-service-availability-and-issues">service page</a> for any known system issues.
-errorFromCore.contactUs = If the problem continues, you can <a class="govuk-link" href="mailto:vat2015.contact@hmrc.gov.uk">contact us</a>.
+errorFromCore.contactUs = If the problem continues, you can <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">contact us</a>.
 errorFromCore.your.account = Back to your account
