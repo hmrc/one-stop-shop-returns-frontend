@@ -25,9 +25,8 @@ import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCor
 import models.financialdata.{Charge, VatReturnWithFinancialData}
 import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.when
 import org.mockito.MockitoSugar.mock
 import org.scalacheck.Arbitrary
 import org.scalatest.BeforeAndAfterEach

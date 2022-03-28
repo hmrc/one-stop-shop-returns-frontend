@@ -19,8 +19,8 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import formats.Format
-import models.{Period, PeriodWithStatus}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
+import models.{Period, PeriodWithStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
@@ -28,7 +28,7 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
-import viewmodels.yourAccount.{Return, OpenReturns}
+import viewmodels.yourAccount.{OpenReturns, Return}
 
 import java.time.LocalDate
 

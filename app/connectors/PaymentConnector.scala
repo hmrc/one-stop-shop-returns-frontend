@@ -17,7 +17,7 @@
 package connectors
 
 import config.Service
-import connectors.PaymentHttpParser.{ReturnPaymentReads, ReturnPaymentResponse, logger}
+import connectors.PaymentHttpParser.{ReturnPaymentReads, ReturnPaymentResponse}
 import logging.Logging
 import models.requests.PaymentRequest
 import models.responses.UnexpectedResponseStatus

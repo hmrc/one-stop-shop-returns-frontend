@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.{Index, Mode, UserAnswers}
-import pages.PageConstants.{netValueOfSales, salesAtVatRate, salesFromCountry, salesFromEu, vatRates}
+import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 

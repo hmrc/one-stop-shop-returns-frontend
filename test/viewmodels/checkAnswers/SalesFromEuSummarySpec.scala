@@ -18,9 +18,9 @@ package viewmodels.checkAnswers
 
 import base.SpecBase
 import controllers.routes
-import models.{CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Country, Index, Mode, NormalMode, VatOnSales, VatOnSalesChoice, VatRate}
+import models.{CheckMode, CheckThirdLoopMode, Country, Index, Mode, NormalMode, VatOnSales, VatOnSalesChoice, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
-import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage, NetValueOfSalesFromEuPage, VatOnSalesFromEuPage, VatRatesFromEuPage}
+import pages._
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
 import play.twirl.api.HtmlFormat

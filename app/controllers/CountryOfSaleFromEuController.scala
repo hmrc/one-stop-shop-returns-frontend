@@ -18,8 +18,6 @@ package controllers
 
 import controllers.actions._
 import forms.CountryOfSaleFromEuFormProvider
-
-import javax.inject.Inject
 import models.{Index, Mode, Period}
 import pages.CountryOfSaleFromEuPage
 import play.api.i18n.I18nSupport
@@ -28,6 +26,7 @@ import queries.AllSalesFromEuQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.CountryOfSaleFromEuView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CountryOfSaleFromEuController @Inject()(

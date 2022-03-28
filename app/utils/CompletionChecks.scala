@@ -16,12 +16,11 @@
 
 package utils
 
-import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
-import models.requests.DataRequest
-import models.{Country, DataMissingError, Index, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, UserAnswers, ValidationResult, VatRateAndSalesWithOptionalVat}
-import pages.corrections.CorrectPreviousReturnPage
-import play.api.mvc.{AnyContent, Result}
 import cats.implicits._
+import models.corrections.CorrectionToCountry
+import models.requests.DataRequest
+import models.{Country, Index, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, VatRateAndSalesWithOptionalVat}
+import play.api.mvc.{AnyContent, Result}
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import queries.{AllNiVatRateAndSalesWithOptionalVatQuery, AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiWithOptionalVatQuery, AllSalesToEuWithOptionalVatQuery}
 

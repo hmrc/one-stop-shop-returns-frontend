@@ -17,8 +17,8 @@
 package pages
 
 import controllers.routes
-import models.{CheckFinalInnerLoopMode, CheckInnerLoopMode, CheckLoopMode, CheckMode, CheckSecondInnerLoopMode, CheckSecondLoopMode, CheckThirdInnerLoopMode, CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers, VatOnSales}
-import pages.PageConstants.{salesAtVatRate, salesFromCountry, salesFromEu, vatOnSales, vatRates}
+import models.{CheckLoopMode, CheckMode, CheckSecondLoopMode, CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers, VatOnSales}
+import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 

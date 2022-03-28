@@ -18,12 +18,12 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromNiFormProvider
-import models.{Index, Mode, Period, UserAnswers, VatRate, VatRateAndSales, VatRateAndSalesWithOptionalVat}
 import models.requests.DataRequest
+import models.{Index, Mode, Period, UserAnswers, VatRate, VatRateAndSalesWithOptionalVat}
 import pages.VatRatesFromNiPage
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import queries.{AllEuVatRateAndSalesQuery, AllNiVatRateAndSalesQuery, AllNiVatRateAndSalesWithOptionalVatQuery}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.AllNiVatRateAndSalesWithOptionalVatQuery
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._

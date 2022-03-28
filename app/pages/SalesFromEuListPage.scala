@@ -16,7 +16,6 @@
 
 package pages
 
-import config.FrontendAppConfig
 import controllers.routes
 import models.{CheckMode, Index, Mode, UserAnswers}
 import play.api.mvc.Call

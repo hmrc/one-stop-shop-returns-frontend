@@ -19,14 +19,13 @@ package controllers
 import connectors.SaveForLaterConnector
 import controllers.actions._
 import forms.DeleteReturnFormProvider
-
-import javax.inject.Inject
-import models.{Mode, NormalMode, Period}
+import models.Period
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.DeleteReturnView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DeleteReturnController @Inject()(

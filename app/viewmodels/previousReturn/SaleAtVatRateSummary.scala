@@ -16,16 +16,16 @@
 
 package viewmodels.previousReturn
 
-import models.domain.{SalesToCountry, VatReturn}
 import models.Country
 import models.Country.northernIreland
+import models.domain.{SalesToCountry, VatReturn}
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.table.TableRow
-import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import utils.CurrencyFormatter
-import viewmodels.govuk.table._
 import viewmodels.TitledTable
+import viewmodels.govuk.table._
 
 object SaleAtVatRateSummary extends CurrencyFormatter {
 

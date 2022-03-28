@@ -22,7 +22,7 @@ import connectors.WireMockHelper
 import formats.Format
 import models.Period
 import models.Quarter.{Q1, Q3}
-import models.financialdata.{Charge, CurrentPayments, Payment, PaymentStatus, PeriodWithOutstandingAmount, VatReturnWithFinancialData}
+import models.financialdata._
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalatest.EitherValues
 import play.api.Application

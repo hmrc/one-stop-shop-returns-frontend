@@ -16,12 +16,13 @@
 
 package forms
 
-import javax.inject.Inject
 import forms.mappings.Mappings
 import models.Country.euCountriesWithNI
 import models.{Country, Index}
 import play.api.data.Form
 import play.api.data.validation.{Constraint, Invalid, Valid}
+
+import javax.inject.Inject
 
 class CountryOfConsumptionFromEuFormProvider @Inject() extends Mappings {
 

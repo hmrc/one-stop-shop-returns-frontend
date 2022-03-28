@@ -17,9 +17,7 @@
 package controllers
 
 import controllers.actions.AuthenticatedControllerComponents
-import controllers.corrections.routes
 import forms.SalesToEuListFormProvider
-import models.corrections.CorrectionToCountry
 import models.{Country, Index, Mode, Period, SalesFromCountryWithOptionalVat}
 import pages.SalesToEuListPage
 import play.api.i18n.{I18nSupport, MessagesApi}

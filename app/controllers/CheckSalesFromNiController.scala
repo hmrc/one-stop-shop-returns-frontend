@@ -18,7 +18,7 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Index, Mode, Period, SalesFromCountryWithOptionalVat, VatRateAndSalesWithOptionalVat}
+import models.{Index, Mode, Period, VatRateAndSalesWithOptionalVat}
 import pages.{CheckSalesFromNiPage, VatRatesFromNiPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}

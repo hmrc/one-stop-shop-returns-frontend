@@ -15,8 +15,8 @@
  */
 
 package models.financialdata
-import play.api.libs.json.{Json, OFormat}
 import models.Period
+import play.api.libs.json.{Json, OFormat}
 
 import java.time.{Clock, LocalDate}
 

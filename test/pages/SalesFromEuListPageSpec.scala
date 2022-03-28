@@ -17,13 +17,9 @@
 package pages
 
 import base.SpecBase
-import config.FrontendAppConfig
 import controllers.routes
 import models.{CheckMode, Country, Index, NormalMode}
-import org.mockito.Mockito
-import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 
 class SalesFromEuListPageSpec extends SpecBase with MockitoSugar {

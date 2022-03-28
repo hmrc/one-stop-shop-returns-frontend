@@ -16,7 +16,7 @@
 
 package queries
 
-import models.{SalesFromEu, SalesFromEuWithOptionalVat}
+import models.SalesFromEuWithOptionalVat
 import pages.PageConstants
 import play.api.libs.json.JsPath
 

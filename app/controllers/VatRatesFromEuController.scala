@@ -18,11 +18,10 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromEuFormProvider
-import models.{Index, Mode, Period, UserAnswers, VatRate, VatRateAndSales}
 import models.requests.DataRequest
+import models.{Index, Mode, Period, UserAnswers, VatRate, VatRateAndSales}
 import pages.VatRatesFromEuPage
 import play.api.i18n.I18nSupport
-import play.api.libs.json.Reads
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.AllEuVatRateAndSalesQuery
 import services.VatRateService

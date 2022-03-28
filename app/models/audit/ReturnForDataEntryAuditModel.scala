@@ -16,9 +16,9 @@
 
 package models.audit
 
-import models.{PaymentReference, ReturnReference}
 import models.requests.VatReturnRequest
 import models.requests.corrections.CorrectionRequest
+import models.{PaymentReference, ReturnReference}
 import play.api.libs.json.{JsObject, JsValue, Json}
 
 case class ReturnForDataEntryAuditModel(

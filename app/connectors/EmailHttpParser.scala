@@ -19,10 +19,6 @@ package connectors
 import logging.Logging
 import models.emails.EmailSendingResult
 import models.emails.EmailSendingResult.{EMAIL_ACCEPTED, EMAIL_NOT_SENT, EMAIL_UNSENDABLE}
-import models.requests.PaymentResponse
-import models.responses.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
-import play.api.http.Status.CREATED
-import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object EmailHttpParser extends Logging {

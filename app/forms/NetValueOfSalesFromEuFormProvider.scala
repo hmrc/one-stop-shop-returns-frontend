@@ -19,9 +19,9 @@ package forms
 import config.Constants.maxCurrencyAmount
 import forms.mappings.Mappings
 import models.VatRate
+import play.api.data.Form
 
 import javax.inject.Inject
-import play.api.data.Form
 
 class NetValueOfSalesFromEuFormProvider @Inject() extends Mappings {
 

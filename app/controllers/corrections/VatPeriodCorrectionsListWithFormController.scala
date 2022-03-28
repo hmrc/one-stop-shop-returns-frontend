@@ -18,13 +18,12 @@ package controllers.corrections
 
 import connectors.ReturnStatusConnector
 import controllers.actions._
+import controllers.{routes => baseRoutes}
 import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.SubmissionStatus.Complete
 import models.{Index, Mode, Period}
 import pages.corrections.VatPeriodCorrectionsListPage
 import play.api.Logging
-import controllers.{routes => baseRoutes}
-import play.api.data.FormError
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.DeriveCompletedCorrectionPeriods

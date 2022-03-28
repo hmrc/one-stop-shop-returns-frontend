@@ -16,7 +16,7 @@
 
 package queries
 
-import models.{Index, VatRateAndSales, VatRateAndSalesWithOptionalVat}
+import models.{Index, VatRateAndSalesWithOptionalVat}
 import pages.PageConstants.{salesFromNi, vatRates}
 import play.api.libs.json.JsPath
 

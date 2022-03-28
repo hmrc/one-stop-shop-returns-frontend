@@ -18,8 +18,6 @@ package controllers
 
 import controllers.actions._
 import forms.NetValueOfSalesFromNiFormProvider
-
-import javax.inject.Inject
 import models.{Index, Mode, Period}
 import pages.NetValueOfSalesFromNiPage
 import play.api.i18n.I18nSupport
@@ -27,6 +25,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.NetValueOfSalesFromNiView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class NetValueOfSalesFromNiController @Inject()(

@@ -20,12 +20,12 @@ import connectors.VatReturnConnector
 import controllers.routes
 import models.Period
 import models.requests.OptionalDataRequest
+import models.responses.NotFound
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import repositories.CachedVatReturnRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import models.responses.NotFound
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

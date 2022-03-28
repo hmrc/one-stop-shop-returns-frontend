@@ -21,7 +21,7 @@ import forms.SalesToEuListFormProvider
 import models.{Country, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage, NetValueOfSalesFromEuPage, SalesToEuListPage, VatOnSalesFromEuPage, VatRatesFromEuPage}
+import pages._
 import play.api.i18n.Messages
 import play.api.test.FakeRequest
 import play.api.test.Helpers._

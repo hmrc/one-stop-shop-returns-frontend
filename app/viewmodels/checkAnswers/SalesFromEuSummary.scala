@@ -17,9 +17,9 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers}
+import models.{CheckThirdLoopMode, Index, Mode, NormalMode, UserAnswers}
 import play.twirl.api.HtmlFormat
-import queries.{AllSalesFromEuQuery, AllSalesFromEuQueryWithOptionalVatQuery}
+import queries.AllSalesFromEuQueryWithOptionalVatQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object SalesFromEuSummary {

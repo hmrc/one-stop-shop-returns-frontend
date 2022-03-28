@@ -18,10 +18,9 @@ package services.corrections
 
 import cats.implicits._
 import connectors.corrections.CorrectionConnector
-import models.{Country, DataMissingError, Index, Period, UserAnswers, ValidationResult}
-import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
-import models.domain.VatReturn
+import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
 import models.requests.corrections.CorrectionRequest
+import models.{DataMissingError, Index, Period, UserAnswers, ValidationResult}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.Lang.logger
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}

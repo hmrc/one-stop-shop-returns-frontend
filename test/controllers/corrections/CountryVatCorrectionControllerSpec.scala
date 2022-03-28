@@ -20,13 +20,13 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import forms.corrections.CountryVatCorrectionFormProvider
 import models.corrections.CorrectionToCountry
-import models.domain.{SalesDetails, SalesToCountry, VatRate, VatRateType, VatReturn}
+import models.domain._
 import models.{Country, NormalMode, PaymentReference, ReturnReference, VatOnSales, VatOnSalesChoice}
 import org.jsoup.Jsoup
-import org.scalacheck.Arbitrary.arbitrary
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}

@@ -20,10 +20,10 @@ import base.SpecBase
 import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import generators.Generators
+import models.Period
 import models.Quarter._
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
-import models.{Period, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -35,8 +35,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.VatReturnSalesService
-import uk.gov.hmrc.domain.Vrn
-import viewmodels.yourAccount.{Return, OpenReturns}
+import viewmodels.yourAccount.{OpenReturns, Return}
 import views.html.IndexView
 
 import java.time.{Clock, Instant, ZoneId}

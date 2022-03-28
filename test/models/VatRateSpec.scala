@@ -17,8 +17,8 @@
 package models
 
 import generators.Generators
-import org.scalacheck.Arbitrary.arbitrary
 import models.VatRateType.Standard
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks

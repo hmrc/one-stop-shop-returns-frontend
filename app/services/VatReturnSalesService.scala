@@ -16,9 +16,8 @@
 
 package services
 
-import models.corrections.{CorrectionPayload, PeriodWithCorrections}
+import models.corrections.CorrectionPayload
 import models.domain.{SalesFromEuCountry, SalesToCountry, VatReturn}
-import models.Country
 import utils.CorrectionUtils
 
 import javax.inject.Inject

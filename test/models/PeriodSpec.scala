@@ -26,8 +26,8 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.mvc.PathBindable
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
 import java.time.Month._
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 
 class PeriodSpec
   extends AnyFreeSpec

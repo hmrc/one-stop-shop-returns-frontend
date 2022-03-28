@@ -16,9 +16,9 @@
 
 package forms.mappings
 
+import models.{Enumerable, Period}
 import play.api.data.FormError
 import play.api.data.format.Formatter
-import models.{Enumerable, Period}
 
 import scala.util.control.Exception.nonFatalCatch
 

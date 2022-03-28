@@ -18,17 +18,16 @@ package controllers
 
 import controllers.actions._
 import forms.DeleteSalesToEuFormProvider
-
-import javax.inject.Inject
 import models.{Index, Mode, Period}
 import pages.DeleteSalesToEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.SalesToEuQuery
-import utils.FutureSyntax._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax._
 import views.html.DeleteSalesToEuView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DeleteSalesToEuController @Inject()(

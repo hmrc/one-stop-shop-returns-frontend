@@ -18,9 +18,9 @@ package controllers.actions
 
 import base.SpecBase
 import controllers.routes
-import models.requests.OptionalDataRequest
 import models.Period
 import models.Quarter.Q3
+import models.requests.OptionalDataRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when

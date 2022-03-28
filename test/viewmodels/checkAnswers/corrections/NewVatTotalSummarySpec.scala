@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers.corrections
 
 import base.SpecBase
-import models.{CheckMode, Country}
+import models.Country
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
