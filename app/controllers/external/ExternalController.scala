@@ -43,7 +43,7 @@ class ExternalController @Inject()(
   val startReturn = "start-your-return"
   val continueReturn = "continue-your-return"
 
-  def onExternal(page: String, period: Option[Period] = None): Action[JsValue] =  cc.auth.async(parse.json) {
+  def onExternal(page: String, period: Option[Period] = None): Action[JsValue] =  cc.authAndGetSavedAnswers.async(parse.json) {
     implicit request => withJsonBody[ExternalRequest] {
       externalRequest =>
       (page, period) match {
