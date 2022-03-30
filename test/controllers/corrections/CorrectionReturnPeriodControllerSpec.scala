@@ -32,7 +32,7 @@ import pages.corrections.CorrectionReturnPeriodPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import views.html.corrections.CorrectionReturnPeriodView
 
@@ -152,7 +152,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn(Future.successful(Right(Seq(PeriodWithStatus(Period(2021, Q3), SubmissionStatus.Complete)))))
@@ -160,7 +160,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
-          bind[SessionRepository].toInstance(mockSessionRepository)
+          bind[UserAnswersRepository].toInstance(mockSessionRepository)
         ).build()
 
       running(application) {

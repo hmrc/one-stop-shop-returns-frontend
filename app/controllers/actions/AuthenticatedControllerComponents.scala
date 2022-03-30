@@ -21,7 +21,7 @@ import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest, Reg
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
 import play.api.mvc._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -29,7 +29,7 @@ import scala.concurrent.ExecutionContext
 trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def actionBuilder: DefaultActionBuilder
-  def sessionRepository: SessionRepository
+  def sessionRepository: UserAnswersRepository
   def identify: IdentifierAction
   def getRegistration: GetRegistrationAction
   def checkCommencementDate: CheckCommencementDateFilterProvider
@@ -65,7 +65,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                langs: Langs,
                                                                fileMimeTypes: FileMimeTypes,
                                                                executionContext: ExecutionContext,
-                                                               sessionRepository: SessionRepository,
+                                                               sessionRepository: UserAnswersRepository,
                                                                identify: IdentifierAction,
                                                                getRegistration: GetRegistrationAction,
                                                                checkCommencementDate: CheckCommencementDateFilterProvider,

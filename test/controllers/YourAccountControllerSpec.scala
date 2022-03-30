@@ -33,7 +33,7 @@ import pages.SavedProgressPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import services.VatReturnSalesService
 import viewmodels.yourAccount.{OpenReturns, Return}
 import views.html.IndexView
@@ -46,7 +46,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val returnStatusConnector = mock[ReturnStatusConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
   private val vatReturnSalesService = mock[VatReturnSalesService]
-  private val sessionRepository = mock[SessionRepository]
+  private val sessionRepository = mock[UserAnswersRepository]
   private val save4LaterConnector = mock[SaveForLaterConnector]
 
   override def beforeEach(): Unit = {
@@ -82,7 +82,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -130,7 +130,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -178,7 +178,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -230,7 +230,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[SessionRepository].toInstance(sessionRepository)
+            bind[UserAnswersRepository].toInstance(sessionRepository)
           ).build()
 
         running(application) {
@@ -282,7 +282,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[SessionRepository].toInstance(sessionRepository)
+            bind[UserAnswersRepository].toInstance(sessionRepository)
           ).build()
 
         running(application) {
@@ -333,7 +333,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -387,7 +387,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -447,7 +447,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -502,7 +502,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -563,7 +563,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -616,7 +616,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -666,7 +666,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -717,7 +717,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
@@ -765,7 +765,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 

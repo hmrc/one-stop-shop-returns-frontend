@@ -28,7 +28,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.SalesToEuQuery
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import views.html.DeleteSalesToEuView
 
 import scala.concurrent.Future
@@ -93,13 +93,13 @@ class DeleteSalesToEuControllerSpec extends SpecBase with MockitoSugar {
 
     "must delete a record and redirect to the next page when the user answers Yes" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = Some(baseAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -118,13 +118,13 @@ class DeleteSalesToEuControllerSpec extends SpecBase with MockitoSugar {
 
     "must not delete a record and redirect to the next page when the user answers No" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = Some(baseAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {

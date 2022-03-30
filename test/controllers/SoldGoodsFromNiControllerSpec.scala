@@ -26,7 +26,7 @@ import pages.SoldGoodsFromNiPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import views.html.SoldGoodsFromNiView
 
 import scala.concurrent.Future
@@ -76,13 +76,13 @@ class SoldGoodsFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -135,13 +135,13 @@ class SoldGoodsFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must save the answer and redirect to the next page for a POST if no existing data is found" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = None)
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {

@@ -29,7 +29,7 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Cou
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import services.corrections.CorrectionService
 import views.html.corrections.CorrectionCountryView
 
@@ -126,7 +126,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
 
@@ -137,7 +137,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
       val application =
         applicationBuilder(userAnswers = Some(expectedAnswers2))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockService))
           .build()
@@ -159,7 +159,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
     "must save the answer and redirect to the next page when valid data is submitted and corrected vat return is not empty" in {
 
       val country = completeVatReturn.salesFromNi.map(_.countryOfConsumption).head
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
 
@@ -170,7 +170,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
       val application =
         applicationBuilder(userAnswers = Some(expectedAnswers2))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockService))
           .build()
@@ -191,7 +191,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must save the answer and redirect to the next page when valid data is submitted when the questions have been answered" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
 
@@ -206,7 +206,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
       val application =
         applicationBuilder(userAnswers = Some(expectedAnswers2))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockService))
           .build()
@@ -295,7 +295,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must throw exception when VatReturnConnector returns an Error Response" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
 
@@ -306,7 +306,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
       val application =
         applicationBuilder(userAnswers = Some(expectedAnswers2))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockService))
           .build()
@@ -323,7 +323,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to Journey Recovery when valid data is submitted and Correction Period is not provided" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
 
@@ -333,7 +333,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockService))
           .build()

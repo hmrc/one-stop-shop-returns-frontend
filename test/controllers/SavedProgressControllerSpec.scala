@@ -30,7 +30,7 @@ import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import views.html.SavedProgressView
 
 import java.time.format.DateTimeFormatter
@@ -51,7 +51,7 @@ class SavedProgressControllerSpec extends SpecBase {
 
       val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
       val mockSaveForLaterConnector = mock[SaveForLaterConnector]
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       val savedAnswers = SavedUserAnswers(
         vrn,
@@ -74,7 +74,7 @@ class SavedProgressControllerSpec extends SpecBase {
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
         .overrides(
           bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
-          bind[SessionRepository].toInstance(mockSessionRepository)
+          bind[UserAnswersRepository].toInstance(mockSessionRepository)
         ).build()
 
       running(app) {
@@ -95,7 +95,7 @@ class SavedProgressControllerSpec extends SpecBase {
     "must redirect to Your Account Controller when Save For Later Connector returns ConflictFound" in {
 
       val mockSaveForLaterConnector = mock[SaveForLaterConnector]
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(false)
@@ -103,7 +103,7 @@ class SavedProgressControllerSpec extends SpecBase {
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
               .overrides(
                 bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
-                bind[SessionRepository].toInstance(mockSessionRepository)
+                bind[UserAnswersRepository].toInstance(mockSessionRepository)
               ).build()
 
       running(app) {
@@ -121,7 +121,7 @@ class SavedProgressControllerSpec extends SpecBase {
     "must redirect to Journey Recovery Controller when Save For Later Connector returns Error Response" in {
 
       val mockSaveForLaterConnector = mock[SaveForLaterConnector]
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(false)
@@ -129,7 +129,7 @@ class SavedProgressControllerSpec extends SpecBase {
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
           bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
-          bind[SessionRepository].toInstance(mockSessionRepository)
+          bind[UserAnswersRepository].toInstance(mockSessionRepository)
         ).build()
 
       running(app) {

@@ -25,7 +25,7 @@ import models.requests.RegistrationRequest
 import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import services.{FinancialDataService, VatReturnSalesService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.yourAccount._
@@ -44,7 +44,7 @@ class YourAccountController @Inject()(
                                        vatReturnSalesService: VatReturnSalesService,
                                        view: IndexView,
                                        clock: Clock,
-                                       sessionRepository: SessionRepository
+                                       sessionRepository: UserAnswersRepository
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 

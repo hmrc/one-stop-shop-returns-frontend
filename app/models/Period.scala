@@ -18,7 +18,7 @@ package models
 
 import play.api.i18n.Messages
 import play.api.libs.json._
-import play.api.mvc.PathBindable
+import play.api.mvc.{PathBindable, QueryStringBindable}
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
@@ -78,6 +78,24 @@ object Period {
 
     override def unbind(key: String, value: Period): String =
       value.toString
+  }
+
+  implicit val optionPathBindable: QueryStringBindable[Period] = new QueryStringBindable[Period] {
+    val periodKey = "period"
+    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Period]] =
+      if(key == periodKey) {
+        val period = params.get(key).flatMap(_.headOption.flatMap(fromString))
+        period match {
+          case Some(p) => Some(Right(p))
+          case _ => Some(Left("Invalid period"))
+        }
+      } else {
+        None
+      }
+
+    override def unbind(key: String, value: Period): String = {
+      s"$key=${value.toString}"
+    }
   }
 
   def options(periods: Seq[Period])(implicit messages: Messages): Seq[RadioItem] = periods.zipWithIndex.map {

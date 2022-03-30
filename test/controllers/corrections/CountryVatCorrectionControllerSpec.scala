@@ -33,7 +33,7 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Cou
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import services.VatReturnService
 import services.corrections.CorrectionService
 import views.html.corrections.CountryVatCorrectionView
@@ -46,7 +46,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
   private val mockVatReturnConnector = mock[VatReturnConnector]
   private val mockService = mock[VatReturnService]
   private val mockCorrectionService = mock[CorrectionService]
-  private val mockSessionRepository = mock[SessionRepository]
+  private val mockSessionRepository = mock[UserAnswersRepository]
 
   private val selectedCountry = arbitrary[Country].sample.value
 
@@ -163,7 +163,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
           .build()

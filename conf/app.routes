@@ -305,3 +305,5 @@ GET        /:period/progress-saved                                              
 GET        /return-not-submitted                                                                             controllers.NoRegistrationFoundInCoreController.onPageLoad()
 
 GET        /return-service-down                                                                              controllers.ReceivedErrorFromCoreController.onPageLoad()
+
+POST       /external-entry/:page                                                                             controllers.external.ExternalController.onExternal(page: String, period: Option[Period] ?= None)

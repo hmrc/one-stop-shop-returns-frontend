@@ -24,14 +24,14 @@ import org.mockito.Mockito._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
-  class Harness(period: Period, repository: SessionRepository) extends DataRetrievalAction(period, repository) {
+  class Harness(period: Period, repository: UserAnswersRepository) extends DataRetrievalAction(period, repository) {
 
     def callTransform(request: RegistrationRequest[_]): Future[OptionalDataRequest[_]] =
       transform(request)
@@ -44,7 +44,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
       "must set userAnswers to `None` in the request" in {
 
         val period     = arbitrary[Period].sample.value
-        val repository = mock[SessionRepository]
+        val repository = mock[UserAnswersRepository]
         val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, registration)
 
         when(repository.get(any(), any())) thenReturn Future.successful(None)
@@ -62,7 +62,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
       "must add the userAnswers to the request" in {
 
         val period     = arbitrary[Period].sample.value
-        val repository = mock[SessionRepository]
+        val repository = mock[UserAnswersRepository]
         val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, registration)
 
         when(repository.get(any(), any())) thenReturn Future.successful(Some(emptyUserAnswers))

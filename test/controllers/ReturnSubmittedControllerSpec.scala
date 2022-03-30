@@ -36,7 +36,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.EmailConfirmationQuery
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import services.VatReturnSalesService
 import utils.CurrencyFormatter._
 import views.html.ReturnSubmittedView
@@ -399,7 +399,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
     }
 
     "must clear user-answers on Page Load after return submitted" in {
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       val answers = completeUserAnswers
 
@@ -410,7 +410,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
 
       val app = applicationBuilder(userAnswers = Some(answers))
         .overrides(
-          bind[SessionRepository].toInstance(mockSessionRepository),
+          bind[UserAnswersRepository].toInstance(mockSessionRepository),
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[CorrectionConnector].toInstance(correctionConnector),
         ).build()

@@ -32,7 +32,7 @@ import pages.corrections.CorrectPreviousReturnPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import views.html.corrections.CorrectPreviousReturnView
 
 import scala.concurrent.Future
@@ -89,13 +89,13 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar wit
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
           .build()
 
@@ -173,14 +173,14 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar wit
 
     "must redirect to Journey Recovery for a POST when the Return Status Connector returns an Unexpected Response Status" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
           .build()
 
