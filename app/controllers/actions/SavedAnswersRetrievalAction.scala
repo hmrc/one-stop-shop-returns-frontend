@@ -17,7 +17,7 @@
 package controllers.actions
 
 import connectors.SaveForLaterConnector
-import models.{Period, UserAnswers}
+import models.UserAnswers
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import play.api.mvc.ActionTransformer
 import repositories.UserAnswersRepository

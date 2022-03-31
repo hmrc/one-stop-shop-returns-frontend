@@ -17,14 +17,17 @@
 package controllers.external
 
 import base.SpecBase
+import controllers.actions.{FakeSavedAnswersRetrievalAction, SavedAnswersRetrievalAction}
 import controllers.routes
 import models.SessionData
 import models.external.{ExternalRequest, ExternalResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar.mock
+import pages.SavedProgressPage
 import play.api.http.Status.OK
 import play.api.inject
+import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -60,6 +63,8 @@ class ExternalControllerSpec extends SpecBase {
             val request = FakeRequest(POST, routes.ExternalController.onExternal(yourAccount).url).withJsonBody(
               Json.toJson(externalRequest)
             )
+
+            println(request.uri)
 
             val result = route(application, request).value
             status(result) mustBe OK
@@ -104,7 +109,7 @@ class ExternalControllerSpec extends SpecBase {
             val request = FakeRequest(POST, routes.ExternalController.onExternal(startReturn, Some(period)).url).withJsonBody(
               Json.toJson(externalRequest)
             )
-
+            println(request.uri)
             val result = route(application, request).value
             status(result) mustBe OK
             contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse(controllers.routes.StartReturnController.onPageLoad(period).url)
@@ -118,9 +123,15 @@ class ExternalControllerSpec extends SpecBase {
           when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-          val application = applicationBuilder()
-            .overrides(inject.bind[SessionRepository].toInstance(mockSessionRepository))
+          val answersToContinue = emptyUserAnswers.set(SavedProgressPage, "example").success.value
+
+          val application = applicationBuilder(
+            Some(answersToContinue)
+          ).overrides(
+              bind[SessionRepository].toInstance(mockSessionRepository)
+            )
             .build()
+
 
           running(application) {
             val request = FakeRequest(POST, routes.ExternalController.onExternal(continueReturn, Some(period)).url).withJsonBody(

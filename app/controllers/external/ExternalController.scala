@@ -18,7 +18,7 @@ package controllers.external
 
 import controllers.actions.AuthenticatedControllerComponents
 import models.{Period, SessionData}
-import models.external.{ExternalRequest, ExternalResponse}
+import models.external.{ContinueReturn, ExternalRequest, ExternalResponse, ReturnsHistory, StartReturn, YourAccount}
 import models.responses.NotFound
 import play.api.{Logger, Logging}
 import play.api.libs.json.{JsPath, JsValue, Json}
@@ -38,27 +38,24 @@ class ExternalController @Inject()(
   override protected def controllerComponents: MessagesControllerComponents = cc
 
   val key = (JsPath \ "returnUrl")
-  val yourAccount = "your-account"
-  val returnsHistory = "returns-history"
-  val startReturn = "start-your-return"
-  val continueReturn = "continue-your-return"
 
   def onExternal(page: String, period: Option[Period] = None): Action[JsValue] =  cc.authAndGetSavedAnswers.async(parse.json) {
     implicit request => withJsonBody[ExternalRequest] {
       externalRequest =>
       (page, period) match {
-        case (yourAccount, None) =>
+        case (YourAccount.name, None) =>
           saveReturnUrl(request.userId, externalRequest)
-          Future.successful(Ok(Json.toJson(ExternalResponse(controllers.routes.YourAccountController.onPageLoad().url))))
-        case (returnHistory, None) =>
+          Future.successful(Ok(Json.toJson(ExternalResponse(YourAccount.url))))
+        case (ReturnsHistory.name, None) =>
           saveReturnUrl(request.userId, externalRequest)
-          Future.successful(Ok(Json.toJson(ExternalResponse(controllers.routes.SubmittedReturnsHistoryController.onPageLoad().url))))
-        case (startReturn, Some(returnPeriod)) =>
+          Future.successful(Ok(Json.toJson(ExternalResponse(ReturnsHistory.url))))
+        case (StartReturn.name, Some(returnPeriod)) =>
           saveReturnUrl(request.userId, externalRequest)
-          Future.successful(Ok(Json.toJson(ExternalResponse(controllers.routes.StartReturnController.onPageLoad(returnPeriod).url))))
-        case (continueReturn, Some(returnPeriod)) =>
+          Future.successful(Ok(Json.toJson(ExternalResponse(StartReturn.url(returnPeriod)))))
+        case (ContinueReturn.name, Some(returnPeriod)) =>
           saveReturnUrl(request.userId, externalRequest)
-          Future.successful(Ok(Json.toJson(ExternalResponse(controllers.routes.ContinueReturnController.onPageLoad(returnPeriod).url))))
+          Future.successful(Ok(Json.toJson(ExternalResponse(ContinueReturn.url(returnPeriod)))))
+
         case _ => Future.successful(NotFound)
       }
     }

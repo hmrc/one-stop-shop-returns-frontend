@@ -257,7 +257,8 @@ trait SpecBase
         bind[CheckCommencementDateFilterProvider].toInstance(new FakeCheckCommencementDateFilterProvider()),
         bind[Clock].toInstance(clockToBind),
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider()),
-        bind[CheckMostOverdueReturnFilterProvider].toInstance(new FakeCheckMostOverdueReturnFilterProvider())
+        bind[CheckMostOverdueReturnFilterProvider].toInstance(new FakeCheckMostOverdueReturnFilterProvider()),
+        bind[SavedAnswersRetrievalAction].toInstance(new FakeSavedAnswersRetrievalAction(userAnswers))
       )
   }
 
