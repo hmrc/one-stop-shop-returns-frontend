@@ -17,13 +17,12 @@
 package controllers.external
 
 import controllers.actions.AuthenticatedControllerComponents
+import models.external._
 import models.{Period, SessionData}
-import models.external.{ContinueReturn, ExternalRequest, ExternalResponse, ReturnsHistory, StartReturn, YourAccount}
-import models.responses.NotFound
-import play.api.{Logger, Logging}
+import play.api.Logging
 import play.api.libs.json.{JsPath, JsValue, Json}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.{SessionRepository, UserAnswersRepository}
+import play.api.mvc.{Action, MessagesControllerComponents}
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.controller.WithJsonBody
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
