@@ -38,7 +38,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def requireData: DataRequiredAction
   def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
   def checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider
-  def withSavedAnswers: SavedAnswersRetrievalAction
+  def withSavedAnswers: SavedAnswersRetrievalActionProvider
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -58,7 +58,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def authAndGetDataSimple(period: Period): ActionBuilder[DataRequest, AnyContent] = authAndGetRegistration andThen getData(period) andThen requireData
 
   def authAndGetSavedAnswers: ActionBuilder[OptionalDataRequest, AnyContent] =
-    authAndGetRegistration andThen withSavedAnswers
+    authAndGetRegistration andThen withSavedAnswers()
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
@@ -78,5 +78,5 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                requireData: DataRequiredAction,
                                                                requirePreviousReturns:  CheckSubmittedReturnsFilterProvider,
                                                                checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider,
-                                                               withSavedAnswers: SavedAnswersRetrievalAction
+                                                               withSavedAnswers: SavedAnswersRetrievalActionProvider
                                                              ) extends AuthenticatedControllerComponents

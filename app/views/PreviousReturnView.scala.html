@@ -35,7 +35,8 @@
         totalVatList: Option[SummaryList],
         displayPayNow: Boolean,
         vatOwedInPence: Long,
-        displayBanner: Boolean
+        displayBanner: Boolean,
+        externalUrl: Option[String] = None
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -49,7 +50,7 @@
     <div class="govuk-breadcrumbs" style="margin-bottom:50px;">
         <ol class="govuk-breadcrumbs__list">
             <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad()" id="your-account">@messages("breadcrumbs.yourAccount")</a>
+                <a class="govuk-breadcrumbs__link" href="@{externalUrl.getOrElse(routes.YourAccountController.onPageLoad())}" id="your-account">@messages("breadcrumbs.yourAccount")</a>
             </li>
             <li class="govuk-breadcrumbs__list-item">
                 <a class="govuk-breadcrumbs__link" href="@routes.SubmittedReturnsHistoryController.onPageLoad()" id="submitted-returns">@messages("breadcrumbs.submittedReturns")</a>

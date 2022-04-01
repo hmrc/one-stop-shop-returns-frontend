@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import connectors.VatReturnConnector
 import connectors.financialdata.FinancialDataConnector
-import models.Period
+import models.{Period, SessionData}
 import models.Quarter.{Q1, Q2}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.financialdata.{Charge, VatReturnWithFinancialData}
@@ -33,6 +33,8 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.external.ExternalReturnUrlQuery
+import repositories.SessionRepository
 import services.VatReturnSalesService
 import uk.gov.hmrc.domain.Vrn
 import views.html.SubmittedReturnsHistoryView
@@ -44,7 +46,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
   private val vatReturnConnector = mock[VatReturnConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
-  private val vatReturnsSalesService = mock[VatReturnSalesService]
+  private val sessionRepository = mock[SessionRepository]
 
   private val period1 = Period(2021, Q1)
   private val period2 = Period(2021, Q2)
@@ -57,7 +59,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   private val vatReturnWithFinancialData = VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, None)
 
   override def beforeEach(): Unit = {
-    Mockito.reset(vatReturnConnector)
+    Mockito.reset(vatReturnConnector, sessionRepository)
     super.beforeEach()
   }
 
@@ -67,11 +69,12 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
-
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
@@ -89,10 +92,12 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     "must return OK and correct view with no-returns message when no returns exist" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq.empty))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -112,10 +117,12 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     "must throw an exception when an unexpected result is returned" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -129,10 +136,12 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     "must throw an exception when the connector returns Left(ErrorResponse)" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -147,13 +156,15 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
           vatReturnWithFinancialData.copy(charge = None, vatOwed = 66666)
         ))))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -173,13 +184,15 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
           vatReturnWithFinancialData.copy(charge = None, vatOwed = 0)
         ))))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -201,7 +214,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
@@ -209,6 +223,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           vatReturnWithFinancialData,
           VatReturnWithFinancialData(completeVatReturn2, Some(charge2), vatOwed2, None)
         ))))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -232,7 +247,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     "must return OK and correct view when a correction exists" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         ).build()
 
       val completedCorrectionPayload: CorrectionPayload =
@@ -254,6 +270,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       )
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -265,6 +282,49 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         contentAsString(result) mustEqual view(
           Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, Some(completedCorrectionPayload))),
           displayBanner = false
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and correct view and add the external backToYourAccount url that has been saved" in {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
+        ).build()
+
+      val completedCorrectionPayload: CorrectionPayload =
+        CorrectionPayload(
+          Vrn("063407423"),
+          Period("2086", "Q3").get,
+          List(PeriodWithCorrections(
+            period,
+            Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
+          )),
+          Instant.ofEpochSecond(1630670836),
+          Instant.ofEpochSecond(1630670836)
+        )
+      val vatReturnWithFinancialData = VatReturnWithFinancialData(
+        vatReturn = completeVatReturn,
+        charge = Some(charge),
+        vatOwed = vatOwed,
+        corrections = Some(completedCorrectionPayload)
+      )
+
+      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, "example").get))
+
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, Some(completedCorrectionPayload))),
+          displayBanner = false,
+          Some("example")
         )(request, messages(application)).toString
       }
     }
