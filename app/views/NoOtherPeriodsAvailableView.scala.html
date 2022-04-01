@@ -19,7 +19,7 @@
         govukButton: GovukButton
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("noOtherPeriodsAvailable.title"))) {
 
@@ -29,7 +29,7 @@
 
     @govukButton(
         ButtonViewModel(messages("noOtherPeriodsAvailable.submit"))
-                .asLink(routes.YourAccountController.onPageLoad().url)
+                .asLink(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url))
                 .withAttribute(("id", "back-to-your-account"))
     )
 }

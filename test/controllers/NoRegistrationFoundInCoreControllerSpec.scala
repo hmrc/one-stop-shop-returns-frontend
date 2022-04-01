@@ -17,17 +17,30 @@
 package controllers
 
 import base.SpecBase
+import models.SessionData
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.external.ExternalReturnUrlQuery
+import repositories.SessionRepository
 import views.html.NoRegistrationFoundInCoreView
+
+import scala.concurrent.Future
 
 class NoRegistrationFoundInCoreControllerSpec extends SpecBase {
 
   "NoRegistrationFoundInCore Controller" - {
 
       "must return OK and the correct view for a GET" in {
+        val sessionRepository = mock[SessionRepository]
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val application = applicationBuilder(userAnswers = None)
+          .overrides(inject.bind[SessionRepository].toInstance(sessionRepository))
+          .build()
 
         running(application) {
           val request = FakeRequest(GET, routes.NoRegistrationFoundInCoreController.onPageLoad().url)
@@ -40,6 +53,26 @@ class NoRegistrationFoundInCoreControllerSpec extends SpecBase {
           contentAsString(result) mustEqual view()(request, messages(application)).toString
         }
       }
+
+    "must return OK and the correct view for a GET and add the external backToYourAccount url that has been saved" in {
+      val sessionRepository = mock[SessionRepository]
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, "example").get))
+
+      val application = applicationBuilder(userAnswers = None)
+        .overrides(inject.bind[SessionRepository].toInstance(sessionRepository))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NoRegistrationFoundInCoreController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[NoRegistrationFoundInCoreView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(Some("example"))(request, messages(application)).toString
+      }
+    }
 
   }
 }

@@ -22,6 +22,7 @@ import models.{Period, SessionData}
 import play.api.Logging
 import play.api.libs.json.{JsPath, JsValue, Json}
 import play.api.mvc.{Action, MessagesControllerComponents}
+import queries.external.ExternalReturnUrlQuery
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.controller.WithJsonBody
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -35,8 +36,6 @@ class ExternalController @Inject()(
                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with WithJsonBody with Logging {
 
   override protected def controllerComponents: MessagesControllerComponents = cc
-
-  val key = (JsPath \ "returnUrl")
 
   def onExternal(page: String, period: Option[Period] = None): Action[JsValue] =  cc.authAndGetSavedAnswers.async(parse.json) {
     implicit request => withJsonBody[ExternalRequest] {
@@ -63,7 +62,7 @@ class ExternalController @Inject()(
   private def saveReturnUrl(userId: String, externalRequest: ExternalRequest): Future[Boolean] = {
     for {
       sessionData <- sessionRepository.get(userId)
-      updatedData <- Future.fromTry(sessionData.headOption.getOrElse(SessionData(userId)).set(key, externalRequest.returnUrl))
+      updatedData <- Future.fromTry(sessionData.headOption.getOrElse(SessionData(userId)).set(ExternalReturnUrlQuery.path, externalRequest.returnUrl))
       savedData <- sessionRepository.set(updatedData)
     } yield {
       savedData

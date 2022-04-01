@@ -19,21 +19,30 @@ package controllers
 import controllers.actions.AuthenticatedControllerComponents
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.external.ExternalReturnUrlQuery
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ReceivedErrorFromCoreView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class ReceivedErrorFromCoreController @Inject()(
                                  cc: AuthenticatedControllerComponents,
-                                 view: ReceivedErrorFromCoreView
-                               )
+                                 view: ReceivedErrorFromCoreView,
+                                 sessionRepository: SessionRepository
+                               ) (implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      Ok(view())
+      for{
+        sessionData <- sessionRepository.get(request.userId)
+      } yield {
+        val externalUrl = sessionData.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
+        Ok(view(externalUrl))
+      }
   }
 }
