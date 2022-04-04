@@ -24,6 +24,7 @@ import play.api.libs.json.{JsPath, JsValue, Json}
 import play.api.mvc.{Action, MessagesControllerComponents}
 import queries.external.ExternalReturnUrlQuery
 import repositories.SessionRepository
+import services.external.ExternalService
 import uk.gov.hmrc.play.bootstrap.controller.WithJsonBody
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -31,45 +32,22 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ExternalController @Inject()(
-                                    sessionRepository: SessionRepository,
+                                    externalService: ExternalService,
                                     cc: AuthenticatedControllerComponents
                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with WithJsonBody with Logging {
 
   override protected def controllerComponents: MessagesControllerComponents = cc
 
-  def onExternal(page: String, period: Option[Period] = None): Action[JsValue] =  cc.authAndGetSavedAnswers.async(parse.json) {
-    implicit request => withJsonBody[ExternalRequest] {
+  def onExternal(page: String, period: Option[Period] = None): Action[JsValue] =  cc.auth.async(parse.json) {
+    implicit request =>
+      withJsonBody[ExternalRequest] {
       externalRequest =>
-      (page, period) match {
-        case (YourAccount.name, None) =>
-          saveReturnUrl(request.userId, externalRequest)
-          Future.successful(Ok(Json.toJson(ExternalResponse(YourAccount.url))))
-        case (ReturnsHistory.name, None) =>
-          saveReturnUrl(request.userId, externalRequest)
-          Future.successful(Ok(Json.toJson(ExternalResponse(ReturnsHistory.url))))
-        case (StartReturn.name, Some(returnPeriod)) =>
-          saveReturnUrl(request.userId, externalRequest)
-          Future.successful(Ok(Json.toJson(ExternalResponse(StartReturn.url(returnPeriod)))))
-        case (ContinueReturn.name, Some(returnPeriod)) =>
-          saveReturnUrl(request.userId, externalRequest)
-          Future.successful(Ok(Json.toJson(ExternalResponse(ContinueReturn.url(returnPeriod)))))
-
-        case _ => Future.successful(NotFound)
+      externalService.getExternalResponse(externalRequest, request.userId, page, period) match {
+        case Right(response) => Future.successful(Ok(Json.toJson(response)))
+        case Left(_) => Future.successful(NotFound)
       }
     }
   }
 
-  private def saveReturnUrl(userId: String, externalRequest: ExternalRequest): Future[Boolean] = {
-    for {
-      sessionData <- sessionRepository.get(userId)
-      updatedData <- Future.fromTry(sessionData.headOption.getOrElse(SessionData(userId)).set(ExternalReturnUrlQuery.path, externalRequest.returnUrl))
-      savedData <- sessionRepository.set(updatedData)
-    } yield {
-      savedData
-    }
-  }.recover{
-    case e: Exception =>
-      logger.error(s"An error occurred while saving the external returnUrl in the session, ${e.getMessage}")
-      false
-  }
+
 }
