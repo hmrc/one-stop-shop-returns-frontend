@@ -17,14 +17,11 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.{Period, UserAnswers}
+import models.{SessionData, UserAnswers}
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model._
-import play.api.libs.json.Format
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions, Updates}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.Codecs.JsonOps
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit
@@ -33,39 +30,29 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SessionRepository @Inject()(
-                                   mongoComponent: MongoComponent,
-                                   appConfig: FrontendAppConfig,
-                                   clock: Clock
-                                 )(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[UserAnswers](
-    collectionName = "user-answers",
-    mongoComponent = mongoComponent,
-    domainFormat   = UserAnswers.format,
-    indexes        = Seq(
-      IndexModel(
-        Indexes.ascending("lastUpdated"),
-        IndexOptions()
-          .name("lastUpdatedIdx")
-          .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
-      ),
-      IndexModel(
-        Indexes.ascending("userId", "period"),
-        IndexOptions()
-          .name("userIdAndPeriodIdx")
-          .unique(true)
-      )
+                                  mongoComponent: MongoComponent,
+                                  appConfig: FrontendAppConfig,
+                                  clock: Clock
+                                )(implicit ec: ExecutionContext) extends PlayMongoRepository[SessionData](
+  collectionName = "session-data",
+  mongoComponent = mongoComponent,
+  domainFormat   = SessionData.format,
+  indexes        = Seq(
+    IndexModel(
+      Indexes.ascending("lastUpdated"),
+      IndexOptions()
+        .name("lastUpdatedIdx")
+        .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
+    ),
+    IndexModel(
+      Indexes.ascending("userId"),
+      IndexOptions()
+        .name("userIdIdx")
+        .unique(true)
     )
-  ) {
-
-  implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
-
+  )
+) {
   private def byUserId(userId: String): Bson = Filters.equal("userId", userId)
-
-  private def byUserIdAndPeriod(userId: String, period: Period): Bson =
-    Filters.and(
-      Filters.equal("userId", userId),
-      Filters.equal("period", period.toBson(legacyNumbers = false))
-    )
 
   def keepAlive(userId: String): Future[Boolean] =
     collection
@@ -76,33 +63,25 @@ class SessionRepository @Inject()(
       .toFuture
       .map(_ => true)
 
-  def get(userId: String, period: Period): Future[Option[UserAnswers]] =
-    keepAlive(userId).flatMap {
-      _ =>
-        collection
-          .find(byUserIdAndPeriod(userId, period))
-          .headOption
-    }
-
-  def get(userId: String): Future[Seq[UserAnswers]] =
+  def get(userId: String): Future[Seq[SessionData]] =
     keepAlive(userId).flatMap {
       _ =>
         collection
           .find(byUserId(userId)).toFuture()
     }
 
-  def set(answers: UserAnswers): Future[Boolean] = {
+  def set(sessionData: SessionData): Future[Boolean] = {
 
-    val updatedAnswers = answers copy (lastUpdated = Instant.now(clock))
+    val updatedSessionData = sessionData copy (lastUpdated = Instant.now(clock))
 
     collection
       .replaceOne(
-        filter      = byUserIdAndPeriod(updatedAnswers.userId, answers.period),
-        replacement = updatedAnswers,
+        filter      = byUserId(updatedSessionData.userId),
+        replacement = updatedSessionData,
         options     = ReplaceOptions().upsert(true)
       )
       .toFuture
-      .map(_ => true)
+      .map(_.wasAcknowledged())
   }
 
   def clear(userId: String): Future[Boolean] =
@@ -110,4 +89,5 @@ class SessionRepository @Inject()(
       .deleteOne(byUserId(userId))
       .toFuture
       .map(_ => true)
+
 }

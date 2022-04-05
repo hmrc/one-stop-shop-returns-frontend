@@ -25,7 +25,7 @@ import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.financialdata.Charge
 import models.responses.{UnexpectedResponseStatus, NotFound => NotFoundResponse}
-import models.{Country, Period}
+import models.{Country, Period, SessionData}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -38,6 +38,8 @@ import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.external.ExternalReturnUrlQuery
+import repositories.SessionRepository
 import services.VatReturnSalesService
 import viewmodels.govuk.summarylist._
 import viewmodels.previousReturn.corrections.CorrectionSummary
@@ -52,12 +54,14 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
   private val vatReturnSalesService = mock[VatReturnSalesService]
   private val vatReturnsPaymentConnector = mock[FinancialDataConnector]
   private val correctionConnector = mock[CorrectionConnector]
+  private val sessionRepository = mock[SessionRepository]
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
     Mockito.reset(vatReturnSalesService)
     Mockito.reset(vatReturnsPaymentConnector)
     Mockito.reset(correctionConnector)
+    Mockito.reset(sessionRepository)
     super.beforeEach()
   }
 
@@ -83,7 +87,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[VatReturnSalesService].toInstance(vatReturnSalesService),
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         )
         .build()
 
@@ -109,6 +114,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
       when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSalesBeforeCorrection
       when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSalesAfterCorrection
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, previousReturnRoute)
@@ -148,7 +154,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[VatReturnSalesService].toInstance(vatReturnSalesService),
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         )
         .build()
 
@@ -167,6 +174,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
       when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, previousReturnRoute)
@@ -206,7 +214,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[VatReturnSalesService].toInstance(vatReturnSalesService),
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         )
         .build()
 
@@ -220,6 +229,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
       when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn zero
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, previousReturnRoute)
@@ -259,7 +269,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[VatReturnSalesService].toInstance(vatReturnSalesService),
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         )
         .build()
 
@@ -278,6 +289,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
       when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, previousReturnRoute)
@@ -317,7 +329,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[VatReturnSalesService].toInstance(vatReturnSalesService),
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         )
         .build()
 
@@ -333,6 +346,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
       when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, previousReturnRoute)
@@ -374,7 +388,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[VatReturnSalesService].toInstance(vatReturnSalesService),
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         )
         .build()
 
@@ -384,6 +399,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
       when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, previousReturnRoute)
@@ -402,7 +418,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[VatReturnSalesService].toInstance(vatReturnSalesService),
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         )
         .build()
 
@@ -412,6 +429,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
       when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, previousReturnRoute)
@@ -430,7 +448,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[VatReturnSalesService].toInstance(vatReturnSalesService),
           bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         )
         .build()
 
@@ -440,6 +459,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
       when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, previousReturnRoute)
@@ -448,6 +468,74 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must return OK and the correct view for a GET with no banner and add the external backToYourAccount url that has been saved" in {
+
+      val application = applicationBuilder(Some(baseAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+          bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
+        )
+        .build()
+
+      val netSalesFromNi = BigDecimal(4141)
+      val netSalesFromEu = BigDecimal(2333)
+      val vatOnSalesFromNi = BigDecimal(55)
+      val vatOnSalesFromEu = BigDecimal(44)
+      val correctionAmount = BigDecimal(25)
+      val totalVatOnSalesBeforeCorrection = vatOnSalesFromNi + vatOnSalesFromEu
+      val totalVatOnSalesAfterCorrection = totalVatOnSalesBeforeCorrection + correctionAmount
+
+      val clearedAmount = BigDecimal(3333.33)
+      val outstandingAmount = BigDecimal(2247.22)
+
+      val charge = Charge(Period(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(Some(charge)))
+      when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
+      when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
+      when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
+      when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+      when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSalesBeforeCorrection
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSalesAfterCorrection
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, "example").get))
+
+      running(application) {
+        val request = FakeRequest(GET, previousReturnRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[PreviousReturnView]
+        implicit val msgs: Messages = messages(application)
+        val summaryList = SummaryListViewModel(
+          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSalesAfterCorrection, Some(clearedAmount), Some(outstandingAmount)))
+        val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
+        val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
+        val totalVatSummaryList = SummaryListViewModel(
+          rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection, hasCorrections = true))
+        val displayPayNow = true
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          vatReturn = vatReturn,
+          mainList = summaryList,
+          niSalesList = niSalesList,
+          euSalesList = euSalesList,
+          correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(Some(correctionPayload)),
+          declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(Some(correctionPayload), vatReturn),
+          totalVatList = Some(totalVatSummaryList),
+          displayPayNow = displayPayNow,
+          vatOwedInPence = (charge.outstandingAmount * 100).toLong,
+          displayBanner = false,
+          Some("example")
+        )(request, implicitly).toString
       }
     }
   }

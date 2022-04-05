@@ -26,7 +26,7 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Cou
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import views.html.corrections.RemovePeriodCorrectionView
 
 import scala.concurrent.Future
@@ -76,7 +76,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
     "must save the answer and redirect to CorrectPreviousReturn page when true is submitted with a single correction period" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -86,7 +86,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
       val application =
         applicationBuilder(userAnswers = Some(answers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -105,7 +105,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
     "must save the answer and redirect to VatPeriodCorrectionsList page when true is submitted and there are multiple periods" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
@@ -117,7 +117,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
       val application =
         applicationBuilder(userAnswers = Some(answers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -138,7 +138,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
     "must not change the answer and redirect to the next page when false is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
@@ -147,7 +147,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
       val application =
         applicationBuilder(userAnswers = Some(answers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {

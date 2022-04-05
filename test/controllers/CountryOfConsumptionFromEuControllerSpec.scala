@@ -26,7 +26,7 @@ import pages.{CountryOfConsumptionFromEuPage, CountryOfSaleFromEuPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import uk.gov.hmrc.govukfrontend.views.viewmodels.select.SelectItem
 import views.html.CountryOfConsumptionFromEuView
 
@@ -114,13 +114,13 @@ class CountryOfConsumptionFromEuControllerSpec extends SpecBase with MockitoSuga
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = Some(baseAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {

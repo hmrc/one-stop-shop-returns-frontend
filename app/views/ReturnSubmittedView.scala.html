@@ -27,7 +27,8 @@
     email: String,
     displayPayNow: Boolean,
     amountInPence: Long,
-    overdueReturn: Boolean
+    overdueReturn: Boolean,
+    externalUrl: Option[String] = None
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {
@@ -69,7 +70,7 @@
         }
 
         <p class="govuk-body">
-            <a href="@routes.YourAccountController.onPageLoad()" class="govuk-link" id="back-to-your-account">@messages("returnSubmitted.backToAccount.link.text")</a>
+            <a href="@{externalUrl.getOrElse(routes.YourAccountController.onPageLoad())}" class="govuk-link" id="back-to-your-account">@messages("returnSubmitted.backToAccount.link.text")</a>
         </p>
     </div>
 }

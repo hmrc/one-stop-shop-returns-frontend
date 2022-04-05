@@ -25,7 +25,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import views.html.DeleteReturnView
 
 import scala.concurrent.Future
@@ -74,7 +74,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must redirect to the Your Account page and delete answers if the answer is Yes" in {
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
       val save4LaterConnector = mock[SaveForLaterConnector]
 
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
@@ -82,7 +82,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[UserAnswersRepository].toInstance(mockSessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           )
           .build()

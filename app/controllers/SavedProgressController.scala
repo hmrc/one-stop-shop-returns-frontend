@@ -26,6 +26,8 @@ import models.responses.ConflictFound
 import pages.SavedProgressPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.external.ExternalReturnUrlQuery
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SavedProgressView
 
@@ -39,7 +41,8 @@ class SavedProgressController @Inject()(
                                          cc: AuthenticatedControllerComponents,
                                          view: SavedProgressView,
                                          connector: SaveForLaterConnector,
-                                         appConfig: FrontendAppConfig
+                                         appConfig: FrontendAppConfig,
+                                         sessionRepository: SessionRepository
                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -52,17 +55,22 @@ class SavedProgressController @Inject()(
       Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl)).flatMap {
         updatedAnswers =>
           val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, period)
-
-          connector.submit(s4LRequest).flatMap {
-            case Right(Some(_: SavedUserAnswers)) =>
+          (for{
+            sessionData <- sessionRepository.get(request.userId)
+            s4laterResult <- connector.submit(s4LRequest)
+          } yield {
+            val externalUrl = sessionData.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
+            (s4laterResult, externalUrl)
+          }).flatMap {
+            case (Right(Some(_: SavedUserAnswers)), externalUrl) =>
               for {
                 _ <- cc.sessionRepository.set(updatedAnswers)
               } yield {
-                Ok(view(period, answersExpiry, continueUrl))
+                Ok(view(period, answersExpiry, continueUrl, externalUrl))
               }
-            case Left(ConflictFound) =>
-              Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
-            case Left(e) =>
+            case (Left(ConflictFound), externalUrl)=>
+              Future.successful(Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url)))
+            case (Left(e), _) =>
               logger.error(s"Unexpected result on submit: ${e.toString}")
               Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
           }

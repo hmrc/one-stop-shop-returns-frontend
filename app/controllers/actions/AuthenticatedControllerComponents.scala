@@ -21,7 +21,7 @@ import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest, Reg
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
 import play.api.mvc._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -29,7 +29,7 @@ import scala.concurrent.ExecutionContext
 trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def actionBuilder: DefaultActionBuilder
-  def sessionRepository: SessionRepository
+  def sessionRepository: UserAnswersRepository
   def identify: IdentifierAction
   def getRegistration: GetRegistrationAction
   def checkCommencementDate: CheckCommencementDateFilterProvider
@@ -38,6 +38,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def requireData: DataRequiredAction
   def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
   def checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider
+  def withSavedAnswers: SavedAnswersRetrievalActionProvider
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -55,6 +56,9 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     authAndGetData(period) andThen requirePreviousReturns()
 
   def authAndGetDataSimple(period: Period): ActionBuilder[DataRequest, AnyContent] = authAndGetRegistration andThen getData(period) andThen requireData
+
+  def authAndGetSavedAnswers: ActionBuilder[OptionalDataRequest, AnyContent] =
+    authAndGetRegistration andThen withSavedAnswers()
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
@@ -65,7 +69,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                langs: Langs,
                                                                fileMimeTypes: FileMimeTypes,
                                                                executionContext: ExecutionContext,
-                                                               sessionRepository: SessionRepository,
+                                                               sessionRepository: UserAnswersRepository,
                                                                identify: IdentifierAction,
                                                                getRegistration: GetRegistrationAction,
                                                                checkCommencementDate: CheckCommencementDateFilterProvider,
@@ -73,5 +77,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,
                                                                requirePreviousReturns:  CheckSubmittedReturnsFilterProvider,
-                                                               checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider
+                                                               checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider,
+                                                               withSavedAnswers: SavedAnswersRetrievalActionProvider
                                                              ) extends AuthenticatedControllerComponents

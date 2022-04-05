@@ -22,7 +22,7 @@
         appConfig: FrontendAppConfig
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("notRegisteredCore.title")), showBackLink = false) {
 
@@ -38,6 +38,6 @@
 
 
     <p class="govuk-body">
-        <a href="@routes.YourAccountController.onPageLoad()" id="backToYourAccount">@messages("notRegisteredCore.your.account")</a>
+        <a href="@{externalUrl.getOrElse(routes.YourAccountController.onPageLoad())}" id="backToYourAccount">@messages("notRegisteredCore.your.account")</a>
     </p>
 }

@@ -28,7 +28,7 @@ import pages.{CountryOfConsumptionFromNiPage, StartReturnPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import views.html.StartReturnView
 
 import scala.concurrent.Future
@@ -96,7 +96,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must clear useranswers when answer is no" in {
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
 
@@ -105,7 +105,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
       val answers = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), country).success.value
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+        .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
         .build()
 
       running(application) {

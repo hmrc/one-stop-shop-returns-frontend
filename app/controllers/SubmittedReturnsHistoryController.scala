@@ -23,6 +23,8 @@ import models.financialdata.VatReturnWithFinancialData
 import models.responses.ErrorResponse
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.external.ExternalReturnUrlQuery
+import repositories.SessionRepository
 import services.VatReturnSalesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmittedReturnsHistoryView
@@ -34,7 +36,7 @@ class SubmittedReturnsHistoryController @Inject()(
                                                    cc: AuthenticatedControllerComponents,
                                                    view: SubmittedReturnsHistoryView,
                                                    financialDataConnector: FinancialDataConnector,
-                                                   vatReturnSalesService: VatReturnSalesService
+                                                   sessionRepository: SessionRepository
                                                  )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -44,24 +46,32 @@ class SubmittedReturnsHistoryController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-
-      financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate).map {
-        case Right(vatReturnsWithFinancialData) =>
-          val displayBanner = {
-            if (vatReturnsWithFinancialData.nonEmpty) {
-              vatReturnsWithFinancialData.exists { data =>
-                data.showUpdating
+      for{
+        sessionData <- sessionRepository.get(request.userId)
+        financialDataResponse <- financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate)
+      } yield {
+        val externalUrl = sessionData.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
+        financialDataResponse match {
+          case Right(vatReturnsWithFinancialData) =>
+            val displayBanner = {
+              if (vatReturnsWithFinancialData.nonEmpty) {
+                vatReturnsWithFinancialData.exists { data =>
+                  data.showUpdating
+                }
+              } else {
+                false
               }
-            } else {
-              false
             }
-          }
 
-          Ok(view(vatReturnsWithFinancialData, displayBanner))
-        case Left(e) =>
-          logger.error(s"There were some errors: $e")
-          throw new Exception(s"$e")
+            Ok(view(vatReturnsWithFinancialData, displayBanner, externalUrl))
+          case Left(e) =>
+            logger.error(s"There were some errors: $e")
+            throw new Exception(s"$e")
+
+        }
       }
+
+
 
   }
 }

@@ -24,7 +24,7 @@ import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.mvc.PathBindable
+import play.api.mvc.{PathBindable, QueryStringBindable}
 
 import java.time.Month._
 import java.time.{Clock, Instant, LocalDate, ZoneId}
@@ -37,22 +37,46 @@ class PeriodSpec
     with EitherValues {
 
   private val pathBindable = implicitly[PathBindable[Period]]
+  private val queryBindable = implicitly[QueryStringBindable[Period]]
 
   "Period" - {
+    "pathBindable" - {
+      "must bind from a URL" in {
 
-    "must bind from a URL" in {
+        forAll(arbitrary[Period]) {
+          period =>
 
-      forAll(arbitrary[Period]) {
-        period =>
+            pathBindable.bind("key", period.toString).value mustEqual period
+        }
+      }
 
-          pathBindable.bind("key", period.toString).value mustEqual period
+      "must not bind from an invalid value" in {
+
+        pathBindable.bind("key", "invalid").left.value mustEqual "Invalid period"
       }
     }
 
-    "must not bind from an invalid value" in {
+    "queryBindable" - {
+      "must bind from a query parameter when valid period present" in {
 
-      pathBindable.bind("key", "invalid").left.value mustEqual "Invalid period"
+        forAll(arbitrary[Period]) {
+          period =>
+
+            queryBindable.bind("key", Map("key" -> Seq(period.toString))) mustBe Some(Right(period))
+        }
+      }
+
+      "must not bind from an invalid value" in {
+
+        queryBindable.bind("key", Map("key" -> Seq("invalid"))) mustBe Some(Left("Invalid period"))
+      }
+
+      "must return none if no query parameter present" in {
+         queryBindable.bind("key", Map("key" -> Seq.empty)) mustBe None
+      }
     }
+
+
   }
 
   ".firstDay" - {

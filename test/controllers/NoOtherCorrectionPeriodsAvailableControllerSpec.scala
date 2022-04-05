@@ -25,7 +25,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import views.html.corrections.NoOtherCorrectionPeriodsAvailableView
 
 import scala.concurrent.Future
@@ -34,7 +34,7 @@ class NoOtherCorrectionPeriodsAvailableControllerSpec extends SpecBase with Befo
 
   private lazy val NoOtherCorrectionPeriodsAvailableRoute = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(period).url
 
-  val mockSessionRepository = mock[SessionRepository]
+  val mockSessionRepository = mock[UserAnswersRepository]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockSessionRepository)
@@ -65,7 +65,7 @@ class NoOtherCorrectionPeriodsAvailableControllerSpec extends SpecBase with Befo
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[SessionRepository].toInstance(mockSessionRepository)
+          bind[UserAnswersRepository].toInstance(mockSessionRepository)
         ).build()
 
       running(application) {
@@ -98,7 +98,7 @@ class NoOtherCorrectionPeriodsAvailableControllerSpec extends SpecBase with Befo
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[SessionRepository].toInstance(mockSessionRepository)
+          bind[UserAnswersRepository].toInstance(mockSessionRepository)
         ).build()
 
       running(application) {

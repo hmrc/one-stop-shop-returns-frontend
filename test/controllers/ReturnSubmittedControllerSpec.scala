@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
-import models.ReturnReference
+import models.{ReturnReference, SessionData}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.responses.NotFound
@@ -36,7 +36,8 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.EmailConfirmationQuery
-import repositories.SessionRepository
+import queries.external.ExternalReturnUrlQuery
+import repositories.{SessionRepository, UserAnswersRepository}
 import services.VatReturnSalesService
 import utils.CurrencyFormatter._
 import views.html.ReturnSubmittedView
@@ -49,11 +50,13 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
   private val vatReturnConnector = mock[VatReturnConnector]
   private val vatReturnSalesService = mock[VatReturnSalesService]
   private val correctionConnector = mock[CorrectionConnector]
+  private val sessionRepository = mock[SessionRepository]
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
     Mockito.reset(vatReturnSalesService)
     Mockito.reset(correctionConnector)
+    Mockito.reset(sessionRepository)
     super.beforeEach()
   }
 
@@ -76,7 +79,8 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
 
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[CorrectionConnector].toInstance(correctionConnector)
+            bind[CorrectionConnector].toInstance(correctionConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
           )
           .build()
 
@@ -85,6 +89,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq.empty))
 
         running(app) {
           val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
@@ -122,7 +127,8 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
           .overrides(
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[CorrectionConnector].toInstance(correctionConnector)
+            bind[CorrectionConnector].toInstance(correctionConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
           )
           .build()
 
@@ -131,6 +137,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq.empty))
 
         running(app) {
           val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
@@ -169,7 +176,8 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
           .overrides(
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[CorrectionConnector].toInstance(correctionConnector)
+            bind[CorrectionConnector].toInstance(correctionConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
           )
           .build()
 
@@ -178,6 +186,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq.empty))
 
         running(app) {
           val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
@@ -209,12 +218,14 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
           .overrides(
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[CorrectionConnector].toInstance(correctionConnector)
+            bind[CorrectionConnector].toInstance(correctionConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
           )
           .build()
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq.empty))
 
         running(app) {
           val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
@@ -241,7 +252,8 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
           .overrides(
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[CorrectionConnector].toInstance(correctionConnector)
+            bind[CorrectionConnector].toInstance(correctionConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
           )
           .build()
 
@@ -250,6 +262,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq.empty))
 
         running(app) {
           val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
@@ -289,7 +302,8 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
           .overrides(
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[CorrectionConnector].toInstance(correctionConnector)
+            bind[CorrectionConnector].toInstance(correctionConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
           )
           .build()
 
@@ -298,6 +312,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq.empty))
 
         running(app) {
           val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
@@ -338,7 +353,8 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
           .overrides(
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[CorrectionConnector].toInstance(correctionConnector)
+            bind[CorrectionConnector].toInstance(correctionConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
           )
           .build()
 
@@ -347,6 +363,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn vatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq.empty))
 
         running(app) {
           val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
@@ -381,12 +398,14 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
           .overrides(
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[CorrectionConnector].toInstance(correctionConnector)
+            bind[CorrectionConnector].toInstance(correctionConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
           )
           .build()
 
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq.empty))
 
         running(app) {
           val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
@@ -399,20 +418,22 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
     }
 
     "must clear user-answers on Page Load after return submitted" in {
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
 
       val answers = completeUserAnswers
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+      when(sessionRepository.get(any())) thenReturn(Future.successful(Seq.empty))
 
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
 
       val app = applicationBuilder(userAnswers = Some(answers))
         .overrides(
-          bind[SessionRepository].toInstance(mockSessionRepository),
+          bind[UserAnswersRepository].toInstance(mockSessionRepository),
           bind[VatReturnConnector].toInstance(vatReturnConnector),
           bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
         ).build()
 
       running(app) {
@@ -426,6 +447,54 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
       }
     }
 
-    "must throw an exception when "
+    "must add the external backToYourAccount url that has been saved" in {
+      val instant = Instant.parse("2021-10-30T00:00:00.00Z")
+      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+      val userAnswersWithEmail =
+        emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
+
+      val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+        .overrides(
+
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+          bind[CorrectionConnector].toInstance(correctionConnector),
+          bind[SessionRepository].toInstance(sessionRepository)
+        )
+        .build()
+
+      val vatOnSales = BigDecimal(0)
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn vatOnSales
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+      when(sessionRepository.get(any())) thenReturn(Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, "example").get)))
+
+      running(app) {
+        val request = FakeRequest(GET, routes.ReturnSubmittedController.onPageLoad(period).url)
+
+        val result = route(app, request).value
+
+        val view = app.injector.instanceOf[ReturnSubmittedView]
+        val returnReference = ReturnReference(vrn, period)
+        val vatOwed = currencyFormat(vatOnSales)
+
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual
+          view(
+            period,
+            returnReference,
+            vatOwed,
+            true,
+            registration.contactDetails.emailAddress,
+            false,
+            (vatOnSales * 100).toLong,
+            false,
+            Some("example")
+          )(request, messages(app)).toString
+      }
+    }
   }
 }

@@ -22,7 +22,7 @@
         appConfig: FrontendAppConfig
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("errorFromCore.title")), showBackLink = false) {
 
@@ -40,7 +40,7 @@
 
 @govukButton(
 ButtonViewModel(messages("errorFromCore.your.account"))
-.asLink(routes.YourAccountController.onPageLoad().url)
+.asLink(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url))
 .withAttribute(("id", "backToYourAccount"))
 )
 }

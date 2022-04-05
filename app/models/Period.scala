@@ -18,7 +18,7 @@ package models
 
 import play.api.i18n.Messages
 import play.api.libs.json._
-import play.api.mvc.PathBindable
+import play.api.mvc.{PathBindable, QueryStringBindable}
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
@@ -29,12 +29,12 @@ import scala.util.matching.Regex
 
 case class Period(year: Int, quarter: Quarter) {
 
-  val firstDay: LocalDate        = LocalDate.of(year, quarter.startMonth, 1)
-  val lastDay: LocalDate         = firstDay.plusMonths(3).minusDays(1)
+  val firstDay: LocalDate = LocalDate.of(year, quarter.startMonth, 1)
+  val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
   val paymentDeadline: LocalDate = firstDay.plusMonths(4).minusDays(1)
 
   private val firstDayFormatter = DateTimeFormatter.ofPattern("d MMMM")
-  private val lastDayFormatter  = DateTimeFormatter.ofPattern("d MMMM yyyy")
+  private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
 
   def displayText(implicit messages: Messages): String =
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
@@ -54,7 +54,7 @@ object Period {
 
   def apply(yearString: String, quarterString: String): Try[Period] =
     for {
-      year    <- Try(yearString.toInt)
+      year <- Try(yearString.toInt)
       quarter <- Quarter.fromString(quarterString)
     } yield Period(year, quarter)
 
@@ -73,19 +73,35 @@ object Period {
     override def bind(key: String, value: String): Either[String, Period] =
       fromString(value) match {
         case Some(period) => Right(period)
-        case None         => Left("Invalid period")
+        case None => Left("Invalid period")
       }
 
     override def unbind(key: String, value: Period): String =
       value.toString
   }
 
-  def options(periods: Seq[Period])(implicit messages: Messages): Seq[RadioItem] = periods.zipWithIndex.map {
-    case (value, index) =>
-      RadioItem(
-        content = Text(value.displayText),
-        value   = Some(value.toString),
-        id      = Some(s"value_$index")
-      )
+  implicit val queryBindable: QueryStringBindable[Period] = new QueryStringBindable[Period] {
+    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Period]] = {
+      params.get(key).flatMap(_.headOption).map{
+        periodString =>
+          fromString(periodString) match {
+            case Some(period) => Right(period)
+            case _ => Left("Invalid period")
+          }
+      }
+    }
+
+      override def unbind(key: String, value: Period): String = {
+        s"$key=${value.toString}"
+      }
+    }
+
+    def options(periods: Seq[Period])(implicit messages: Messages): Seq[RadioItem] = periods.zipWithIndex.map {
+      case (value, index) =>
+        RadioItem(
+          content = Text(value.displayText),
+          value = Some(value.toString),
+          id = Some(s"value_$index")
+        )
+    }
   }
-}

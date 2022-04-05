@@ -19,14 +19,14 @@ package controllers.actions
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import models.{Period, UserAnswers}
 import org.scalatestplus.mockito.MockitoSugar.mock
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers])
   extends DataRetrievalAction(
     mock[Period],
-    mock[SessionRepository]
+    mock[UserAnswersRepository]
   )(ExecutionContext.Implicits.global) {
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] =
@@ -34,7 +34,7 @@ class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers])
 }
 
 class FakeDataRetrievalActionProvider(dataToReturn: Option[UserAnswers])
-  extends DataRetrievalActionProvider(mock[SessionRepository])(ExecutionContext.Implicits.global) {
+  extends DataRetrievalActionProvider(mock[UserAnswersRepository])(ExecutionContext.Implicits.global) {
 
   override def apply(period: Period): DataRetrievalAction =
     new FakeDataRetrievalAction(dataToReturn)

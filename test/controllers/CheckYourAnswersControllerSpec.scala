@@ -42,7 +42,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.EmailConfirmationQuery
-import repositories.{CachedVatReturnRepository, SessionRepository}
+import repositories.{CachedVatReturnRepository, UserAnswersRepository}
 import services.corrections.CorrectionService
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import viewmodels.govuk.SummaryListFluency
@@ -230,7 +230,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         }
 
         "must audit the event and redirect to the next page and successfully send email confirmation" in {
-          val mockSessionRepository = mock[SessionRepository]
+          val mockSessionRepository = mock[UserAnswersRepository]
 
           val answers = completeUserAnswers
 
@@ -253,7 +253,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               bind[SalesAtVatRateService].toInstance(salesAtVatRateService),
               bind[AuditService].toInstance(auditService),
               bind[EmailService].toInstance(emailService),
-              bind[SessionRepository].toInstance(mockSessionRepository),
+              bind[UserAnswersRepository].toInstance(mockSessionRepository),
               bind[SaveForLaterConnector].toInstance(s4lConnector)
             )
             .build()
@@ -320,7 +320,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         }
 
         "must audit the event and redirect to the next page and successfully send email confirmation" in {
-          val mockSessionRepository = mock[SessionRepository]
+          val mockSessionRepository = mock[UserAnswersRepository]
 
           val answers =
             completeUserAnswersWithCorrections
@@ -346,7 +346,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               bind[SalesAtVatRateService].toInstance(salesAtVatRateService),
               bind[AuditService].toInstance(auditService),
               bind[EmailService].toInstance(emailService),
-              bind[SessionRepository].toInstance(mockSessionRepository),
+              bind[UserAnswersRepository].toInstance(mockSessionRepository),
               bind[SaveForLaterConnector].toInstance(s4lConnector)
             )
             .build()

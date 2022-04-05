@@ -27,7 +27,7 @@ import pages.{CountryOfConsumptionFromNiPage, VatRatesFromNiPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 import services.VatRateService
 import views.html.VatRatesFromNiView
 
@@ -80,7 +80,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must skip this page (303 SEE_OTHER) if there is only 1 selection and update user answers" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatRateService    = mock[VatRateService]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
@@ -89,7 +89,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(answersWithCountry))
           .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[UserAnswersRepository].toInstance(mockSessionRepository),
             bind[VatRateService].toInstance(mockVatRateService)
           )
           .build()
@@ -128,7 +128,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatRateService    = mock[VatRateService]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
@@ -137,7 +137,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(answersWithCountry))
           .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[UserAnswersRepository].toInstance(mockSessionRepository),
             bind[VatRateService].toInstance(mockVatRateService)
           )
           .build()

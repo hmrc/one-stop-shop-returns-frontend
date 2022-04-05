@@ -19,12 +19,12 @@ package controllers.actions
 import models.Period
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import play.api.mvc.ActionTransformer
-import repositories.SessionRepository
+import repositories.UserAnswersRepository
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DataRetrievalAction (period: Period, repository: SessionRepository)
+class DataRetrievalAction (period: Period, repository: UserAnswersRepository)
                           (implicit val executionContext: ExecutionContext)
   extends ActionTransformer[RegistrationRequest, OptionalDataRequest] {
 
@@ -34,7 +34,7 @@ class DataRetrievalAction (period: Period, repository: SessionRepository)
     }
 }
 
-class DataRetrievalActionProvider @Inject()(repository: SessionRepository)
+class DataRetrievalActionProvider @Inject()(repository: UserAnswersRepository)
                                            (implicit ec: ExecutionContext) {
 
   def apply(period: Period): DataRetrievalAction =
