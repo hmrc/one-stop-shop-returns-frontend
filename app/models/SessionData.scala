@@ -68,7 +68,7 @@ object SessionData {
     import play.api.libs.functional.syntax._
 
     (
-      (__ \ "userId").read[String] and
+        (__ \ "userId").read[String] and
         (__ \ "data").read[JsObject] and
         (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
       ) (SessionData.apply _)
@@ -79,7 +79,7 @@ object SessionData {
     import play.api.libs.functional.syntax._
 
     (
-      (__ \ "userId").write[String] and
+        (__ \ "userId").write[String] and
         (__ \ "data").write[JsObject] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
       ) (unlift(SessionData.unapply))

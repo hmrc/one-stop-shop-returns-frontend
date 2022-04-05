@@ -98,7 +98,7 @@ class PreviousReturnController @Inject()(
           displayPayNow = displayPayNow,
           vatOwedInPence = vatOwedInPence,
           displayBanner = displayBanner,
-          externalUrl
+          externalUrl = externalUrl
         ))
 
       case (Left(NotFoundResponse), _, _, sessionData) =>
