@@ -30,13 +30,13 @@
             </dt>
             <dd class="hmrc-add-to-a-list__change">
                 <a class="govuk-link" href="@item.changeUrl">
-                    <span aria-hidden="true">@messages("site.change")</span>
+                    @messages("site.change")
                     <span class="govuk-visually-hidden">@messages(changePrefix, item.name)</span>
                 </a>
             </dd>
             <dd class="hmrc-add-to-a-list__remove">
                 <a class="govuk-link" href="@item.removeUrl">
-                    <span aria-hidden="true">@messages("site.remove")</span>
+                    @messages("site.remove")
                     <span class="govuk-visually-hidden">@messages(removePrefix, item.name)</span>
                 </a>
             </dd>

@@ -58,7 +58,7 @@ else {
                 </div>
             }
 
-            @addToList(periodList, itemSize = Long, "vatPeriodCorrectionsList.change.hidden", "vatPeriodCorrectionsList.remove.hidden")
+            @addToList(periodList, itemSize = Long, "", "")
 
             @if(incompletePeriods.isEmpty) {
                 @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(mode, period, false), 'autoComplete -> "off") {

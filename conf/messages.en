@@ -145,8 +145,8 @@ salesFromNiList.heading = You added sales from Northern Ireland to {0} EU countr
 salesFromNiList.hint = You must tell us about all of your eligible sales.
 salesFromNiList.maximumReached = You have added sales from Northern Ireland to every EU country
 salesFromNiList.error.required = Select yes if you need to add sales from Northern Ireland to another EU country
-salesFromNiList.change.hidden = Change sales from Northern Ireland to {0}
-salesFromNiList.remove.hidden = Remove sales from Northern Ireland to {0}
+salesFromNiList.change.hidden = sales from Northern Ireland to {0}
+salesFromNiList.remove.hidden = sales from Northern Ireland to {0}
 salesFromNiList.addAnother = Add sales from Northern Ireland to another EU country?
 
 countryOfConsumptionFromEu.title = Where did you sell to from {0}?
@@ -201,8 +201,8 @@ salesToEuList.heading = You added sales from {0} to {1} EU countries
 salesToEuList.hint = You must tell us about all of your eligible sales.
 salesToEuList.maximumReached = You have added sales from {0} to every other EU country
 salesToEuList.error.required = Select yes if you need to add sales from {0} to another EU country
-salesToEuList.change.hidden = Change sales from {0} to {1}
-salesToEuList.remove.hidden = Remove sales from {0} to {1}
+salesToEuList.change.hidden = sales from {0} to {1}
+salesToEuList.remove.hidden = sales from {0} to {1}
 salesToEuList.addAnother = Add sales from {0} to another EU country?
 
 checkYourAnswers.title = Check your answers
@@ -230,8 +230,8 @@ salesFromEuList.heading = You added sales from {0} EU countries
 salesFromEuList.hint = You must tell us about all of your eligible sales.
 salesFromEuList.maximumReached = You have added sales from every EU country
 salesFromEuList.error.required = Select yes if you need to add sales from another EU country
-salesFromEuList.change.hidden = Change sales from {0}
-salesFromEuList.remove.hidden = Remove sales from {0}
+salesFromEuList.change.hidden = sales from {0}
+salesFromEuList.remove.hidden = sales from {0}
 salesFromEuList.addAnother = Add sales from another EU country?
 
 returnSubmitted.title = Return submitted
@@ -418,19 +418,17 @@ vatCorrectionsList.addAnother = Add corrections to VAT for another EU country?
 vatCorrectionsList.maximumReached = You have added corrections to every EU country
 vatCorrectionsList.correctionAmount = Correction amount
 vatCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another EU country
-vatCorrectionsList.change.hidden = Change {0}
-vatCorrectionsList.remove.hidden = Remove {0}
+vatCorrectionsList.change.hidden = {0}
+vatCorrectionsList.remove.hidden = {0}
 
 vatPeriodCorrectionsList.title = You have corrected the VAT amount for {0} return periods
 vatPeriodCorrectionsList.title.empty = You have not corrected the VAT amount for any return periods
 vatPeriodCorrectionsList.title.singular = You have corrected the VAT amount for one return period
-vatPeriodCorrectionsList.change.hidden = Change {0}
-vatPeriodCorrectionsList.remove.hidden = Remove {0}
+vatPeriodCorrectionsList.change.hidden = {0}
+vatPeriodCorrectionsList.remove.hidden = {0}
 
 vatPeriodCorrectionsList.addAnother = Add corrections to VAT for another return period?
 vatPeriodCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another return period
-vatPeriodCorrectionsList.change.hidden = Change
-vatPeriodCorrectionsList.remove.hidden = Remove
 
 correctionReturnSinglePeriod.title = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in your {0} return?

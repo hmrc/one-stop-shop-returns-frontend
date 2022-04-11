@@ -73,7 +73,7 @@
                     <tbody class="govuk-table__body">
                     @for(noPaymentDueCountry <- noPaymentDueCountries) {
                         <tr class="govuk-table__row">
-                            <td scope="row" class="govuk-table__cell">@noPaymentDueCountry.country.name</td>
+                            <td class="govuk-table__cell">@noPaymentDueCountry.country.name</td>
                             <td class="govuk-table__cell">@Html(currencyFormat(noPaymentDueCountry.totalVat))</td>
                         </tr>
                     }
@@ -100,7 +100,7 @@
                 <tbody class="govuk-table__body">
                 @for(totalVatToCountry <- totalVatToCountries) {
                     <tr class="govuk-table__row">
-                        <td scope="row" class="govuk-table__cell">@totalVatToCountry.country.name</td>
+                        <td class="govuk-table__cell">@totalVatToCountry.country.name</td>
                         <td class="govuk-table__cell">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
                     </tr>
                 }
