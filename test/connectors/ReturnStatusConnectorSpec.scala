@@ -19,6 +19,7 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import formats.Format
+import models.SubmissionStatus.Due
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import models.{Period, PeriodWithStatus}
 import org.scalacheck.Arbitrary.arbitrary
@@ -102,7 +103,7 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
   ".getCurrentReturns" - {
 
     val period = arbitrary[Period].sample.value
-    val responseJson = Json.toJson(OpenReturns(None, Some(Return.fromPeriod(period)), Seq.empty))
+    val responseJson = Json.toJson(Seq(Return.fromPeriod(period, Due, false, false)))
     val commencementDate = LocalDate.now()
 
     "return a Returns model" in {
@@ -116,7 +117,7 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCurrentReturns(vrn).futureValue mustBe Right(OpenReturns(None, Some(Return.fromPeriod(period)), Seq.empty))
+        connector.getCurrentReturns(vrn).futureValue mustBe Right(Seq(Return.fromPeriod(period, Due, false, false)))
       }
     }
 

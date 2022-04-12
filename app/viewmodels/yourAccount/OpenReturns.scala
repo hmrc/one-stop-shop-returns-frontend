@@ -16,6 +16,7 @@
 
 package viewmodels.yourAccount
 
+import models.SubmissionStatus.{Due, Overdue}
 import play.api.libs.json.{Json, OFormat}
 
 
@@ -27,4 +28,12 @@ case class OpenReturns(
 
 object OpenReturns {
   implicit val format: OFormat[OpenReturns] = Json.format[OpenReturns]
+
+  def fromReturns(returns: Seq[Return]): OpenReturns = {
+    OpenReturns(
+      returns.find(_.inProgress),
+      returns.find(_.submissionStatus == Due),
+      returns.filter(_.submissionStatus == Overdue)
+    )
+  }
 }

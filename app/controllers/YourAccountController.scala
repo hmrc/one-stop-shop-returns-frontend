@@ -26,12 +26,10 @@ import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.UserAnswersRepository
-import services.{FinancialDataService, VatReturnSalesService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.yourAccount._
 import views.html.IndexView
 
-import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,10 +38,7 @@ class YourAccountController @Inject()(
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
-                                       financialDataService: FinancialDataService,
-                                       vatReturnSalesService: VatReturnSalesService,
                                        view: IndexView,
-                                       clock: Clock,
                                        sessionRepository: UserAnswersRepository
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
@@ -97,25 +92,35 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def prepareViewWithFinancialData(returnsViewModel: OpenReturns,
+  private def prepareViewWithFinancialData(returnsViewModel: Seq[Return],
                                            currentPayments: CurrentPayments,
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
 
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      returnsViewModel.copy(currentReturn = periodInProgress.map(period => Return.fromPeriod(period))),
+      OpenReturns.fromReturns(
+        returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+          currentReturn.copy(inProgress = true)
+        } else {
+          currentReturn
+        })),
       currentPayments,
       (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
     )))
   }
 
-  private def prepareViewWithNoFinancialData(returnsViewModel: OpenReturns, periodInProgress: Option[Period])
+  private def prepareViewWithNoFinancialData(returnsViewModel: Seq[Return], periodInProgress: Option[Period])
                                             (implicit request: RegistrationRequest[AnyContent]) = {
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      returnsViewModel.copy(currentReturn = periodInProgress.map(period => Return.fromPeriod(period))),
+      OpenReturns.fromReturns(
+        returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+          currentReturn.copy(inProgress = true)
+        } else {
+          currentReturn
+        })),
       CurrentPayments(Seq.empty, Seq.empty),
       paymentError = true
     )))

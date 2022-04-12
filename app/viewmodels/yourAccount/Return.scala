@@ -16,7 +16,7 @@
 
 package viewmodels.yourAccount
 
-import models.Period
+import models.{Period, SubmissionStatus}
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
@@ -25,11 +25,15 @@ case class Return (
                   period: Period,
                   firstDay: LocalDate,
                   lastDay: LocalDate,
-                  dueDate: LocalDate
+                  dueDate: LocalDate,
+                  submissionStatus: SubmissionStatus,
+                  inProgress: Boolean,
+                  isOldest: Boolean
                   )
 
 case object Return {
   implicit val format: OFormat[Return] = Json.format[Return]
 
-  def fromPeriod(period: Period) = Return(period, period.firstDay, period.lastDay, period.paymentDeadline)
+  def fromPeriod(period: Period, submissionStatus: SubmissionStatus, inProgress: Boolean, isOldest: Boolean) =
+    Return(period, period.firstDay, period.lastDay, period.paymentDeadline, submissionStatus, inProgress, isOldest)
 }
