@@ -115,11 +115,11 @@ vatFromEu.checkYourAnswersLabel = VAT charged
 checkYourAnswersLabel.country = Country
 checkYourAnswersLabel.amount = Amount
 
-soldGoodsFromNi.title = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
-soldGoodsFromNi.heading = Did you make taxable sales of goods to consumers from Northern Ireland during this period?
+soldGoodsFromNi.title = Did you make eligible sales from Northern Ireland to the EU during this period?
+soldGoodsFromNi.heading = Did you make eligible sales from Northern Ireland to the EU during this period?
 soldGoodsFromNi.checkYourAnswersLabel = Sales from Northern Ireland
-soldGoodsFromNi.error.required = Select yes if you made taxable sales of goods to consumers from Northern Ireland during this period
-soldGoodsFromNi.changeSalesFromNI.hidden = if you made taxable sales from Northern Ireland during this period
+soldGoodsFromNi.error.required = Select yes if you made eligible sales from Northern Ireland to the EU during this period
+soldGoodsFromNi.changeSalesFromNI.hidden = if you made eligible sales from Northern Ireland to the EU during this period
 soldGoodsFromNi.changeNISales.hidden = sales excluding VAT from Northern Ireland during this period
 soldGoodsFromNi.changeNIVAT.hidden = VAT charged from Northern Ireland during this period
 
@@ -171,11 +171,11 @@ deleteSalesToEu.title = Are you sure you want to remove all the sales informatio
 deleteSalesToEu.heading = Are you sure you want to remove all the sales information from {0} to {1}?
 deleteSalesToEu.error.required = Select yes if you are sure you want to remove all the sales information from {0} to {1}
 
-soldGoodsFromEu.title = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
-soldGoodsFromEu.heading = Did you make taxable sales of goods from EU countries to consumers in other EU countries during this period?
+soldGoodsFromEu.title = Did you make eligible sales from an EU country to other EU countries during this period?
+soldGoodsFromEu.heading = Did you make eligible sales from an EU country to other EU countries during this period?
 soldGoodsFromEu.checkYourAnswersLabel = Sales from EU countries
-soldGoodsFromEu.error.required = Select yes if you made taxable sales of goods from EU countries to consumers in other EU countries during this period
-soldGoodsFromEu.changeSalesFromEuToEu.hidden = if you made taxable sales from EU countries to consumers in other EU countries
+soldGoodsFromEu.error.required = Select yes if you made eligible sales from an EU country to other EU countries during this period
+soldGoodsFromEu.changeSalesFromEuToEu.hidden = if you made eligible sales from an EU country to other EU countries during this period
 soldGoodsFromEu.changeEUSales.hidden = sales excluding VAT from EU countries to consumers in other EU countries
 soldGoodsFromEu.changeEUVAT.hidden = VAT charged from EU countries to consumers in other EU countries
 
