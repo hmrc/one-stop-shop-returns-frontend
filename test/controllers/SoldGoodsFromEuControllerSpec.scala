@@ -17,7 +17,6 @@
 package controllers
 
 import base.SpecBase
-import config.FrontendAppConfig
 import forms.SoldGoodsFromEuFormProvider
 import models.NormalMode
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
@@ -78,7 +77,6 @@ class SoldGoodsFromEuControllerSpec extends SpecBase with MockitoSugar {
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[UserAnswersRepository]
-      val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 

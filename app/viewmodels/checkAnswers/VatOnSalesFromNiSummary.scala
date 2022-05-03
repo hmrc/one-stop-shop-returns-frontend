@@ -28,19 +28,26 @@ import viewmodels.implicits._
 
 object VatOnSalesFromNiSummary  {
 
-  def row(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index, vatRate: VatRate, currentMode: Mode)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex)).map {
-      answer =>
-        val newMode = currentMode match {
-          case NormalMode => CheckInnerLoopMode
-          case CheckSecondLoopMode => CheckSecondInnerLoopMode
-          case CheckMode => CheckFinalInnerLoopMode
+  def row(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index, vatRate: VatRate, currentMode: Mode)
+         (implicit messages: Messages): Option[SummaryListRow] =
+      for {
+        newMode <- currentMode match {
+          case NormalMode => Some(CheckInnerLoopMode)
+          case CheckSecondLoopMode => Some(CheckSecondInnerLoopMode)
+          case CheckMode => Some(CheckFinalInnerLoopMode)
+          case _ => None
         }
+        answer <- answers.get(VatOnSalesFromNiPage(countryIndex, vatRateIndex))
+      } yield {
         SummaryListRowViewModel(
           key     = "vatOnSalesFromNi.checkYourAnswersLabel",
           value   = ValueViewModel(HtmlContent(currencyFormat(answer.amount))),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.VatOnSalesFromNiController.onPageLoad(newMode, answers.period, countryIndex, vatRateIndex).url)
+            ActionItemViewModel("site.change", routes.VatOnSalesFromNiController.onPageLoad(
+                newMode,
+                answers.period,
+                countryIndex,
+                vatRateIndex).url)
               .withVisuallyHiddenText(messages("vatOnSalesFromNi.change.hidden", vatRate.rateForDisplay))
               .withAttribute(("id", s"change-vat-on-sales-${vatRate.rate}-percent"))
           )

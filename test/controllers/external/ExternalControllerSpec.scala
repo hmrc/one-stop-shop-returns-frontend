@@ -17,9 +17,6 @@
 package controllers.external
 
 import base.SpecBase
-import controllers.actions.{FakeSavedAnswersRetrievalAction, SavedAnswersRetrievalAction}
-import controllers.routes
-import models.SessionData
 import models.external.{ExternalRequest, ExternalResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}

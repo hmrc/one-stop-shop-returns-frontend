@@ -46,7 +46,7 @@ trait Constraints {
         }
     }
 
-  protected def minimumValue(minimum: BigDecimal, errorKey: String)(implicit ev: Ordering[BigDecimal]): Constraint[BigDecimal] =
+  protected def minimumValue(minimum: BigDecimal, errorKey: String): Constraint[BigDecimal] =
     Constraint {
       input =>
         if (input >= minimum) {

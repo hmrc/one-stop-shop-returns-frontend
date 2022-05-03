@@ -17,8 +17,8 @@
 package controllers.actions
 
 import connectors.SaveForLaterConnector
+import models.UserAnswers
 import models.requests.{OptionalDataRequest, RegistrationRequest}
-import models.{Period, UserAnswers}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import repositories.UserAnswersRepository
 

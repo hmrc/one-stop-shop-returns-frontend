@@ -18,11 +18,10 @@ package controllers.actions
 
 import base.SpecBase
 import connectors.{SaveForLaterConnector, SavedUserAnswers}
-import models.{Period, UserAnswers}
+import models.UserAnswers
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest

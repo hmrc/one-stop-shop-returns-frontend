@@ -17,9 +17,9 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.{SessionData, UserAnswers}
+import models.SessionData
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions, Updates}
+import org.mongodb.scala.model._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 

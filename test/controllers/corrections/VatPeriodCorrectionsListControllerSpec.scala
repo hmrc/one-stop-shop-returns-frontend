@@ -203,8 +203,6 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         when(mockReturnStatusConnector.listStatuses(any())(any()))
           .thenReturn(getStatusResponse(allPeriods))
 
-        val expectedTitle = "You have corrected the VAT amount for 3 return periods"
-        val expectedTableRows = 3
         val answers = addCorrectionPeriods(completeUserAnswers, allPeriods.tail).value
           .set(CorrectionReturnPeriodPage(Index(allPeriods.tail.size)), allPeriods.head).success.value
           .set(CorrectionCountryPage(Index(allPeriods.tail.size), index), Country.euCountries.head).success.value
@@ -228,8 +226,6 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         when(mockReturnStatusConnector.listStatuses(any())(any()))
           .thenReturn(getStatusResponse(allPeriods))
 
-        val expectedTitle = "You have corrected the VAT amount for 3 return periods"
-        val expectedTableRows = 3
         val answers = addCorrectionPeriods(completeUserAnswers, allPeriods.tail).value
           .set(CorrectionReturnPeriodPage(Index(allPeriods.tail.size)), allPeriods.head).success.value
           .set(CorrectionCountryPage(Index(allPeriods.tail.size), index), Country.euCountries.head).success.value
@@ -253,8 +249,6 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         when(mockReturnStatusConnector.listStatuses(any())(any()))
           .thenReturn(getStatusResponse(allPeriods))
 
-        val expectedTitle = "You have corrected the VAT amount for 3 return periods"
-        val expectedTableRows = 3
         val answers = addCorrectionPeriods(completeUserAnswers, allPeriods).value
 
         val application = applicationBuilder(userAnswers = Some(answers))

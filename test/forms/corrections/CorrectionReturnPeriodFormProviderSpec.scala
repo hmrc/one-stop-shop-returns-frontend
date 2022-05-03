@@ -24,9 +24,8 @@ import play.api.data.FormError
 class CorrectionReturnPeriodFormProviderSpec extends OptionFieldBehaviours {
 
   val testPeriods = Seq(Period(2021, Q2), Period(2021, Q3), Period(2021, Q4))
-  val form = new CorrectionReturnPeriodFormProvider()(index, testPeriods, Seq.empty)
-
   val index = Index(0)
+  val form = new CorrectionReturnPeriodFormProvider()(index, testPeriods, Seq.empty)
 
   ".value" - {
 

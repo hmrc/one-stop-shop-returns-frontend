@@ -61,7 +61,6 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[VatCorrectionsListView]
-        implicit val msgs: Messages = messages(application)
         val list                    = VatCorrectionsListSummary.addToListRows(baseAnswers, NormalMode, index)
 
 
@@ -89,7 +88,6 @@ class VatCorrectionsListControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[VatCorrectionsListView]
-        implicit val msgs: Messages = messages(application)
         val list                    = VatCorrectionsListSummary.addToListRows(answersWithNoCorrectionValue, NormalMode, index)
 
 

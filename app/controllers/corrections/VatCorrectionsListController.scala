@@ -30,13 +30,12 @@ import viewmodels.checkAnswers.corrections.VatCorrectionsListSummary
 import views.html.corrections.VatCorrectionsListView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class VatCorrectionsListController @Inject()(
                                               cc: AuthenticatedControllerComponents,
                                               formProvider: VatCorrectionsListFormProvider,
                                               view: VatCorrectionsListView
-                                            )(implicit ec: ExecutionContext) extends FrontendBaseController with VatCorrectionsBaseController with CompletionChecks with I18nSupport {
+                                            ) extends FrontendBaseController with VatCorrectionsBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()

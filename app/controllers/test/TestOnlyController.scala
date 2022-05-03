@@ -19,16 +19,14 @@ package controllers.test
 import connectors.test.TestOnlyConnector
 import controllers.actions.AuthenticatedControllerComponents
 import models.Period
-import models.external.{ContinueReturn, ExternalRequest, ReturnsHistory, StartReturn, YourAccount}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import models.external._
+import play.api.mvc.{Action, AnyContent}
 import services.external.ExternalService
-import uk.gov.hmrc.auth.core.InternalError
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
+import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class TestOnlyController @Inject()(testConnector: TestOnlyConnector,
                                    externalService: ExternalService,

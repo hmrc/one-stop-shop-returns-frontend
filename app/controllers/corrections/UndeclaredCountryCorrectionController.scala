@@ -17,6 +17,7 @@
 package controllers.corrections
 
 import controllers.actions._
+import controllers.{routes => baseRoutes}
 import forms.corrections.UndeclaredCountryCorrectionFormProvider
 import models.{Index, Mode, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, UndeclaredCountryCorrectionPage}
@@ -44,13 +45,13 @@ class UndeclaredCountryCorrectionController @Inject()(
       (correctionPeriod, selectedCountry) match {
         case (Some(correctionPeriod), Some(country)) =>
           val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
-          case None => form
-          case Some(value) => form.fill(value)
-        }
+            case None => form
+            case Some(value) => form.fill(value)
+          }
           Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex))
+        case (_, _) =>
+          Redirect(baseRoutes.JourneyRecoveryController.onPageLoad())
       }
-
-
   }
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
@@ -69,6 +70,8 @@ class UndeclaredCountryCorrectionController @Inject()(
                 updatedAnswers <- Future.fromTry(request.userAnswers.set(UndeclaredCountryCorrectionPage(periodIndex, countryIndex), value))
               } yield Redirect(UndeclaredCountryCorrectionPage(periodIndex, countryIndex).navigate(mode, updatedAnswers))
           )
+        case (_, _) =>
+          Future.successful(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad()))
       }
   }
 }

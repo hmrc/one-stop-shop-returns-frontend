@@ -19,13 +19,13 @@ package controllers.corrections
 import base.SpecBase
 import connectors.ReturnStatusConnector
 import forms.corrections.CorrectPreviousReturnFormProvider
-import models.{NormalMode, Period, PeriodWithStatus}
 import models.Quarter.{Q3, Q4}
 import models.SubmissionStatus.Complete
 import models.responses.UnexpectedResponseStatus
+import models.{NormalMode, Period, PeriodWithStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.CorrectPreviousReturnPage

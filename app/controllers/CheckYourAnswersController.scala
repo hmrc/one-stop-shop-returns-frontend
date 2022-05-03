@@ -27,7 +27,7 @@ import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.corrections.CorrectionRequest
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
-import models.responses.{ConflictFound, ReceivedErrorFromCore, RegistrationNotFound}
+import models.responses.{ConflictFound, ErrorResponse, ReceivedErrorFromCore, RegistrationNotFound}
 import models.{CheckMode, DataMissingError, Index, NormalMode, Period, ValidationError}
 import pages.corrections.CorrectPreviousReturnPage
 import pages.{CheckYourAnswersPage, SavedProgressPage, VatRatesFromEuPage, VatRatesFromNiPage}
@@ -270,7 +270,7 @@ class CheckYourAnswersController @Inject()(
   def submitReturn(vatReturnRequest: VatReturnRequest, correctionRequest: Option[CorrectionRequest], period: Period)
                   (implicit request: DataRequest[AnyContent]): Future[Result] = {
 
-    val submission = correctionRequest match {
+    val submission: Future[Either[ErrorResponse, Product]] = correctionRequest match {
       case Some(cr) => vatReturnConnector.submitWithCorrections(VatReturnWithCorrectionRequest(vatReturnRequest, cr))
       case _ => vatReturnConnector.submit(vatReturnRequest)
     }
@@ -297,6 +297,11 @@ class CheckYourAnswersController @Inject()(
         Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
     case Left(e) =>
       logger.error(s"Unexpected result on submit: ${e.toString}")
+      auditService.audit(ReturnsAuditModel.build(
+        vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
+      ))
+      Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+    case Right(_) | Right((_, _)) =>
       auditService.audit(ReturnsAuditModel.build(
         vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
       ))
@@ -367,6 +372,9 @@ class CheckYourAnswersController @Inject()(
           Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
         case Left(e) =>
           logger.error(s"Unexpected result on submit: ${e.toString}")
+          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+        case Right(None) =>
+          logger.error(s"Unexpected result on submit")
           Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
   }

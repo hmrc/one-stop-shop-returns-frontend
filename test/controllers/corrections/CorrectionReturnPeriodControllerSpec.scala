@@ -33,7 +33,6 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
-import uk.gov.hmrc.http.HeaderCarrier
 import views.html.corrections.CorrectionReturnPeriodView
 
 import scala.concurrent.Future
@@ -44,8 +43,6 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
   private val formProvider = new CorrectionReturnPeriodFormProvider()
   private val form = formProvider(index, testPeriodsList, Seq.empty)
-
-  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private val mockReturnStatusConnector = mock[ReturnStatusConnector]
 

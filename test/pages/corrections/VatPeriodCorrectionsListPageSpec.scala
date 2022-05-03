@@ -18,8 +18,7 @@ package pages.corrections
 
 import connectors.ReturnStatusConnector
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Country, Index, NormalMode, Period}
-import org.scalacheck.Arbitrary.arbitrary
+import models.{Index, NormalMode, Period}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.behaviours.PageBehaviours
 import play.api.inject.bind
@@ -37,8 +36,6 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
 
         "to CorrectionReturnPeriod when there are already some corrections" in {
 
-          val country = arbitrary[Country].sample.value
-
           val answers =
             emptyUserAnswers
               .set(CorrectionReturnPeriodPage(index), period).success.value
@@ -48,8 +45,6 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
         }
 
         "to CorrectionReturnPeriod when there are no corrections" in {
-
-          val country = arbitrary[Country].sample.value
 
           val answers =
             emptyUserAnswers

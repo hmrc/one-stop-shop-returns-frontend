@@ -29,8 +29,7 @@ import scala.concurrent.Future
 trait CompletionChecks {
 
   protected def withCompleteData[A]( index: Index, data: Index => Seq[A], onFailure: Seq[A] => Result)
-                                ( onSuccess: => Result)
-                                ( implicit request: DataRequest[AnyContent]): Result = {
+                                ( onSuccess: => Result): Result = {
 
     val incomplete = data(index)
     if(incomplete.isEmpty) {
@@ -41,8 +40,7 @@ trait CompletionChecks {
   }
 
   protected def withCompleteDataAsync[A](data: () => Seq[A], onFailure: Seq[A] => Future[Result])
-                                   ( onSuccess: => Future[Result])
-                                   ( implicit request: DataRequest[AnyContent]): Future[Result] = {
+                                   ( onSuccess: => Future[Result]): Future[Result] = {
 
     val incomplete = data()
     if(incomplete.isEmpty) {
@@ -53,8 +51,7 @@ trait CompletionChecks {
   }
 
   protected def withCompleteData[A]( data: () => Seq[A], onFailure: Seq[A] => Result)
-                                   ( onSuccess: => Result)
-                                   ( implicit request: DataRequest[AnyContent]): Result = {
+                                   ( onSuccess: => Result): Result = {
     val incomplete = data()
     if(incomplete.isEmpty) {
       onSuccess

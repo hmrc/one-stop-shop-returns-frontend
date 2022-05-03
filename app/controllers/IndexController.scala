@@ -31,8 +31,6 @@ class IndexController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
-    implicit request =>
-
-      Redirect(routes.YourAccountController.onPageLoad())
+    _ => Redirect(routes.YourAccountController.onPageLoad())
   }
 }
