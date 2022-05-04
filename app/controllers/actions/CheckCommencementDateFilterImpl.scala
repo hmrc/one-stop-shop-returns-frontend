@@ -21,9 +21,6 @@ import models.requests.OptionalDataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import services.PeriodService
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,8 +29,6 @@ class CheckCommencementDateFilterImpl(periodService: PeriodService)
   extends ActionFilter[OptionalDataRequest] {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-
     if(periodService.getReturnPeriods(request.registration.commencementDate).isEmpty){
       Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())))
     } else {

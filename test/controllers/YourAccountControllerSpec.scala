@@ -370,7 +370,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val firstPeriod = Period(2021, Q3)
-        val secondPeriod = Period(2021, Q4)
         val outstandingAmount = BigDecimal(1000)
         val payment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
@@ -427,7 +426,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val firstPeriod = Period(2021, Q3)
-        val secondPeriod = Period(2021, Q4)
 
         val payment = Payment(firstPeriod, 0, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
@@ -486,7 +484,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val firstPeriod = Period(2021, Q3)
-        val secondPeriod = Period(2021, Q4)
         val payment = Payment(firstPeriod, 1000, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -541,7 +538,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val firstPeriod = Period(2021, Q1)
-        val secondPeriod = Period(2021, Q2)
         val outstandingAmount = BigDecimal(1000)
         val overduePayment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
@@ -598,8 +594,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val instant = Instant.parse("2022-01-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val secondPeriod = Period(2021, Q2)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(

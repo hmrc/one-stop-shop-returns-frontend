@@ -20,7 +20,6 @@ import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import models.SessionData
-import models.requests.SaveForLaterRequest
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -61,12 +60,6 @@ class SavedProgressControllerSpec extends SpecBase {
         period,
         JsObject(Seq("test" -> Json.toJson("test"))),
         instantDate
-      )
-
-      val savedAnswersRequest = SaveForLaterRequest(
-        vrn,
-        period,
-        JsObject(Seq("test" -> Json.toJson("test")))
       )
 
       when(mockAppConfig.cacheTtl) thenReturn 1
@@ -117,11 +110,6 @@ class SavedProgressControllerSpec extends SpecBase {
         instantDate
       )
 
-      val savedAnswersRequest = SaveForLaterRequest(
-        vrn,
-        period,
-        JsObject(Seq("test" -> Json.toJson("test")))
-      )
 
       when(mockAppConfig.cacheTtl) thenReturn 1
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(savedAnswers)))

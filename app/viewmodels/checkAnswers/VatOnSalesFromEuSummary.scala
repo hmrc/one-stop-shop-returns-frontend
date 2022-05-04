@@ -28,26 +28,34 @@ import viewmodels.implicits._
 
 object VatOnSalesFromEuSummary  {
 
-  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index, vatRate: VatRate, currentMode: Mode)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex)).map {
-      answer =>
-        val newMode = currentMode match {
-          case NormalMode => CheckInnerLoopMode
-          case CheckSecondLoopMode => CheckSecondInnerLoopMode
-          case CheckThirdLoopMode => CheckThirdInnerLoopMode
-          case CheckMode => CheckFinalInnerLoopMode
-        }
-        SummaryListRowViewModel(
-                key     = "vatOnSalesFromEu.checkYourAnswersLabel",
-                value   = ValueViewModel(HtmlContent(currencyFormat(answer.amount))),
-                actions = Seq(
-                  ActionItemViewModel(
-                    "site.change",
-                    routes.VatOnSalesFromEuController.onPageLoad(newMode, answers.period, countryFromIndex, countryToIndex, vatRateIndex).url
-                  )
-                  .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden", vatRate.rateForDisplay))
-                    .withAttribute(("id", s"change-vat-on-sales-${vatRate.rate}-percent"))
-                )
-              )
+  def row(answers: UserAnswers, countryFromIndex: Index, countryToIndex: Index, vatRateIndex: Index, vatRate: VatRate, currentMode: Mode)
+         (implicit messages: Messages): Option[SummaryListRow] = {
+    for {
+      newMode <- currentMode match {
+        case NormalMode => Some(CheckInnerLoopMode)
+        case CheckSecondLoopMode => Some(CheckSecondInnerLoopMode)
+        case CheckThirdLoopMode => Some(CheckThirdInnerLoopMode)
+        case CheckMode => Some(CheckFinalInnerLoopMode)
+        case _ => None
+      }
+      answer <- answers.get(VatOnSalesFromEuPage(countryFromIndex, countryToIndex, vatRateIndex))
+    } yield {
+      SummaryListRowViewModel(
+        key = "vatOnSalesFromEu.checkYourAnswersLabel",
+        value = ValueViewModel(HtmlContent(currencyFormat(answer.amount))),
+        actions = Seq(
+          ActionItemViewModel(
+            "site.change",
+            routes.VatOnSalesFromEuController.onPageLoad(
+              newMode,
+              answers.period,
+              countryFromIndex,
+              countryToIndex,
+              vatRateIndex).url)
+          .withVisuallyHiddenText(messages("vatOnSalesFromEu.change.hidden", vatRate.rateForDisplay))
+          .withAttribute(("id", s"change-vat-on-sales-${vatRate.rate}-percent"))
+        )
+      )
     }
+  }
 }

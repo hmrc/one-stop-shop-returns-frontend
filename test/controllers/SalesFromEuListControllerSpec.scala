@@ -17,7 +17,6 @@
 package controllers
 
 import base.SpecBase
-import config.FrontendAppConfig
 import forms.SalesFromEuListFormProvider
 import models.{Country, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
@@ -93,7 +92,6 @@ class SalesFromEuListControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to the next page when valid data is submitted" in {
 
       val application = applicationBuilder(Some(completeAnswers)).build()
-      val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
       running(application) {
         val request   = FakeRequest(POST, salesFromEuListRoutePost(false)).withFormUrlEncodedBody("value" -> "true")
@@ -127,7 +125,6 @@ class SalesFromEuListControllerSpec extends SpecBase with MockitoSugar {
     "must refresh the page when answers are incomplete and the prompt wasn't showing" in {
 
       val application = applicationBuilder(Some(baseAnswers)).build()
-      val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
       running(application) {
         val request   = FakeRequest(POST, salesFromEuListRoutePost(false))
@@ -142,7 +139,6 @@ class SalesFromEuListControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to Sales to EU List when sales answers are incomplete and the prompt was showing" in {
       val answers = baseAnswers.set(CountryOfConsumptionFromEuPage(index, index), countryOfConsuption).success.value
       val application = applicationBuilder(Some(answers)).build()
-      val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
       running(application) {
         val request   = FakeRequest(POST, salesFromEuListRoutePost(true))
@@ -156,7 +152,6 @@ class SalesFromEuListControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to Country of Consumption when no country of consumption provided and the prompt was showing" in {
       val application = applicationBuilder(Some(baseAnswers)).build()
-      val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
       running(application) {
         val request   = FakeRequest(POST, salesFromEuListRoutePost(true))

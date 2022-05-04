@@ -26,13 +26,12 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ContinueReturnView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class ContinueReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: ContinueReturnFormProvider,
                                        view: ContinueReturnView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     ) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc

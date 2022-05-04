@@ -26,7 +26,6 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.VatReturnService
-import views.html.corrections.CheckVatPayableAmountView
 
 import scala.concurrent.Future
 
@@ -88,9 +87,6 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
       running(application) {
         val request = FakeRequest(GET, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(NormalMode, period, index, index).url)
         val result = route(application, request).value
-
-        val view = application.injector.instanceOf[CheckVatPayableAmountView]
-
 
         status(result) mustEqual OK
         contentAsString(result).contains("Correction amount") mustBe false

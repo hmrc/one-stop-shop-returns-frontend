@@ -35,6 +35,8 @@ case object SalesFromNiListPage extends Page {
           routes.SoldGoodsFromEuController.onPageLoad(mode, answers.period)
         case CheckMode =>
           routes.CheckYourAnswersController.onPageLoad(answers.period)
+        case _ =>
+          routes.JourneyRecoveryController.onPageLoad()
       }
     }
 }

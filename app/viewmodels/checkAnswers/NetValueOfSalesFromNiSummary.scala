@@ -26,24 +26,31 @@ import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object NetValueOfSalesFromNiSummary  {
+object NetValueOfSalesFromNiSummary {
 
-  def row(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index, vatRate: VatRate, currentMode: Mode)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex)).map {
-      answer =>
-        val newMode = currentMode match {
-          case NormalMode => CheckInnerLoopMode
-          case CheckSecondLoopMode => CheckSecondInnerLoopMode
-          case CheckMode => CheckFinalInnerLoopMode
-        }
-        SummaryListRowViewModel(
-          key     = "netValueOfSalesFromNi.checkYourAnswersLabel",
-          value   = ValueViewModel(HtmlContent(currencyFormat(answer))),
-          actions = Seq(
-            ActionItemViewModel("site.change", routes.NetValueOfSalesFromNiController.onPageLoad(newMode, answers.period, countryIndex, vatRateIndex).url)
-              .withVisuallyHiddenText(messages("netValueOfSalesFromNi.change.hidden", vatRate.rateForDisplay))
-              .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent"))
-          )
+  def row(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index, vatRate: VatRate, currentMode: Mode)
+         (implicit messages: Messages): Option[SummaryListRow] =
+    for {
+      newMode <- currentMode match {
+        case NormalMode => Some(CheckInnerLoopMode)
+        case CheckSecondLoopMode => Some(CheckSecondInnerLoopMode)
+        case CheckMode => Some(CheckFinalInnerLoopMode)
+        case _ => None
+      }
+      answer <- answers.get(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex))
+    } yield {
+      SummaryListRowViewModel(
+        key = "netValueOfSalesFromNi.checkYourAnswersLabel",
+        value = ValueViewModel(HtmlContent(currencyFormat(answer))),
+        actions = Seq(
+          ActionItemViewModel("site.change", routes.NetValueOfSalesFromNiController.onPageLoad(
+            newMode,
+            answers.period,
+            countryIndex,
+            vatRateIndex).url)
+            .withVisuallyHiddenText(messages("netValueOfSalesFromNi.change.hidden", vatRate.rateForDisplay))
+            .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent"))
         )
+      )
     }
 }

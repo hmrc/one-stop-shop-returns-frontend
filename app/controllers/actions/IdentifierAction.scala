@@ -41,10 +41,8 @@ class IdentifierAction @Inject()(
   extends ActionRefiner[Request, IdentifierRequest]
     with AuthorisedFunctions {
 
-  private type IdentifierActionResult[A] = Future[Either[Result, IdentifierRequest[A]]]
-
   //noinspection ScalaStyle
-  override def refine[A](request: Request[A]): IdentifierActionResult[A] = {
+  override def refine[A](request: Request[A]): Future[Either[Result, IdentifierRequest[A]]] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 

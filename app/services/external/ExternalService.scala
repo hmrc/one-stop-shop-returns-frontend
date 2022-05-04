@@ -20,7 +20,6 @@ import logging.Logging
 import models.{Period, SessionData}
 import models.external.{ContinueReturn, ExternalRequest, ExternalResponse, ReturnsHistory, StartReturn, YourAccount}
 import models.responses.{ErrorResponse, NotFound}
-import play.api.libs.json.Json
 import queries.external.ExternalReturnUrlQuery
 import repositories.SessionRepository
 

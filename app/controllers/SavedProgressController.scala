@@ -73,6 +73,9 @@ class SavedProgressController @Inject()(
             case (Left(e), _) =>
               logger.error(s"Unexpected result on submit: ${e.toString}")
               Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+            case (Right(None), _) =>
+              logger.error(s"Unexpected result on submit")
+              Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
           }
       }
   }

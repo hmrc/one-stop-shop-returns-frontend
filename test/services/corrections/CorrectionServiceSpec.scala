@@ -217,7 +217,6 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
     }
 
     "must throw if connector returns an error" in new Fixture {
-      val correctionPayload = arbitrary[CorrectionPayload].sample.value
       when(connector.getForCorrectionPeriod(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
       val result = service.getCorrectionsForPeriod(period)(ExecutionContext.global, hc)
       whenReady(result.failed) { exp => exp mustBe a[Exception] }

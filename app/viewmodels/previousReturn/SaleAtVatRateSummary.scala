@@ -37,10 +37,10 @@ object SaleAtVatRateSummary extends CurrencyFormatter {
   }
 
   def getAllEuSales(vatReturn: VatReturn)(implicit messages: Messages): Seq[TitledTable] = {
-    (for {
+    for {
       saleFromEu <- vatReturn.salesFromEu
       countryFrom = saleFromEu.countryOfSale
-    } yield summaryRowsOfSales(countryFrom, saleFromEu.sales))
+    } yield summaryRowsOfSales(countryFrom, saleFromEu.sales)
   }
 
   private[this] def summaryRowsOfSales(salesFromCountry: Country, salesToCountry: Seq[SalesToCountry])(implicit messages: Messages): TitledTable = {
@@ -53,7 +53,7 @@ object SaleAtVatRateSummary extends CurrencyFormatter {
     )
   }
 
-  private[this] def rows(salesToCountry: Seq[SalesToCountry])(implicit messages: Messages): Seq[Seq[TableRow]] = {
+  private[this] def rows(salesToCountry: Seq[SalesToCountry]): Seq[Seq[TableRow]] = {
     for {
       saleToCountry <- salesToCountry
       countryOfConsumption = saleToCountry.countryOfConsumption.name

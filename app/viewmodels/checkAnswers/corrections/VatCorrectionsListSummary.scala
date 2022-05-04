@@ -18,13 +18,12 @@ package viewmodels.checkAnswers.corrections
 
 import controllers.corrections.routes
 import models.{CheckSecondLoopMode, Index, Mode, NormalMode, UserAnswers}
-import play.api.i18n.Messages
 import queries.corrections.AllCorrectionCountriesQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object VatCorrectionsListSummary {
 
-  def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index)(implicit messages: Messages): Seq[ListItem] ={
+  def addToListRows(answers: UserAnswers, currentMode: Mode, periodIndex: Index): Seq[ListItem] ={
     val newMode = if(currentMode == NormalMode) CheckSecondLoopMode else currentMode
 
     answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.map {

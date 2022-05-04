@@ -19,11 +19,11 @@ package controllers
 import base.SpecBase
 import connectors.VatReturnConnector
 import connectors.financialdata.FinancialDataConnector
-import models.{Period, SessionData}
 import models.Quarter.{Q1, Q2}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.financialdata.{Charge, VatReturnWithFinancialData}
 import models.responses.UnexpectedResponseStatus
+import models.{Period, SessionData}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -35,7 +35,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.external.ExternalReturnUrlQuery
 import repositories.SessionRepository
-import services.VatReturnSalesService
 import uk.gov.hmrc.domain.Vrn
 import views.html.SubmittedReturnsHistoryView
 

@@ -17,24 +17,22 @@
 package controllers.external
 
 import controllers.actions.AuthenticatedControllerComponents
+import models.Period
 import models.external._
-import models.{Period, SessionData}
 import play.api.Logging
-import play.api.libs.json.{JsPath, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, MessagesControllerComponents}
-import queries.external.ExternalReturnUrlQuery
-import repositories.SessionRepository
 import services.external.ExternalService
 import uk.gov.hmrc.play.bootstrap.controller.WithJsonBody
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class ExternalController @Inject()(
                                     externalService: ExternalService,
                                     cc: AuthenticatedControllerComponents
-                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with WithJsonBody with Logging {
+                                  ) extends FrontendBaseController with WithJsonBody with Logging {
 
   override protected def controllerComponents: MessagesControllerComponents = cc
 

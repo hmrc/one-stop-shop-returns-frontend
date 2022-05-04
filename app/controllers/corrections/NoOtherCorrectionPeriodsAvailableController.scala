@@ -56,6 +56,7 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
 
         cleanup.onComplete {
           case Failure(exception) => logger.error(s"Could not perform cleanup: ${exception.getLocalizedMessage}")
+          case _ => ()
         }
         cleanup
       } else {
