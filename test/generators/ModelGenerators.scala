@@ -141,12 +141,12 @@ trait ModelGenerators {
       } yield DesAddress(line1, line2, line3, line4, line5, postCode, countryCode)
     }
 
-  implicit lazy val arbitraryFixedEstablishment: Arbitrary[FixedEstablishment] =
+  implicit lazy val arbitraryFixedEstablishment: Arbitrary[TradeDetails] =
     Arbitrary {
       for {
         tradingName <- arbitrary[String]
         address     <- arbitrary[InternationalAddress]
-      } yield FixedEstablishment(tradingName, address)
+      } yield TradeDetails(tradingName, address)
     }
 
   implicit val arbitraryEuTaxIdentifierType: Arbitrary[EuTaxIdentifierType] =

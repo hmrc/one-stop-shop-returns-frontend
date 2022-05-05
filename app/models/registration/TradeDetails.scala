@@ -18,9 +18,9 @@ package models.registration
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class FixedEstablishment(tradingName: String, address: InternationalAddress)
+final case class TradeDetails(tradingName: String, address: InternationalAddress)
 
-object FixedEstablishment {
+object TradeDetails {
 
-  implicit val format: OFormat[FixedEstablishment] = Json.format[FixedEstablishment]
+  implicit val format: OFormat[TradeDetails] = Json.format[TradeDetails]
 }
