@@ -490,3 +490,7 @@ errorFromCore.savedAnswers = We have saved your answers and you can submit it fr
 errorFromCore.knownIssues = Check our <a class="govuk-link" href="https://www.gov.uk/government/publications/one-stop-shop-union-scheme-service-availability-and-issues">service page</a> for any known system issues.
 errorFromCore.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 errorFromCore.your.account = Back to your account
+
+noMoreWelsh.title = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o bryd
+noMoreWelsh.heading = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o bryd
+noMoreWelsh.submit = Yn eich blaen
