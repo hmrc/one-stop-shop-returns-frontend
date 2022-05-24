@@ -71,6 +71,7 @@ index.payment.overdueAmountOwed = You owe {0} for {1}, which was due by {2}
 index.payment.overdueAmountMaybeOwed = You may still have VAT to pay for {0}, which was due by {1}
 index.history = History
 index.history.previousReturns = View past returns
+index.nextPeriod = You can complete your April to June 2022 return from {0}.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service

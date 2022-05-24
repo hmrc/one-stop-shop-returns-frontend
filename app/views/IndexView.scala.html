@@ -18,6 +18,7 @@
 @import models.financialdata._
 @import viewmodels.yourAccount._
 @import utils.CurrencyFormatter.currencyFormat
+@import java.time.format.DateTimeFormatter
 
 @this(
         layout: templates.Layout,
@@ -28,7 +29,8 @@
         vrn: String,
         returnsViewModel: OpenReturns,
         currentPayments: CurrentPayments,
-        paymentError: Boolean
+        paymentError: Boolean,
+        nextPeriod: Period
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -68,7 +70,7 @@
 
 
         @(returnsViewModel.currentReturn, returnsViewModel.dueReturn, returnsViewModel.overdueReturns.size) match {
-                case (None, None, 0) => {}
+            case (None, None, 0) => {<p class="govuk-body" id="next-period">@messages("index.nextPeriod", nextPeriod.firstDay.format(DateTimeFormatter.ofPattern("d MMMM yyyy")))</p>}
                 case (None, None, 1) => {<p class="govuk-body">@messages("index.yourReturns.returnOverdue", returnsViewModel.overdueReturns.head.period.displayText)</p>}
                 case (None, None, x) => {<p class="govuk-body">@messages("index.yourReturns.onlyReturnsOverdue", x)</p>}
                 case (Some(inProgress), None, 1) => {
