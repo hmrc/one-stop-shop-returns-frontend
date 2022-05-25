@@ -19,8 +19,9 @@ package services.external
 import base.SpecBase
 import models.SessionData
 import models.external._
+import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.libs.json.JsObject
 import repositories.SessionRepository
@@ -36,7 +37,7 @@ class ExternalServiceSpec extends SpecBase {
   val currentPeriod = arbitraryPeriod.arbitrary.sample.value
 
   ".getExternalResponse" - {
-    Seq(YourAccount, ReturnsHistory).map {
+    Seq(YourAccount, ReturnsHistory).foreach {
       entryPage =>
         s"when entry page in the request is ${entryPage}" - {
 
@@ -55,6 +56,7 @@ class ExternalServiceSpec extends SpecBase {
                     NoMoreWelsh.url(entryPage.url)
                   )
                 )
+                verify(sessionRepository, times(1)).get(userId)
               }
             }
 
@@ -72,13 +74,28 @@ class ExternalServiceSpec extends SpecBase {
                     entryPage.url
                   )
                 )
+                verify(sessionRepository, times(1)).get(userId)
+              }
+            }
+
+            "and period is provided" - {
+              "must return Left(NotFound) and not save url in session" in {
+                val sessionRepository = mock[SessionRepository]
+                val service = new ExternalService(sessionRepository)
+
+                when(sessionRepository.get(any())) thenReturn Future.successful(Seq(sessionData))
+                when(sessionRepository.set(any())) thenReturn Future.successful(true)
+                val result = service.getExternalResponse(externalRequest, userId, entryPage.name, Some(period), None)
+
+                result mustBe Left(NotFound)
+                verifyNoInteractions(sessionRepository)
               }
             }
           }
         }
     }
 
-    Seq(StartReturn, ContinueReturn).map {
+    Seq(StartReturn, ContinueReturn).foreach {
       entryPage =>
         s"when entry page in the request is ${entryPage}" - {
 
@@ -88,7 +105,7 @@ class ExternalServiceSpec extends SpecBase {
                 val sessionRepository = mock[SessionRepository]
                 val service = new ExternalService(sessionRepository)
 
-                when(sessionRepository.get(any())) thenReturn Future.successful(Seq(sessionData))
+                when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
                 when(sessionRepository.set(any())) thenReturn Future.successful(true)
                 val result = service.getExternalResponse(externalRequest, userId, entryPage.name, Some(currentPeriod), Some("cy"))
 
@@ -97,6 +114,8 @@ class ExternalServiceSpec extends SpecBase {
                     NoMoreWelsh.url(entryPage.url(currentPeriod))
                   )
                 )
+
+                verify(sessionRepository, times(1)).get(userId)
               }
             }
 
@@ -114,12 +133,41 @@ class ExternalServiceSpec extends SpecBase {
                     entryPage.url(currentPeriod)
                   )
                 )
+                verify(sessionRepository, times(1)).get(userId)
               }
+            }
+          }
+
+          "and period is not provided" - {
+            "must return Left(NotFound) and not save url in session" in {
+              val sessionRepository = mock[SessionRepository]
+              val service = new ExternalService(sessionRepository)
+
+              when(sessionRepository.get(any())) thenReturn Future.successful(Seq(sessionData))
+              when(sessionRepository.set(any())) thenReturn Future.successful(true)
+              val result = service.getExternalResponse(externalRequest, userId, entryPage.name, None, None)
+
+              result mustBe Left(NotFound)
+              verifyNoInteractions(sessionRepository)
             }
           }
         }
     }
 
+    "must return an External Response when sessionRepository fails due to exception" in {
+      val sessionRepository = mock[SessionRepository]
+      val service = new ExternalService(sessionRepository)
+
+      when(sessionRepository.get(any())) thenReturn Future.successful(Seq(sessionData))
+      when(sessionRepository.set(any())) thenReturn Future.failed(new Exception("Error saving in session"))
+      val result = service.getExternalResponse(externalRequest, userId, YourAccount.name, None, None)
+
+      result mustBe Right(
+        ExternalResponse(
+          YourAccount.url
+        )
+      )
+    }
 
   }
 }

@@ -45,7 +45,7 @@ class ExternalControllerSpec extends SpecBase {
   ".onExternal" - {
 
     "when correct ExternalRequest is posted" - {
-      "must return OK" - {
+      "must return OK" in {
         val mockExternalService = mock[ExternalService]
 
         when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
