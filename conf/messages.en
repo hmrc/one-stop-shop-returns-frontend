@@ -490,3 +490,11 @@ errorFromCore.savedAnswers = We have saved your answers and you can submit it fr
 errorFromCore.knownIssues = Check our <a class="govuk-link" href="https://www.gov.uk/government/publications/one-stop-shop-union-scheme-service-availability-and-issues">service page</a> for any known system issues.
 errorFromCore.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 errorFromCore.your.account = Back to your account
+
+whichVatPeriodToPay.title = WhichVatPeriodToPay
+whichVatPeriodToPay.heading = WhichVatPeriodToPay
+whichVatPeriodToPay.option1 = Option 1
+whichVatPeriodToPay.option2 = Option 2
+whichVatPeriodToPay.checkYourAnswersLabel = WhichVatPeriodToPay
+whichVatPeriodToPay.error.required = Select whichVatPeriodToPay
+whichVatPeriodToPay.change.hidden = WhichVatPeriodToPay

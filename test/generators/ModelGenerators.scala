@@ -33,6 +33,11 @@ import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
 
+  implicit lazy val arbitraryWhichVatPeriodToPay: Arbitrary[WhichVatPeriodToPay] =
+    Arbitrary {
+      Gen.oneOf(WhichVatPeriodToPay.values.toSeq)
+    }
+
   implicit lazy val arbitraryContinueReturn: Arbitrary[ContinueReturn] =
     Arbitrary {
       Gen.oneOf(ContinueReturn.values.toSeq)

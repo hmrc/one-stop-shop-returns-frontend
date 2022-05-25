@@ -307,3 +307,7 @@ GET        /return-not-submitted                                                
 GET        /return-service-down                                                                              controllers.ReceivedErrorFromCoreController.onPageLoad()
 
 POST       /external-entry/:page                                                                             controllers.external.ExternalController.onExternal(page: String, period: Option[Period] ?= None)
+GET        /:period/whichVatPeriodToPay                        controllers.WhichVatPeriodToPayController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/whichVatPeriodToPay                        controllers.WhichVatPeriodToPayController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeWhichVatPeriodToPay                  controllers.WhichVatPeriodToPayController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeWhichVatPeriodToPay                  controllers.WhichVatPeriodToPayController.onSubmit(mode: Mode = CheckMode, period: Period)
