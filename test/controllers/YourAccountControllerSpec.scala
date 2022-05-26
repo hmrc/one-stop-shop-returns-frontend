@@ -108,7 +108,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
-          println(contentAsString(result))
         }
       }
 
