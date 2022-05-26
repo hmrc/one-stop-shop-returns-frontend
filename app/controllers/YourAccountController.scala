@@ -20,14 +20,12 @@ import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.Quarter.Q2
 import models.financialdata.{CurrentPayments, PaymentStatus}
 import models.requests.RegistrationRequest
 import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.UserAnswersRepository
-import services.PeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.yourAccount._
 import views.html.IndexView
@@ -41,14 +39,11 @@ class YourAccountController @Inject()(
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
                                        view: IndexView,
-                                       sessionRepository: UserAnswersRepository,
-                                       periodService: PeriodService
+                                       sessionRepository: UserAnswersRepository
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
-
-  val nextPeriod = periodService.getNextPeriod(Period(2022, Q2))
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
@@ -111,8 +106,7 @@ class YourAccountController @Inject()(
           currentReturn
         })),
       currentPayments,
-      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
-      nextPeriod
+      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown)
     )))
   }
 
@@ -128,8 +122,7 @@ class YourAccountController @Inject()(
           currentReturn
         })),
       CurrentPayments(Seq.empty, Seq.empty),
-      paymentError = true,
-      nextPeriod
+      paymentError = true
     )))
   }
 

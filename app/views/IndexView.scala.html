@@ -29,8 +29,7 @@
         vrn: String,
         returnsViewModel: OpenReturns,
         currentPayments: CurrentPayments,
-        paymentError: Boolean,
-        nextPeriod: Period
+        paymentError: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -69,31 +68,38 @@
 
 
 
-        @(returnsViewModel.currentReturn, returnsViewModel.dueReturn, returnsViewModel.overdueReturns.size) match {
-            case (None, None, 0) => {<p class="govuk-body" id="next-period">@messages("index.nextPeriod", nextPeriod.firstDay.format(DateTimeFormatter.ofPattern("d MMMM yyyy")))</p>}
-                case (None, None, 1) => {<p class="govuk-body">@messages("index.yourReturns.returnOverdue", returnsViewModel.overdueReturns.head.period.displayText)</p>}
-                case (None, None, x) => {<p class="govuk-body">@messages("index.yourReturns.onlyReturnsOverdue", x)</p>}
-                case (Some(inProgress), None, 1) => {
-                <p class="govuk-body">@messages("index.yourReturns.returnOverdue", returnsViewModel.overdueReturns.head.period.displayText)</p>
+        @(returnsViewModel.currentReturn, returnsViewModel.dueReturn, returnsViewModel.overdueReturns.size, returnsViewModel.nextReturn) match {
+            case (_, _, _, Some(nextReturn)) => {
+                <p class="govuk-body" id="next-period">@Html(messages(
+                    "index.nextPeriod",
+                    nextReturn.period.firstDay.format(DateTimeFormatter.ofPattern("MMMM")),
+                    nextReturn.period.lastDay.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                    nextReturn.lastDay.plusDays(1).format(DateTimeFormatter.ofPattern("d MMMM yyyy"))))
+                </p>
+            }
+            case (None, None, 1, _) => {<p class="govuk-body">@messages("index.yourReturns.returnOverdue", returnsViewModel.overdueReturns.head.period.displayText)</p>}
+                case (None, None, x, _) => {<p class="govuk-body">@messages("index.yourReturns.onlyReturnsOverdue", x)</p>}
+                case (Some(inProgress), None, 1, _) => {
+                        <p class="govuk-body">@messages("index.yourReturns.returnOverdue", returnsViewModel.overdueReturns.head.period.displayText)</p>
                 <p class="govuk-body">@messages("yourAccount.return.inProgress", inProgress.period.displayText)</p>
                 }
-                case (Some(inProgress), None, x) => {
+                case (Some(inProgress), None, x, _) => {
                 <p class="govuk-body">@messages("index.yourReturns.onlyReturnsOverdue", x)</p>
                 <p class="govuk-body">@messages("yourAccount.return.inProgress", inProgress.period.displayText)</p>
                 }
 
-                case (None, Some(dueReturn), 0) => {
+                case (None, Some(dueReturn), 0, _) => {
                         <p class="govuk-body">@messages("index.yourReturns.returnDue", dueReturn.period.displayText, dueReturn.period.paymentDeadlineDisplay)</p>
                     }
-                case (None, Some(dueReturn), 1) => {
+                case (None, Some(dueReturn), 1, _) => {
                 <p class="govuk-body">@messages("index.yourReturns.returnDue", dueReturn.period.displayText, dueReturn.period.paymentDeadlineDisplay)</p>
                 <p class="govuk-body">@messages("index.yourReturns.returnOverdue", returnsViewModel.overdueReturns.head.period.displayText)</p>
                 }
-                case (None, Some(dueReturn), x) => {
+                case (None, Some(dueReturn), x, _) => {
                 <p class="govuk-body">@messages("index.yourReturns.returnDue", dueReturn.period.displayText, dueReturn.period.paymentDeadlineDisplay)</p>
                 <p class="govuk-body">@messages("index.yourReturns.returnsOverdue", x)</p>
                 }
-                case (Some(inProgress), Some(dueReturn), 0) => {
+                case (Some(inProgress), Some(dueReturn), 0, _) => {
                         @if(dueReturn == inProgress){
                             <p class="govuk-body">@messages("yourAccount.return.inProgress", dueReturn.period.displayText)</p>
                             <p class="govuk-body">@messages("yourAccount.return.inProgress.due", dueReturn.period.paymentDeadlineDisplay)</p>
@@ -103,7 +109,7 @@
                             }
                     }
 
-                case (Some(inProgress), Some(dueReturn), 1) => {
+                case (Some(inProgress), Some(dueReturn), 1, _) => {
                     @if(dueReturn == inProgress){
                         <p class="govuk-body">@messages("yourAccount.return.inProgress", dueReturn.period.displayText)</p>
                         <p class="govuk-body">@messages("index.yourReturns.returnOverdue", returnsViewModel.overdueReturns.head.period.displayText)</p>
@@ -115,7 +121,7 @@
                     }
                 }
 
-                case (Some(inProgress), Some(dueReturn), x) => {
+                case (Some(inProgress), Some(dueReturn), x, _) => {
                     @if(dueReturn == inProgress){
                         <p class="govuk-body">@messages("yourAccount.return.inProgress", dueReturn.period.displayText)</p>
                         <p class="govuk-body">@messages("index.yourReturns.returnsOverdue", x)</p>

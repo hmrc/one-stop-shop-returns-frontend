@@ -20,13 +20,12 @@ import base.SpecBase
 import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import generators.Generators
-import models.Period
+import models.{Period, SubmissionStatus}
 import models.Quarter._
-import models.SubmissionStatus.{Due, Overdue}
+import models.SubmissionStatus.{Due, Next, Overdue}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -35,7 +34,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
-import services.{PeriodService, VatReturnSalesService}
+import services.VatReturnSalesService
 import viewmodels.yourAccount.{OpenReturns, Return}
 import views.html.IndexView
 
@@ -49,20 +48,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val vatReturnSalesService = mock[VatReturnSalesService]
   private val sessionRepository = mock[UserAnswersRepository]
   private val save4LaterConnector = mock[SaveForLaterConnector]
-  private val periodService = mock[PeriodService]
-
-
-  val nextPeriod = Period(2022, Q3)
-
-//  override def beforeEach(): Unit = {
-//    Mockito.reset(returnStatusConnector)
-//    Mockito.reset(financialDataConnector)
-//    Mockito.reset(vatReturnSalesService)
-//    Mockito.reset(sessionRepository)
-//    Mockito.reset(save4LaterConnector)
-//    Mockito.reset(periodService)
-//    super.beforeEach()
-//  }
 
   "Your Account Controller" - {
 
@@ -73,9 +58,19 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
+        val nextPeriod = Period(2021, Q4)
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Next,
+              false,
+              false
+            ))))
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
@@ -84,14 +79,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
           ).build()
 
         running(application) {
@@ -109,14 +102,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               None,
               None,
-              Seq.empty
+              Seq.empty,
+              Some(Return.fromPeriod(nextPeriod, Next, false, false))
             ),
             CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
           println(contentAsString(result))
-          contentAsString(result).contains("You can complete your April to June 2022 return from 1 July 2022.").mustEqual(true)
         }
       }
 
@@ -137,15 +129,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
         running(application) {
@@ -163,11 +152,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               None,
               Some(Return.fromPeriod(period, Due, false, true)),
-              Seq.empty
+              Seq.empty,
+              None
             ),
             CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -188,7 +177,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -214,11 +202,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               None,
               Seq(
-                Return.fromPeriod(Period(2021, Q3), Overdue, false, true))
+                Return.fromPeriod(Period(2021, Q3), Overdue, false, true)),
+              None
             ),
             CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -244,16 +232,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[PeriodService].toInstance(periodService)
+            bind[UserAnswersRepository].toInstance(sessionRepository)
           ).build()
 
         running(application) {
@@ -272,11 +256,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               Some(Return.fromPeriod(secondPeriod, Due, false, false)),
               Seq(
-                Return.fromPeriod(firstPeriod, Overdue, false, true))
+                Return.fromPeriod(firstPeriod, Overdue, false, true)),
+              None
             ),
             CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -303,16 +287,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[PeriodService].toInstance(periodService)
           ).build()
 
         running(application) {
@@ -332,11 +312,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               Seq(
                 Return.fromPeriod(firstPeriod, Overdue, false, true),
-                Return.fromPeriod(secondPeriod, Overdue, false, false))
+                Return.fromPeriod(secondPeriod, Overdue, false, false)),
+              None
             ),
             CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -359,16 +339,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
         running(application) {
@@ -386,11 +362,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               None,
               Some(Return.fromPeriod(secondPeriod, Due, false, true)),
-              Seq.empty
+              Seq.empty,
+              None
             ),
             CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -417,16 +393,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
 
@@ -445,13 +417,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               None,
               None,
-              Seq.empty
+              Seq.empty,
+              None
             ),
             CurrentPayments(
               Seq(payment),
               Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -480,17 +452,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
         running(application) {
@@ -508,12 +476,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               None,
               None,
-              Seq.empty
+              Seq.empty,
+              None
             ),
             CurrentPayments(Seq(payment),
               Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
 
         }
@@ -539,17 +507,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
         running(application) {
@@ -567,13 +531,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               None,
               None,
-              Seq.empty
+              Seq.empty,
+              None
             ),
             CurrentPayments(
               Seq(payment),
               Seq.empty),
-            paymentError = true,
-            nextPeriod
+            paymentError = true
           )(request, messages(application)).toString
         }
       }
@@ -605,16 +569,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
         running(application) {
@@ -632,11 +592,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               None,
               None,
-              Seq.empty
+              Seq.empty,
+              None
             ),
             CurrentPayments(Seq.empty, Seq(overduePayment)),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -660,16 +620,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
         running(application) {
@@ -687,11 +643,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               None,
               None,
-              Seq.empty
+              Seq.empty,
+              None
             ),
             CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = true,
-            nextPeriod
+            paymentError = true
           )(request, messages(application)).toString
         }
       }
@@ -714,17 +670,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
         running(application) {
@@ -742,14 +694,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               None,
               None,
-              Seq.empty
+              Seq.empty,
+              None
             ),
             CurrentPayments(
               Seq(payment),
               Seq.empty
             ),
-            paymentError = true,
-            nextPeriod
+            paymentError = true
           )(request, messages(application)).toString
         }
       }
@@ -771,16 +723,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
         when(sessionRepository.set(any())) thenReturn(Future.successful(true))
 
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
-
         val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
         running(application) {
@@ -798,11 +746,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               Some(Return.fromPeriod(period, Due, true, true)),
               Some(Return.fromPeriod(period, Due, true, true)),
-              Seq.empty
+              Seq.empty,
+              None
             ),
             CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -823,16 +771,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(Some(answers)))
-        when(periodService.getNextPeriod(any())) thenReturn nextPeriod
-
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[PeriodService].toInstance(periodService)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
           ).build()
 
         running(application) {
@@ -850,11 +795,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             OpenReturns(
               Some(Return.fromPeriod(period, Overdue, true, true)),
               None,
-              Seq(Return.fromPeriod(Period(2021, Q3), Overdue, true, true))
+              Seq(Return.fromPeriod(Period(2021, Q3), Overdue, true, true)),
+              None
             ),
             CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false,
-            nextPeriod
+            paymentError = false
           )(request, messages(application)).toString
 
         }

@@ -23,8 +23,9 @@ object SubmissionStatus extends Enumerable.Implicits {
   case object Due extends WithName("DUE") with SubmissionStatus
   case object Overdue extends WithName("OVERDUE") with SubmissionStatus
   case object Complete extends WithName("COMPLETE") with SubmissionStatus
+  case object Next extends WithName("NEXT") with SubmissionStatus
 
-  val values: Seq[SubmissionStatus] = Seq(Due, Overdue, Complete)
+  val values: Seq[SubmissionStatus] = Seq(Due, Overdue, Complete, Next)
 
   implicit val enumerable: Enumerable[SubmissionStatus] =
     Enumerable(values.map(v => v.toString -> v): _*)
