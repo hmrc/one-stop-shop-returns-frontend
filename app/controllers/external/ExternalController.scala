@@ -36,11 +36,11 @@ class ExternalController @Inject()(
 
   override protected def controllerComponents: MessagesControllerComponents = cc
 
-  def onExternal(page: String, period: Option[Period] = None): Action[JsValue] =  cc.auth.async(parse.json) {
+  def onExternal(page: String, period: Option[Period] = None, lang: Option[String] = None): Action[JsValue] =  cc.auth.async(parse.json) {
     implicit request =>
       withJsonBody[ExternalRequest] {
       externalRequest =>
-      externalService.getExternalResponse(externalRequest, request.userId, page, period) match {
+      externalService.getExternalResponse(externalRequest, request.userId, page, period, lang) match {
         case Right(response) => Future.successful(Ok(Json.toJson(response)))
         case Left(_) => Future.successful(NotFound)
       }
