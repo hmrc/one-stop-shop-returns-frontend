@@ -56,7 +56,6 @@ index.yourReturns.returnDue = {0} is due by {1}.
 index.yourReturns.returnOverdue = {0} is overdue.
 index.yourReturns.returnsOverdue = You also have {0} overdue returns.
 index.yourReturns.onlyReturnsOverdue = You have {0} overdue returns.
-index.yourReturns.nothingDue = You do not have any returns due.
 index.yourReturns.startReturn = Start your return
 index.yourReturns.continueReturn = Continue your return
 index.payment.heading = Payments

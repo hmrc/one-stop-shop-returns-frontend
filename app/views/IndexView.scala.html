@@ -143,9 +143,6 @@
                             </a>
                         </p>
                     }
-                    case (None, None, 0) => {
-                        <p class="govuk-body">@messages("index.yourReturns.nothingDue")</p>
-                    }
                     case (None, Some(dueReturn), 0) => {
                         <p class="govuk-body">
                             <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(dueReturn.period).url" id="start-your-return">
@@ -154,11 +151,13 @@
                         </p>
                     }
                     case _ => {
-                        <p class="govuk-body">
-                            <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(returnsViewModel.overdueReturns.head.period).url" id="start-your-return">
-                            @messages("index.yourReturns.startReturn")
-                            </a>
-                        </p>
+                        @if(returnsViewModel.overdueReturns.nonEmpty) {
+                            <p class="govuk-body">
+                                <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(returnsViewModel.overdueReturns.head.period).url" id="start-your-return">
+                                @messages("index.yourReturns.startReturn")
+                                </a>
+                            </p>
+                        }
                     }
                 }
 
