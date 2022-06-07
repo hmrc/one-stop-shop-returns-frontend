@@ -23,7 +23,7 @@ import models.financialdata.{Payment, PaymentStatus}
 import models.{Mode, Period}
 import play.api.Logging
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.WhichVatPeriodToPayView
@@ -41,7 +41,7 @@ class WhichVatPeriodToPayController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = cc.authAndGetSavedAnswers.async {
+  def onPageLoad(mode: Mode): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       financialDataConnector.getCurrentPayments(request.vrn).map {
         case Right(payments) =>
@@ -55,12 +55,12 @@ class WhichVatPeriodToPayController @Inject()(
         case _ => journeyRecovery()
       } recover {
         case e: HttpException =>
-          logger.warn(s"Unexpected response from FinancialDataConnector: ${e.responseCode}")
-          Redirect(routes.JourneyRecoveryController.onPageLoad())
+          logger.warn(s"Unexpected response from FinancialDataConnector in onPageLoad: ${e.responseCode}")
+          journeyRecovery()
       }
   }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = cc.authAndGetSavedAnswers.async {
+  def onSubmit(mode: Mode): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       financialDataConnector.getCurrentPayments(request.vrn) map {
           case Right(payments) =>
@@ -76,16 +76,16 @@ class WhichVatPeriodToPayController @Inject()(
           case _ => journeyRecovery()
         } recover {
           case e: HttpException =>
-            logger.warn(s"Unexpected response from FinancialDataConnector: ${e.responseCode}")
+            logger.warn(s"Unexpected response from FinancialDataConnector in onSubmit: ${e.responseCode}")
             journeyRecovery()
         }
   }
 
-  private def redirectToOnlyPayment(allPayments: Payment) =
+  private def redirectToOnlyPayment(allPayments: Payment): Result =
     Redirect(routes.PaymentController.makePayment(allPayments.period, allPayments.amountOwed.longValue * 100))
 
   private def redirectToChosenPayment(allPayments: Seq[Payment], period: Period)
-                             (implicit request: Request[_]) = {
+                             (implicit request: Request[_]): Result = {
     allPayments
       .find(_.period == period)
       .map(p => p.amountOwed.longValue * 100)
@@ -93,7 +93,7 @@ class WhichVatPeriodToPayController @Inject()(
       .getOrElse(journeyRecovery())
   }
 
-  private def journeyRecovery() =
+  private def journeyRecovery(): Result =
     Redirect(routes.JourneyRecoveryController.onPageLoad())
 
 }
