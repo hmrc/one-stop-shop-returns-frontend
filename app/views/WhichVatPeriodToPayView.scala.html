@@ -14,6 +14,9 @@
  * limitations under the License.
  *@
 
+@import models.financialdata.CurrentPayments
+@import models.financialdata.Payment
+
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
@@ -22,11 +25,29 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(  form: Form[_],
+    mode: Mode,
+    currentPayments: CurrentPayments,
+    paymentError: Boolean )( implicit request: Request[_], messages: Messages )
 
 @layout(pageTitle = title(form, messages("whichVatPeriodToPay.title"))) {
 
-    @formHelper(action = routes.WhichVatPeriodToPayController.onSubmit(mode, period), 'autoComplete -> "off") {
+    @if(paymentError) {
+        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                    @messages("notificationBanner.title")
+                </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+                <p class="govuk-notification-banner__heading">
+                    @messages("notificationBanner.text")
+                </p>
+            </div>
+        </div>
+    }
+
+    @formHelper(action = routes.WhichVatPeriodToPayController.onSubmit(), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))
@@ -36,7 +57,7 @@
             RadiosViewModel(
                 field  = form("value"),
                 legend = LegendViewModel(messages("whichVatPeriodToPay.heading")).asPageHeading(),
-                items  = WhichVatPeriodToPay.options
+                items  = Payment.options((currentPayments.overduePayments ++ currentPayments.duePayments))
             )
         )
 

@@ -16,50 +16,94 @@
 
 package controllers
 
+import connectors.financialdata.FinancialDataConnector
 import controllers.actions._
 import forms.WhichVatPeriodToPayFormProvider
-import javax.inject.Inject
+import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.{Mode, Period}
-import pages.WhichVatPeriodToPayPage
+import play.api.Logging
+import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
+import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.WhichVatPeriodToPayView
 
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class WhichVatPeriodToPayController @Inject()(
                                        cc: AuthenticatedControllerComponents,
+                                       financialDataConnector: FinancialDataConnector,
                                        formProvider: WhichVatPeriodToPayFormProvider,
                                        view: WhichVatPeriodToPayView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(mode: Mode): Action[AnyContent] = cc.authAndGetSavedAnswers.async {
     implicit request =>
+      financialDataConnector.getCurrentPayments(request.vrn).map {
+        case Right(payments) =>
+          val allPayments = (payments.overduePayments ++ payments.duePayments)
+          val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
+          if(allPayments.size == 1) {
+            redirectToOnlyPayment(allPayments.head)
+          } else {
+            Ok(view( form, mode, payments, paymentError = paymentError))
+          }
+        case _ => journeyRecovery()
+      }.recover {
+        case e: HttpException =>
+          logger.warn(s"Unexpected response from FinancialDataConnector: ${e.responseCode}")
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
+      }
+  }
 
-      val preparedForm = request.userAnswers.get(WhichVatPeriodToPayPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
+  def onSubmit(mode: Mode): Action[AnyContent] = cc.authAndGetSavedAnswers.async {
+    implicit request =>
+      {
+        println(request.body)
+
+        financialDataConnector.getCurrentPayments(request.vrn).map {
+          case Right(payments) =>
+            val allPayments = (payments.overduePayments ++ payments.duePayments)
+            val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
+            if(allPayments.size == 1) {
+              redirectToOnlyPayment(allPayments.head)
+            } else {
+              form.bindFromRequest().fold(
+                formWithErrors => BadRequest(view(formWithErrors, mode, payments, paymentError)),
+                value => redirectToChosenPayment(allPayments, value)(request))
+            }
+          case _ => journeyRecovery()
+        }.recover {
+          case e: HttpException =>
+            logger.warn(s"Unexpected response from FinancialDataConnector: ${e.responseCode}")
+            journeyRecovery()
+        }
       }
 
-      Ok(view(preparedForm, mode, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
-    implicit request =>
+  private def redirectToOnlyPayment(allPayments: Payment) =
+    Redirect(routes.PaymentController.makePayment(allPayments.period, allPayments.amountOwed.longValue * 100))
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
-
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(WhichVatPeriodToPayPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(WhichVatPeriodToPayPage.navigate(mode, updatedAnswers))
-      )
+  private def redirectToChosenPayment(allPayments: Seq[Payment], period: Period)
+                             (implicit request: Request[_]) = {
+    allPayments
+      .find(_.period == period)
+      .map(p => p.amountOwed.longValue * 100)
+      .map(owed => Redirect(routes.PaymentController.makePayment(period, owed)))
+      .getOrElse(journeyRecovery())
   }
+
+  private def viewWithApiFailure(form: Form[_], mode: Mode)
+                        (implicit request: Request[_]) =
+    Ok(view(form, mode, CurrentPayments(Seq.empty, Seq.empty), paymentError = true))
+
+  private def journeyRecovery() (implicit request: Request[_]) =
+    Redirect(routes.JourneyRecoveryController.onPageLoad())
+
 }

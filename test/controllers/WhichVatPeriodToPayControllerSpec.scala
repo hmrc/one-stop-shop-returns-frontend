@@ -17,106 +17,51 @@
 package controllers
 
 import base.SpecBase
-import forms.WhichVatPeriodToPayFormProvider
-import models.{NormalMode, WhichVatPeriodToPay}
+import connectors.financialdata.CurrentPaymentsHttpParser.CurrentPaymentsResponse
+import connectors.financialdata.FinancialDataConnector
+import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
+import models.responses.InvalidJson
+import models.{Period, Quarter}
+import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import pages.WhichVatPeriodToPayPage
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.WhichVatPeriodToPayView
+import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier}
+
+import java.time.LocalDate
+import scala.concurrent.Future
 
 class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
-  private lazy val whichVatPeriodToPayRoute = routes.WhichVatPeriodToPayController.onPageLoad(NormalMode, period).url
+  private lazy val whichVatPeriodToPayRoute = routes.WhichVatPeriodToPayController.onPageLoad().url
 
-  private val formProvider = new WhichVatPeriodToPayFormProvider()
-  private val form = formProvider()
+  implicit private lazy val hc = HeaderCarrier()
 
-  "WhichVatPeriodToPay Controller" - {
+  "WhichVatPeriodToPay GET" - {
 
-    "must return OK and the correct view for a GET" in {
+    "when there is 1 period must redirect to payment controller " in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val financialDataConnector = mock[FinancialDataConnector]
 
-      running(application) {
-        val request = FakeRequest(GET, whichVatPeriodToPayRoute)
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
 
-        val result = route(application, request).value
+      val duePayments = Seq(
+        Payment(
+          Period(2022, Quarter.Q1),
+          BigDecimal(200.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        )
+      )
 
-        val view = application.injector.instanceOf[WhichVatPeriodToPayView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
-      }
-    }
-
-    "must populate the view correctly on a GET when the question has previously been answered" in {
-
-      val userAnswers = emptyUserAnswers.set(WhichVatPeriodToPayPage, WhichVatPeriodToPay.values.head).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, whichVatPeriodToPayRoute)
-
-        val view = application.injector.instanceOf[WhichVatPeriodToPayView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(WhichVatPeriodToPay.values.head), NormalMode, period)(request, messages(application)).toString
-      }
-    }
-//
-//    "must save the answer and redirect to the next page when valid data is submitted" in {
-//
-//      val mockSessionRepository = mock[SessionRepository]
-//
-//      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-//
-//      val application =
-//        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-//          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-//          .build()
-//
-//      running(application) {
-//        val request =
-//          FakeRequest(POST, whichVatPeriodToPayRoute)
-//            .withFormUrlEncodedBody(("value", WhichVatPeriodToPay.values.head.toString))
-//
-//        val result = route(application, request).value
-//        val expectedAnswers = emptyUserAnswers.set(WhichVatPeriodToPayPage, WhichVatPeriodToPay.values.head).success.value
-//
-//        status(result) mustEqual SEE_OTHER
-//        redirectLocation(result).value mustEqual WhichVatPeriodToPayPage.navigate(NormalMode, expectedAnswers).url
-//        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
-//      }
-//    }
-
-    "must return a Bad Request and errors when invalid data is submitted" in {
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, whichVatPeriodToPayRoute)
-            .withFormUrlEncodedBody(("value", "invalid value"))
-
-        val boundForm = form.bind(Map("value" -> "invalid value"))
-
-        val view = application.injector.instanceOf[WhichVatPeriodToPayView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
-      }
-    }
-
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
 
       running(application) {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -124,23 +69,337 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
+
+        redirectLocation(result).value mustEqual routes.PaymentController.makePayment(duePayments.head.period, duePayments.head.amountOwed.longValue() * 100).url
+
+      }
+    }
+
+    "if all statuses are UNPAID or PARTIAL" - {
+
+      val financialDataConnector = mock[FinancialDataConnector]
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      val duePayments = Seq(
+        Payment(
+          Period(2021, Quarter.Q4),
+          BigDecimal(100.0),
+          LocalDate.now(),
+          PaymentStatus.Partial
+        ),
+        Payment(
+          Period(2022, Quarter.Q1),
+          BigDecimal(200.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        )
+      )
+
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
+
+      running(application) {
+        val request = FakeRequest(GET, whichVatPeriodToPayRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+
+        val responseString = contentAsString(result)
+
+        val doc = Jsoup.parse(responseString)
+
+        "must show due amounts" in {
+          val radioLabels = doc.getElementsByClass("govuk-label govuk-radios__label")
+          radioLabels.size() mustEqual 2
+          radioLabels.get(0).text() mustEqual "You owe £100 for 1 October to 31 December 2021"
+          radioLabels.get(1).text() mustEqual "You owe £200 for 1 January to 31 March 2022"
+        }
+
+        "must not show banner" in {
+          val notificationBanner = doc.getElementsByClass("govuk-notification-banner")
+          notificationBanner.isEmpty mustBe true
+        }
+      }
+    }
+
+    "if any statuses are UNKNOWN" - {
+
+      val financialDataConnector = mock[FinancialDataConnector]
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      val duePayments = Seq(
+        Payment(
+          Period(2021, Quarter.Q3),
+          BigDecimal(100.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        ),
+        Payment(
+          Period(2021, Quarter.Q4),
+          BigDecimal(200.0),
+          LocalDate.now(),
+          PaymentStatus.Partial
+        ),
+        Payment(
+          Period(2022, Quarter.Q1),
+          BigDecimal(300.0),
+          LocalDate.now(),
+          PaymentStatus.Unknown
+        )
+      )
+
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
+
+      running(application) {
+        val request = FakeRequest(GET, whichVatPeriodToPayRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+
+        val responseString = contentAsString(result)
+
+        val doc = Jsoup.parse(responseString)
+
+        "must not show due amounts" in {
+          val radioLabels = doc.getElementsByClass("govuk-label govuk-radios__label")
+          radioLabels.size() mustEqual 3
+          radioLabels.get(0).text() mustEqual "1 July to 30 September 2021"
+          radioLabels.get(1).text() mustEqual "1 October to 31 December 2021"
+          radioLabels.get(2).text() mustEqual "1 January to 31 March 2022"
+        }
+
+        "must show banner" in {
+          val notificationBanner = doc.getElementsByClass("govuk-notification-banner")
+          notificationBanner.size() mustEqual 1
+        }
+      }
+    }
+
+    "must redirect to Journey Recovery if call to Financial Controller fails" in {
+
+      val financialDataConnector = mock[FinancialDataConnector]
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      val msg = "GET failed. Caused by: TimeoutException"
+
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.failed(new GatewayTimeoutException(msg))
+
+      running(application) {
+        val request = FakeRequest(GET, whichVatPeriodToPayRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
-    "redirect to Journey Recovery for a POST if no existing data is found" in {
+    "must redirect to Journey Recovery if Financial Data Controller receives error from backend" in {
 
-      val application = applicationBuilder(userAnswers = None).build()
+      val financialDataConnector = mock[FinancialDataConnector]
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        )
+        .build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, whichVatPeriodToPayRoute)
-            .withFormUrlEncodedBody(("value", WhichVatPeriodToPay.values.head.toString))
+        val request = FakeRequest(GET, whichVatPeriodToPayRoute)
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.successful[CurrentPaymentsResponse](Left(InvalidJson))
 
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
 
+        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+  }
+
+  "WhichVatPeriodToPay POST" - {
+
+    "when there is 1 period must redirect to payment controller " in {
+
+      val financialDataConnector = mock[FinancialDataConnector]
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      val duePayments = Seq(
+        Payment(
+          Period(2022, Quarter.Q1),
+          BigDecimal(200.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        )
+      )
+
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
+
+      running(application) {
+        val request = FakeRequest(POST, whichVatPeriodToPayRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        redirectLocation(result).value mustEqual routes.PaymentController.makePayment(duePayments.head.period, duePayments.head.amountOwed.longValue() * 100).url
+
+      }
+    }
+
+    "when there is more than one period must redirect to payment controller and selected period" in {
+
+      val financialDataConnector = mock[FinancialDataConnector]
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      val duePayments = Seq(
+        Payment(
+          Period(2021, Quarter.Q3),
+          BigDecimal(100.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        ),
+        Payment(
+          Period(2021, Quarter.Q4),
+          BigDecimal(200.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        ),
+        Payment(
+          Period(2022, Quarter.Q1),
+          BigDecimal(300.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        )
+      )
+
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
+
+      running(application) {
+        val request = FakeRequest(POST, whichVatPeriodToPayRoute)
+          .withFormUrlEncodedBody(("value" -> duePayments(2).period.toString))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        redirectLocation(result).value mustEqual routes.PaymentController.makePayment(duePayments(2).period, duePayments(2).amountOwed.longValue() * 100).url
+      }
+    }
+
+    "must redirect to Journey Recovery if call to Financial Controller fails" in {
+
+      val financialDataConnector = mock[FinancialDataConnector]
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        ).build()
+
+      val duePayments = Seq(
+        Payment(
+          Period(2021, Quarter.Q3),
+          BigDecimal(100.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        ),
+        Payment(
+          Period(2021, Quarter.Q4),
+          BigDecimal(200.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        ),
+        Payment(
+          Period(2022, Quarter.Q1),
+          BigDecimal(300.0),
+          LocalDate.now(),
+          PaymentStatus.Unpaid
+        )
+      )
+
+      val msg = "GET failed. Caused by: TimeoutException"
+
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.failed(new GatewayTimeoutException(msg))
+
+      running(application) {
+        val request = FakeRequest(POST, whichVatPeriodToPayRoute)
+          .withFormUrlEncodedBody(("value" -> duePayments(2).period.toString))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must redirect to Journey Recovery if Financial Data Controller receives error from backend" in {
+
+      val financialDataConnector = mock[FinancialDataConnector]
+
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
+        )
+        .build()
+
+      running(application) {
+
+        val duePayments = Seq(
+          Payment(
+            Period(2021, Quarter.Q3),
+            BigDecimal(100.0),
+            LocalDate.now(),
+            PaymentStatus.Unpaid
+          ),
+          Payment(
+            Period(2021, Quarter.Q4),
+            BigDecimal(200.0),
+            LocalDate.now(),
+            PaymentStatus.Unpaid
+          ),
+          Payment(
+            Period(2022, Quarter.Q1),
+            BigDecimal(300.0),
+            LocalDate.now(),
+            PaymentStatus.Unpaid
+          )
+        )
+
+        val request = FakeRequest(POST, whichVatPeriodToPayRoute)
+          .withFormUrlEncodedBody(("value" -> duePayments(2).period.toString))
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.successful[CurrentPaymentsResponse](Left(InvalidJson))
+
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
     }

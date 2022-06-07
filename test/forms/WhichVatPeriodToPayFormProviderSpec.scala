@@ -17,23 +17,26 @@
 package forms
 
 import forms.behaviours.OptionFieldBehaviours
-import models.WhichVatPeriodToPay
+import models.Period
+import models.Quarter.{Q1, Q3, Q4}
 import play.api.data.FormError
 
 class WhichVatPeriodToPayFormProviderSpec extends OptionFieldBehaviours {
 
   val form = new WhichVatPeriodToPayFormProvider()()
 
+  val validPeriods = Seq(Period(2021, Q3), Period(2021, Q4), Period(2022, Q1))
+
   ".value" - {
 
     val fieldName = "value"
     val requiredKey = "whichVatPeriodToPay.error.required"
 
-    behave like optionsField[WhichVatPeriodToPay](
+    behave like optionsField[Period](
       form,
       fieldName,
-      validValues  = WhichVatPeriodToPay.values,
-      invalidError = FormError(fieldName, "error.invalid")
+      validValues  = validPeriods,
+      invalidError = FormError(fieldName, "error.invalidPeriod")
     )
 
     behave like mandatoryField(

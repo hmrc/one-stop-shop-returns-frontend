@@ -16,16 +16,16 @@
 
 package forms
 
-import javax.inject.Inject
-
 import forms.mappings.Mappings
+import models.Period
 import play.api.data.Form
-import models.WhichVatPeriodToPay
+
+import javax.inject.Inject
 
 class WhichVatPeriodToPayFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[WhichVatPeriodToPay] =
+  def apply(): Form[Period] =
     Form(
-      "value" -> enumerable[WhichVatPeriodToPay]("whichVatPeriodToPay.error.required")
+      "value" -> period("whichVatPeriodToPay.error.required")
     )
 }

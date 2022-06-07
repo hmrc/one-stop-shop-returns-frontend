@@ -63,10 +63,10 @@ index.payment.heading = Payments
 index.payment.dueHeading = Due Payments
 index.payment.overdueHeading = Overdue Payments
 index.payment.pendingPayments = There may be a delay in your payments showing on this page
-index.payment.nothingOwed = You do not owe anything right now
+index.payment.nothingOwed = You have no tax to pay.
 index.payment.makeAPayment = Make a payment
-index.payment.amountOwed = You owe {0} for {1}
-index.payment.amountMaybeOwed = You may still have VAT to pay for {0}
+index.payment.amountOwed = You owe {0} for {1}. You must pay this by {2}.
+index.payment.amountMaybeOwed = You may still have VAT to pay for {0}. You must pay this by {2}.
 index.payment.overdueAmountOwed = You owe {0} for {1}, which was due by {2}
 index.payment.overdueAmountMaybeOwed = You may still have VAT to pay for {0}, which was due by {1}
 index.history = History
@@ -491,10 +491,12 @@ errorFromCore.knownIssues = Check our <a class="govuk-link" href="https://www.go
 errorFromCore.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 errorFromCore.your.account = Back to your account
 
-whichVatPeriodToPay.title = WhichVatPeriodToPay
-whichVatPeriodToPay.heading = WhichVatPeriodToPay
-whichVatPeriodToPay.option1 = Option 1
-whichVatPeriodToPay.option2 = Option 2
+whichVatPeriodToPay.title = Which VAT period do you want to pay?
+whichVatPeriodToPay.heading = Which VAT period do you want to pay?
+whichVatPeriodToPay.amountKnown = You owe <b>£{0}</b> for {1}
 whichVatPeriodToPay.checkYourAnswersLabel = WhichVatPeriodToPay
 whichVatPeriodToPay.error.required = Select whichVatPeriodToPay
 whichVatPeriodToPay.change.hidden = WhichVatPeriodToPay
+
+
+
