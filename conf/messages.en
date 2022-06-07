@@ -52,11 +52,10 @@ index.heading = Your account
 index.vrn = VAT registration number: {0}
 index.paragraph = You can correct a previous return when you submit your next one.
 index.yourReturns = Your returns
-index.yourReturns.returnDue = {0} is due by {1}
-index.yourReturns.returnOverdue = {0} is overdue
-index.yourReturns.returnsOverdue = You also have {0} returns overdue
-index.yourReturns.onlyReturnsOverdue = You have {0} returns overdue
-index.yourReturns.nothingDue = You do not have any returns due
+index.yourReturns.returnDue = {0} is due by {1}.
+index.yourReturns.returnOverdue = {0} is overdue.
+index.yourReturns.returnsOverdue = You also have {0} overdue returns.
+index.yourReturns.onlyReturnsOverdue = You have {0} overdue returns.
 index.yourReturns.startReturn = Start your return
 index.yourReturns.continueReturn = Continue your return
 index.payment.heading = Payments
@@ -65,12 +64,15 @@ index.payment.overdueHeading = Overdue Payments
 index.payment.pendingPayments = There may be a delay in your payments showing on this page
 index.payment.nothingOwed = You have no tax to pay.
 index.payment.makeAPayment = Make a payment
-index.payment.amountOwed = You owe {0} for {1}. You must pay this by {2}.
-index.payment.amountMaybeOwed = You may still have VAT to pay for {0}. You must pay this by {2}.
-index.payment.overdueAmountOwed = You owe {0} for {1}, which was due by {2}
-index.payment.overdueAmountMaybeOwed = You may still have VAT to pay for {0}, which was due by {1}
+
+index.payment.amountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}. You must pay this by {2}.
+index.payment.amountMaybeOwed = You may still have VAT to pay for {0}. You must pay this by {1}.
+index.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}, which was due by {2}
+index.payment.overdueAmountMaybeOwed = You may still have VAT to pay for {0}, which was d
+
 index.history = History
-index.history.previousReturns = View past returns
+index.history.previousReturns = View submitted returns
+index.nextPeriod = You can complete your {0} to {1} return from <span class="govuk-body govuk-!-font-weight-bold">{2}</span>.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
@@ -461,7 +463,7 @@ savedProgress.sign.out = sign out and come back later
 savedProgress.heading = savedProgress
 savedProgress.sign.in = If you sign out, you must sign back into your <a href="{0}">Government Gateway</a> to continue.
 saveProgress.button = Save and come back later
-yourAccount.return.inProgress = Your return for {0} is in progress
+yourAccount.return.inProgress = Your return for {0} is in progress.
 yourAccount.return.inProgress.due = It is due by {0}
 
 
@@ -491,6 +493,9 @@ errorFromCore.knownIssues = Check our <a class="govuk-link" href="https://www.go
 errorFromCore.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 errorFromCore.your.account = Back to your account
 
+noMoreWelsh.title = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o bryd
+noMoreWelsh.heading = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o bryd
+noMoreWelsh.submit = Yn eich blaen
 whichVatPeriodToPay.title = Which VAT period do you want to pay?
 whichVatPeriodToPay.heading = Which VAT period do you want to pay?
 whichVatPeriodToPay.amountKnown = You owe <b>£{0}</b> for {1}

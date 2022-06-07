@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models
+@this(
+        layout: templates.Layout,
+        govukButton: GovukButton
+)
 
-sealed trait SubmissionStatus
+@(externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
-object SubmissionStatus extends Enumerable.Implicits {
+@layout(pageTitle = titleNoForm(messages("noMoreWelsh.title"))) {
 
-  case object Due extends WithName("DUE") with SubmissionStatus
-  case object Overdue extends WithName("OVERDUE") with SubmissionStatus
-  case object Complete extends WithName("COMPLETE") with SubmissionStatus
-  case object Next extends WithName("NEXT") with SubmissionStatus
+    <h1 class="govuk-heading-xl">@messages("noMoreWelsh.heading")</h1>
 
-  val values: Seq[SubmissionStatus] = Seq(Due, Overdue, Complete, Next)
-
-  implicit val enumerable: Enumerable[SubmissionStatus] =
-    Enumerable(values.map(v => v.toString -> v): _*)
-
+    @govukButton(
+        ButtonViewModel(messages("noMoreWelsh.submit"))
+                .asLink(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url))
+                .withAttribute(("id", "continue"))
+    )
 }

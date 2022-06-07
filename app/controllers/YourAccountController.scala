@@ -106,7 +106,7 @@ class YourAccountController @Inject()(
           currentReturn
         })),
       currentPayments,
-      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
+      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown)
     )))
   }
 

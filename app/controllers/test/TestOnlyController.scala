@@ -42,35 +42,35 @@ class TestOnlyController @Inject()(testConnector: TestOnlyConnector,
 
   private val externalRequest = ExternalRequest("BTA", "/business-account")
 
-  def yourAccountFromExternal(): Action[AnyContent] = cc.auth  {
+  def yourAccountFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth  {
     implicit request =>
-      externalService.getExternalResponse(externalRequest, request.userId, YourAccount.name) match {
-        case Right(_) => Redirect(YourAccount.url)
+      externalService.getExternalResponse(externalRequest, request.userId, YourAccount.name, language = lang) match {
+        case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
 
   }
 
-  def startReturnFromExternal(period: Period): Action[AnyContent] = cc.auth {
+  def startReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth {
     implicit request =>
-      externalService.getExternalResponse(externalRequest, request.userId, StartReturn.name, Some(period)) match {
-        case Right(_) => Redirect(StartReturn.url(period))
+      externalService.getExternalResponse(externalRequest, request.userId, StartReturn.name, Some(period), language = lang) match {
+        case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
   }
 
-  def continueReturnFromExternal(period: Period): Action[AnyContent] = cc.auth {
+  def continueReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth {
     implicit request =>
-      externalService.getExternalResponse(externalRequest, request.userId, ContinueReturn.name, Some(period)) match {
-        case Right(_) => Redirect(ContinueReturn.url(period))
+      externalService.getExternalResponse(externalRequest, request.userId, ContinueReturn.name, Some(period), language = lang) match {
+        case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
   }
 
-  def returnsHistoryFromExternal(): Action[AnyContent] = cc.auth {
+  def returnsHistoryFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth {
     implicit request =>
-      externalService.getExternalResponse(externalRequest, request.userId, ReturnsHistory.name) match {
-        case Right(_) => Redirect(ReturnsHistory.url)
+      externalService.getExternalResponse(externalRequest, request.userId, ReturnsHistory.name, language = lang) match {
+        case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
   }
