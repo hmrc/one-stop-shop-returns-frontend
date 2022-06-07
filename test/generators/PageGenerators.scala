@@ -23,9 +23,6 @@ import pages.corrections._
 
 trait PageGenerators {
 
-  implicit lazy val arbitraryWhichVatPeriodToPayPage: Arbitrary[WhichVatPeriodToPayPage.type] =
-    Arbitrary(WhichVatPeriodToPayPage)
-
   implicit lazy val arbitraryVatPeriodCorrectionsListPage: Arbitrary[VatPeriodCorrectionsListPage.type] =
     Arbitrary(VatPeriodCorrectionsListPage)
 

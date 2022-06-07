@@ -19,10 +19,9 @@ package controllers
 import connectors.financialdata.FinancialDataConnector
 import controllers.actions._
 import forms.WhichVatPeriodToPayFormProvider
-import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
+import models.financialdata.{Payment, PaymentStatus}
 import models.{Mode, Period}
 import play.api.Logging
-import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.http.HttpException
@@ -46,7 +45,7 @@ class WhichVatPeriodToPayController @Inject()(
     implicit request =>
       financialDataConnector.getCurrentPayments(request.vrn).map {
         case Right(payments) =>
-          val allPayments = (payments.overduePayments ++ payments.duePayments)
+          val allPayments = payments.overduePayments ++ payments.duePayments
           val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
           if(allPayments.size == 1) {
             redirectToOnlyPayment(allPayments.head)
@@ -54,7 +53,7 @@ class WhichVatPeriodToPayController @Inject()(
             Ok(view( form, mode, payments, paymentError = paymentError))
           }
         case _ => journeyRecovery()
-      }.recover {
+      } recover {
         case e: HttpException =>
           logger.warn(s"Unexpected response from FinancialDataConnector: ${e.responseCode}")
           Redirect(routes.JourneyRecoveryController.onPageLoad())
@@ -63,12 +62,9 @@ class WhichVatPeriodToPayController @Inject()(
 
   def onSubmit(mode: Mode): Action[AnyContent] = cc.authAndGetSavedAnswers.async {
     implicit request =>
-      {
-        println(request.body)
-
-        financialDataConnector.getCurrentPayments(request.vrn).map {
+      financialDataConnector.getCurrentPayments(request.vrn) map {
           case Right(payments) =>
-            val allPayments = (payments.overduePayments ++ payments.duePayments)
+            val allPayments = payments.overduePayments ++ payments.duePayments
             val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
             if(allPayments.size == 1) {
               redirectToOnlyPayment(allPayments.head)
@@ -78,13 +74,11 @@ class WhichVatPeriodToPayController @Inject()(
                 value => redirectToChosenPayment(allPayments, value)(request))
             }
           case _ => journeyRecovery()
-        }.recover {
+        } recover {
           case e: HttpException =>
             logger.warn(s"Unexpected response from FinancialDataConnector: ${e.responseCode}")
             journeyRecovery()
         }
-      }
-
   }
 
   private def redirectToOnlyPayment(allPayments: Payment) =
@@ -99,11 +93,7 @@ class WhichVatPeriodToPayController @Inject()(
       .getOrElse(journeyRecovery())
   }
 
-  private def viewWithApiFailure(form: Form[_], mode: Mode)
-                        (implicit request: Request[_]) =
-    Ok(view(form, mode, CurrentPayments(Seq.empty, Seq.empty), paymentError = true))
-
-  private def journeyRecovery() (implicit request: Request[_]) =
+  private def journeyRecovery() =
     Redirect(routes.JourneyRecoveryController.onPageLoad())
 
 }

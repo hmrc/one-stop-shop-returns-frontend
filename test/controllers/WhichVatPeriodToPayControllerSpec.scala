@@ -23,7 +23,7 @@ import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.InvalidJson
 import models.{Period, Quarter}
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
@@ -38,7 +38,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
   private lazy val whichVatPeriodToPayRoute = routes.WhichVatPeriodToPayController.onPageLoad().url
 
-  implicit private lazy val hc = HeaderCarrier()
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   "WhichVatPeriodToPay GET" - {
 
@@ -70,7 +70,8 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
 
-        redirectLocation(result).value mustEqual routes.PaymentController.makePayment(duePayments.head.period, duePayments.head.amountOwed.longValue() * 100).url
+        redirectLocation(result).value mustEqual routes.PaymentController.makePayment(
+          duePayments.head.period, duePayments.head.amountOwed.longValue() * 100).url
 
       }
     }
@@ -264,7 +265,8 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
 
-        redirectLocation(result).value mustEqual routes.PaymentController.makePayment(duePayments.head.period, duePayments.head.amountOwed.longValue() * 100).url
+        redirectLocation(result).value mustEqual routes.PaymentController.makePayment(
+          duePayments.head.period, duePayments.head.amountOwed.longValue() * 100).url
 
       }
     }
@@ -304,7 +306,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request = FakeRequest(POST, whichVatPeriodToPayRoute)
-          .withFormUrlEncodedBody(("value" -> duePayments(2).period.toString))
+          .withFormUrlEncodedBody("value" -> duePayments(2).period.toString)
 
         val result = route(application, request).value
 
@@ -350,7 +352,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request = FakeRequest(POST, whichVatPeriodToPayRoute)
-          .withFormUrlEncodedBody(("value" -> duePayments(2).period.toString))
+          .withFormUrlEncodedBody("value" -> duePayments(2).period.toString)
 
         val result = route(application, request).value
 
@@ -394,7 +396,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         )
 
         val request = FakeRequest(POST, whichVatPeriodToPayRoute)
-          .withFormUrlEncodedBody(("value" -> duePayments(2).period.toString))
+          .withFormUrlEncodedBody("value" -> duePayments(2).period.toString)
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.successful[CurrentPaymentsResponse](Left(InvalidJson))
 
