@@ -17,17 +17,9 @@
 package controllers.external
 
 import base.SpecBase
-import models.external.{ExternalRequest, ExternalResponse}
-import models.responses.NotFound
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.OK
-import play.api.inject
-import play.api.libs.json.{JsNull, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.external.ExternalService
 import views.html.NoMoreWelshTranslationsView
 
 class NoMoreWelshControllerSpec extends SpecBase {

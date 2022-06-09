@@ -188,30 +188,24 @@
                             @payment.paymentStatus match {
                                 case PaymentStatus.Unknown => {
                                     <p class="govuk-body">
-                    @Html(messages(
-                    "index.payment.amountMaybeOwed",
-                    payment.period.displayText
-                    ))
-                </p>
+                                        @Html(messages(
+                                        "index.payment.amountMaybeOwed",
+                                        payment.period.displayText,
+                                        payment.period.paymentDeadlineDisplay
+                                        ))
+                                    </p>
                                 }
                                 case _ => {
                                     <p class="govuk-body">
-                    @Html(messages(
-                    "index.payment.amountOwed",
-                    currencyFormat(payment.amountOwed),
-                    payment.period.displayText
-                    ))
-                </p>
-
-                                    }
-
+                                        @Html(messages(
+                                        "index.payment.amountOwed",
+                                        currencyFormat(payment.amountOwed),
+                                        payment.period.displayText,
+                                        payment.period.paymentDeadlineDisplay
+                                        ))
+                                    </p>
                                 }
-                                <p class="govuk-body">
-                                    <a class="govuk-link"
-                                       href="@routes.PaymentController.makePayment(payment.period, (payment.amountOwed*100).toLong)" id="make-a-payment">
-                                        @messages("index.payment.makeAPayment")
-                                    </a>
-                                </p>
+                            }
                         }
                         @if(currentPayments.overduePayments.nonEmpty) {
                             <h3 class="govuk-heading-s push--top">@messages("index.payment.overdueHeading")</h3>
@@ -236,17 +230,16 @@
                                             payment.period.paymentDeadlineDisplay
                                             ))
                                         </p>
-
                                 }
-
                             }
-                            <p class="govuk-body">
-                                <a class="govuk-link"
-                                   href="@routes.PaymentController.makePayment(payment.period, (payment.amountOwed * 100).toLong)" id="make-a-payment">
-                                    @messages("index.payment.makeAPayment")
-                                </a>
-                            </p>
                         }
+
+                        <p class="govuk-body">
+                            <a class="govuk-link"
+                               href="@routes.WhichVatPeriodToPayController.onPageLoad()" id="make-a-payment">
+                                @messages("index.payment.makeAPayment")
+                            </a>
+                        </p>
                     }
                 }
             </div>
@@ -263,7 +256,6 @@
                 </p>
             </div>
         </div>
-
     </div>
 
 
