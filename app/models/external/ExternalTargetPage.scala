@@ -30,6 +30,10 @@ sealed trait UrlWithPeriod {
   def url(period: Period) : String
 }
 
+sealed trait UrlWithPeriodAndAmount {
+  def url(period: Period, amountInPence: Long) : String
+}
+
 case object YourAccount extends ExternalTargetPage with ParameterlessUrl {
   override val name: String = "your-account"
   override val url: String = controllers.routes.YourAccountController.onPageLoad().url
@@ -53,4 +57,9 @@ case object ContinueReturn extends ExternalTargetPage with UrlWithPeriod {
 case object NoMoreWelsh extends ExternalTargetPage {
   override val name: String = "no-more-welsh"
   def url(targetUrl: String): String = controllers.external.routes.NoMoreWelshController.onPageLoad(Some(targetUrl)).url
+}
+
+case object Payment extends ExternalTargetPage with UrlWithPeriodAndAmount {
+  override val name: String = "make-payment"
+  override def url(period:Period, amountInPence: Long): String = controllers.routes.PaymentController.makePayment(period, amountInPence).url
 }
