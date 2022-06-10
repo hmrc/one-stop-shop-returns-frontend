@@ -18,27 +18,24 @@ package controllers.external
 
 import base.SpecBase
 import models.external.{ExternalRequest, ExternalResponse}
+import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.SavedProgressPage
 import play.api.http.Status.OK
 import play.api.inject
-import play.api.inject.bind
 import play.api.libs.json.{JsNull, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.{SessionRepository, UserAnswersRepository}
 import services.external.ExternalService
-import models.responses.NotFound
-
-import scala.concurrent.Future
 
 class ExternalControllerSpec extends SpecBase {
+
   private val yourAccount = "your-account"
   private val returnsHistory = "returns-history"
   private val startReturn = "start-your-return"
   private val continueReturn = "continue-your-return"
+  private val payment = "make-payment"
   private val externalRequest = ExternalRequest("BTA", "exampleurl")
 
 
@@ -48,7 +45,7 @@ class ExternalControllerSpec extends SpecBase {
       "must return OK" in {
         val mockExternalService = mock[ExternalService]
 
-        when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
+        when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
 
         val application = applicationBuilder()
           .overrides(inject.bind[ExternalService].toInstance(mockExternalService))
@@ -65,11 +62,33 @@ class ExternalControllerSpec extends SpecBase {
         }
       }
 
+      "when navigating to payment page must return OK" in {
+        val mockExternalService = mock[ExternalService]
+
+        when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
+
+        val application = applicationBuilder()
+          .overrides(inject.bind[ExternalService].toInstance(mockExternalService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(
+            POST,
+            routes.ExternalController.onExternal(payment, period = Some(period), amountInPence = Some(10000)).url).withJsonBody(
+            Json.toJson(externalRequest)
+          )
+
+          val result = route(application, request).value
+          status(result) mustBe OK
+          contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse("url")
+        }
+      }
+
       "must respond with NotFound and not save return url if service responds with NotFound" - {
         "because no period provided where needed" in {
           val mockExternalService = mock[ExternalService]
 
-          when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any())) thenReturn Left(NotFound)
+          when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any(), any())) thenReturn Left(NotFound)
 
           val application = applicationBuilder()
             .overrides(inject.bind[ExternalService].toInstance(mockExternalService))
