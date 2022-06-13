@@ -56,8 +56,8 @@ index.yourReturns.returnDue = {0} is due by {1}.
 index.yourReturns.returnOverdue = {0} is overdue.
 index.yourReturns.returnsOverdue = You also have {0} overdue returns.
 index.yourReturns.onlyReturnsOverdue = You have {0} overdue returns.
-index.yourReturns.startReturn = Start your return
-index.yourReturns.continueReturn = Continue your return
+index.yourReturns.startReturn = Start your {0} return
+index.yourReturns.continueReturn = Continue your {0} return
 index.payment.heading = Payments
 index.payment.dueHeading = Due Payments
 index.payment.overdueHeading = Overdue Payments
@@ -72,7 +72,7 @@ index.payment.overdueAmountMaybeOwed = You may still have VAT to pay for {0}, wh
 
 index.history = History
 index.history.previousReturns = View submitted returns
-index.nextPeriod = You can complete your {0} to {1} return from <span class="govuk-body govuk-!-font-weight-bold">{2}</span>.
+index.nextPeriod = You can complete your {0} return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service

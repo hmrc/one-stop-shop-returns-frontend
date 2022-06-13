@@ -70,10 +70,7 @@
 
         @(returnsViewModel.currentReturn, returnsViewModel.dueReturn, returnsViewModel.overdueReturns.size, returnsViewModel.nextReturn) match {
             case (_, _, _, Some(nextReturn)) => {
-                <p class="govuk-body" id="next-period">@Html(messages(
-                    "index.nextPeriod",
-                    nextReturn.period.firstDay.format(DateTimeFormatter.ofPattern("MMMM")),
-                    nextReturn.period.lastDay.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                <p class="govuk-body" id="next-period">@Html(messages("index.nextPeriod", nextReturn.period.displayShortText,
                     nextReturn.lastDay.plusDays(1).format(DateTimeFormatter.ofPattern("d MMMM yyyy"))))
                 </p>
             }
@@ -139,14 +136,14 @@
                     case (Some(inProgress), _, _) => {
                         <p class="govuk-body">
                             <a class="govuk-link" href="@controllers.routes.ContinueReturnController.onPageLoad(inProgress.period).url" id="continue-your-return">
-                                @messages("index.yourReturns.continueReturn")
+                                @messages("index.yourReturns.continueReturn", inProgress.period.displayShortText)
                             </a>
                         </p>
                     }
                     case (None, Some(dueReturn), 0) => {
                         <p class="govuk-body">
                             <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(dueReturn.period).url" id="start-your-return">
-                            @messages("index.yourReturns.startReturn")
+                            @messages("index.yourReturns.startReturn", dueReturn.period.displayShortText)
                             </a>
                         </p>
                     }
@@ -154,7 +151,7 @@
                         @if(returnsViewModel.overdueReturns.nonEmpty) {
                             <p class="govuk-body">
                                 <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(returnsViewModel.overdueReturns.head.period).url" id="start-your-return">
-                                @messages("index.yourReturns.startReturn")
+                                @messages("index.yourReturns.startReturn", returnsViewModel.overdueReturns.head.period.displayShortText)
                                 </a>
                             </p>
                         }

@@ -35,9 +35,14 @@ case class Period(year: Int, quarter: Quarter) {
 
   private val firstDayFormatter = DateTimeFormatter.ofPattern("d MMMM")
   private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+  private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
+  private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
   def displayText(implicit messages: Messages): String =
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
+
+  def displayShortText(implicit messages: Messages): String =
+    s"${firstDay.format(firstMonthFormatter)} ${messages("site.to")} ${lastDay.format(lastMonthYearFormatter)}"
 
   val paymentDeadlineDisplay: String = paymentDeadline.format(lastDayFormatter)
 
