@@ -16,3 +16,4 @@ GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-onl
 GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-only/start-your-return-from-bta/:period        @controllers.test.TestOnlyController.startReturnFromExternal(period: Period, lang: Option[String] ?= None)
 GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-only/continue-return-from-bta/:period          @controllers.test.TestOnlyController.continueReturnFromExternal(period: Period, lang: Option[String] ?= None)
 GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-only/returns-history-from-bta                  @controllers.test.TestOnlyController.returnsHistoryFromExternal(lang: Option[String] ?= None)
+GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-only/payments-from-bta                         @controllers.test.TestOnlyController.paymentsFromExternal(lang: Option[String] ?= None)
