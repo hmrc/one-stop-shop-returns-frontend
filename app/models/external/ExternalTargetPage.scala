@@ -59,7 +59,7 @@ case object NoMoreWelsh extends ExternalTargetPage {
   def url(targetUrl: String): String = controllers.external.routes.NoMoreWelshController.onPageLoad(Some(targetUrl)).url
 }
 
-case object Payment extends ExternalTargetPage with UrlWithPeriodAndAmount {
+case object Payment extends ExternalTargetPage with ParameterlessUrl {
   override val name: String = "make-payment"
-  override def url(period:Period, amountInPence: Long): String = controllers.routes.PaymentController.makePayment(period, amountInPence).url
+  override val url: String = controllers.routes.WhichVatPeriodToPayController.onPageLoad().url
 }
