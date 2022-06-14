@@ -75,4 +75,12 @@ class TestOnlyController @Inject()(testConnector: TestOnlyConnector,
       }
   }
 
+  def paymentReturnFromExternal(period: Period, lang: Option[String] = None, amountInPence: Option[Long] = None): Action[AnyContent] = cc.auth {
+    implicit request =>
+      externalService.getExternalResponse(externalRequest, request.userId, Payment.name, Some(period), language = lang, amountInPence = amountInPence) match {
+        case Right(response) => Redirect(response.redirectUrl)
+        case Left(_) => InternalServerError
+      }
+  }
+
 }
