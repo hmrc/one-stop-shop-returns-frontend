@@ -41,7 +41,7 @@ object Payment {
       if (hasUnknownPayments) {
         payment.period.displayText
       } else {
-        messages("whichVatPeriodToPay.amountKnown", payment.amountOwed, payment.period.displayText)
+        messages("whichVatPeriodToPay.amountKnown", payment.amountOwed, payment.period.displayShortText)
       }
 
     payments.zipWithIndex.map {

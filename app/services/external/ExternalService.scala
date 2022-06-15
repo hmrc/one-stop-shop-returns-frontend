@@ -34,25 +34,24 @@ class ExternalService @Inject()(sessionRepository: SessionRepository)(implicit e
                           userId: String,
                           page: String,
                           period: Option[Period] = None,
-                          language: Option[String] = None,
-                          amountInPence: Option[Long] = None): Either[ErrorResponse, ExternalResponse] = {
+                          language: Option[String] = None): Either[ErrorResponse, ExternalResponse] = {
 
-    val response = (page, period, amountInPence) match {
-      case (YourAccount.name, None, None) =>
+    val response = (page, period) match {
+      case (YourAccount.name, None) =>
         saveReturnUrl(userId, externalRequest)
         Right(ExternalResponse(YourAccount.url))
-      case (ReturnsHistory.name, None, None) =>
+      case (ReturnsHistory.name, None) =>
         saveReturnUrl(userId, externalRequest)
         Right(ExternalResponse(ReturnsHistory.url))
-      case (StartReturn.name, Some(returnPeriod), None) =>
+      case (StartReturn.name, Some(returnPeriod)) =>
         saveReturnUrl(userId, externalRequest)
         Right(ExternalResponse(StartReturn.url(returnPeriod)))
-      case (ContinueReturn.name, Some(returnPeriod), None) =>
+      case (ContinueReturn.name, Some(returnPeriod)) =>
         saveReturnUrl(userId, externalRequest)
         Right(ExternalResponse(ContinueReturn.url(returnPeriod)))
-      case (Payment.name, Some(returnPeriod), Some(amount)) =>
+      case (Payment.name, None) =>
         saveReturnUrl(userId, externalRequest)
-        Right(ExternalResponse(Payment.url(returnPeriod, amount)))
+        Right(ExternalResponse(Payment.url))
       case _ => Left(NotFound)
     }
 

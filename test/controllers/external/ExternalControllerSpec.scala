@@ -45,7 +45,7 @@ class ExternalControllerSpec extends SpecBase {
       "must return OK" in {
         val mockExternalService = mock[ExternalService]
 
-        when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
+        when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
 
         val application = applicationBuilder()
           .overrides(inject.bind[ExternalService].toInstance(mockExternalService))
@@ -65,7 +65,7 @@ class ExternalControllerSpec extends SpecBase {
       "when navigating to payment page must return OK" in {
         val mockExternalService = mock[ExternalService]
 
-        when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
+        when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
 
         val application = applicationBuilder()
           .overrides(inject.bind[ExternalService].toInstance(mockExternalService))
@@ -74,7 +74,7 @@ class ExternalControllerSpec extends SpecBase {
         running(application) {
           val request = FakeRequest(
             POST,
-            routes.ExternalController.onExternal(payment, period = Some(period), amountInPence = Some(10000)).url).withJsonBody(
+            routes.ExternalController.onExternal(payment).url).withJsonBody(
             Json.toJson(externalRequest)
           )
 
@@ -88,7 +88,7 @@ class ExternalControllerSpec extends SpecBase {
         "because no period provided where needed" in {
           val mockExternalService = mock[ExternalService]
 
-          when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any(), any())) thenReturn Left(NotFound)
+          when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any())) thenReturn Left(NotFound)
 
           val application = applicationBuilder()
             .overrides(inject.bind[ExternalService].toInstance(mockExternalService))

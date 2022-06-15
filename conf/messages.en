@@ -503,9 +503,4 @@ noMoreWelsh.submit = Yn eich blaen
 whichVatPeriodToPay.title = Which VAT period do you want to pay?
 whichVatPeriodToPay.heading = Which VAT period do you want to pay?
 whichVatPeriodToPay.amountKnown = You owe <b>£{0}</b> for {1}
-whichVatPeriodToPay.checkYourAnswersLabel = WhichVatPeriodToPay
-whichVatPeriodToPay.error.required = Select whichVatPeriodToPay
-whichVatPeriodToPay.change.hidden = WhichVatPeriodToPay
-
-
-
+whichVatPeriodToPay.error.required = Select a period to pay

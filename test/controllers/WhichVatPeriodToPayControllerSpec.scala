@@ -117,8 +117,8 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         "must show due amounts" in {
           val radioLabels = doc.getElementsByClass("govuk-label govuk-radios__label")
           radioLabels.size() mustEqual 2
-          radioLabels.get(0).text() mustEqual "You owe £100 for 1 October to 31 December 2021"
-          radioLabels.get(1).text() mustEqual "You owe £200 for 1 January to 31 March 2022"
+          radioLabels.get(0).text() mustEqual "You owe £100 for October to December 2021"
+          radioLabels.get(1).text() mustEqual "You owe £200 for January to March 2022"
         }
 
         "must not show banner" in {
