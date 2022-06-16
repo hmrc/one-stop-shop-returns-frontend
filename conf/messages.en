@@ -51,13 +51,20 @@ index.title = Your account
 index.heading = Your account
 index.vrn = VAT registration number: {0}
 index.paragraph = You can correct a previous return when you submit your next one.
+index.yourReturns.inProgress = Your return for {0} is in progress.
+index.yourReturns.inProgress.due = This is due by {0}.
 index.yourReturns = Your returns
 index.yourReturns.returnDue = {0} is due by {1}.
-index.yourReturns.returnOverdue = {0} is overdue.
+index.yourReturns.returnOverdue = You have an overdue return.
+index.yourReturns.returnOverdue.inProgress = You have an overdue return in progress.
+index.yourReturns.returnOverdue.additional.inProgress = You also have an overdue return in progress.
+index.yourReturns.returnsOverdue.singular = You also have an overdue return.
 index.yourReturns.returnsOverdue = You also have {0} overdue returns.
 index.yourReturns.onlyReturnsOverdue = You have {0} overdue returns.
-index.yourReturns.startReturn = Start your return
-index.yourReturns.continueReturn = Continue your return
+index.yourReturns.startReturn = Start your {0} return
+index.yourReturns.dueReturn.startReturn = Start your return
+index.yourReturns.continueReturn = Continue your {0} return
+index.yourReturns.dueReturn.continueReturn = Continue your return
 index.payment.heading = Payments
 index.payment.dueHeading = Due Payments
 index.payment.overdueHeading = Overdue Payments
@@ -72,7 +79,7 @@ index.payment.overdueAmountMaybeOwed = You may still have VAT to pay for {0}, wh
 
 index.history = History
 index.history.previousReturns = View submitted returns
-index.nextPeriod = You can complete your {0} to {1} return from <span class="govuk-body govuk-!-font-weight-bold">{2}</span>.
+index.nextPeriod = You can complete your {0} return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
@@ -463,9 +470,6 @@ savedProgress.sign.out = sign out and come back later
 savedProgress.heading = savedProgress
 savedProgress.sign.in = If you sign out, you must sign back into your <a href="{0}">Government Gateway</a> to continue.
 saveProgress.button = Save and come back later
-yourAccount.return.inProgress = Your return for {0} is in progress.
-yourAccount.return.inProgress.due = It is due by {0}
-
 
 continueReturn.title = What would you like to do?
 continueReturn.heading = What would you like to do?
