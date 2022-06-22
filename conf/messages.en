@@ -505,5 +505,6 @@ whichVatPeriodToPay.heading = Which VAT period do you want to pay?
 whichVatPeriodToPay.amountKnown = You owe <b>£{0}</b> for {1}
 whichVatPeriodToPay.error.required = Select a period to pay
 
-
-
+noPayments.title = You do not owe any One Stop Shop VAT
+noPayments.heading = You do not owe any One Stop Shop VAT
+noPayments.textWithLink = Return to <a href={0}>your account</a>.

@@ -26,7 +26,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.WhichVatPeriodToPayView
+import views.html.payments.WhichVatPeriodToPayView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -41,16 +41,18 @@ class WhichVatPeriodToPayController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = cc.authAndGetRegistration.async {
+  def onPageLoad(): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       financialDataConnector.getCurrentPayments(request.vrn).map {
         case Right(payments) =>
           val allPayments = payments.overduePayments ++ payments.duePayments
           val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
-          if(allPayments.size == 1) {
+          if(allPayments.isEmpty) {
+            Redirect(routes.NoPaymentsController.onPageLoad())
+          } else if(allPayments.size == 1) {
             redirectToOnlyPayment(allPayments.head)
           } else {
-            Ok(view( form, mode, payments, paymentError = paymentError))
+            Ok(view( form, payments, paymentError = paymentError))
           }
         case _ => journeyRecovery()
       } recover {
@@ -60,7 +62,7 @@ class WhichVatPeriodToPayController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = cc.authAndGetRegistration.async {
+  def onSubmit(): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       financialDataConnector.getCurrentPayments(request.vrn) map {
           case Right(payments) =>
@@ -70,7 +72,7 @@ class WhichVatPeriodToPayController @Inject()(
               redirectToOnlyPayment(allPayments.head)
             } else {
               form.bindFromRequest().fold(
-                formWithErrors => BadRequest(view(formWithErrors, mode, payments, paymentError)),
+                formWithErrors => BadRequest(view(formWithErrors, payments, paymentError)),
                 value => redirectToChosenPayment(allPayments, value)(request))
             }
           case _ => journeyRecovery()

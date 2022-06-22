@@ -310,5 +310,6 @@ POST       /external-entry/:page                                                
 
 GET        /no-welsh-service                                                                                 controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[String] ?= None)
 
-GET        /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onPageLoad(mode: Mode = NormalMode)
-POST       /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onSubmit(mode: Mode = NormalMode)
+GET        /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onPageLoad()
+POST       /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onSubmit()
+GET        /pay-your-tax-a/no-tax-owed                                                                       controllers.NoPaymentsController.onPageLoad()
