@@ -21,7 +21,7 @@ import connectors.financialdata.CurrentPaymentsHttpParser.CurrentPaymentsRespons
 import connectors.financialdata.FinancialDataConnector
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.InvalidJson
-import models.{Period, Quarter}
+import models.{Period, Quarter, SessionData}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -29,7 +29,10 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.external.ExternalReturnUrlQuery
+import repositories.SessionRepository
 import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier}
+import views.html.payments.NoPaymentsView
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -41,6 +44,65 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   "WhichVatPeriodToPay GET" - {
+
+    "when there is no periods must display no payments view" - {
+      "with YourAccount url if no external url saved in session" in {
+        val financialDataConnector = mock[FinancialDataConnector]
+        val sessionRepository = mock[SessionRepository]
+
+        val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
+          ).build()
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty)))
+
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+
+        running(application) {
+          val request = FakeRequest(GET, whichVatPeriodToPayRoute)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[NoPaymentsView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(routes.YourAccountController.onPageLoad().url)(request, messages(application)).toString
+        }
+
+      }
+
+      "with external url if an external url is saved in session" in {
+        val financialDataConnector = mock[FinancialDataConnector]
+        val sessionRepository = mock[SessionRepository]
+        val externalUrl = "testUrl"
+
+        val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SessionRepository].toInstance(sessionRepository)
+          ).build()
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty)))
+
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, externalUrl).get))
+
+        running(application) {
+          val request = FakeRequest(GET, whichVatPeriodToPayRoute)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[NoPaymentsView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(externalUrl)(request, messages(application)).toString
+        }
+
+      }
+    }
 
     "when there is 1 period must redirect to payment controller " in {
 
