@@ -19,43 +19,54 @@ package controllers
 import connectors.financialdata.FinancialDataConnector
 import controllers.actions._
 import forms.WhichVatPeriodToPayFormProvider
+import models.Period
 import models.financialdata.{Payment, PaymentStatus}
-import models.{Mode, Period}
 import play.api.Logging
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
+import play.api.mvc._
+import queries.external.ExternalReturnUrlQuery
+import repositories.SessionRepository
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.payments.WhichVatPeriodToPayView
+import views.html.payments.{NoPaymentsView, WhichVatPeriodToPayView}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class WhichVatPeriodToPayController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       financialDataConnector: FinancialDataConnector,
-                                       formProvider: WhichVatPeriodToPayFormProvider,
-                                       view: WhichVatPeriodToPayView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                               cc: AuthenticatedControllerComponents,
+                                               financialDataConnector: FinancialDataConnector,
+                                               sessionRepository: SessionRepository,
+                                               formProvider: WhichVatPeriodToPayFormProvider,
+                                               view: WhichVatPeriodToPayView,
+                                               viewNoPayment: NoPaymentsView
+                                             )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      financialDataConnector.getCurrentPayments(request.vrn).map {
-        case Right(payments) =>
-          val allPayments = payments.overduePayments ++ payments.duePayments
-          val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
-          if(allPayments.isEmpty) {
-            Redirect(routes.NoPaymentsController.onPageLoad())
-          } else if(allPayments.size == 1) {
-            redirectToOnlyPayment(allPayments.head)
-          } else {
-            Ok(view( form, payments, paymentError = paymentError))
-          }
-        case _ => journeyRecovery()
-      } recover {
+      (for {
+        financialDataResponse <- financialDataConnector.getCurrentPayments(request.vrn)
+        sessionData <- sessionRepository.get(request.userId)
+      } yield {
+        financialDataResponse match {
+          case Right(payments) =>
+            val allPayments = payments.overduePayments ++ payments.duePayments
+            val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
+            if (allPayments.isEmpty) {
+              val backToYourAccountUrl = sessionData.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
+                .getOrElse(routes.YourAccountController.onPageLoad().url)
+              Ok(viewNoPayment(backToYourAccountUrl))
+            } else if (allPayments.size == 1) {
+              redirectToOnlyPayment(allPayments.head)
+            } else {
+              Ok(view(form, payments, paymentError = paymentError))
+            }
+          case _ => journeyRecovery()
+        }
+      }) recover {
         case e: HttpException =>
           logger.warn(s"Unexpected response from FinancialDataConnector in onPageLoad: ${e.responseCode}")
           journeyRecovery()
@@ -65,29 +76,29 @@ class WhichVatPeriodToPayController @Inject()(
   def onSubmit(): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       financialDataConnector.getCurrentPayments(request.vrn) map {
-          case Right(payments) =>
-            val allPayments = payments.overduePayments ++ payments.duePayments
-            val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
-            if(allPayments.size == 1) {
-              redirectToOnlyPayment(allPayments.head)
-            } else {
-              form.bindFromRequest().fold(
-                formWithErrors => BadRequest(view(formWithErrors, payments, paymentError)),
-                value => redirectToChosenPayment(allPayments, value)(request))
-            }
-          case _ => journeyRecovery()
-        } recover {
-          case e: HttpException =>
-            logger.warn(s"Unexpected response from FinancialDataConnector in onSubmit: ${e.responseCode}")
-            journeyRecovery()
-        }
+        case Right(payments) =>
+          val allPayments = payments.overduePayments ++ payments.duePayments
+          val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
+          if (allPayments.size == 1) {
+            redirectToOnlyPayment(allPayments.head)
+          } else {
+            form.bindFromRequest().fold(
+              formWithErrors => BadRequest(view(formWithErrors, payments, paymentError)),
+              value => redirectToChosenPayment(allPayments, value)(request))
+          }
+        case _ => journeyRecovery()
+      } recover {
+        case e: HttpException =>
+          logger.warn(s"Unexpected response from FinancialDataConnector in onSubmit: ${e.responseCode}")
+          journeyRecovery()
+      }
   }
 
   private def redirectToOnlyPayment(allPayments: Payment): Result =
     Redirect(routes.PaymentController.makePayment(allPayments.period, allPayments.amountOwed.longValue * 100))
 
   private def redirectToChosenPayment(allPayments: Seq[Payment], period: Period)
-                             (implicit request: Request[_]): Result = {
+                                     (implicit request: Request[_]): Result = {
     allPayments
       .find(_.period == period)
       .map(p => p.amountOwed.longValue * 100)

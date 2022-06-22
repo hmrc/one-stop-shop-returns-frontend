@@ -312,4 +312,3 @@ GET        /no-welsh-service                                                    
 
 GET        /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onPageLoad()
 POST       /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onSubmit()
-GET        /pay-your-tax-a/no-tax-owed                                                                       controllers.NoPaymentsController.onPageLoad()
