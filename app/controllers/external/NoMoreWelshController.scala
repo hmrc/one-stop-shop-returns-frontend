@@ -22,12 +22,11 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.NoMoreWelshTranslationsView
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class NoMoreWelshController @Inject()(
                                        view: NoMoreWelshTranslationsView,
                                        cc: AuthenticatedControllerComponents
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     ) extends FrontendBaseController with I18nSupport {
 
   override protected def controllerComponents: MessagesControllerComponents = cc
 
