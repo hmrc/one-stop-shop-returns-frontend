@@ -84,7 +84,7 @@ class WhichVatPeriodToPayController @Inject()(
           } else {
             form.bindFromRequest().fold(
               formWithErrors => BadRequest(view(formWithErrors, payments, paymentError)),
-              value => redirectToChosenPayment(allPayments, value)(request))
+              value => redirectToChosenPayment(allPayments, value))
           }
         case _ => journeyRecovery()
       } recover {
@@ -97,8 +97,7 @@ class WhichVatPeriodToPayController @Inject()(
   private def redirectToOnlyPayment(allPayments: Payment): Result =
     Redirect(routes.PaymentController.makePayment(allPayments.period, allPayments.amountOwed.longValue * 100))
 
-  private def redirectToChosenPayment(allPayments: Seq[Payment], period: Period)
-                                     (implicit request: Request[_]): Result = {
+  private def redirectToChosenPayment(allPayments: Seq[Payment], period: Period): Result = {
     allPayments
       .find(_.period == period)
       .map(p => p.amountOwed.longValue * 100)

@@ -31,7 +31,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.external.ExternalReturnUrlQuery
 import repositories.SessionRepository
-import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier}
+import uk.gov.hmrc.http.GatewayTimeoutException
 import views.html.payments.NoPaymentsView
 
 import java.time.LocalDate
@@ -40,8 +40,6 @@ import scala.concurrent.Future
 class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
   private lazy val whichVatPeriodToPayRoute = routes.WhichVatPeriodToPayController.onPageLoad().url
-
-  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   "WhichVatPeriodToPay GET" - {
 

@@ -32,9 +32,7 @@ import services.external.ExternalService
 class ExternalControllerSpec extends SpecBase {
 
   private val yourAccount = "your-account"
-  private val returnsHistory = "returns-history"
   private val startReturn = "start-your-return"
-  private val continueReturn = "continue-your-return"
   private val payment = "make-payment"
   private val externalRequest = ExternalRequest("BTA", "exampleurl")
 
