@@ -43,6 +43,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
   private type RetrievalsType = Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ ConfidenceLevel ~ Option[CredentialRole]
   private val vatEnrolmentWithNoOssEnrolment = Enrolments(Set(Enrolment("HMRC-MTD-VAT", Seq(EnrolmentIdentifier("VRN", "123456789")), "Activated")))
   private val vatEnrolmentWithOss = Enrolments(Set(Enrolment("HMRC-MTD-VAT", Seq(EnrolmentIdentifier("VRN", "123456789")), "Activated"), Enrolment("HMRC-OSS-ORG")))
+  private val configNoEnrolment = ("features.oss-enrolment" -> false)
 
   class Harness(authAction: IdentifierAction, defaultAction: DefaultActionBuilder) extends  {
     def onPageLoad(): Action[AnyContent] = (defaultAction andThen authAction) { _ => Results.Ok }
@@ -60,7 +61,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must succeed" in {
 
-        val application = applicationBuilder(None).build()
+        val application = applicationBuilder(None).configure(configNoEnrolment).build()
         when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
           .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithNoOssEnrolment ~ Some(Organisation) ~ ConfidenceLevel.L50 ~ Some(User)))
 
@@ -127,7 +128,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must succeed" in {
 
-        val application = applicationBuilder(None).build()
+        val application = applicationBuilder(None).configure(configNoEnrolment).build()
 
         running(application) {
           val appConfig   = application.injector.instanceOf[FrontendAppConfig]
@@ -149,7 +150,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must be redirected to the Not Registered page" in {
 
-        val application = applicationBuilder(None).build()
+        val application = applicationBuilder(None).configure(configNoEnrolment).build()
 
         running(application) {
           val appConfig   = application.injector.instanceOf[FrontendAppConfig]
@@ -172,7 +173,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must be redirected to the Not Registered page" in {
 
-        val application = applicationBuilder(None).build()
+        val application = applicationBuilder(None).configure(configNoEnrolment).build()
 
         running(application) {
           val appConfig   = application.injector.instanceOf[FrontendAppConfig]
@@ -195,7 +196,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must be redirected to the Not Registered page" in {
 
-        val application = applicationBuilder(None).build()
+        val application = applicationBuilder(None).configure(configNoEnrolment).build()
 
         running(application) {
           val appConfig   = application.injector.instanceOf[FrontendAppConfig]
@@ -218,7 +219,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must be redirected to the Not Registered page" in {
 
-        val application = applicationBuilder(None).build()
+        val application = applicationBuilder(None).configure(configNoEnrolment).build()
 
         running(application) {
           val appConfig   = application.injector.instanceOf[FrontendAppConfig]
@@ -241,7 +242,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must redirect the user to log in " in {
 
-        val application = applicationBuilder(None).build()
+        val application = applicationBuilder(None).configure(configNoEnrolment).build()
 
         running(application) {
           val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
@@ -261,7 +262,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must redirect the user to log in " in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val application = applicationBuilder(userAnswers = None).configure(configNoEnrolment).build()
 
         running(application) {
           val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
@@ -281,7 +282,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must redirect the user to the Not Registered page" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val application = applicationBuilder(userAnswers = None).configure(configNoEnrolment).build()
 
         running(application) {
           val appConfig   = application.injector.instanceOf[FrontendAppConfig]
@@ -301,7 +302,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must redirect the user to the Not Registered page" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val application = applicationBuilder(userAnswers = None).configure(configNoEnrolment).build()
 
         running(application) {
           val appConfig   = application.injector.instanceOf[FrontendAppConfig]
@@ -321,7 +322,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
       "must redirect the user to the Not Registered page" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+        val application = applicationBuilder(userAnswers = None).configure(configNoEnrolment).build()
 
         running(application) {
           val appConfig   = application.injector.instanceOf[FrontendAppConfig]
