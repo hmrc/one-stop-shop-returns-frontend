@@ -20,11 +20,11 @@ import base.SpecBase
 import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import generators.Generators
-import models.{Period, SubmissionStatus}
 import models.Quarter._
 import models.SubmissionStatus.{Due, Next, Overdue}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
+import models.{Period, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
@@ -35,7 +35,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import services.VatReturnSalesService
-import viewmodels.yourAccount.{OpenReturns, Return}
+import viewmodels.yourAccount.{Return, ReturnsViewModel}
 import views.html.IndexView
 
 import java.time.{Clock, Instant, ZoneId}
@@ -76,9 +76,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty)))
 
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
@@ -99,12 +99,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq.empty,
-              Some(Return.fromPeriod(nextPeriod, Next, false, false))
-            ),
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
             CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
@@ -124,10 +123,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
               Right(CurrentPayments(Seq.empty, Seq.empty)))
-          when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
 
-          when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -149,12 +148,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              OpenReturns(
-                None,
-                Some(Return.fromPeriod(period, Due, false, true)),
-                Seq.empty,
-                None
-              ),
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(period, Due, false, true)
+                )
+              )(messages(application)),
               CurrentPayments(Seq.empty, Seq.empty),
               paymentError = false
             )(request, messages(application)).toString
@@ -174,9 +172,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
               Right(CurrentPayments(Seq.empty, Seq.empty)))
-          when(sessionRepository.get(any())) thenReturn(Future.successful(Seq(userAnswers)))
-          when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
-          when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq(userAnswers)))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
 
           val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
             .overrides(
@@ -198,12 +196,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              OpenReturns(
-                Some(Return.fromPeriod(period, Due, true, true)),
-                Some(Return.fromPeriod(period, Due, true, true)),
-                Seq.empty,
-                None
-              ),
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(period, Due, true, true)
+                )
+              )(messages(application)),
               CurrentPayments(Seq.empty, Seq.empty),
               paymentError = false
             )(request, messages(application)).toString
@@ -248,12 +245,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              OpenReturns(
-                None,
-                Some(Return.fromPeriod(secondPeriod, Due, false, true)),
-                Seq.empty,
-                None
-              ),
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(secondPeriod, Due, false, true)
+                )
+              )(messages(application)),
               CurrentPayments(Seq.empty, Seq.empty),
               paymentError = false
             )(request, messages(application)).toString
@@ -277,9 +273,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Future.successful(
               Right(CurrentPayments(Seq.empty, Seq.empty)))
 
-          when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -301,13 +297,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              OpenReturns(
-                None,
-                Some(Return.fromPeriod(secondPeriod, Due, false, false)),
+              ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(firstPeriod, Overdue, false, true)),
-                None
-              ),
+                  Return.fromPeriod(secondPeriod, Due, false, false),
+                  Return.fromPeriod(firstPeriod, Overdue, false, true)
+                )
+              )(messages(application)),
               CurrentPayments(Seq.empty, Seq.empty),
               paymentError = false
             )(request, messages(application)).toString
@@ -328,9 +323,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty)))
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -352,19 +347,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq(
-                Return.fromPeriod(Period(2021, Q3), Overdue, false, true)),
-              None
-            ),
+            ReturnsViewModel(Seq(
+              Return.fromPeriod(Period(2021, Q3), Overdue, false, true)))(messages(application)),
             CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
         }
       }
-
 
 
       "when there is 2 returns overdue" in {
@@ -385,9 +374,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty)))
 
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -409,14 +398,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq(
-                Return.fromPeriod(firstPeriod, Overdue, false, true),
-                Return.fromPeriod(secondPeriod, Overdue, false, false)),
-              None
-            ),
+            ReturnsViewModel(Seq(
+              Return.fromPeriod(firstPeriod, Overdue, false, true),
+              Return.fromPeriod(secondPeriod, Overdue, false, false)))(messages(application)),
             CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString
@@ -436,16 +420,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq.empty))
+              Right(Seq(Return.fromPeriod(period, Next, false, false))))
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
               Right(CurrentPayments(Seq(payment), Seq.empty))
             )
 
-          when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -468,12 +452,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              OpenReturns(
-                None,
-                None,
-                Seq.empty,
-                None
-              ),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               CurrentPayments(
                 Seq(payment),
                 Seq.empty),
@@ -493,7 +472,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq.empty))
+              Right(Seq(Return.fromPeriod(period, Next, false, false))))
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -502,9 +481,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
-          when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -527,12 +506,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              OpenReturns(
-                None,
-                None,
-                Seq.empty,
-                None
-              ),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               CurrentPayments(Seq(payment),
                 Seq.empty),
               paymentError = false
@@ -552,7 +526,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq.empty))
+              Right(Seq(Return.fromPeriod(period, Next, false, false))))
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -564,9 +538,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )
             )
 
-          when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -588,12 +562,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              OpenReturns(
-                None,
-                None,
-                Seq.empty,
-                None
-              ),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               CurrentPayments(Seq.empty, Seq(overduePayment)),
               paymentError = false
             )(request, messages(application)).toString
@@ -607,7 +576,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq.empty))
+              Right(Seq(Return.fromPeriod(period, Next, false, false))))
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -616,8 +585,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )
             )
 
-          when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-          when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -639,12 +608,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              OpenReturns(
-                None,
-                None,
-                Seq.empty,
-                None
-              ),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               CurrentPayments(Seq.empty, Seq.empty),
               paymentError = true
             )(request, messages(application)).toString
@@ -658,7 +622,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val payment = Payment(firstPeriod, vatOwed, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq.empty))
+              Right(Seq(Return.fromPeriod(period, Next, false, false))))
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty)))
@@ -666,8 +630,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
             vatOwed
 
-          when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-          when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -690,12 +654,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              OpenReturns(
-                None,
-                None,
-                Seq.empty,
-                None
-              ),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               CurrentPayments(
                 Seq(payment),
                 Seq.empty
@@ -715,16 +674,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val payment = Payment(firstPeriod, 1000, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(Seq(Return.fromPeriod(period, Next, false, false))))
 
         when(financialDataConnector.getCurrentPayments(any())(any()))
           .thenReturn(Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty))))
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -747,12 +706,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq.empty,
-              None
-            ),
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
             CurrentPayments(
               Seq(payment),
               Seq.empty),
@@ -760,14 +714,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )(request, messages(application)).toString
         }
       }
-
-
-
-
-
-
-
-
 
       "when a user has previously saved their return progress and their session has renewed" in {
 
@@ -806,12 +752,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              Some(Return.fromPeriod(period, Overdue, true, true)),
-              None,
-              Seq(Return.fromPeriod(Period(2021, Q3), Overdue, true, true)),
-              None
-            ),
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, true, true)))(messages(application)),
             CurrentPayments(Seq.empty, Seq.empty),
             paymentError = false
           )(request, messages(application)).toString

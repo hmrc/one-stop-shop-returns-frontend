@@ -99,7 +99,7 @@ class YourAccountController @Inject()(
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      OpenReturns.fromReturns(
+      ReturnsViewModel(
         returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
           currentReturn.copy(inProgress = true)
         } else {
@@ -115,7 +115,7 @@ class YourAccountController @Inject()(
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      OpenReturns.fromReturns(
+      ReturnsViewModel(
         returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
           currentReturn.copy(inProgress = true)
         } else {
