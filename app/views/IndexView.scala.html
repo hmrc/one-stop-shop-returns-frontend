@@ -66,9 +66,30 @@
             <div id="next-return" class="tile-body">
                 <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
 
-                @returnsViewModel.content
+                @for(paragraph <- returnsViewModel.contents) {
+                    @paragraph match {
+                        case simple: ParagraphSimple => {
+                            <p class="govuk-body">
+                                @simple.content
+                            </p>
+                        }
+                        case pWithId: ParagraphWithId => {
+                            <p class="govuk-body" id="@pWithId.id">
+                                @pWithId.content
+                            </p>
+                        }
+                    }
+                }
 
-                @returnsViewModel.linkToStart.getOrElse()
+                @returnsViewModel.linkToStart.map(
+                    link =>
+                        <p class="govuk-body">
+                            <a class="govuk-link" href="@link.url" id="@link.id">
+                               @link.linkText
+                            </a>
+                        </p>
+                )
+
 
             </div>
         </div>
