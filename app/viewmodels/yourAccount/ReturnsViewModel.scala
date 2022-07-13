@@ -19,6 +19,7 @@ package viewmodels.yourAccount
 import models.Period
 import models.SubmissionStatus.{Due, Next, Overdue}
 import play.api.i18n.Messages
+import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
 
 import java.time.format.DateTimeFormatter
 
@@ -26,13 +27,6 @@ case class ReturnsViewModel(
                              contents: Seq[Paragraph],
                              linkToStart: Option[LinkModel] = None
                            )
-
-case class LinkModel(linkText: String, id: String, url: String)
-sealed trait Paragraph {
-  val content: String
-}
-case class ParagraphSimple(content: String) extends Paragraph
-case class ParagraphWithId(content: String, id: String) extends Paragraph
 
 object ReturnsViewModel {
   def apply(returns: Seq[Return])(implicit messages: Messages): ReturnsViewModel = {

@@ -17,6 +17,7 @@
 @import models.financialdata.VatReturnWithFinancialData
 @import models.financialdata._
 @import viewmodels.yourAccount._
+@import viewmodels._
 @import utils.CurrencyFormatter.currencyFormat
 @import java.time.format.DateTimeFormatter
 
@@ -28,7 +29,7 @@
         businessName: String,
         vrn: String,
         returnsViewModel: ReturnsViewModel,
-        currentPayments: CurrentPayments,
+        paymentsViewModel: PaymentsViewModel,
         paymentError: Boolean
 )(implicit request: Request[_], messages: Messages)
 
@@ -65,112 +66,63 @@
         <div class="tile tile-no-border">
             <div id="next-return" class="tile-body">
                 <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
-
                 @for(paragraph <- returnsViewModel.contents) {
                     @paragraph match {
                         case simple: ParagraphSimple => {
                             <p class="govuk-body">
-                                @simple.content
+                                @Html(simple.content)
                             </p>
                         }
                         case pWithId: ParagraphWithId => {
                             <p class="govuk-body" id="@pWithId.id">
-                                @pWithId.content
+                                @Html(pWithId.content)
                             </p>
                         }
                     }
                 }
-
-                @returnsViewModel.linkToStart.map(
-                    link =>
+                @for(link <- returnsViewModel.linkToStart) {
                         <p class="govuk-body">
-                            <a class="govuk-link" href="@link.url" id="@link.id">
+                            <a class="govuk-link" href="@{link.url}" id="@{link.id}">
                                @link.linkText
                             </a>
                         </p>
-                )
-
-
+                }
             </div>
         </div>
 
         <div class="tile tile-no-border">
             <div id="payments" class="tile-body">
                 <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
-                @(currentPayments.duePayments.size + currentPayments.overduePayments.size) match {
-                    case 0 => {
-                        <p class="govuk-body">
-                        @messages("index.payment.nothingOwed")
-                        </p>
-                    }
-                    case _ => {
+                @for(warningText <- paymentsViewModel.warning){
+                    warningText =>
                         <div class="govuk-warning-text">
                             <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                             <strong class="govuk-warning-text__text">
                                 <span class="govuk-warning-text__assistive">Warning</span>
-                                @messages("index.payment.pendingPayments")
+                                @warningText
                             </strong>
                         </div>
-                        @if(currentPayments.duePayments.nonEmpty) {
-                            <h3 class="govuk-heading-s push--top">@messages("index.payment.dueHeading")</h3>
-                        }
-                        @for(payment <- currentPayments.duePayments) {
-                            @payment.paymentStatus match {
-                                case PaymentStatus.Unknown => {
-                                    <p class="govuk-body">
-                                    @Html(messages(
-                                        "index.payment.amountMaybeOwed",
-                                        payment.period.displayText,
-                                        payment.period.paymentDeadlineDisplay
-                                    ))
-                                    </p>
-                                }
-                                case _ => {
-                                    <p class="govuk-body">
-                                    @Html(messages(
-                                        "index.payment.amountOwed",
-                                        currencyFormat(payment.amountOwed),
-                                        payment.period.displayText,
-                                        payment.period.paymentDeadlineDisplay
-                                    ))
-                                    </p>
-                                }
-                            }
-                        }
-                        @if(currentPayments.overduePayments.nonEmpty) {
-                            <h3 class="govuk-heading-s push--top">@messages("index.payment.overdueHeading")</h3>
-                        }
-                        @for(payment <- currentPayments.overduePayments) {
-                            @payment.paymentStatus match {
-                                case PaymentStatus.Unknown => {
-                                    <p class="govuk-body">
-                                    @Html(messages(
-                                        "index.payment.overdueAmountMaybeOwed",
-                                        payment.period.displayText,
-                                        payment.period.paymentDeadlineDisplay
-                                    ))
-                                    </p>
-                                }
-                                case _ => {
-                                    <p class="govuk-body">
-                                    @Html(messages(
-                                        "index.payment.overdueAmountOwed",
-                                        currencyFormat(payment.amountOwed),
-                                        payment.period.displayText,
-                                        payment.period.paymentDeadlineDisplay
-                                    ))
-                                    </p>
-                                }
-                            }
-                        }
+                }
+                @for(section <- paymentsViewModel.sections){
+                    @section.heading.map(
+                        sectionHeading =>
+                            <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
+                    )
 
+                    @for(paragraph <- section.contents){
                         <p class="govuk-body">
-                            <a class="govuk-link"
-                            href="@routes.WhichVatPeriodToPayController.onPageLoad()" id="make-a-payment">
-                            @messages("index.payment.makeAPayment")
-                            </a>
+                            @paragraph
                         </p>
                     }
+                }
+                @for(link <- paymentsViewModel.link){
+                    link =>
+                        <p class="govuk-body">
+                            <a class="govuk-link"
+                               href="@link.url" id="@link.id">
+                                @link.linkText
+                            </a>
+                        </p>
                 }
             </div>
         </div>
@@ -187,6 +139,4 @@
             </div>
         </div>
     </div>
-
-
 }

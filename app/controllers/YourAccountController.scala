@@ -105,7 +105,7 @@ class YourAccountController @Inject()(
         } else {
           currentReturn
         })),
-      currentPayments,
+      PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
       (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown)
     )))
   }
@@ -121,7 +121,7 @@ class YourAccountController @Inject()(
         } else {
           currentReturn
         })),
-      CurrentPayments(Seq.empty, Seq.empty),
+      PaymentsViewModel(Seq.empty, Seq.empty),
       paymentError = true
     )))
   }
