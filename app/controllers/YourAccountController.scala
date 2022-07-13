@@ -99,13 +99,13 @@ class YourAccountController @Inject()(
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      OpenReturns.fromReturns(
+      ReturnsViewModel(
         returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
           currentReturn.copy(inProgress = true)
         } else {
           currentReturn
         })),
-      currentPayments,
+      PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
       (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown)
     )))
   }
@@ -115,13 +115,13 @@ class YourAccountController @Inject()(
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      OpenReturns.fromReturns(
+      ReturnsViewModel(
         returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
           currentReturn.copy(inProgress = true)
         } else {
           currentReturn
         })),
-      CurrentPayments(Seq.empty, Seq.empty),
+      PaymentsViewModel(Seq.empty, Seq.empty),
       paymentError = true
     )))
   }
