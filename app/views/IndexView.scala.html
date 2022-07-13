@@ -94,7 +94,6 @@
             <div id="payments" class="tile-body">
                 <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
                 @for(warningText <- paymentsViewModel.warning){
-                    warningText =>
                         <div class="govuk-warning-text">
                             <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                             <strong class="govuk-warning-text__text">
@@ -104,19 +103,17 @@
                         </div>
                 }
                 @for(section <- paymentsViewModel.sections){
-                    @section.heading.map(
-                        sectionHeading =>
-                            <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
-                    )
+                    @for(sectionHeading <- section.heading){
+                        <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
+                    }
 
                     @for(paragraph <- section.contents){
                         <p class="govuk-body">
-                            @paragraph
+                            @Html(paragraph)
                         </p>
                     }
                 }
                 @for(link <- paymentsViewModel.link){
-                    link =>
                         <p class="govuk-body">
                             <a class="govuk-link"
                                href="@link.url" id="@link.id">
