@@ -35,7 +35,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import services.VatReturnSalesService
-import viewmodels.yourAccount.{Return, ReturnsViewModel}
+import viewmodels.yourAccount.{PaymentsViewModel, Return, ReturnsViewModel}
 import views.html.IndexView
 
 import java.time.{Clock, Instant, ZoneId}
@@ -104,7 +104,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, false, false)
               )
             )(messages(application)),
-            CurrentPayments(Seq.empty, Seq.empty),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -153,7 +153,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(period, Due, false, true)
                 )
               )(messages(application)),
-              CurrentPayments(Seq.empty, Seq.empty),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false
             )(request, messages(application)).toString
           }
@@ -201,7 +201,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(period, Due, true, true)
                 )
               )(messages(application)),
-              CurrentPayments(Seq.empty, Seq.empty),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false
             )(request, messages(application)).toString
           }
@@ -250,7 +250,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(secondPeriod, Due, false, true)
                 )
               )(messages(application)),
-              CurrentPayments(Seq.empty, Seq.empty),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false
             )(request, messages(application)).toString
           }
@@ -303,7 +303,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(firstPeriod, Overdue, false, true)
                 )
               )(messages(application)),
-              CurrentPayments(Seq.empty, Seq.empty),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false
             )(request, messages(application)).toString
           }
@@ -349,7 +349,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(Seq(
               Return.fromPeriod(Period(2021, Q3), Overdue, false, true)))(messages(application)),
-            CurrentPayments(Seq.empty, Seq.empty),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -401,7 +401,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(Seq(
               Return.fromPeriod(firstPeriod, Overdue, false, true),
               Return.fromPeriod(secondPeriod, Overdue, false, false)))(messages(application)),
-            CurrentPayments(Seq.empty, Seq.empty),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false
           )(request, messages(application)).toString
         }
@@ -453,9 +453,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
-              CurrentPayments(
+              PaymentsViewModel(
                 Seq(payment),
-                Seq.empty),
+                Seq.empty)(messages(application)),
               paymentError = false
             )(request, messages(application)).toString
           }
@@ -507,8 +507,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
-              CurrentPayments(Seq(payment),
-                Seq.empty),
+              PaymentsViewModel(Seq(payment),
+                Seq.empty)(messages(application)),
               paymentError = false
             )(request, messages(application)).toString
 
@@ -563,7 +563,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
-              CurrentPayments(Seq.empty, Seq(overduePayment)),
+              PaymentsViewModel(Seq.empty, Seq(overduePayment))(messages(application)),
               paymentError = false
             )(request, messages(application)).toString
           }
@@ -609,7 +609,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
-              CurrentPayments(Seq.empty, Seq.empty),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = true
             )(request, messages(application)).toString
           }
@@ -655,10 +655,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
-              CurrentPayments(
+              PaymentsViewModel(
                 Seq(payment),
                 Seq.empty
-              ),
+              )(messages(application)),
               paymentError = true
             )(request, messages(application)).toString
           }
@@ -707,9 +707,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
-            CurrentPayments(
+            PaymentsViewModel(
               Seq(payment),
-              Seq.empty),
+              Seq.empty)(messages(application)),
             paymentError = true
           )(request, messages(application)).toString
         }
@@ -753,7 +753,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, true, true)))(messages(application)),
-            CurrentPayments(Seq.empty, Seq.empty),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false
           )(request, messages(application)).toString
 
