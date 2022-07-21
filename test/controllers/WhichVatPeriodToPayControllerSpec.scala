@@ -55,7 +55,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
           ).build()
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty)))
+          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
 
@@ -84,7 +84,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
           ).build()
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty)))
+          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, externalUrl).get))
 
@@ -121,7 +121,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       running(application) {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -161,7 +161,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       running(application) {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -219,7 +219,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       running(application) {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -316,7 +316,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       running(application) {
         val request = FakeRequest(POST, whichVatPeriodToPayRoute)
@@ -362,7 +362,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty)))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       running(application) {
         val request = FakeRequest(POST, whichVatPeriodToPayRoute)

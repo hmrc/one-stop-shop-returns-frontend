@@ -74,7 +74,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -122,7 +122,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty)))
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
 
@@ -171,7 +171,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty)))
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq(userAnswers)))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -219,7 +219,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty)))
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -271,7 +271,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty)))
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -322,7 +322,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
@@ -372,7 +372,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -424,7 +424,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq(payment), Seq.empty))
+              Right(CurrentPayments(Seq(payment), Seq.empty, payment.amountOwed, BigDecimal(0)))
             )
 
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
@@ -476,7 +476,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq(payment), Seq.empty))
+              Right(CurrentPayments(Seq(payment), Seq.empty, payment.amountOwed, BigDecimal(0)))
             )
 
           when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
@@ -533,7 +533,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Right(
                 CurrentPayments(
                   Seq.empty,
-                  Seq(overduePayment)
+                  Seq(overduePayment),
+                  overduePayment.amountOwed,
+                  overduePayment.amountOwed
                 )
               )
             )
@@ -625,7 +627,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Right(Seq(Return.fromPeriod(period, Next, false, false))))
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-            Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty)))
+            Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, BigDecimal(0), BigDecimal(0))))
 
           when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
             vatOwed
@@ -677,7 +679,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Right(Seq(Return.fromPeriod(period, Next, false, false))))
 
         when(financialDataConnector.getCurrentPayments(any())(any()))
-          .thenReturn(Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty))))
+          .thenReturn(Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, BigDecimal(0), BigDecimal(0)))))
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
@@ -727,7 +729,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Right(Seq(Return.fromPeriod(period, Overdue, true, true))))
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(Some(answers)))
@@ -793,7 +795,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
         Future.successful(
-          Right(CurrentPayments(Seq.empty, Seq.empty)))
+          Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
