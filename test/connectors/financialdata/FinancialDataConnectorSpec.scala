@@ -272,7 +272,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
 
     val payment = Payment(period, 1000L, period.paymentDeadline, PaymentStatus.Unpaid)
 
-    val currentPayments = CurrentPayments(Seq(payment), Seq(payment))
+    val currentPayments = CurrentPayments(Seq(payment), Seq(payment), payment.amountOwed, payment.amountOwed + payment.amountOwed)
     val responseJson = Json.toJson(currentPayments)
 
     "must return Current Payments when successful" in {

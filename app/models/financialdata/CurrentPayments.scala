@@ -18,7 +18,7 @@ package models.financialdata
 
 import play.api.libs.json.{Format, Json}
 
-case class CurrentPayments(duePayments: Seq[Payment], overduePayments: Seq[Payment])
+case class CurrentPayments(duePayments: Seq[Payment], overduePayments: Seq[Payment], totalAmountOwed: BigDecimal, totalAmountOverdue: BigDecimal)
 
 object CurrentPayments {
   implicit val formatCurrentPayments: Format[CurrentPayments] = Json.format[CurrentPayments]
