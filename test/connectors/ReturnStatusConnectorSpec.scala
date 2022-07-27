@@ -29,7 +29,7 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
-import viewmodels.yourAccount.Return
+import viewmodels.yourAccount.{CurrentReturns, Return}
 
 import java.time.LocalDate
 
@@ -103,7 +103,7 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
   ".getCurrentReturns" - {
 
     val period = arbitrary[Period].sample.value
-    val responseJson = Json.toJson(Seq(Return.fromPeriod(period, Due, false, false)))
+    val responseJson = Json.toJson(CurrentReturns(Seq(Return.fromPeriod(period, Due, false, false))))
 
     "return a Returns model" in {
 
@@ -116,7 +116,7 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCurrentReturns(vrn).futureValue mustBe Right(Seq(Return.fromPeriod(period, Due, false, false)))
+        connector.getCurrentReturns(vrn).futureValue mustBe Right(CurrentReturns(Seq(Return.fromPeriod(period, Due, false, false))))
       }
     }
 

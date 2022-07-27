@@ -35,7 +35,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import services.VatReturnSalesService
-import viewmodels.yourAccount.{PaymentsViewModel, Return, ReturnsViewModel}
+import viewmodels.yourAccount.{CurrentReturns, PaymentsViewModel, Return, ReturnsViewModel}
 import views.html.IndexView
 
 import java.time.{Clock, Instant, ZoneId}
@@ -62,7 +62,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq(Return(
+            Right(CurrentReturns(
+              Seq(Return(
               nextPeriod,
               nextPeriod.firstDay,
               nextPeriod.lastDay,
@@ -71,6 +72,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               false,
               false
             ))))
+          )
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
@@ -118,7 +120,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val period = Period(2021, Q3)
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq(Return.fromPeriod(period, Due, false, true))))
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Due, false, true)))
+              )
+            )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -167,7 +172,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val userAnswers = emptyUserAnswers.set(SavedProgressPage, "test").success.value
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq(Return.fromPeriod(period, Due, true, true))))
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Due, true, true)))
+              )
+            )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -215,7 +223,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val secondPeriod = Period(2021, Q4)
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq(Return.fromPeriod(secondPeriod, Due, false, true))))
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(secondPeriod, Due, false, true)))
+              )
+            )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -265,9 +276,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val secondPeriod = Period(2021, Q4)
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq(
-                Return.fromPeriod(secondPeriod, Due, false, false),
-                Return.fromPeriod(firstPeriod, Overdue, false, true))))
+              Right(CurrentReturns(
+                Seq(
+                  Return.fromPeriod(secondPeriod, Due, false, false),
+                  Return.fromPeriod(firstPeriod, Overdue, false, true)))
+              )
+            )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -318,7 +332,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val period = Period(2021, Q3)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq(Return.fromPeriod(period, Overdue, false, true))))
+            Right(CurrentReturns(
+              Seq(Return.fromPeriod(period, Overdue, false, true)))
+            )
+          )
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
@@ -366,9 +383,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq(
-              Return.fromPeriod(firstPeriod, Overdue, false, true),
-              Return.fromPeriod(secondPeriod, Overdue, false, false))))
+            Right(CurrentReturns(
+              Seq(
+                Return.fromPeriod(firstPeriod, Overdue, false, true),
+                Return.fromPeriod(secondPeriod, Overdue, false, false)))
+            )
+          )
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
@@ -420,7 +440,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq(Return.fromPeriod(period, Next, false, false))))
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -472,7 +495,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq(Return.fromPeriod(period, Next, false, false))))
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -526,7 +552,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq(Return.fromPeriod(period, Next, false, false))))
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -578,7 +607,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq(Return.fromPeriod(period, Next, false, false))))
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
@@ -624,7 +656,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val payment = Payment(firstPeriod, vatOwed, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
-              Right(Seq(Return.fromPeriod(period, Next, false, false))))
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, BigDecimal(0), BigDecimal(0))))
@@ -676,7 +711,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val payment = Payment(firstPeriod, 1000, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq(Return.fromPeriod(period, Next, false, false))))
+            Right(CurrentReturns(
+              Seq(Return.fromPeriod(period, Next, false, false)))
+            )
+          )
 
         when(financialDataConnector.getCurrentPayments(any())(any()))
           .thenReturn(Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, BigDecimal(0), BigDecimal(0)))))
@@ -726,7 +764,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val answers = arbitrarySavedUserAnswers.arbitrary.sample.value.copy(period = period)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq(Return.fromPeriod(period, Overdue, true, true))))
+            Right(CurrentReturns(
+              Seq(Return.fromPeriod(period, Overdue, true, true)))
+            )
+          )
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))

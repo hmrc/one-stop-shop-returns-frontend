@@ -50,10 +50,10 @@ class YourAccountController @Inject()(
       val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
       results.flatMap {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
-          prepareViewWithFinancialData(availablePeriodsWithStatus, vatReturnsWithFinancialData, answers.map(_.period))
+          prepareViewWithFinancialData(availablePeriodsWithStatus.returns, vatReturnsWithFinancialData, answers.map(_.period))
         case (Right(availablePeriodsWithStatus), Left(error), answers) =>
           logger.warn(s"There was an error with getting payment information $error")
-          prepareViewWithNoFinancialData(availablePeriodsWithStatus, answers.map(_.period))
+          prepareViewWithNoFinancialData(availablePeriodsWithStatus.returns, answers.map(_.period))
         case (Left(error), Left(error2), _) =>
           logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
           throw new Exception(error.toString)
