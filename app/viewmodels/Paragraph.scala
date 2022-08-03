@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package models.financialdata
+package viewmodels
 
-import play.api.libs.json.{Format, Json}
-
-case class CurrentPayments(duePayments: Seq[Payment], overduePayments: Seq[Payment], totalAmountOwed: BigDecimal, totalAmountOverdue: BigDecimal)
-
-object CurrentPayments {
-  implicit val formatCurrentPayments: Format[CurrentPayments] = Json.format[CurrentPayments]
+sealed trait Paragraph {
+  val content: String
 }
+case class ParagraphSimple(content: String) extends Paragraph
+case class ParagraphWithId(content: String, id: String) extends Paragraph

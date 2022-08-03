@@ -18,166 +18,78 @@ package controllers.external
 
 import base.SpecBase
 import models.external.{ExternalRequest, ExternalResponse}
+import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.SavedProgressPage
 import play.api.http.Status.OK
 import play.api.inject
-import play.api.inject.bind
 import play.api.libs.json.{JsNull, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.{SessionRepository, UserAnswersRepository}
-
-import scala.concurrent.Future
+import services.external.ExternalService
 
 class ExternalControllerSpec extends SpecBase {
+
   private val yourAccount = "your-account"
-  private val returnsHistory = "returns-history"
   private val startReturn = "start-your-return"
-  private val continueReturn = "continue-your-return"
+  private val payment = "make-payment"
   private val externalRequest = ExternalRequest("BTA", "exampleurl")
 
 
   ".onExternal" - {
 
     "when correct ExternalRequest is posted" - {
-      "must save external return url in session" - {
-        "and respond with OK(YourAccountUrl) when your-account and no period provided" in {
-          val mockSessionRepository = mock[SessionRepository]
-          val mockUserAnswersRepository = mock[UserAnswersRepository]
+      "must return OK" in {
+        val mockExternalService = mock[ExternalService]
 
-          when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
-          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-          when(mockUserAnswersRepository.get(any())) thenReturn Future.successful(Seq(completeUserAnswers))
+        when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
 
-          val application = applicationBuilder()
-            .overrides(inject.bind[SessionRepository].toInstance(mockSessionRepository))
-            .build()
-
-          running(application) {
-            val request = FakeRequest(POST, routes.ExternalController.onExternal(yourAccount).url).withJsonBody(
-              Json.toJson(externalRequest)
-            )
-
-            val result = route(application, request).value
-            status(result) mustBe OK
-            contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse(controllers.routes.YourAccountController.onPageLoad().url)
-            verify(mockSessionRepository, times(1)).set(any())
-          }
-        }
-
-        "and respond with OK(ReturnsHistoryUrl) when returns-history and no period provided" in {
-          val mockSessionRepository = mock[SessionRepository]
-
-          when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
-          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
-          val application = applicationBuilder()
-            .overrides(inject.bind[SessionRepository].toInstance(mockSessionRepository))
-            .build()
-
-          running(application) {
-            val request = FakeRequest(POST, routes.ExternalController.onExternal(returnsHistory).url).withJsonBody(
-              Json.toJson(externalRequest)
-            )
-
-            val result = route(application, request).value
-            status(result) mustBe OK
-            contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse(controllers.routes.SubmittedReturnsHistoryController.onPageLoad().url)
-            verify(mockSessionRepository, times(1)).set(any())
-          }
-        }
-
-        "and respond with OK(StartYourReturnUrl) when start-your-return and a period provided" in {
-          val mockSessionRepository = mock[SessionRepository]
-
-          when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
-          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
-          val application = applicationBuilder()
-            .overrides(inject.bind[SessionRepository].toInstance(mockSessionRepository))
-            .build()
-
-          running(application) {
-            val request = FakeRequest(POST, routes.ExternalController.onExternal(startReturn, Some(period)).url).withJsonBody(
-              Json.toJson(externalRequest)
-            )
-
-            val result = route(application, request).value
-            status(result) mustBe OK
-            contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse(controllers.routes.StartReturnController.onPageLoad(period).url)
-            verify(mockSessionRepository, times(1)).set(any())
-          }
-        }
-
-        "and respond with OK(ContinueYourReturnUrl) when continue-your-return and a period provided" in {
-          val mockSessionRepository = mock[SessionRepository]
-
-          when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
-          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
-          val answersToContinue = emptyUserAnswers.set(SavedProgressPage, "example").success.value
-
-          val application = applicationBuilder(
-            Some(answersToContinue)
-          ).overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
-            .build()
-
-
-          running(application) {
-            val request = FakeRequest(POST, routes.ExternalController.onExternal(continueReturn, Some(period)).url).withJsonBody(
-              Json.toJson(externalRequest)
-            )
-
-            val result = route(application, request).value
-            status(result) mustBe OK
-            contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse(controllers.routes.ContinueReturnController.onPageLoad(period).url)
-            verify(mockSessionRepository, times(1)).set(any())
-          }
-        }
-      }
-
-      "must respond with Ok when saving in session fails due to exception" in {
-        val mockSessionRepository = mock[SessionRepository]
-
-        when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
-        when(mockSessionRepository.set(any())) thenReturn Future.failed(new Exception("Error saving in session"))
-
-        val answersToContinue = emptyUserAnswers.set(SavedProgressPage, "example").success.value
-
-        val application = applicationBuilder(
-          Some(answersToContinue)
-        ).overrides(
-          bind[SessionRepository].toInstance(mockSessionRepository)
-        )
+        val application = applicationBuilder()
+          .overrides(inject.bind[ExternalService].toInstance(mockExternalService))
           .build()
 
-
         running(application) {
-          val request = FakeRequest(POST, routes.ExternalController.onExternal(continueReturn, Some(period)).url).withJsonBody(
+          val request = FakeRequest(POST, routes.ExternalController.onExternal(yourAccount).url).withJsonBody(
             Json.toJson(externalRequest)
           )
 
           val result = route(application, request).value
           status(result) mustBe OK
-          contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse(controllers.routes.ContinueReturnController.onPageLoad(period).url)
-          verify(mockSessionRepository, times(1)).set(any())
+          contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse("url")
         }
       }
 
-      "must respond with NotFound and not save return url in session if the route is incorrect" - {
-        "because no period provided where needed" in {
-          val mockSessionRepository = mock[SessionRepository]
+      "when navigating to payment page must return OK" in {
+        val mockExternalService = mock[ExternalService]
 
-          when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
-          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+        when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any())) thenReturn Right(ExternalResponse("url"))
+
+        val application = applicationBuilder()
+          .overrides(inject.bind[ExternalService].toInstance(mockExternalService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(
+            POST,
+            routes.ExternalController.onExternal(payment).url).withJsonBody(
+            Json.toJson(externalRequest)
+          )
+
+          val result = route(application, request).value
+          status(result) mustBe OK
+          contentAsJson(result).as[ExternalResponse] mustBe ExternalResponse("url")
+        }
+      }
+
+      "must respond with NotFound and not save return url if service responds with NotFound" - {
+        "because no period provided where needed" in {
+          val mockExternalService = mock[ExternalService]
+
+          when(mockExternalService.getExternalResponse(any(), any(), any(), any(), any())) thenReturn Left(NotFound)
 
           val application = applicationBuilder()
-            .overrides(inject.bind[SessionRepository].toInstance(mockSessionRepository))
+            .overrides(inject.bind[ExternalService].toInstance(mockExternalService))
             .build()
 
           running(application) {
@@ -187,28 +99,6 @@ class ExternalControllerSpec extends SpecBase {
 
             val result = route(application, request).value
             status(result) mustBe NOT_FOUND
-            verifyNoInteractions(mockSessionRepository)
-          }
-        }
-
-        "because period specified for pages with no period needed" in {
-          val mockSessionRepository = mock[SessionRepository]
-
-          when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
-          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
-          val application = applicationBuilder()
-            .overrides(inject.bind[SessionRepository].toInstance(mockSessionRepository))
-            .build()
-
-          running(application) {
-            val request = FakeRequest(POST, routes.ExternalController.onExternal(yourAccount, Some(period)).url).withJsonBody(
-              Json.toJson(externalRequest)
-            )
-
-            val result = route(application, request).value
-            status(result) mustBe NOT_FOUND
-            verifyNoInteractions(mockSessionRepository)
           }
         }
       }

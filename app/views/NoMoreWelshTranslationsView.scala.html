@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.financialdata
+@this(
+        layout: templates.Layout,
+        govukButton: GovukButton
+)
 
-import play.api.libs.json.{Format, Json}
+@(externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
-case class CurrentPayments(duePayments: Seq[Payment], overduePayments: Seq[Payment], totalAmountOwed: BigDecimal, totalAmountOverdue: BigDecimal)
+@layout(pageTitle = titleNoForm(messages("noMoreWelsh.title"))) {
 
-object CurrentPayments {
-  implicit val formatCurrentPayments: Format[CurrentPayments] = Json.format[CurrentPayments]
+    <h1 class="govuk-heading-xl">@messages("noMoreWelsh.heading")</h1>
+
+    @govukButton(
+        ButtonViewModel(messages("noMoreWelsh.submit"))
+                .asLink(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url))
+                .withAttribute(("id", "continue"))
+    )
 }

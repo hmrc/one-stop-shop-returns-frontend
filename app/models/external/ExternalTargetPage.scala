@@ -22,22 +22,44 @@ sealed trait ExternalTargetPage {
   val name: String
 }
 
-case object YourAccount extends ExternalTargetPage {
+sealed trait ParameterlessUrl {
+ val url: String
+}
+
+sealed trait UrlWithPeriod {
+  def url(period: Period) : String
+}
+
+sealed trait UrlWithPeriodAndAmount {
+  def url(period: Period, amountInPence: Long) : String
+}
+
+case object YourAccount extends ExternalTargetPage with ParameterlessUrl {
   override val name: String = "your-account"
-  val url: String = controllers.routes.YourAccountController.onPageLoad().url
+  override val url: String = controllers.routes.YourAccountController.onPageLoad().url
 }
 
-case object ReturnsHistory extends ExternalTargetPage {
+case object ReturnsHistory extends ExternalTargetPage with ParameterlessUrl {
   override val name: String = "returns-history"
-  val url: String = controllers.routes.SubmittedReturnsHistoryController.onPageLoad().url
+  override val url: String = controllers.routes.SubmittedReturnsHistoryController.onPageLoad().url
 }
 
-case object StartReturn extends ExternalTargetPage {
+case object StartReturn extends ExternalTargetPage with UrlWithPeriod {
   override val name: String = "start-your-return"
-  def url(period:Period): String = controllers.routes.StartReturnController.onPageLoad(period).url
+  override def url(period:Period): String = controllers.routes.StartReturnController.onPageLoad(period).url
 }
 
-case object ContinueReturn extends ExternalTargetPage {
+case object ContinueReturn extends ExternalTargetPage with UrlWithPeriod {
   override val name: String = "continue-your-return"
-  def url(period:Period): String = controllers.routes.ContinueReturnController.onPageLoad(period).url
+  override def url(period: Period): String = controllers.routes.ContinueReturnController.onPageLoad(period).url
+}
+
+case object NoMoreWelsh extends ExternalTargetPage {
+  override val name: String = "no-more-welsh"
+  def url(targetUrl: String): String = controllers.external.routes.NoMoreWelshController.onPageLoad(Some(targetUrl)).url
+}
+
+case object Payment extends ExternalTargetPage with ParameterlessUrl {
+  override val name: String = "make-payment"
+  override val url: String = controllers.routes.WhichVatPeriodToPayController.onPageLoad().url
 }

@@ -50,10 +50,10 @@ class YourAccountController @Inject()(
       val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
       results.flatMap {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
-          prepareViewWithFinancialData(availablePeriodsWithStatus, vatReturnsWithFinancialData, answers.map(_.period))
+          prepareViewWithFinancialData(availablePeriodsWithStatus.returns, vatReturnsWithFinancialData, answers.map(_.period))
         case (Right(availablePeriodsWithStatus), Left(error), answers) =>
           logger.warn(s"There was an error with getting payment information $error")
-          prepareViewWithNoFinancialData(availablePeriodsWithStatus, answers.map(_.period))
+          prepareViewWithNoFinancialData(availablePeriodsWithStatus.returns, answers.map(_.period))
         case (Left(error), Left(error2), _) =>
           logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
           throw new Exception(error.toString)
@@ -99,14 +99,14 @@ class YourAccountController @Inject()(
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      OpenReturns.fromReturns(
+      ReturnsViewModel(
         returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
           currentReturn.copy(inProgress = true)
         } else {
           currentReturn
         })),
-      currentPayments,
-      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
+      PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
+      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown)
     )))
   }
 
@@ -115,13 +115,13 @@ class YourAccountController @Inject()(
     Future.successful(Ok(view(
       request.registration.registeredCompanyName,
       request.vrn.vrn,
-      OpenReturns.fromReturns(
+      ReturnsViewModel(
         returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
           currentReturn.copy(inProgress = true)
         } else {
           currentReturn
         })),
-      CurrentPayments(Seq.empty, Seq.empty),
+      PaymentsViewModel(Seq.empty, Seq.empty),
       paymentError = true
     )))
   }

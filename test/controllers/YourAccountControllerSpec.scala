@@ -20,13 +20,12 @@ import base.SpecBase
 import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import generators.Generators
-import models.Period
 import models.Quarter._
-import models.SubmissionStatus.{Due, Overdue}
+import models.SubmissionStatus.{Due, Next, Overdue}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
+import models.{Period, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -36,7 +35,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import services.VatReturnSalesService
-import viewmodels.yourAccount.{OpenReturns, Return}
+import viewmodels.yourAccount.{CurrentReturns, PaymentsViewModel, Return, ReturnsViewModel}
 import views.html.IndexView
 
 import java.time.{Clock, Instant, ZoneId}
@@ -50,15 +49,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val sessionRepository = mock[UserAnswersRepository]
   private val save4LaterConnector = mock[SaveForLaterConnector]
 
-  override def beforeEach(): Unit = {
-    Mockito.reset(returnStatusConnector)
-    Mockito.reset(financialDataConnector)
-    Mockito.reset(vatReturnSalesService)
-    Mockito.reset(sessionRepository)
-    Mockito.reset(save4LaterConnector)
-    super.beforeEach()
-  }
-
   "Your Account Controller" - {
 
     "must return OK and the correct view with no saved answers" - {
@@ -68,23 +58,35 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
+        val nextPeriod = Period(2021, Q4)
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentReturns(
+              Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Next,
+              false,
+              false
+            ))))
+          )
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
           ).build()
 
         running(application) {
@@ -99,62 +101,226 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq.empty
-            ),
-            CurrentPayments(Seq.empty, Seq.empty),
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false
           )(request, messages(application)).toString
         }
       }
 
-      "when there is 1 return due" in {
+      "when there is 1 return due" - {
 
-        val instant = Instant.parse("2021-10-11T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-        val period = Period(2021, Q3)
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(Seq(Return.fromPeriod(period, Due, false, true))))
+        "only" in {
+          val instant = Instant.parse("2021-10-11T12:00:00Z")
+          val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+          val period = Period(2021, Q3)
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Due, false, true)))
+              )
+            )
 
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
 
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
-          ).build()
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            ).build()
 
-        running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
-          val result = route(application, request).value
+            val result = route(application, request).value
 
-          val view = application.injector.instanceOf[IndexView]
+            val view = application.injector.instanceOf[IndexView]
 
-          status(result) mustEqual OK
+            status(result) mustEqual OK
 
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            OpenReturns(
-              None,
-              Some(Return.fromPeriod(period, Due, false, true)),
-              Seq.empty
-            ),
-            CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false
-          )(request, messages(application)).toString
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(period, Due, false, true)
+                )
+              )(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              paymentError = false
+            )(request, messages(application)).toString
+          }
+        }
+
+        "and it is in progress" in {
+
+          val instant = Instant.parse("2021-10-11T12:00:00Z")
+          val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+          val period = Period(2021, Q3)
+          val userAnswers = emptyUserAnswers.set(SavedProgressPage, "test").success.value
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Due, true, true)))
+              )
+            )
+
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq(userAnswers)))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+
+          val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            ).build()
+
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
+
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(period, Due, true, true)
+                )
+              )(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              paymentError = false
+            )(request, messages(application)).toString
+          }
+        }
+
+        "and 1 return is completed" in {
+
+          val instant = Instant.parse("2022-01-01T12:00:00Z")
+          val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+          val secondPeriod = Period(2021, Q4)
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(secondPeriod, Due, false, true)))
+              )
+            )
+
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            ).build()
+
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
+
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(secondPeriod, Due, false, true)
+                )
+              )(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              paymentError = false
+            )(request, messages(application)).toString
+          }
+        }
+
+        "and 1 return overdue" in {
+
+          val instant = Instant.parse("2022-01-01T12:00:00Z")
+          val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+          val firstPeriod = Period(2021, Q3)
+          val secondPeriod = Period(2021, Q4)
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(
+                  Return.fromPeriod(secondPeriod, Due, false, false),
+                  Return.fromPeriod(firstPeriod, Overdue, false, true)))
+              )
+            )
+
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[UserAnswersRepository].toInstance(sessionRepository)
+            ).build()
+
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
+
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(secondPeriod, Due, false, false),
+                  Return.fromPeriod(firstPeriod, Overdue, false, true)
+                )
+              )(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              paymentError = false
+            )(request, messages(application)).toString
+          }
         }
       }
 
@@ -166,14 +332,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val period = Period(2021, Q3)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq(Return.fromPeriod(period, Overdue, false, true))))
+            Right(CurrentReturns(
+              Seq(Return.fromPeriod(period, Overdue, false, true)))
+            )
+          )
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -195,70 +364,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq(
-                Return.fromPeriod(Period(2021, Q3), Overdue, false, true))
-            ),
-            CurrentPayments(Seq.empty, Seq.empty),
+            ReturnsViewModel(Seq(
+              Return.fromPeriod(Period(2021, Q3), Overdue, false, true)))(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false
           )(request, messages(application)).toString
         }
       }
 
-      "when there is 1 return due, 1 return overdue" in {
-
-        val instant = Instant.parse("2022-01-01T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val firstPeriod = Period(2021, Q3)
-        val secondPeriod = Period(2021, Q4)
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(Seq(
-              Return.fromPeriod(secondPeriod, Due, false, false),
-              Return.fromPeriod(firstPeriod, Overdue, false, true))))
-
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
-
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository)
-          ).build()
-
-        running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
-          status(result) mustEqual OK
-
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            OpenReturns(
-              None,
-              Some(Return.fromPeriod(secondPeriod, Due, false, false)),
-              Seq(
-                Return.fromPeriod(firstPeriod, Overdue, false, true))
-            ),
-            CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false
-          )(request, messages(application)).toString
-        }
-      }
 
       "when there is 2 returns overdue" in {
 
@@ -270,24 +383,27 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq(
-              Return.fromPeriod(firstPeriod, Overdue, false, true),
-              Return.fromPeriod(secondPeriod, Overdue, false, false))))
+            Right(CurrentReturns(
+              Seq(
+                Return.fromPeriod(firstPeriod, Overdue, false, true),
+                Return.fromPeriod(secondPeriod, Overdue, false, false)))
+            )
+          )
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository)
+            bind[UserAnswersRepository].toInstance(sessionRepository),
           ).build()
 
         running(application) {
@@ -302,179 +418,287 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq(
-                Return.fromPeriod(firstPeriod, Overdue, false, true),
-                Return.fromPeriod(secondPeriod, Overdue, false, false))
-            ),
-            CurrentPayments(Seq.empty, Seq.empty),
+            ReturnsViewModel(Seq(
+              Return.fromPeriod(firstPeriod, Overdue, false, true),
+              Return.fromPeriod(secondPeriod, Overdue, false, false)))(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false
           )(request, messages(application)).toString
         }
       }
 
-      "when there is 1 return completed 1 return is due" in {
+      "when there is 1 return completed" - {
 
-        val instant = Instant.parse("2022-01-01T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+        "and payment is outstanding" in {
 
-        val secondPeriod = Period(2021, Q4)
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(Seq(Return.fromPeriod(secondPeriod, Due, false, true))))
+          val instant = Instant.parse("2021-10-25T12:00:00Z")
+          val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
+          val firstPeriod = Period(2021, Q3)
+          val outstandingAmount = BigDecimal(1000)
+          val payment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
-          ).build()
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentPayments(Seq(payment), Seq.empty, payment.amountOwed, BigDecimal(0)))
+            )
 
-        running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
-          val result = route(application, request).value
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            ).build()
 
-          val view = application.injector.instanceOf[IndexView]
 
-          status(result) mustEqual OK
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            OpenReturns(
-              None,
-              Some(Return.fromPeriod(secondPeriod, Due, false, true)),
-              Seq.empty
-            ),
-            CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false
-          )(request, messages(application)).toString
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
+
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              PaymentsViewModel(
+                Seq(payment),
+                Seq.empty)(messages(application)),
+              paymentError = false
+            )(request, messages(application)).toString
+          }
         }
-      }
 
-      "when there is 1 return completed and payment is outstanding" in {
+        "and payment is outstanding with a correction" in {
 
-        val instant = Instant.parse("2021-10-25T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+          val instant = Instant.parse("2021-10-25T12:00:00Z")
+          val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val firstPeriod = Period(2021, Q3)
-        val outstandingAmount = BigDecimal(1000)
-        val payment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
+          val firstPeriod = Period(2021, Q3)
 
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(Seq.empty))
+          val payment = Payment(firstPeriod, 0, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq(payment), Seq.empty))
-          )
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
 
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentPayments(Seq(payment), Seq.empty, payment.amountOwed, BigDecimal(0)))
+            )
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
-          ).build()
+          when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
-        running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            ).build()
 
-          val result = route(application, request).value
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
-          val view = application.injector.instanceOf[IndexView]
+            val result = route(application, request).value
 
-          status(result) mustEqual OK
+            val view = application.injector.instanceOf[IndexView]
 
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq.empty
-            ),
-            CurrentPayments(
-              Seq(payment),
-              Seq.empty),
-            paymentError = false
-          )(request, messages(application)).toString
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              PaymentsViewModel(Seq(payment),
+                Seq.empty)(messages(application)),
+              paymentError = false
+            )(request, messages(application)).toString
+
+          }
         }
-      }
 
-      "when there is 1 return completed and payment is outstanding with a correction" in {
+        "and payment is outstanding and overdue" in {
 
-        val instant = Instant.parse("2021-10-25T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+          val instant = Instant.parse("2022-01-01T12:00:00Z")
+          val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val firstPeriod = Period(2021, Q3)
+          val firstPeriod = Period(2021, Q1)
+          val outstandingAmount = BigDecimal(1000)
+          val overduePayment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
-        val payment = Payment(firstPeriod, 0, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
 
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(Seq.empty))
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Right(
+                CurrentPayments(
+                  Seq.empty,
+                  Seq(overduePayment),
+                  overduePayment.amountOwed,
+                  overduePayment.amountOwed
+                )
+              )
+            )
 
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq(payment), Seq.empty))
-          )
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            ).build()
 
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
-          ).build()
+            val result = route(application, request).value
 
-        running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val view = application.injector.instanceOf[IndexView]
 
-          val result = route(application, request).value
+            status(result) mustEqual OK
 
-          val view = application.injector.instanceOf[IndexView]
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq(overduePayment))(messages(application)),
+              paymentError = false
+            )(request, messages(application)).toString
+          }
+        }
 
-          status(result) mustEqual OK
+        "and payment errors" in {
 
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq.empty
-            ),
-            CurrentPayments(Seq(payment),
-              Seq.empty),
-            paymentError = false
-          )(request, messages(application)).toString
+          val instant = Instant.parse("2022-01-01T12:00:00Z")
+          val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
+
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Left(
+                InvalidJson
+              )
+            )
+
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            ).build()
+
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
+
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              paymentError = true
+            )(request, messages(application)).toString
+          }
+        }
+
+        "and charge is not in ETMP" in {
+          val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
+          val vatOwed = BigDecimal(1563.49)
+          val firstPeriod = Period(2021, Q3)
+          val payment = Payment(firstPeriod, vatOwed, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return.fromPeriod(period, Next, false, false)))
+              )
+            )
+
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+          when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
+            vatOwed
+
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            ).build()
+
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
+
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              PaymentsViewModel(
+                Seq(payment),
+                Seq.empty
+              )(messages(application)),
+              paymentError = true
+            )(request, messages(application)).toString
+          }
         }
       }
 
@@ -487,16 +711,19 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val payment = Payment(firstPeriod, 1000, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq.empty))
+            Right(CurrentReturns(
+              Seq(Return.fromPeriod(period, Next, false, false)))
+            )
+          )
 
         when(financialDataConnector.getCurrentPayments(any())(any()))
-          .thenReturn(Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty))))
+          .thenReturn(Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, BigDecimal(0), BigDecimal(0)))))
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -519,224 +746,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq.empty
-            ),
-            CurrentPayments(
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+            PaymentsViewModel(
               Seq(payment),
-              Seq.empty),
+              Seq.empty)(messages(application)),
             paymentError = true
-          )(request, messages(application)).toString
-        }
-      }
-
-      "when there is 1 return completed and payment is outstanding and overdue" in {
-
-        val instant = Instant.parse("2022-01-01T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val firstPeriod = Period(2021, Q1)
-        val outstandingAmount = BigDecimal(1000)
-        val overduePayment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
-
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(Seq.empty))
-
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(
-            Right(
-              CurrentPayments(
-                Seq.empty,
-                Seq(overduePayment)
-              )
-            )
-          )
-
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
-          ).build()
-
-        running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
-          status(result) mustEqual OK
-
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq.empty
-            ),
-            CurrentPayments(Seq.empty, Seq(overduePayment)),
-            paymentError = false
-          )(request, messages(application)).toString
-        }
-      }
-
-      "when there is 1 return completed and payment errors" in {
-
-        val instant = Instant.parse("2022-01-01T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(Seq.empty))
-
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(
-            Left(
-              InvalidJson
-            )
-          )
-
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
-          ).build()
-
-        running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
-          status(result) mustEqual OK
-
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq.empty
-            ),
-            CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = true
-          )(request, messages(application)).toString
-        }
-      }
-
-      "when there is 1 return completed and charge is not in ETMP" in {
-        val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
-        val vatOwed = BigDecimal(1563.49)
-        val firstPeriod = Period(2021, Q3)
-        val payment = Payment(firstPeriod, vatOwed, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(Seq.empty))
-
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty)))
-
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
-          vatOwed
-
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq()))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
-          ).build()
-
-        running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
-          status(result) mustEqual OK
-
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            OpenReturns(
-              None,
-              None,
-              Seq.empty
-            ),
-            CurrentPayments(
-              Seq(payment),
-              Seq.empty
-            ),
-            paymentError = true
-          )(request, messages(application)).toString
-        }
-      }
-
-      "when there is 1 return due and it is in progress" in {
-
-        val instant = Instant.parse("2021-10-11T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-        val period = Period(2021, Q3)
-        val userAnswers = emptyUserAnswers.set(SavedProgressPage, "test").success.value
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(Seq(Return.fromPeriod(period, Due, true, true))))
-
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
-        when(sessionRepository.get(any())) thenReturn(Future.successful(Seq(userAnswers)))
-        when(save4LaterConnector.get()(any())) thenReturn(Future.successful(Right(None)))
-        when(sessionRepository.set(any())) thenReturn(Future.successful(true))
-
-        val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
-          ).build()
-
-        running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
-          status(result) mustEqual OK
-
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            OpenReturns(
-              Some(Return.fromPeriod(period, Due, true, true)),
-              Some(Return.fromPeriod(period, Due, true, true)),
-              Seq.empty
-            ),
-            CurrentPayments(Seq.empty, Seq.empty),
-            paymentError = false
           )(request, messages(application)).toString
         }
       }
@@ -750,10 +764,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val answers = arbitrarySavedUserAnswers.arbitrary.sample.value.copy(period = period)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
-            Right(Seq(Return.fromPeriod(period, Overdue, true, true))))
+            Right(CurrentReturns(
+              Seq(Return.fromPeriod(period, Overdue, true, true)))
+            )
+          )
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty)))
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(Some(answers)))
@@ -778,12 +795,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            OpenReturns(
-              Some(Return.fromPeriod(period, Overdue, true, true)),
-              None,
-              Seq(Return.fromPeriod(Period(2021, Q3), Overdue, true, true))
-            ),
-            CurrentPayments(Seq.empty, Seq.empty),
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, true, true)))(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false
           )(request, messages(application)).toString
 
@@ -823,7 +836,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
         Future.successful(
-          Right(CurrentPayments(Seq.empty, Seq.empty)))
+          Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(

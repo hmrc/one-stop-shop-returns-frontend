@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-package models.financialdata
+package forms
 
-import play.api.libs.json.{Format, Json}
+import forms.mappings.Mappings
+import models.Period
+import play.api.data.Form
 
-case class CurrentPayments(duePayments: Seq[Payment], overduePayments: Seq[Payment], totalAmountOwed: BigDecimal, totalAmountOverdue: BigDecimal)
+import javax.inject.Inject
 
-object CurrentPayments {
-  implicit val formatCurrentPayments: Format[CurrentPayments] = Json.format[CurrentPayments]
+class WhichVatPeriodToPayFormProvider @Inject() extends Mappings {
+
+  def apply(): Form[Period] =
+    Form(
+      "value" -> period("whichVatPeriodToPay.error.required")
+    )
 }

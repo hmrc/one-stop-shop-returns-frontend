@@ -306,4 +306,9 @@ GET        /return-not-submitted                                                
 
 GET        /return-service-down                                                                              controllers.ReceivedErrorFromCoreController.onPageLoad()
 
-POST       /external-entry/:page                                                                             controllers.external.ExternalController.onExternal(page: String, period: Option[Period] ?= None)
+POST       /external-entry/:page                                                                             controllers.external.ExternalController.onExternal(page: String, period: Option[Period] ?= None, lang: Option[String] ?= None)
+
+GET        /no-welsh-service                                                                                 controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[String] ?= None)
+
+GET        /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onPageLoad()
+POST       /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onSubmit()

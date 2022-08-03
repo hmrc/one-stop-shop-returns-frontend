@@ -18,7 +18,7 @@ package services.external
 
 import logging.Logging
 import models.{Period, SessionData}
-import models.external.{ContinueReturn, ExternalRequest, ExternalResponse, ReturnsHistory, StartReturn, YourAccount}
+import models.external.{ContinueReturn, ExternalRequest, ExternalResponse, NoMoreWelsh, Payment, ReturnsHistory, StartReturn, YourAccount}
 import models.responses.{ErrorResponse, NotFound}
 import queries.external.ExternalReturnUrlQuery
 import repositories.SessionRepository
@@ -28,21 +28,41 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ExternalService @Inject()(sessionRepository: SessionRepository)(implicit executionContext: ExecutionContext) extends Logging {
 
-  def getExternalResponse(externalRequest: ExternalRequest, userId: String, page: String,period: Option[Period] = None): Either[ErrorResponse, ExternalResponse] =  (page, period) match {
-    case (YourAccount.name, None) =>
-      saveReturnUrl(userId, externalRequest)
-      Right(ExternalResponse(YourAccount.url))
-    case (ReturnsHistory.name, None) =>
-      saveReturnUrl(userId, externalRequest)
-      Right(ExternalResponse(ReturnsHistory.url))
-    case (StartReturn.name, Some(returnPeriod)) =>
-      saveReturnUrl(userId, externalRequest)
-      Right(ExternalResponse(StartReturn.url(returnPeriod)))
-    case (ContinueReturn.name, Some(returnPeriod)) =>
-      saveReturnUrl(userId, externalRequest)
-      Right(ExternalResponse(ContinueReturn.url(returnPeriod)))
 
-    case _ => Left(NotFound)
+
+  def getExternalResponse(externalRequest: ExternalRequest,
+                          userId: String,
+                          page: String,
+                          period: Option[Period] = None,
+                          language: Option[String] = None): Either[ErrorResponse, ExternalResponse] = {
+
+    val response = (page, period) match {
+      case (YourAccount.name, None) =>
+        saveReturnUrl(userId, externalRequest)
+        Right(ExternalResponse(YourAccount.url))
+      case (ReturnsHistory.name, None) =>
+        saveReturnUrl(userId, externalRequest)
+        Right(ExternalResponse(ReturnsHistory.url))
+      case (StartReturn.name, Some(returnPeriod)) =>
+        saveReturnUrl(userId, externalRequest)
+        Right(ExternalResponse(StartReturn.url(returnPeriod)))
+      case (ContinueReturn.name, Some(returnPeriod)) =>
+        saveReturnUrl(userId, externalRequest)
+        Right(ExternalResponse(ContinueReturn.url(returnPeriod)))
+      case (Payment.name, None) =>
+        saveReturnUrl(userId, externalRequest)
+        Right(ExternalResponse(Payment.url))
+      case _ => Left(NotFound)
+    }
+
+    (response, language) match {
+      case (Right(externalResponse), Some("cy")) => Right(wrapLanguageWarning(externalResponse))
+      case _ => response
+    }
+  }
+
+  private def wrapLanguageWarning(response: ExternalResponse): ExternalResponse = {
+     ExternalResponse(NoMoreWelsh.url(response.redirectUrl))
   }
 
   private def saveReturnUrl(userId: String, externalRequest: ExternalRequest): Future[Boolean] = {
