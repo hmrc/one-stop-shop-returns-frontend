@@ -59,13 +59,13 @@ object PaymentsViewModel{
               case PaymentStatus.Unknown =>
                 messages(
                   s"index.payment.${key}AmountMaybeOwed",
-                  payment.period.displayText,
+                  payment.period.displayShortText,
                   payment.period.paymentDeadlineDisplay
                   )
               case _ => messages(
                   s"index.payment.${key}AmountOwed",
                   currencyFormat(payment.amountOwed),
-                  payment.period.displayText,
+                  payment.period.displayShortText,
                   payment.period.paymentDeadlineDisplay
                   )
               }
