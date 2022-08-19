@@ -306,10 +306,12 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
           bind[FinancialDataConnector].toInstance(financialDataConnector)
         ).build()
 
+      val amountOwed = 200.22
+
       val duePayments = Seq(
         Payment(
           Period(2022, Quarter.Q1),
-          BigDecimal(200.0),
+          BigDecimal(amountOwed),
           LocalDate.now(),
           PaymentStatus.Unpaid
         )
@@ -326,7 +328,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         status(result) mustEqual SEE_OTHER
 
         redirectLocation(result).value mustEqual routes.PaymentController.makePayment(
-          duePayments.head.period, duePayments.head.amountOwed.longValue() * 100).url
+          duePayments.head.period, 20022).url
 
       }
     }
@@ -355,7 +357,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         ),
         Payment(
           Period(2022, Quarter.Q1),
-          BigDecimal(300.0),
+          BigDecimal(300.22),
           LocalDate.now(),
           PaymentStatus.Unpaid
         )
@@ -372,7 +374,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
 
-        redirectLocation(result).value mustEqual routes.PaymentController.makePayment(duePayments(2).period, duePayments(2).amountOwed.longValue() * 100).url
+        redirectLocation(result).value mustEqual routes.PaymentController.makePayment(duePayments(2).period, 30022).url
       }
     }
 

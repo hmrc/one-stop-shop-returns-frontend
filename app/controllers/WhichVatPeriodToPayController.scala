@@ -95,12 +95,12 @@ class WhichVatPeriodToPayController @Inject()(
   }
 
   private def redirectToOnlyPayment(allPayments: Payment): Result =
-    Redirect(routes.PaymentController.makePayment(allPayments.period, allPayments.amountOwed.longValue * 100))
+    Redirect(routes.PaymentController.makePayment(allPayments.period, (allPayments.amountOwed * 100).toLong))
 
   private def redirectToChosenPayment(allPayments: Seq[Payment], period: Period): Result = {
     allPayments
       .find(_.period == period)
-      .map(p => p.amountOwed.longValue * 100)
+      .map(p => (p.amountOwed * 100).toLong)
       .map(owed => Redirect(routes.PaymentController.makePayment(period, owed)))
       .getOrElse(journeyRecovery())
   }
