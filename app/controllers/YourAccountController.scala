@@ -26,6 +26,7 @@ import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.UserAnswersRepository
+import services.exclusions.ExclusionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.yourAccount._
 import views.html.IndexView
@@ -39,7 +40,8 @@ class YourAccountController @Inject()(
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
                                        view: IndexView,
-                                       sessionRepository: UserAnswersRepository
+                                       sessionRepository: UserAnswersRepository,
+                                       exclusionService: ExclusionService
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -47,6 +49,8 @@ class YourAccountController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
+      val exclusionTest = exclusionService.findExcludedTrader(request.vrn)
+logger.info("EXCLUSIONS: " + exclusionTest)
       val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
       results.flatMap {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>

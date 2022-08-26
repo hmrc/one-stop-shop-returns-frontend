@@ -21,7 +21,7 @@ import models.responses._
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-import viewmodels.yourAccount.{CurrentReturns, Return}
+import viewmodels.yourAccount.CurrentReturns
 
 object CurrentReturnsHttpParser extends Logging {
 

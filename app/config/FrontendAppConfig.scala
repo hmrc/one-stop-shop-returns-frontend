@@ -17,7 +17,11 @@
 package config
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Configuration
+import com.typesafe.config.{Config, ConfigMemorySize}
+import uk.gov.hmrc.domain.Vrn
+import models.exclusions.ExcludedTrader
+import models.exclusions.ExcludedTrader.configLoader
+import play.api.{ConfigLoader, Configuration}
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
@@ -61,5 +65,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val cacheTtl: Int = configuration.get[Int]("mongodb.timeToLiveInSeconds")
   val cachedVatReturnTtl: Int = configuration.get[Int]("mongodb.cachedTimeToLiveInSeconds")
   val saveForLaterTtl: Int = configuration.get[Int]("mongodb.saveForLaterTTLInDays")
+
+  val exclusions: Seq[ExcludedTrader] = configuration.get[Seq[ExcludedTrader]]("features.exclusions")
 
 }
