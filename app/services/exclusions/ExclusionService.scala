@@ -25,12 +25,7 @@ import javax.inject.Inject
 
 class ExclusionService @Inject()(appConfig: FrontendAppConfig) extends Logging {
 
-  def findExcludedTrader(vrn: Vrn): Option[ExcludedTrader] = {
-    val exclusions = appConfig.exclusions
-
-    logger.info(s"REAL EXCLUSIONS - $exclusions")
-
-    exclusions.find(e => e.vrn.vrn == vrn.vrn)
-  }
+  def findExcludedTrader(vrn: Vrn): Option[ExcludedTrader] =
+    appConfig.exclusions.find(e => e.vrn.vrn == vrn.vrn)
 
 }
