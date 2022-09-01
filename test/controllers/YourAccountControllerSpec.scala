@@ -50,7 +50,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val sessionRepository = mock[UserAnswersRepository]
   private val save4LaterConnector = mock[SaveForLaterConnector]
 
-  private val excludedTrader: Option[ExcludedTrader]=Some(ExcludedTrader(registration.vrn, "HMRC", 4, "01/01/2022"))
+  private val excludedTrader: Option[ExcludedTrader]=Some(ExcludedTrader(registration.vrn, "HMRC", 1, "01/01/2022"))
 
   "Your Account Controller" - {
 
