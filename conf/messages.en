@@ -513,3 +513,7 @@ excludedNotPermitted.title = You cannot use this service
 excludedNotPermitted.heading = You cannot use this service
 excludedNotPermitted.link = Back to your account.
 
+warning.exclusion.message1 = You have left this service, but you must complete and pay your final return.
+warning.exclusion.message2 = We''ve removed you from this service, but you must complete and pay your final return.
+warning.exclusion.message4 = We''ve removed you from this service, but you must complete and pay your final return. You cannot re-join until [{0}]
+

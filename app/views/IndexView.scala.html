@@ -20,120 +20,142 @@
 @import viewmodels._
 @import utils.CurrencyFormatter.currencyFormat
 @import java.time.format.DateTimeFormatter
+@import java.time.LocalDate
+@import models.exclusions.ExcludedTrader
 
 @this(
-        layout: templates.Layout,
-        govukButton: GovukButton
+layout: templates.Layout,
+govukButton: GovukButton
 )
 @(
-        businessName: String,
-        vrn: String,
-        returnsViewModel: ReturnsViewModel,
-        paymentsViewModel: PaymentsViewModel,
-        paymentError: Boolean
+businessName: String,
+vrn: String,
+returnsViewModel: ReturnsViewModel,
+paymentsViewModel: PaymentsViewModel,
+paymentError: Boolean,
+excludedTrader: Option[ExcludedTrader]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = titleNoForm(messages("index.title")),
-    showBackLink = false,
-    fullWidth = true
+pageTitle = titleNoForm(messages("index.title")),
+showBackLink = false,
+fullWidth = true
 ) {
 
-    @if(paymentError) {
-        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-            <div class="govuk-notification-banner__header">
-                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                @messages("notificationBanner.title")
-                </h2>
-            </div>
-            <div class="govuk-notification-banner__content">
-                <p class="govuk-notification-banner__heading">
-                @messages("notificationBanner.text")
-                </p>
-            </div>
-        </div>
-    }
+@if(paymentError) {
+<div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title"
+     data-module="govuk-notification-banner">
+    <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+            @messages("notificationBanner.title")
+        </h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">
+            @messages("notificationBanner.text")
+        </p>
+    </div>
+</div>
+}
 
-    <h1 class="govuk-heading-l">
-        @messages("index.heading")
-        <span class="govuk-caption-m">@businessName</span>
-        <span class="govuk-caption-m">@messages("index.vrn", vrn)</span>
-    </h1>
+<h1 class="govuk-heading-l">
+    @messages("index.heading")
+    <span class="govuk-caption-m">@businessName</span>
+    <span class="govuk-caption-m">@messages("index.vrn", vrn)</span>
+</h1>
 
-    <p class="govuk-body">@messages("index.paragraph")</p>
+<div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+        <span class="govuk-warning-text__assistive">Warning</span>
+        @if(excludedTrader.nonEmpty) {
+            @if(excludedTrader.get.exclusionReason == 4) {
+                @messages("warning.exclusion.message4", LocalDate.parse(excludedTrader.get.effectiveDate,
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy")).plusYears(2))
+            } else if (excludedTrader.get.exclusionSource == "HMRC") {
+                @messages("warning.exclusion.message2")
+            } else if (excludedTrader.get.exclusionSource == "TRADER") {
+                @messages("warning.exclusion.message1")
+            }
+        }
+    </strong>
+</div>
 
-    <div class="flex-container govuk-grid-row">
-        <div class="tile tile-no-border">
-            <div id="next-return" class="tile-body">
-                <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
-                @for(paragraph <- returnsViewModel.contents) {
-                    @paragraph match {
-                        case simple: ParagraphSimple => {
-                            <p class="govuk-body">
-                                @Html(simple.content)
-                            </p>
-                        }
-                        case pWithId: ParagraphWithId => {
-                            <p class="govuk-body" id="@pWithId.id">
-                                @Html(pWithId.content)
-                            </p>
-                        }
-                    }
-                }
-                @for(link <- returnsViewModel.linkToStart) {
-                        <p class="govuk-body">
-                            <a class="govuk-link" href="@{link.url}" id="@{link.id}">
-                               @link.linkText
-                            </a>
-                        </p>
-                }
-            </div>
-        </div>
+<p class="govuk-body">@messages("index.paragraph")</p>
 
-        <div class="tile tile-no-border">
-            <div id="payments" class="tile-body">
-                <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
-                @for(warningText <- paymentsViewModel.warning){
-                        <div class="govuk-warning-text">
-                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                            <strong class="govuk-warning-text__text">
-                                <span class="govuk-warning-text__assistive">Warning</span>
-                                @warningText
-                            </strong>
-                        </div>
-                }
-                @for(section <- paymentsViewModel.sections){
-                    @for(sectionHeading <- section.heading){
-                        <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
-                    }
-
-                    @for(paragraph <- section.contents){
-                        <p class="govuk-body">
-                            @Html(paragraph)
-                        </p>
-                    }
-                }
-                @for(link <- paymentsViewModel.link){
-                        <p class="govuk-body">
-                            <a class="govuk-link"
-                               href="@link.url" id="@link.id">
-                                @link.linkText
-                            </a>
-                        </p>
-                }
-            </div>
-        </div>
-
-        <div class="tile tile-no-border">
-            <div id="history" class="tile-body">
-                <h2 class="govuk-heading-m">@messages("index.history")</h2>
-
-                <p class="govuk-body">
-                    <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url" id="view-past-returns">
-                    @messages("index.history.previousReturns")
-                    </a>
-                </p>
-            </div>
+<div class="flex-container govuk-grid-row">
+    <div class="tile tile-no-border">
+        <div id="next-return" class="tile-body">
+            <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
+            @for(paragraph <- returnsViewModel.contents) {
+            @paragraph match {
+            case simple: ParagraphSimple => {
+            <p class="govuk-body">
+                @Html(simple.content)
+            </p>
+            }
+            case pWithId: ParagraphWithId => {
+            <p class="govuk-body" id="@pWithId.id">
+                @Html(pWithId.content)
+            </p>
+            }
+            }
+            }
+            @for(link <- returnsViewModel.linkToStart) {
+            <p class="govuk-body">
+                <a class="govuk-link" href="@{link.url}" id="@{link.id}">
+                    @link.linkText
+                </a>
+            </p>
+            }
         </div>
     </div>
+
+    <div class="tile tile-no-border">
+        <div id="payments" class="tile-body">
+            <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
+            @for(warningText <- paymentsViewModel.warning){
+            <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                    <span class="govuk-warning-text__assistive">Warning</span>
+                    @warningText
+                </strong>
+            </div>
+            }
+            @for(section <- paymentsViewModel.sections){
+            @for(sectionHeading <- section.heading){
+            <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
+            }
+
+            @for(paragraph <- section.contents){
+            <p class="govuk-body">
+                @Html(paragraph)
+            </p>
+            }
+            }
+            @for(link <- paymentsViewModel.link){
+            <p class="govuk-body">
+                <a class="govuk-link"
+                   href="@link.url" id="@link.id">
+                    @link.linkText
+                </a>
+            </p>
+            }
+        </div>
+    </div>
+
+    <div class="tile tile-no-border">
+        <div id="history" class="tile-body">
+            <h2 class="govuk-heading-m">@messages("index.history")</h2>
+
+            <p class="govuk-body">
+                <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url"
+                   id="view-past-returns">
+                    @messages("index.history.previousReturns")
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
 }
