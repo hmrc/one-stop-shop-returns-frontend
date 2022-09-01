@@ -508,3 +508,7 @@ whichVatPeriodToPay.error.required = Select a period to pay
 noPayments.title = You do not owe any One Stop Shop VAT
 noPayments.heading = You do not owe any One Stop Shop VAT
 noPayments.textWithLink = Return to <a href={0}>your account</a>.
+
+warning.exclusion.message1 = You have left this service, but you must complete and pay your final return.
+warning.exclusion.message2 = We''ve removed you from this service, but you must complete and pay your final return.
+warning.exclusion.message4 = We''ve removed you from this service, but you must complete and pay your final return. You cannot re-join until [{0}]

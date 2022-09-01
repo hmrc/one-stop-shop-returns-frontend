@@ -26,15 +26,19 @@ import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.UserAnswersRepository
+import services.exclusions.ExclusionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.yourAccount._
 import views.html.IndexView
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
+                                       service: ExclusionService,
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
@@ -48,6 +52,7 @@ class YourAccountController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
+
       results.flatMap {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
           prepareViewWithFinancialData(availablePeriodsWithStatus.returns, vatReturnsWithFinancialData, answers.map(_.period))
@@ -61,6 +66,7 @@ class YourAccountController @Inject()(
           logger.error(s"there was an error during period with status $error")
           throw new Exception(error.toString)
       }
+
   }
 
   private def getCurrentReturnsAndFinancialDataAndUserAnswers()(implicit request: RegistrationRequest[AnyContent]) = {
@@ -106,7 +112,8 @@ class YourAccountController @Inject()(
           currentReturn
         })),
       PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
-      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown)
+      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
+      service.findExcludedTrader(request.vrn)
     )))
   }
 
@@ -122,7 +129,8 @@ class YourAccountController @Inject()(
           currentReturn
         })),
       PaymentsViewModel(Seq.empty, Seq.empty),
-      paymentError = true
+      paymentError = true,
+      service.findExcludedTrader(request.vrn)
     )))
   }
 
