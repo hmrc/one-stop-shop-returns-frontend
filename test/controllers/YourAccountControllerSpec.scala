@@ -22,6 +22,7 @@ import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import generators.Generators
 import models.Quarter._
 import models.SubmissionStatus.{Due, Next, Overdue}
+import models.exclusions.ExcludedTrader
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import models.{Period, SubmissionStatus}
@@ -48,6 +49,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val vatReturnSalesService = mock[VatReturnSalesService]
   private val sessionRepository = mock[UserAnswersRepository]
   private val save4LaterConnector = mock[SaveForLaterConnector]
+
+  private val excludedTrader: Option[ExcludedTrader]=Some(ExcludedTrader(registration.vrn, "HMRC", 4, "01/01/2022"))
 
   "Your Account Controller" - {
 
@@ -107,7 +110,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-            paymentError = false
+            paymentError = false,
+            excludedTrader
           )(request, messages(application)).toString
         }
       }
@@ -159,7 +163,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              excludedTrader
             )(request, messages(application)).toString
           }
         }
@@ -210,7 +215,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              excludedTrader
             )(request, messages(application)).toString
           }
         }
@@ -262,7 +268,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              excludedTrader
             )(request, messages(application)).toString
           }
         }
@@ -318,7 +325,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              excludedTrader
             )(request, messages(application)).toString
           }
         }
@@ -367,7 +375,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(Seq(
               Return.fromPeriod(Period(2021, Q3), Overdue, false, true)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-            paymentError = false
+            paymentError = false,
+            excludedTrader
           )(request, messages(application)).toString
         }
       }
@@ -422,7 +431,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Return.fromPeriod(firstPeriod, Overdue, false, true),
               Return.fromPeriod(secondPeriod, Overdue, false, false)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-            paymentError = false
+            paymentError = false,
+            excludedTrader
           )(request, messages(application)).toString
         }
       }
@@ -479,7 +489,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PaymentsViewModel(
                 Seq(payment),
                 Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              excludedTrader
             )(request, messages(application)).toString
           }
         }
@@ -535,7 +546,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               PaymentsViewModel(Seq(payment),
                 Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              excludedTrader
             )(request, messages(application)).toString
 
           }
@@ -595,7 +607,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               PaymentsViewModel(Seq.empty, Seq(overduePayment))(messages(application)),
-              paymentError = false
+              paymentError = false,
+              excludedTrader
             )(request, messages(application)).toString
           }
         }
@@ -644,7 +657,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = true
+              paymentError = true,
+              excludedTrader
             )(request, messages(application)).toString
           }
         }
@@ -696,7 +710,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Seq(payment),
                 Seq.empty
               )(messages(application)),
-              paymentError = true
+              paymentError = true,
+              excludedTrader
             )(request, messages(application)).toString
           }
         }
@@ -750,7 +765,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             PaymentsViewModel(
               Seq(payment),
               Seq.empty)(messages(application)),
-            paymentError = true
+            paymentError = true,
+            excludedTrader
           )(request, messages(application)).toString
         }
       }
@@ -797,7 +813,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, true, true)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-            paymentError = false
+            paymentError = false,
+            excludedTrader
           )(request, messages(application)).toString
 
         }
