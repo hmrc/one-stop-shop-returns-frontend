@@ -17,11 +17,8 @@
 package config
 
 import com.google.inject.{Inject, Singleton}
-import com.typesafe.config.{Config, ConfigMemorySize}
-import uk.gov.hmrc.domain.Vrn
 import models.exclusions.ExcludedTrader
-import models.exclusions.ExcludedTrader.configLoader
-import play.api.{ConfigLoader, Configuration}
+import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
