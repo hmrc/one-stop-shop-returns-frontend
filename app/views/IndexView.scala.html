@@ -28,18 +28,18 @@ layout: templates.Layout,
 govukButton: GovukButton
 )
 @(
-businessName: String,
-vrn: String,
-returnsViewModel: ReturnsViewModel,
-paymentsViewModel: PaymentsViewModel,
-paymentError: Boolean,
-excludedTrader: Option[ExcludedTrader]
+    businessName: String,
+    vrn: String,
+    returnsViewModel: ReturnsViewModel,
+    paymentsViewModel: PaymentsViewModel,
+    paymentError: Boolean,
+    maybeExcludedTrader: Option[ExcludedTrader]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
-pageTitle = titleNoForm(messages("index.title")),
-showBackLink = false,
-fullWidth = true
+    pageTitle = titleNoForm(messages("index.title")),
+    showBackLink = false,
+    fullWidth = true
 ) {
 
 @if(paymentError) {
@@ -68,16 +68,21 @@ fullWidth = true
     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
     <strong class="govuk-warning-text__text">
         <span class="govuk-warning-text__assistive">Warning</span>
-        @if(excludedTrader.nonEmpty) {
-            @if(excludedTrader.get.exclusionReason == 4) {
-                @messages("warning.exclusion.message4", LocalDate.parse(excludedTrader.get.effectiveDate,
-                        DateTimeFormatter.ofPattern("dd/MM/yyyy")).plusYears(2))
-            } else if (excludedTrader.get.exclusionSource == "HMRC") {
-                @messages("warning.exclusion.message2")
-            } else if (excludedTrader.get.exclusionSource == "TRADER") {
-                @messages("warning.exclusion.message1")
-            }
+
+        @maybeExcludedTrader match {
+            case Some(excludedTrader) => {
+                @(excludedTrader.exclusionReason, excludedTrader.exclusionSource) match {
+                    case (4, _) => { @messages("warning.exclusion.quarantineUser",
+                LocalDate.parse(excludedTrader.effectiveDate, DateTimeFormatter.ofPattern("dd/MM/yyyy")).plusYears(2)) }
+
+                    case (_, "HMRC") => { @messages("warning.exclusion.hmrc") }
+
+                    case (_, "TRADER") => { @messages("warning.exclusion.trader") }
+                }
         }
+            case _ => {}
+        }
+
     </strong>
 </div>
 
