@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package controllers.exclsuions
+package controllers.exclusions
 
 import controllers.actions._
 import play.api.i18n.I18nSupport

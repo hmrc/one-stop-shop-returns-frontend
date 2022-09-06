@@ -31,7 +31,7 @@ class ExcludedNotPermittedControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, controllers.exclsuions.routes.ExcludedNotPermittedController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.ExcludedNotPermittedController.onPageLoad().url)
 
         val result = route(application, request).value
 
