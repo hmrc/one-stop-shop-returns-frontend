@@ -517,3 +517,6 @@ warning.exclusion.message1 = You have left this service, but you must complete a
 warning.exclusion.message2 = We''ve removed you from this service, but you must complete and pay your final return.
 warning.exclusion.message4 = We''ve removed you from this service, but you must complete and pay your final return. You cannot re-join until [{0}]
 
+warning.exclusion.trader = You have left this service, but you must complete and pay your final return.
+warning.exclusion.hmrc = We''ve removed you from this service, but you must complete and pay your final return.
+warning.exclusion.quarantineUser = We''ve removed you from this service, but you must complete and pay your final return. You cannot re-join until [{0}]
