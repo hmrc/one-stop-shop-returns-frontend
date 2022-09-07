@@ -287,7 +287,7 @@ class CheckYourAnswersController @Inject()(
         saveUserAnswersOnCoreError(period, routes.NoRegistrationFoundInCoreController.onPageLoad())
       case Left(ReceivedErrorFromCore) =>
         auditService.audit(ReturnsAuditModel.build(
-          vatReturnRequest, correctionRequest, SubmissionResult.NotYetRegistered, None, None, request
+          vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
         ))
         saveUserAnswersOnCoreError(period, routes.ReceivedErrorFromCoreController.onPageLoad())
       case Left(ConflictFound) =>
