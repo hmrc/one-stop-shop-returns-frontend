@@ -19,8 +19,6 @@
 @import viewmodels.yourAccount._
 @import viewmodels._
 @import utils.CurrencyFormatter.currencyFormat
-@import java.time.format.DateTimeFormatter
-@import java.time.LocalDate
 @import models.exclusions.ExcludedTrader
 
 @this(
@@ -33,7 +31,8 @@ govukButton: GovukButton
     returnsViewModel: ReturnsViewModel,
     paymentsViewModel: PaymentsViewModel,
     paymentError: Boolean,
-    maybeExcludedTrader: Option[ExcludedTrader]
+    maybeExcludedTrader: Option[ExcludedTrader],
+    hasSubmittedFinalReturn: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -68,50 +67,63 @@ govukButton: GovukButton
     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
     <strong class="govuk-warning-text__text">
         <span class="govuk-warning-text__assistive">Warning</span>
-        @maybeExcludedTrader match {
-            case Some(excludedTrader) => {
-                @(excludedTrader.exclusionReason, excludedTrader.exclusionSource) match {
-                    case (4, _) => { @messages("warning.exclusion.quarantineUser",
-                LocalDate.parse(excludedTrader.effectiveDate, DateTimeFormatter.ofPattern("dd/MM/yyyy")).plusYears(2)) }
+            @if(hasSubmittedFinalReturn) {
+                <p class="govuk-body govuk-!-margin-bottom-1"><strong>@messages("warning.leftService")</strong></p>
+            } else {
+                @maybeExcludedTrader match {
+                    case Some(excludedTrader) => {
+                                    @(excludedTrader.exclusionReason, excludedTrader.exclusionSource) match {
+                        case (4, _) => { @messages("warning.exclusion.quarantineUser",
+                                    excludedTrader.effectiveDate.firstDay.plusYears(2))}
 
-                    case (_, "HMRC") => { @messages("warning.exclusion.hmrc") }
+                        case (_, "HMRC") => { @messages("warning.exclusion.hmrc") }
 
-                    case (_, "TRADER") => { @messages("warning.exclusion.trader") }
+                        case (_, "TRADER") => { @messages("warning.exclusion.trader") }
+                        }
+                    }
+                    case _ => {}
                 }
-        }
-            case _ => {}
-        }
-
+            }
     </strong>
 </div>
 
-<p class="govuk-body">@messages("index.paragraph")</p>
+@if(hasSubmittedFinalReturn) {
+    <p class="govuk-body">@messages("previous.return.correct")</p>
+} else {
+    <p class="govuk-body">@messages("index.paragraph")</p>
+}
+
 
 <div class="flex-container govuk-grid-row">
     <div class="tile tile-no-border">
         <div id="next-return" class="tile-body">
             <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
-            @for(paragraph <- returnsViewModel.contents) {
-            @paragraph match {
-            case simple: ParagraphSimple => {
-            <p class="govuk-body">
-                @Html(simple.content)
-            </p>
+            @if(hasSubmittedFinalReturn) {
+                <p class="govuk-body">@messages("return.completed")</p>
+            } else {
+                @for(paragraph <- returnsViewModel.contents) {
+                    @paragraph match {
+                        case simple: ParagraphSimple => {
+                            <p class="govuk-body">
+                                @Html(simple.content)
+                            </p>
+                        }
+                        case pWithId: ParagraphWithId => {
+                            <p class="govuk-body" id="@pWithId.id">
+                                @Html(pWithId.content)
+                            </p>
+                        }
+                    }
+                }
+                @for(link <- returnsViewModel.linkToStart) {
+                <p class="govuk-body">
+                    <a class="govuk-link" href="@{link.url}" id="@{link.id}">
+                        @link.linkText
+                    </a>
+                </p>
+                }
             }
-            case pWithId: ParagraphWithId => {
-            <p class="govuk-body" id="@pWithId.id">
-                @Html(pWithId.content)
-            </p>
-            }
-            }
-            }
-            @for(link <- returnsViewModel.linkToStart) {
-            <p class="govuk-body">
-                <a class="govuk-link" href="@{link.url}" id="@{link.id}">
-                    @link.linkText
-                </a>
-            </p>
-            }
+
         </div>
     </div>
 
@@ -161,5 +173,9 @@ govukButton: GovukButton
             </p>
         </div>
     </div>
+
+    @if(hasSubmittedFinalReturn) {
+        <p class="govuk-body">@Html(messages("oss.account.message"))</p>
+    }
 </div>
 }

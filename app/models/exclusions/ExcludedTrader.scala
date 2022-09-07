@@ -52,8 +52,6 @@ object ExcludedTrader extends Logging {
             logger.error("Unable to parse period")
             throw new Exception("Unable to parse period")
         }
-
-
   }
 
   implicit val seqExcludedTrader: ConfigLoader[Seq[ExcludedTrader]] = new ConfigLoader[Seq[ExcludedTrader]] {
