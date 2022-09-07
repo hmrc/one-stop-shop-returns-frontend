@@ -16,15 +16,17 @@
 
 package controllers.actions
 
-import controllers.exclusions.routes
 import base.SpecBase
+import controllers.exclusions.routes
+import models.Period
+import models.Quarter.{Q2, Q3, Q4}
 import models.exclusions.ExcludedTrader
-import models.requests.IdentifierRequest
+import models.requests.OptionalDataRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
@@ -32,14 +34,14 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 import services.exclusions.ExclusionService
 
-import java.time.LocalDate
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  class Harness(exclusionService: ExclusionService) extends CheckExcludedTraderFilterImpl(exclusionService) {
-    def callFilter(request: IdentifierRequest[_]): Future[Option[Result]] = filter(request)
+  class Harness(exclusionService: ExclusionService, startReturnPeriod: Period)
+    extends CheckExcludedTraderFilterImpl(exclusionService, startReturnPeriod) {
+    def callFilter(request: OptionalDataRequest[_]): Future[Option[Result]] = filter(request)
   }
 
   val exclusionService: ExclusionService = mock[ExclusionService]
@@ -52,16 +54,40 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
     "must return None when trader is not excluded" in {
 
+      val startReturnPeriod = Period(2022, Q3)
 
       val app = applicationBuilder(None)
         .overrides(bind[ExclusionService].toInstance(exclusionService))
         .build()
 
-      when(exclusionService.findExcludedTrader(any())) thenReturn None
+      when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(None)
 
       running(app) {
-        val request = IdentifierRequest(FakeRequest(), testCredentials, vrn)
-        val controller = new Harness(exclusionService)
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, None)
+        val controller = new Harness(exclusionService, startReturnPeriod)
+
+        val result = controller.callFilter(request).futureValue
+
+        result mustBe None
+      }
+
+    }
+
+    "must return None when trader is excluded but can complete returns up to exclusion effective period" in {
+
+      val startReturnPeriod = Period(2022, Q3)
+
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, "HMRC", 4, Period(2022, Q4))
+
+      val app = applicationBuilder(None)
+        .overrides(bind[ExclusionService].toInstance(exclusionService))
+        .build()
+
+      when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
+
+      running(app) {
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, None)
+        val controller = new Harness(exclusionService, startReturnPeriod)
 
         val result = controller.callFilter(request).futureValue
 
@@ -72,21 +98,22 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
     "must return Some(ExcludedTrader) when trader is excluded" in {
 
-      val exclusionReason = 4
+      val excludedPeriod = Period(2022, Q2)
+      val startReturnPeriod = Period(2022, Q3)
 
       val excludedTrader: ExcludedTrader =
-        ExcludedTrader(vrn, "HMRC", exclusionReason, LocalDate.now.format(ExcludedTrader.dateFormatter))
+        ExcludedTrader(vrn, "HMRC", 4, excludedPeriod)
 
       val app = applicationBuilder(None)
         .overrides(bind[ExclusionService].toInstance(exclusionService))
         .build()
 
-      when(exclusionService.findExcludedTrader(any())) thenReturn Some(excludedTrader)
+      when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
 
       running(app) {
 
-        val request = IdentifierRequest(FakeRequest(), testCredentials, vrn)
-        val controller = new Harness(exclusionService)
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, None)
+        val controller = new Harness(exclusionService, startReturnPeriod)
 
         val result = controller.callFilter(request).futureValue
 

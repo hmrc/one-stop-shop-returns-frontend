@@ -22,10 +22,11 @@ import models.exclusions.ExcludedTrader
 import uk.gov.hmrc.domain.Vrn
 
 import javax.inject.Inject
+import scala.concurrent.Future
 
 class ExclusionService @Inject()(appConfig: FrontendAppConfig) extends Logging {
 
-  def findExcludedTrader(vrn: Vrn): Option[ExcludedTrader] =
-    appConfig.exclusions.find(e => e.vrn.vrn == vrn.vrn)
+  def findExcludedTrader(vrn: Vrn): Future[Option[ExcludedTrader]] =
+    Future.successful(appConfig.exclusions.find(e => e.vrn.vrn == vrn.vrn))
 
 }

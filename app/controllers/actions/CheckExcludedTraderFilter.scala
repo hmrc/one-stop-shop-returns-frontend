@@ -17,7 +17,8 @@
 package controllers.actions
 
 import controllers.exclusions.routes
-import models.requests.IdentifierRequest
+import models.Period
+import models.requests.OptionalDataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import services.exclusions.ExclusionService
@@ -25,21 +26,25 @@ import services.exclusions.ExclusionService
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckExcludedTraderFilterImpl(exclusionService: ExclusionService)(implicit val executionContext: ExecutionContext)
-  extends ActionFilter[IdentifierRequest] {
+class CheckExcludedTraderFilterImpl(exclusionService: ExclusionService,
+                                    startReturnPeriod: Period
+                                   )(implicit val executionContext: ExecutionContext)
+  extends ActionFilter[OptionalDataRequest] {
 
-  override protected def filter[A](request: IdentifierRequest[A]): Future[Option[Result]] = {
-    if(exclusionService.findExcludedTrader(request.vrn).isDefined) {
-      Future(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
-    } else {
-      Future.successful(None)
+  override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
+    exclusionService.findExcludedTrader(request.vrn).map {
+      case Some(excludedTrader) if startReturnPeriod.lastDay.isAfter(excludedTrader.effectivePeriod.firstDay) =>
+        Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad()))
+      case _ =>
+        None
     }
   }
 }
 
-class CheckExcludedTraderFilterProvider @Inject()(exclusionService: ExclusionService)(implicit ec: ExecutionContext) {
+class CheckExcludedTraderFilterProvider @Inject()(exclusionService: ExclusionService)
+                                                 (implicit ec: ExecutionContext) {
 
-  def apply(): CheckExcludedTraderFilterImpl =
-    new CheckExcludedTraderFilterImpl(exclusionService)
+  def apply(startReturnPeriod: Period): CheckExcludedTraderFilterImpl =
+    new CheckExcludedTraderFilterImpl(exclusionService, startReturnPeriod)
 
 }

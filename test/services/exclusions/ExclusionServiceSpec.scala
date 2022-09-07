@@ -18,13 +18,14 @@ package services.exclusions
 
 import base.SpecBase
 import config.FrontendAppConfig
+import models.Period
+import models.Quarter.Q3
 import models.exclusions.ExcludedTrader
 import org.mockito.{Mockito, MockitoSugar}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.LocalDate
 
 class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
@@ -32,7 +33,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   val service = new ExclusionService(mockConfig)
   private val exclusionSource = Gen.oneOf("HMRC", "TRADER").sample.value
   private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
-  private val date = LocalDate.now().format(ExcludedTrader.dateFormatter)
+  private val exclusionPeriod = Period(2022, Q3)
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockConfig)
@@ -44,11 +45,11 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
     "must return ExcludedTrader if vrn is matched" in {
 
-      when(mockConfig.exclusions) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, date))
+      when(mockConfig.exclusions) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
-      val expected = ExcludedTrader(vrn, exclusionSource, exclusionReason, date)
+      val expected = ExcludedTrader(vrn, exclusionSource, exclusionReason, exclusionPeriod)
 
-      service.findExcludedTrader(vrn) mustBe Some(expected)
+      service.findExcludedTrader(vrn).futureValue mustBe Some(expected)
 
     }
 
@@ -56,11 +57,10 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       when(mockConfig.exclusions) thenReturn Seq.empty
 
-      val expected = None
-
-      service.findExcludedTrader(vrn) mustBe expected
+      service.findExcludedTrader(vrn).futureValue mustBe None
 
     }
   }
 
 }
+
