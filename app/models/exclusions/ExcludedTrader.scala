@@ -17,6 +17,7 @@
 package models.exclusions
 
 import com.typesafe.config.Config
+import models.Period
 import play.api.{ConfigLoader, Configuration}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
@@ -27,7 +28,7 @@ case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionSource: String,
                            exclusionReason: Int,
-                           effectiveDate: String
+                           effectiveDate: Period
                          )
 
 object ExcludedTrader {
@@ -44,7 +45,7 @@ object ExcludedTrader {
         val exclusionReason = excludedTrader.get[Int]("exclusionReason")
         val effectiveDate = excludedTrader.get[String]("effectiveDate")
 
-        ExcludedTrader(Vrn(vrn), exclusionSource, exclusionReason, effectiveDate)
+        ExcludedTrader(Vrn(vrn), exclusionSource, exclusionReason, Period.fromString(effectiveDate).get)
   }
 
   implicit val seqExcludedTrader: ConfigLoader[Seq[ExcludedTrader]] = new ConfigLoader[Seq[ExcludedTrader]] {
@@ -59,7 +60,7 @@ object ExcludedTrader {
           Vrn(value.getString("vrn")),
           value.getString("exclusionSource"),
           value.getInt("exclusionReason"),
-          value.getString("effectiveDate")
+          Period.fromString(value.getString("effectiveDate")).get
         )
       }.toSeq
     }

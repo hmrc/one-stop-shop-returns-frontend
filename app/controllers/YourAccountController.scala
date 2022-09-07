@@ -99,36 +99,49 @@ class YourAccountController @Inject()(
                                            currentPayments: CurrentPayments,
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
 
-    Future.successful(Ok(view(
-      request.registration.registeredCompanyName,
-      request.vrn.vrn,
-      ReturnsViewModel(
-        returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
-          currentReturn.copy(inProgress = true)
-        } else {
-          currentReturn
-        })),
-      PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
-      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
-      service.findExcludedTrader(request.vrn)
-    )))
+    for {
+      hasSubmittedFinalReturn <- service.hasSubmittedFinalReturn(request.vrn)
+      maybeExcludedTrader <- service.findExcludedTrader(request.vrn)
+    } yield {
+      Ok(view(
+        request.registration.registeredCompanyName,
+        request.vrn.vrn,
+        ReturnsViewModel(
+          returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+            currentReturn.copy(inProgress = true)
+          } else {
+            currentReturn
+          })),
+        PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
+        (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
+        maybeExcludedTrader,
+        hasSubmittedFinalReturn,
+      ))
+    }
   }
 
   private def prepareViewWithNoFinancialData(returnsViewModel: Seq[Return], periodInProgress: Option[Period])
                                             (implicit request: RegistrationRequest[AnyContent]) = {
-    Future.successful(Ok(view(
-      request.registration.registeredCompanyName,
-      request.vrn.vrn,
-      ReturnsViewModel(
-        returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
-          currentReturn.copy(inProgress = true)
-        } else {
-          currentReturn
-        })),
-      PaymentsViewModel(Seq.empty, Seq.empty),
-      paymentError = true,
-      service.findExcludedTrader(request.vrn)
-    )))
+
+    for {
+      hasSubmittedFinalReturn <- service.hasSubmittedFinalReturn(request.vrn)
+      maybeExcludedTrader <- service.findExcludedTrader(request.vrn)
+    } yield {
+      Ok(view(
+        request.registration.registeredCompanyName,
+        request.vrn.vrn,
+        ReturnsViewModel(
+          returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+            currentReturn.copy(inProgress = true)
+          } else {
+            currentReturn
+          })),
+        PaymentsViewModel(Seq.empty, Seq.empty),
+        paymentError = true,
+        maybeExcludedTrader,
+        hasSubmittedFinalReturn
+      ))
+    }
   }
 
 }

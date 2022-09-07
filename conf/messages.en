@@ -511,4 +511,8 @@ noPayments.textWithLink = Return to <a href={0}>your account</a>.
 
 warning.exclusion.trader = You have left this service, but you must complete and pay your final return.
 warning.exclusion.hmrc = We''ve removed you from this service, but you must complete and pay your final return.
-warning.exclusion.quarantineUser = We''ve removed you from this service, but you must complete and pay your final return. You cannot re-join until [{0}]
+warning.exclusion.quarantineUser = We''ve removed you from this service, but you must complete and pay your final return. You cannot re-join until [{0}].
+warning.leftService = You have left this service.
+previous.return.correct = You can correct previous returns directly with the country where you made the sales.
+return.completed = You''ve completed your final return.
+oss.account.message = If you have any questions about your OSS account, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
