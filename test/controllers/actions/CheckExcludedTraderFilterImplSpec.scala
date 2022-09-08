@@ -124,3 +124,4 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
   }
 
 }
+

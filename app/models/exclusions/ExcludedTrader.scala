@@ -50,7 +50,7 @@ object ExcludedTrader extends Logging {
             ExcludedTrader(Vrn(vrn), exclusionSource, exclusionReason, excludedPeriod)
           case _ =>
             logger.error("Unable to parse period")
-            throw new Exception("unable to parse period")
+            throw new Exception("Unable to parse period")
         }
 
 
@@ -74,7 +74,7 @@ object ExcludedTrader extends Logging {
                 excludedPeriod
             case _ =>
               logger.error("Unable to parse period")
-              throw new Exception("unable to parse period")
+              throw new Exception("Unable to parse period")
           }
         )
       }.toSeq

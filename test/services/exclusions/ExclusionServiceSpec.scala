@@ -24,7 +24,10 @@ import models.exclusions.ExcludedTrader
 import org.mockito.{Mockito, MockitoSugar}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
+import play.api.inject.bind
 import uk.gov.hmrc.domain.Vrn
+
+import scala.util.{Failure, Success, Try}
 
 
 class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
@@ -59,6 +62,23 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       service.findExcludedTrader(vrn).futureValue mustBe None
 
+    }
+
+    "must return an Exception when excluded trader effective period is not parsed correctly" in {
+
+      val exclusionService: ExclusionService = mock[ExclusionService]
+
+      Try {
+        applicationBuilder(None)
+          .overrides(bind[ExclusionService].toInstance(exclusionService))
+          .configure("features.exclusions.1.effectivePeriod" -> "fail")
+          .build()
+      } match {
+        case Success(_) => fail("failed")
+        case Failure(exception) =>
+          exception mustBe a[Exception]
+          exception.getCause.getMessage mustBe ("Unable to parse period")
+      }
     }
   }
 
