@@ -68,7 +68,7 @@ govukButton: GovukButton
     <strong class="govuk-warning-text__text">
         <span class="govuk-warning-text__assistive">Warning</span>
             @if(hasSubmittedFinalReturn) {
-                <p class="govuk-body govuk-!-margin-bottom-1"><strong>@messages("warning.leftService")</strong></p>
+                <span class="govuk-body govuk-!-margin-bottom-1"><strong>@messages("warning.leftService")</strong></span>
             } else {
                 @maybeExcludedTrader match {
                     case Some(excludedTrader) => {
@@ -92,7 +92,6 @@ govukButton: GovukButton
 } else {
     <p class="govuk-body">@messages("index.paragraph")</p>
 }
-
 
 <div class="flex-container govuk-grid-row">
     <div class="tile tile-no-border">
