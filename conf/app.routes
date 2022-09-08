@@ -313,4 +313,4 @@ GET        /no-welsh-service                                                    
 GET        /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onPageLoad()
 POST       /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onSubmit()
 
-GET        /excluded-not-permitted                                                                           controllers.exclusions.ExcludedNotPermittedController.onPageLoad()
+GET        /excluded-cannot-use-service                                                                      controllers.exclusions.ExcludedNotPermittedController.onPageLoad()
