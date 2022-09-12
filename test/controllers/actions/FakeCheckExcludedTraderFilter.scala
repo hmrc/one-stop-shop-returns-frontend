@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import config.FrontendAppConfig
 import models.Period
 import models.requests.OptionalDataRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -26,7 +27,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FakeCheckExcludedTraderFilter() extends CheckExcludedTraderFilterImpl(
   mock[ExclusionService],
-  mock[Period]
+  mock[Period],
+  mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
@@ -36,7 +38,7 @@ class FakeCheckExcludedTraderFilter() extends CheckExcludedTraderFilterImpl(
 }
 
 class FakeCheckExcludedTraderFilterProvider()
-  extends CheckExcludedTraderFilterProvider(mock[ExclusionService])(ExecutionContext.Implicits.global) {
+  extends CheckExcludedTraderFilterProvider(mock[ExclusionService], mock[FrontendAppConfig])(ExecutionContext.Implicits.global) {
 
   override def apply(startReturnPeriod: Period): CheckExcludedTraderFilterImpl = new FakeCheckExcludedTraderFilter()
 

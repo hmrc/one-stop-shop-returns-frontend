@@ -63,6 +63,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val cachedVatReturnTtl: Int = configuration.get[Int]("mongodb.cachedTimeToLiveInSeconds")
   val saveForLaterTtl: Int = configuration.get[Int]("mongodb.saveForLaterTTLInDays")
 
-  val exclusions: Seq[ExcludedTrader] = configuration.get[Seq[ExcludedTrader]]("features.exclusions")
+  val exclusionsEnabled: Boolean = configuration.get[Boolean]("features.exclusions.enabled")
+  val excludedTraders: Seq[ExcludedTrader] = configuration.get[Seq[ExcludedTrader]]("features.exclusions.excluded-traders")
 
 }

@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import config.FrontendAppConfig
 import controllers.exclusions.routes
 import models.Period
 import models.requests.OptionalDataRequest
@@ -27,24 +28,29 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckExcludedTraderFilterImpl(exclusionService: ExclusionService,
-                                    startReturnPeriod: Period
+                                    startReturnPeriod: Period,
+                                    frontendAppConfig: FrontendAppConfig
                                    )(implicit val executionContext: ExecutionContext)
   extends ActionFilter[OptionalDataRequest] {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
-    exclusionService.findExcludedTrader(request.vrn).map {
-      case Some(excludedTrader) if startReturnPeriod.lastDay.isAfter(excludedTrader.effectivePeriod.firstDay) =>
-        Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad()))
-      case _ =>
-        None
+    if(frontendAppConfig.exclusionsEnabled) {
+      exclusionService.findExcludedTrader(request.vrn).map {
+        case Some(excludedTrader) if startReturnPeriod.lastDay.isAfter(excludedTrader.effectivePeriod.firstDay) =>
+          Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad()))
+        case _ =>
+          None
+      }
+    } else {
+      Future.successful(None)
     }
   }
 }
 
-class CheckExcludedTraderFilterProvider @Inject()(exclusionService: ExclusionService)
+class CheckExcludedTraderFilterProvider @Inject()(exclusionService: ExclusionService, frontendAppConfig: FrontendAppConfig)
                                                  (implicit ec: ExecutionContext) {
 
   def apply(startReturnPeriod: Period): CheckExcludedTraderFilterImpl =
-    new CheckExcludedTraderFilterImpl(exclusionService, startReturnPeriod)
+    new CheckExcludedTraderFilterImpl(exclusionService, startReturnPeriod, frontendAppConfig)
 
 }

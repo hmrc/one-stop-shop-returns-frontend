@@ -48,7 +48,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
     "must return ExcludedTrader if vrn is matched" in {
 
-      when(mockConfig.exclusions) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
+      when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
       val expected = ExcludedTrader(vrn, exclusionSource, exclusionReason, exclusionPeriod)
 
@@ -58,7 +58,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
     "must return None if vrn is not matched" in {
 
-      when(mockConfig.exclusions) thenReturn Seq.empty
+      when(mockConfig.excludedTraders) thenReturn Seq.empty
 
       service.findExcludedTrader(vrn).futureValue mustBe None
 
@@ -83,4 +83,3 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   }
 
 }
-

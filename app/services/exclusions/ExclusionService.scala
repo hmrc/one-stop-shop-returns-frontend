@@ -27,6 +27,6 @@ import scala.concurrent.Future
 class ExclusionService @Inject()(appConfig: FrontendAppConfig) extends Logging {
 
   def findExcludedTrader(vrn: Vrn): Future[Option[ExcludedTrader]] =
-    Future.successful(appConfig.exclusions.find(e => e.vrn.vrn == vrn.vrn))
+    Future.successful(appConfig.excludedTraders.find(e => e.vrn.vrn == vrn.vrn))
 
 }
