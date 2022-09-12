@@ -50,7 +50,6 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
   override def beforeEach(): Unit = {
     Mockito.reset(exclusionService)
-    Mockito.reset(mockConfig)
   }
 
   ".filter" - {
@@ -61,10 +60,8 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
       val app = applicationBuilder(None)
         .overrides(bind[ExclusionService].toInstance(exclusionService))
-        .overrides(bind[FrontendAppConfig].toInstance(mockConfig))
         .build()
 
-      when(mockConfig.exclusionsEnabled) thenReturn true
       when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(None)
 
       running(app) {
@@ -86,7 +83,6 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
       val app = applicationBuilder(None)
         .overrides(bind[ExclusionService].toInstance(exclusionService))
-        .overrides(bind[FrontendAppConfig].toInstance(mockConfig))
         .build()
 
       when(mockConfig.exclusionsEnabled) thenReturn true
@@ -113,7 +109,6 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
       val app = applicationBuilder(None)
         .overrides(bind[ExclusionService].toInstance(exclusionService))
-        .overrides(bind[FrontendAppConfig].toInstance(mockConfig))
         .build()
 
       when(mockConfig.exclusionsEnabled) thenReturn true
@@ -141,10 +136,9 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
       val app = applicationBuilder(None)
         .overrides(bind[ExclusionService].toInstance(exclusionService))
-        .overrides(bind[FrontendAppConfig].toInstance(mockConfig))
         .build()
 
-      when(mockConfig.exclusionsEnabled) thenReturn true
+      when(mockConfig.exclusionsEnabled) thenReturn false
       when(exclusionService.findExcludedTrader(any())) thenReturn Future.successful(Some(excludedTrader))
 
       running(app) {
@@ -154,7 +148,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
         val result = controller.callFilter(request).futureValue
 
-        result.value mustBe None
+        result mustBe None
       }
 
     }
