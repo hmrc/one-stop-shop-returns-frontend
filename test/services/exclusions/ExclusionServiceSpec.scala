@@ -71,7 +71,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       Try {
         applicationBuilder(None)
           .overrides(bind[ExclusionService].toInstance(exclusionService))
-          .configure("features.exclusions.1.effectivePeriod" -> "fail")
+          .configure("features.exclusions.excluded-traders.1.effectivePeriod" -> "fail")
           .build()
       } match {
         case Success(_) => fail("failed")
