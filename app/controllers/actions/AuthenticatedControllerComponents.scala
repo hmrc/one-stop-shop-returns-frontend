@@ -39,6 +39,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
   def checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider
   def withSavedAnswers: SavedAnswersRetrievalActionProvider
+  def checkExcludedTrader: CheckExcludedTraderFilterProvider
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -47,7 +48,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     auth andThen getRegistration
 
   def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
-    auth andThen getRegistration andThen getData(period) andThen checkCommencementDate() andThen checkReturn(period) andThen checkMostOverdueReturn(period)
+    auth andThen getRegistration andThen getData(period) andThen checkCommencementDate() andThen
+      checkReturn(period) andThen checkMostOverdueReturn(period) andThen checkExcludedTrader(period)
 
   def authAndGetData(period: Period): ActionBuilder[DataRequest, AnyContent] =
     authAndGetOptionalData(period) andThen requireData
@@ -78,5 +80,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                requireData: DataRequiredAction,
                                                                requirePreviousReturns:  CheckSubmittedReturnsFilterProvider,
                                                                checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider,
-                                                               withSavedAnswers: SavedAnswersRetrievalActionProvider
+                                                               withSavedAnswers: SavedAnswersRetrievalActionProvider,
+                                                               checkExcludedTrader: CheckExcludedTraderFilterProvider
                                                              ) extends AuthenticatedControllerComponents

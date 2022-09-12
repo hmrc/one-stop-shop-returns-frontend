@@ -258,7 +258,8 @@ trait SpecBase
         bind[Clock].toInstance(clockToBind),
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider()),
         bind[CheckMostOverdueReturnFilterProvider].toInstance(new FakeCheckMostOverdueReturnFilterProvider()),
-        bind[SavedAnswersRetrievalAction].toInstance(new FakeSavedAnswersRetrievalAction(userAnswers))
+        bind[SavedAnswersRetrievalAction].toInstance(new FakeSavedAnswersRetrievalAction(userAnswers)),
+        bind[CheckExcludedTraderFilterProvider].toInstance(new FakeCheckExcludedTraderFilterProvider())
       )
   }
 

@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,21 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package services.exclusions
+@this(
+        layout: templates.Layout,
+        govukButton: GovukButton
+)
 
-import config.FrontendAppConfig
-import logging.Logging
-import models.exclusions.ExcludedTrader
-import uk.gov.hmrc.domain.Vrn
+@()(implicit request: Request[_], messages: Messages)
 
-import javax.inject.Inject
-import scala.concurrent.Future
+@layout(pageTitle = titleNoForm(messages("excludedNotPermitted.title"))) {
 
-class ExclusionService @Inject()(appConfig: FrontendAppConfig) extends Logging {
+    <h1 class="govuk-heading-xl">@messages("excludedNotPermitted.heading")</h1>
 
-  def findExcludedTrader(vrn: Vrn): Future[Option[ExcludedTrader]] =
-    Future.successful(appConfig.excludedTraders.find(e => e.vrn.vrn == vrn.vrn))
-
+    <p class="govuk-body">
+      <a class="govuk-link" id="excluded-back-to-your-account" href="@routes.YourAccountController.onPageLoad()">
+        @messages("excludedNotPermitted.link")
+      </a>
+    </p>
 }

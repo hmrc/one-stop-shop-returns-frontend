@@ -17,20 +17,21 @@
 package models.exclusions
 
 import com.typesafe.config.Config
+import logging.Logging
+import models.Period
 import play.api.{ConfigLoader, Configuration}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.format.DateTimeFormatter
 
 case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionSource: String,
                            exclusionReason: Int,
-                           effectiveDate: String
+                           effectivePeriod: Period
                          )
 
-object ExcludedTrader {
+object ExcludedTrader extends Logging {
 
   implicit val format: OFormat[ExcludedTrader] = Json.format[ExcludedTrader]
 
@@ -42,9 +43,17 @@ object ExcludedTrader {
         val vrn = excludedTrader.get[String]("vrn")
         val exclusionSource = excludedTrader.get[String]("exclusionSource")
         val exclusionReason = excludedTrader.get[Int]("exclusionReason")
-        val effectiveDate = excludedTrader.get[String]("effectiveDate")
+        val effectivePeriod = excludedTrader.get[String]("effectivePeriod")
 
-        ExcludedTrader(Vrn(vrn), exclusionSource, exclusionReason, effectiveDate)
+        Period.fromString(effectivePeriod) match {
+          case Some(excludedPeriod) =>
+            ExcludedTrader(Vrn(vrn), exclusionSource, exclusionReason, excludedPeriod)
+          case _ =>
+            logger.error("Unable to parse period")
+            throw new Exception("Unable to parse period")
+        }
+
+
   }
 
   implicit val seqExcludedTrader: ConfigLoader[Seq[ExcludedTrader]] = new ConfigLoader[Seq[ExcludedTrader]] {
@@ -55,15 +64,21 @@ object ExcludedTrader {
 
       rootConfig.getObject(path).keySet().asScala.map { key =>
         val value = config.getConfig(key)
+
         ExcludedTrader(
           Vrn(value.getString("vrn")),
           value.getString("exclusionSource"),
           value.getInt("exclusionReason"),
-          value.getString("effectiveDate")
+          Period.fromString(value.getString("effectivePeriod")) match {
+            case Some(excludedPeriod) =>
+                excludedPeriod
+            case _ =>
+              logger.error("Unable to parse period")
+              throw new Exception("Unable to parse period")
+          }
         )
       }.toSeq
     }
   }
 
-  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
 }
