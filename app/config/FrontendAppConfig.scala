@@ -66,4 +66,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val exclusionsEnabled: Boolean = configuration.get[Boolean]("features.exclusions.enabled")
   val excludedTraders: Seq[ExcludedTrader] = configuration.get[Seq[ExcludedTrader]]("features.exclusions.excluded-traders")
 
+  val exclusionsEnabled: Boolean = configuration.get[Boolean]("features.exclusions-enabled")
+
 }

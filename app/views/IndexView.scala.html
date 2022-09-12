@@ -32,7 +32,8 @@ govukButton: GovukButton
     paymentsViewModel: PaymentsViewModel,
     paymentError: Boolean,
     maybeExcludedTrader: Option[ExcludedTrader],
-    hasSubmittedFinalReturn: Boolean
+    hasSubmittedFinalReturn: Boolean,
+    exclusionsEnabled: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -63,42 +64,58 @@ govukButton: GovukButton
     <span class="govuk-caption-m">@messages("index.vrn", vrn)</span>
 </h1>
 
-<div class="govuk-warning-text">
-    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-    <strong class="govuk-warning-text__text">
-        <span class="govuk-warning-text__assistive">Warning</span>
+@if(exclusionsEnabled) {
+    <div class="govuk-warning-text">
+        <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
             @if(hasSubmittedFinalReturn) {
-                <span class="govuk-body govuk-!-margin-bottom-1"><strong>@messages("warning.leftService")</strong></span>
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <span class="govuk-body govuk-!-margin-bottom-1"><strong>@messages("yourAccount.warning.leftService")
+                </strong></span>
             } else {
-                @maybeExcludedTrader match {
-                    case Some(excludedTrader) => {
-                                    @(excludedTrader.exclusionReason, excludedTrader.exclusionSource) match {
-                        case (4, _) => { @messages("warning.exclusion.quarantineUser",
-                                    excludedTrader.effectiveDate.firstDay.plusYears(2))}
+                        @maybeExcludedTrader match {
+                            case Some(excludedTrader) => {
+                                @(excludedTrader.exclusionReason, excludedTrader.exclusionSource) match {
 
-                        case (_, "HMRC") => { @messages("warning.exclusion.hmrc") }
+                            case (4, _) => {
+                                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                        @messages("yourAccount.warning.exclusion.quarantineUser",
+                                        excludedTrader.effectiveDate.firstDay.plusYears(2))
+                                }
 
-                        case (_, "TRADER") => { @messages("warning.exclusion.trader") }
+                            case (_, "HMRC") => {
+                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                    @messages("yourAccount.warning.exclusion.hmrc")
+                                }
+
+                            case (_, "TRADER") => {
+                                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                    @messages("yourAccount.warning.exclusion.trader")
+                                }
+
+                            case (_, _) => {}
+                            }
                         }
-                    }
                     case _ => {}
                 }
             }
-    </strong>
-</div>
+        </strong>
+    </div>
+}
 
-@if(hasSubmittedFinalReturn) {
-    <p class="govuk-body">@messages("previous.return.correct")</p>
+@if(exclusionsEnabled && hasSubmittedFinalReturn) {
+    <p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>
 } else {
     <p class="govuk-body">@messages("index.paragraph")</p>
 }
+
 
 <div class="flex-container govuk-grid-row">
     <div class="tile tile-no-border">
         <div id="next-return" class="tile-body">
             <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
-            @if(hasSubmittedFinalReturn) {
-                <p class="govuk-body">@messages("return.completed")</p>
+            @if(exclusionsEnabled && hasSubmittedFinalReturn) {
+                <p class="govuk-body">@messages("yourAccount.return.completed")</p>
             } else {
                 @for(paragraph <- returnsViewModel.contents) {
                     @paragraph match {
@@ -173,8 +190,8 @@ govukButton: GovukButton
         </div>
     </div>
 
-    @if(hasSubmittedFinalReturn) {
-        <p class="govuk-body">@Html(messages("oss.account.message"))</p>
+    @if(exclusionsEnabled && hasSubmittedFinalReturn) {
+        <p class="govuk-body">@Html(messages("yourAccount.oss.account.message"))</p>
     }
 </div>
 }

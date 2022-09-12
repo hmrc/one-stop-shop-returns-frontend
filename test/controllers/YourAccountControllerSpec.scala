@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import generators.Generators
@@ -54,7 +55,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val vatReturnConnector = mock[VatReturnConnector]
 
   private val vatReturn = arbitrary[VatReturn].sample.value
-  private val excludedTrader: Option[ExcludedTrader]=Some(ExcludedTrader(registration.vrn, "HMRC", 1, Period.fromString("2022-Q1").get))
+  private val excludedTrader: Option[ExcludedTrader]=Some(ExcludedTrader(
+    registration.vrn.copy(vrn = "678912345"), "HMRC", 1, Period.fromString("2022-Q1").get))
   private val hasReturnSubmitted: Boolean = true
 
   "Your Account Controller" - {
@@ -107,6 +109,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val view = application.injector.instanceOf[IndexView]
 
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
           status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
@@ -120,7 +124,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTrader,
-            hasReturnSubmitted
+            hasReturnSubmitted,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
         }
       }
@@ -163,6 +168,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -176,7 +183,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false,
               excludedTrader,
-              hasReturnSubmitted
+              hasReturnSubmitted,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -218,6 +226,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -231,7 +241,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false,
               excludedTrader,
-              hasReturnSubmitted
+              hasReturnSubmitted,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -274,6 +285,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -287,7 +300,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false,
               excludedTrader,
-              hasReturnSubmitted
+              hasReturnSubmitted,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -333,6 +347,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -347,7 +363,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false,
               excludedTrader,
-              hasReturnSubmitted
+              hasReturnSubmitted,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -390,6 +407,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val view = application.injector.instanceOf[IndexView]
 
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
           status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
@@ -400,7 +419,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTrader,
-            hasReturnSubmitted
+            hasReturnSubmitted,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
         }
       }
@@ -448,6 +468,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val view = application.injector.instanceOf[IndexView]
 
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
           status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
@@ -459,7 +481,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTrader,
-            hasReturnSubmitted
+            hasReturnSubmitted,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
         }
       }
@@ -509,6 +532,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -520,7 +545,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Seq.empty)(messages(application)),
               paymentError = false,
               excludedTrader,
-              hasReturnSubmitted
+              hasReturnSubmitted,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -570,6 +596,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -580,7 +608,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Seq.empty)(messages(application)),
               paymentError = false,
               excludedTrader,
-              hasReturnSubmitted
+              hasReturnSubmitted,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
 
           }
@@ -635,6 +664,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -644,7 +675,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PaymentsViewModel(Seq.empty, Seq(overduePayment))(messages(application)),
               paymentError = false,
               excludedTrader,
-              hasReturnSubmitted
+              hasReturnSubmitted,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -688,6 +720,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -697,7 +731,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = true,
               excludedTrader,
-              hasReturnSubmitted
+              hasReturnSubmitted,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -741,6 +776,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -753,7 +790,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )(messages(application)),
               paymentError = true,
               excludedTrader,
-              hasReturnSubmitted
+              hasReturnSubmitted,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -800,6 +838,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val view = application.injector.instanceOf[IndexView]
 
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
           status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
@@ -811,7 +851,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq.empty)(messages(application)),
             paymentError = true,
             excludedTrader,
-            hasReturnSubmitted
+            hasReturnSubmitted,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
         }
       }
@@ -853,6 +894,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val view = application.injector.instanceOf[IndexView]
 
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
           status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
@@ -862,12 +905,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTrader,
-            hasReturnSubmitted
+            hasReturnSubmitted,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
 
         }
       }
-
     }
 
     "must throw and exception when an error is returned from both connectors" in {

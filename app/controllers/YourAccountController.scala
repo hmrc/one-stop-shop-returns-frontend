@@ -32,15 +32,17 @@ import viewmodels.yourAccount._
 import views.html.IndexView
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import config.FrontendAppConfig
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
-                                       service: ExclusionService,
+                                       exclusionService: ExclusionService,
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
                                        view: IndexView,
-                                       sessionRepository: UserAnswersRepository
+                                       sessionRepository: UserAnswersRepository,
+                                       appConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -100,8 +102,8 @@ class YourAccountController @Inject()(
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
 
     for {
-      hasSubmittedFinalReturn <- service.hasSubmittedFinalReturn(request.vrn)
-      maybeExcludedTrader <- service.findExcludedTrader(request.vrn)
+      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.vrn)
+      maybeExcludedTrader <- exclusionService.findExcludedTrader(request.vrn)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -115,7 +117,8 @@ class YourAccountController @Inject()(
         PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
         (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
         maybeExcludedTrader,
-        hasSubmittedFinalReturn
+        hasSubmittedFinalReturn,
+        appConfig.exclusionsEnabled
       ))
     }
   }
@@ -124,8 +127,8 @@ class YourAccountController @Inject()(
                                             (implicit request: RegistrationRequest[AnyContent]) = {
 
     for {
-      hasSubmittedFinalReturn <- service.hasSubmittedFinalReturn(request.vrn)
-      maybeExcludedTrader <- service.findExcludedTrader(request.vrn)
+      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.vrn)
+      maybeExcludedTrader <- exclusionService.findExcludedTrader(request.vrn)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -139,7 +142,8 @@ class YourAccountController @Inject()(
         PaymentsViewModel(Seq.empty, Seq.empty),
         paymentError = true,
         maybeExcludedTrader,
-        hasSubmittedFinalReturn
+        hasSubmittedFinalReturn,
+        appConfig.exclusionsEnabled
       ))
     }
   }
