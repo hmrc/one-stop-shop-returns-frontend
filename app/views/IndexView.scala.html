@@ -22,8 +22,8 @@
 @import models.exclusions.ExcludedTrader
 
 @this(
-layout: templates.Layout,
-govukButton: GovukButton
+    layout: templates.Layout,
+    govukButton: GovukButton
 )
 @(
     businessName: String,
@@ -156,15 +156,15 @@ govukButton: GovukButton
             </div>
             }
             @for(section <- paymentsViewModel.sections){
-            @for(sectionHeading <- section.heading){
-            <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
-            }
+                @for(sectionHeading <- section.heading){
+                    <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
+                }
 
-            @for(paragraph <- section.contents){
-            <p class="govuk-body">
-                @Html(paragraph)
-            </p>
-            }
+                @for(paragraph <- section.contents){
+                    <p class="govuk-body">
+                        @Html(paragraph)
+                    </p>
+                }
             }
             @for(link <- paymentsViewModel.link){
             <p class="govuk-body">
