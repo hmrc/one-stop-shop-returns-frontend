@@ -22,7 +22,6 @@ import models.Period
 import models.Quarter.Q3
 import connectors.VatReturnConnector
 import models.exclusions.ExcludedTrader
-import models.Period
 import models.responses.NotFound
 import org.mockito.{Mockito, MockitoSugar}
 import org.mockito.ArgumentMatchers.any
@@ -48,7 +47,6 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   private val exclusionSource = Gen.oneOf("HMRC", "TRADER").sample.value
   private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
   private val exclusionPeriod = Period(2022, Q3)
-  private val effectiveDate = Period.fromString("2022-Q1").get
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockConfig)
@@ -62,12 +60,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
-      val expected = ExcludedTrader(vrn, exclusionSource, exclusionReason, exclusionPeriod)
-
-      service.findExcludedTrader(vrn).futureValue mustBe Some(expected)
-      when(mockConfig.exclusions) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, effectiveDate))
-
-      val expected: Option[ExcludedTrader] = Some(ExcludedTrader(vrn, exclusionSource, exclusionReason, effectiveDate))
+      val expected: Option[ExcludedTrader] = Some(ExcludedTrader(vrn, exclusionSource, exclusionReason, exclusionPeriod))
 
       service.findExcludedTrader(vrn).futureValue mustBe expected
 
@@ -80,7 +73,6 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       service.findExcludedTrader(vrn).futureValue mustBe None
 
     }
-      service.findExcludedTrader(vrn).futureValue mustBe expected
 
     "must return an Exception when excluded trader effective period is not parsed correctly" in {
 
@@ -103,7 +95,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   ".hasSubmittedFinalReturn" - {
 
     "must return true if final return completed" in {
-      when(mockConfig.exclusions) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, effectiveDate))
+      when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
       when(connector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
 
@@ -111,7 +103,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     }
 
     "must return false if final return completed" in {
-      when(mockConfig.exclusions) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, effectiveDate))
+      when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
       when(connector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 

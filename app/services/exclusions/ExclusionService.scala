@@ -24,7 +24,6 @@ import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
-import scala.concurrent.Future
 import scala.concurrent.{ExecutionContext, Future}
 
 class ExclusionService @Inject()(appConfig: FrontendAppConfig, connector: VatReturnConnector) extends Logging {
@@ -34,13 +33,12 @@ class ExclusionService @Inject()(appConfig: FrontendAppConfig, connector: VatRet
 
   def hasSubmittedFinalReturn(vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     findExcludedTrader(vrn).flatMap {
-      case Some(ExcludedTrader(_, _, _, effectiveDate)) =>
-        connector.get(effectiveDate).map {
+      case Some(ExcludedTrader(_, _, _, effectivePeriod)) =>
+        connector.get(effectivePeriod).map {
           case Right(_) => true
           case _ => false
         }
       case _ => Future.successful(false)
     }
   }
-
 }

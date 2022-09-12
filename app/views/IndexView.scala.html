@@ -80,7 +80,7 @@ govukButton: GovukButton
                             case (4, _) => {
                                     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                                         @messages("yourAccount.warning.exclusion.quarantineUser",
-                                        excludedTrader.effectiveDate.firstDay.plusYears(2))
+                                        excludedTrader.effectivePeriod.firstDay.plusYears(2))
                                 }
 
                             case (_, "HMRC") => {

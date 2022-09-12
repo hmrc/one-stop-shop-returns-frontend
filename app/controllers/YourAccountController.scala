@@ -42,7 +42,7 @@ class YourAccountController @Inject()(
                                        saveForLaterConnector: SaveForLaterConnector,
                                        view: IndexView,
                                        sessionRepository: UserAnswersRepository,
-                                       appConfig: FrontendAppConfig
+                                       frontendAppConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -118,7 +118,7 @@ class YourAccountController @Inject()(
         (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
         maybeExcludedTrader,
         hasSubmittedFinalReturn,
-        appConfig.exclusionsEnabled
+        frontendAppConfig.exclusionsEnabled
       ))
     }
   }
@@ -143,7 +143,7 @@ class YourAccountController @Inject()(
         paymentError = true,
         maybeExcludedTrader,
         hasSubmittedFinalReturn,
-        appConfig.exclusionsEnabled
+        frontendAppConfig.exclusionsEnabled
       ))
     }
   }
