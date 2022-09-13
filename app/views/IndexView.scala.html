@@ -22,8 +22,9 @@
 @import models.exclusions.ExcludedTrader
 
 @this(
-layout: templates.Layout,
-govukButton: GovukButton
+    layout: templates.Layout,
+    govukButton: GovukButton,
+    govukWarningText: GovukWarningText
 )
 @(
     businessName: String,
@@ -65,42 +66,40 @@ govukButton: GovukButton
 </h1>
 
 @if(exclusionsEnabled) {
-    <div class="govuk-warning-text">
-        <strong class="govuk-warning-text__text">
-            <span class="govuk-warning-text__assistive">Warning</span>
-            @if(hasSubmittedFinalReturn) {
-                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                <span class="govuk-body govuk-!-margin-bottom-1"><strong>@messages("yourAccount.warning.leftService")
-                </strong></span>
-            } else {
-                        @maybeExcludedTrader match {
-                            case Some(excludedTrader) => {
-                                @(excludedTrader.exclusionReason, excludedTrader.exclusionSource) match {
-
-                            case (4, _) => {
-                                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                        @messages("yourAccount.warning.exclusion.quarantineUser",
-                                        excludedTrader.effectivePeriod.firstDay.plusYears(2))
-                                }
-
-                            case (_, "HMRC") => {
-                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                    @messages("yourAccount.warning.exclusion.hmrc")
-                                }
-
-                            case (_, "TRADER") => {
-                                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                    @messages("yourAccount.warning.exclusion.trader")
-                                }
-
-                            case (_, _) => {}
-                            }
-                        }
-                    case _ => {}
+    @if(hasSubmittedFinalReturn) {
+        @govukWarningText(WarningText(
+        iconFallbackText = messages("site.warning"),
+        content = Text(messages("yourAccount.warning.leftService"))
+        ))
+    } else {
+        @maybeExcludedTrader match {
+            case Some(excludedTrader) => {
+                @(excludedTrader.exclusionReason, excludedTrader.exclusionSource) match {
+                case (4, _) => {
+                    @govukWarningText(WarningText(
+                            iconFallbackText = messages("site.warning"),
+                            content = Text(messages("yourAccount.warning.exclusion.quarantineUser",
+                                            excludedTrader.effectivePeriod.firstDay.plusYears(2)))
+                    ))
                 }
+                case (_, "HMRC") => {
+                    @govukWarningText(WarningText(
+                            iconFallbackText = messages("site.warning"),
+                            content = Text(messages("yourAccount.warning.exclusion.hmrc"))
+                    ))
+                }
+                case (_, "TRADER") => {
+                    @govukWarningText(WarningText(
+                            iconFallbackText = messages("site.warning"),
+                            content = Text(messages("yourAccount.warning.exclusion.trader"))
+                    ))
+                }
+                case (_, _) => {}
             }
-        </strong>
-    </div>
+        }
+            case _ => {}
+        }
+    }
 }
 
 @if(exclusionsEnabled && hasSubmittedFinalReturn) {
@@ -109,13 +108,12 @@ govukButton: GovukButton
     <p class="govuk-body">@messages("index.paragraph")</p>
 }
 
-
 <div class="flex-container govuk-grid-row">
     <div class="tile tile-no-border">
         <div id="next-return" class="tile-body">
             <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
             @if(exclusionsEnabled && hasSubmittedFinalReturn) {
-                <p class="govuk-body">@messages("yourAccount.return.completed")</p>
+                <p class="govuk-body">@messages("yourAccount.finalReturn.completed")</p>
             } else {
                 @for(paragraph <- returnsViewModel.contents) {
                     @paragraph match {
@@ -139,7 +137,6 @@ govukButton: GovukButton
                 </p>
                 }
             }
-
         </div>
     </div>
 
@@ -147,32 +144,32 @@ govukButton: GovukButton
         <div id="payments" class="tile-body">
             <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
             @for(warningText <- paymentsViewModel.warning){
-            <div class="govuk-warning-text">
-                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                <strong class="govuk-warning-text__text">
-                    <span class="govuk-warning-text__assistive">Warning</span>
-                    @warningText
-                </strong>
-            </div>
+                <div class="govuk-warning-text">
+                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                    <strong class="govuk-warning-text__text">
+                        <span class="govuk-warning-text__assistive">Warning</span>
+                        @warningText
+                    </strong>
+                </div>
             }
             @for(section <- paymentsViewModel.sections){
-            @for(sectionHeading <- section.heading){
-            <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
-            }
+                @for(sectionHeading <- section.heading){
+                    <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
+                }
 
-            @for(paragraph <- section.contents){
-            <p class="govuk-body">
-                @Html(paragraph)
-            </p>
-            }
+                @for(paragraph <- section.contents){
+                    <p class="govuk-body">
+                        @Html(paragraph)
+                    </p>
+                }
             }
             @for(link <- paymentsViewModel.link){
-            <p class="govuk-body">
-                <a class="govuk-link"
-                   href="@link.url" id="@link.id">
-                    @link.linkText
-                </a>
-            </p>
+                <p class="govuk-body">
+                    <a class="govuk-link"
+                       href="@link.url" id="@link.id">
+                        @link.linkText
+                    </a>
+                </p>
             }
         </div>
     </div>

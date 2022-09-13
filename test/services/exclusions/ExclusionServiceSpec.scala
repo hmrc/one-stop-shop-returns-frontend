@@ -41,8 +41,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   implicit private lazy val ec: ExecutionContext = ExecutionContext.global
 
   val mockConfig = mock[FrontendAppConfig]
-  val connector = mock[VatReturnConnector]
-  val service = new ExclusionService(mockConfig, connector)
+  val vatReturnConnector = mock[VatReturnConnector]
+  val exclusionService = new ExclusionService(mockConfig, vatReturnConnector)
 
   private val exclusionSource = Gen.oneOf("HMRC", "TRADER").sample.value
   private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
@@ -62,7 +62,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       val expected: Option[ExcludedTrader] = Some(ExcludedTrader(vrn, exclusionSource, exclusionReason, exclusionPeriod))
 
-      service.findExcludedTrader(vrn).futureValue mustBe expected
+      exclusionService.findExcludedTrader(vrn).futureValue mustBe expected
 
     }
 
@@ -70,7 +70,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       when(mockConfig.excludedTraders) thenReturn Seq.empty
 
-      service.findExcludedTrader(vrn).futureValue mustBe None
+      exclusionService.findExcludedTrader(vrn).futureValue mustBe None
 
     }
 
@@ -97,17 +97,17 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     "must return true if final return completed" in {
       when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
-      when(connector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
 
-      service.hasSubmittedFinalReturn(vrn).futureValue mustBe true
+      exclusionService.hasSubmittedFinalReturn(vrn).futureValue mustBe true
     }
 
-    "must return false if final return completed" in {
+    "must return false if final return not completed" in {
       when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
-      when(connector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-      service.hasSubmittedFinalReturn(vrn).futureValue mustBe false
+      exclusionService.hasSubmittedFinalReturn(vrn).futureValue mustBe false
     }
   }
 
