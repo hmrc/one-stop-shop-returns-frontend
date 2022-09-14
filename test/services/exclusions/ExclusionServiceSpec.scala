@@ -17,21 +17,20 @@
 package services.exclusions
 
 import base.SpecBase
-import config.FrontendAppConfig
+import connectors.VatReturnConnector
 import models.Period
 import models.Quarter.Q3
-import connectors.VatReturnConnector
 import models.exclusions.ExcludedTrader
+import models.registration.Registration
+import models.requests.RegistrationRequest
 import models.responses.NotFound
-import org.mockito.{Mockito, MockitoSugar}
 import org.mockito.ArgumentMatchers.any
+import org.mockito.{Mockito, MockitoSugar}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
-import play.api.inject.bind
+import play.api.mvc.AnyContent
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
-
-import scala.util.{Failure, Success, Try}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,74 +39,42 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
   implicit private lazy val ec: ExecutionContext = ExecutionContext.global
 
-  val mockConfig = mock[FrontendAppConfig]
-  val vatReturnConnector = mock[VatReturnConnector]
-  val exclusionService = new ExclusionService(mockConfig, vatReturnConnector)
+  private val mockRegistrationRequest = mock[RegistrationRequest[AnyContent]]
+  private val mockRegistration = mock[Registration]
+  private val vatReturnConnector = mock[VatReturnConnector]
+  private val exclusionService = new ExclusionService(vatReturnConnector)
 
   private val exclusionSource = Gen.oneOf("HMRC", "TRADER").sample.value
   private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
   private val exclusionPeriod = Period(2022, Q3)
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockConfig)
+    Mockito.reset(mockRegistrationRequest)
     super.beforeEach()
-  }
-
-
-  ".findExcludedTrader" - {
-
-    "must return ExcludedTrader if vrn is matched" in {
-
-      when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
-
-      val expected: Option[ExcludedTrader] = Some(ExcludedTrader(vrn, exclusionSource, exclusionReason, exclusionPeriod))
-
-      exclusionService.findExcludedTrader(vrn).futureValue mustBe expected
-
-    }
-
-    "must return None if vrn is not matched" in {
-
-      when(mockConfig.excludedTraders) thenReturn Seq.empty
-
-      exclusionService.findExcludedTrader(vrn).futureValue mustBe None
-
-    }
-
-    "must return an Exception when excluded trader effective period is not parsed correctly" in {
-
-      val exclusionService: ExclusionService = mock[ExclusionService]
-
-      Try {
-        applicationBuilder(None)
-          .overrides(bind[ExclusionService].toInstance(exclusionService))
-          .configure("features.exclusions.excluded-traders.1.effectivePeriod" -> "fail")
-          .build()
-      } match {
-        case Success(_) => fail("failed")
-        case Failure(exception) =>
-          exception mustBe a[Exception]
-          exception.getCause.getMessage mustBe ("Unable to parse period")
-      }
-    }
   }
 
   ".hasSubmittedFinalReturn" - {
 
     "must return true if final return completed" in {
-      when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
+      when(mockRegistrationRequest.registration) thenReturn mockRegistration
+
+      when(mockRegistration.excludedTrader) thenReturn
+          Some(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
 
-      exclusionService.hasSubmittedFinalReturn(vrn).futureValue mustBe true
+      exclusionService.hasSubmittedFinalReturn()(hc, ec, mockRegistrationRequest).futureValue mustBe true
     }
 
     "must return false if final return not completed" in {
-      when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
+      when(mockRegistrationRequest.registration) thenReturn mockRegistration
+
+      when(mockRegistration.excludedTrader) thenReturn
+        Some(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-      exclusionService.hasSubmittedFinalReturn(vrn).futureValue mustBe false
+      exclusionService.hasSubmittedFinalReturn()(hc, ec, mockRegistrationRequest).futureValue mustBe false
     }
   }
 

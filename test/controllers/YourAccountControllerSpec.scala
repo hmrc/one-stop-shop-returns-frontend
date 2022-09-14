@@ -23,11 +23,13 @@ import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnec
 import generators.Generators
 import models.Quarter._
 import models.SubmissionStatus.{Due, Next, Overdue}
+import models.domain.VatReturn
 import models.exclusions.ExcludedTrader
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
+import models.registration.Registration
+import models.requests.RegistrationRequest
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
 import models.{Period, SubmissionStatus}
-import models.domain.VatReturn
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
@@ -35,10 +37,12 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.SavedProgressPage
 import play.api.inject.bind
+import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import services.VatReturnSalesService
+import services.exclusions.ExclusionService
 import viewmodels.yourAccount.{CurrentReturns, PaymentsViewModel, Return, ReturnsViewModel}
 import views.html.IndexView
 
@@ -969,6 +973,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "has not submitted final return" in {
 
+        val mockRegistrationRequest = mock[RegistrationRequest[AnyContent]]
+
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
@@ -992,10 +998,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        when(mockRegistrationRequest.registration) thenReturn registration.copy(excludedTrader = excludedTraderHMRC)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -1005,7 +1013,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector)
           )
-          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
           .build()
 
         running(application) {
@@ -1018,7 +1025,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
-
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,

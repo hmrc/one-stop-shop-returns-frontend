@@ -16,23 +16,20 @@
 
 package services.exclusions
 
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import logging.Logging
 import models.exclusions.ExcludedTrader
-import uk.gov.hmrc.domain.Vrn
+import models.requests.RegistrationRequest
+import play.api.mvc.AnyContent
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ExclusionService @Inject()(appConfig: FrontendAppConfig, connector: VatReturnConnector) extends Logging {
+class ExclusionService @Inject()(connector: VatReturnConnector) extends Logging {
 
-  def findExcludedTrader(vrn: Vrn): Future[Option[ExcludedTrader]] =
-    Future.successful(appConfig.excludedTraders.find(e => e.vrn.vrn == vrn.vrn))
-
-  def hasSubmittedFinalReturn(vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
-    findExcludedTrader(vrn).flatMap {
+  def hasSubmittedFinalReturn()(implicit hc: HeaderCarrier, ec: ExecutionContext, request: RegistrationRequest[AnyContent]): Future[Boolean] = {
+    request.registration.excludedTrader match {
       case Some(ExcludedTrader(_, _, _, effectivePeriod)) =>
         connector.get(effectivePeriod).map {
           case Right(_) => true
