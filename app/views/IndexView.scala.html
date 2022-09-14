@@ -186,6 +186,8 @@
             </p>
         </div>
     </div>
-    <p class="govuk-body">@Html(messages("yourAccount.oss.account.message"))</p>
+    @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
+        <p class="govuk-body">@Html(messages("yourAccount.oss.account.message"))</p>
+    }
 </div>
 }
