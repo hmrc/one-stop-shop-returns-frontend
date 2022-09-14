@@ -26,20 +26,23 @@ import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.UserAnswersRepository
+import services.exclusions.ExclusionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.yourAccount._
 import views.html.IndexView
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import config.FrontendAppConfig
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
+                                       exclusionService: ExclusionService,
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
                                        view: IndexView,
-                                       sessionRepository: UserAnswersRepository
+                                       sessionRepository: UserAnswersRepository,
+                                       frontendAppConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -48,6 +51,7 @@ class YourAccountController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
+
       results.flatMap {
         case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
           prepareViewWithFinancialData(availablePeriodsWithStatus.returns, vatReturnsWithFinancialData, answers.map(_.period))
@@ -61,6 +65,7 @@ class YourAccountController @Inject()(
           logger.error(s"there was an error during period with status $error")
           throw new Exception(error.toString)
       }
+
   }
 
   private def getCurrentReturnsAndFinancialDataAndUserAnswers()(implicit request: RegistrationRequest[AnyContent]) = {
@@ -96,34 +101,51 @@ class YourAccountController @Inject()(
                                            currentPayments: CurrentPayments,
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
 
-    Future.successful(Ok(view(
-      request.registration.registeredCompanyName,
-      request.vrn.vrn,
-      ReturnsViewModel(
-        returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
-          currentReturn.copy(inProgress = true)
-        } else {
-          currentReturn
-        })),
-      PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
-      (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown)
-    )))
+    for {
+      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.vrn)
+      maybeExcludedTrader <- exclusionService.findExcludedTrader(request.vrn)
+    } yield {
+      Ok(view(
+        request.registration.registeredCompanyName,
+        request.vrn.vrn,
+        ReturnsViewModel(
+          returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+            currentReturn.copy(inProgress = true)
+          } else {
+            currentReturn
+          })),
+        PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
+        (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
+        maybeExcludedTrader,
+        hasSubmittedFinalReturn,
+        frontendAppConfig.exclusionsEnabled
+      ))
+    }
   }
 
   private def prepareViewWithNoFinancialData(returnsViewModel: Seq[Return], periodInProgress: Option[Period])
                                             (implicit request: RegistrationRequest[AnyContent]) = {
-    Future.successful(Ok(view(
-      request.registration.registeredCompanyName,
-      request.vrn.vrn,
-      ReturnsViewModel(
-        returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
-          currentReturn.copy(inProgress = true)
-        } else {
-          currentReturn
-        })),
-      PaymentsViewModel(Seq.empty, Seq.empty),
-      paymentError = true
-    )))
+
+    for {
+      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.vrn)
+      maybeExcludedTrader <- exclusionService.findExcludedTrader(request.vrn)
+    } yield {
+      Ok(view(
+        request.registration.registeredCompanyName,
+        request.vrn.vrn,
+        ReturnsViewModel(
+          returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+            currentReturn.copy(inProgress = true)
+          } else {
+            currentReturn
+          })),
+        PaymentsViewModel(Seq.empty, Seq.empty),
+        paymentError = true,
+        maybeExcludedTrader,
+        hasSubmittedFinalReturn,
+        frontendAppConfig.exclusionsEnabled
+      ))
+    }
   }
 
 }

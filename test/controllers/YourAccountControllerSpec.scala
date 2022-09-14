@@ -17,16 +17,20 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.financialdata.FinancialDataConnector
-import connectors.{ReturnStatusConnector, SaveForLaterConnector}
+import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import generators.Generators
 import models.Quarter._
 import models.SubmissionStatus.{Due, Next, Overdue}
+import models.exclusions.ExcludedTrader
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
-import models.responses.{InvalidJson, UnexpectedResponseStatus}
+import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
 import models.{Period, SubmissionStatus}
+import models.domain.VatReturn
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.SavedProgressPage
@@ -48,6 +52,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val vatReturnSalesService = mock[VatReturnSalesService]
   private val sessionRepository = mock[UserAnswersRepository]
   private val save4LaterConnector = mock[SaveForLaterConnector]
+  private val vatReturnConnector = mock[VatReturnConnector]
+
+  private val vatReturn = arbitrary[VatReturn].sample.value
+  private val excludedTraderHMRC: Option[ExcludedTrader] = Some(ExcludedTrader(
+    registration.vrn, "HMRC", 1, Period.fromString("2022-Q2").get))
+  private val excludedTraderSelf: Option[ExcludedTrader] = Some(ExcludedTrader(
+    registration.vrn, "TRADER", 1, Period.fromString("2022-Q2").get))
+  private val excludedTraderQuarantined: Option[ExcludedTrader] = Some(ExcludedTrader(
+    registration.vrn, "HMRC", 4, Period.fromString("2022-Q2").get))
 
   "Your Account Controller" - {
 
@@ -64,14 +77,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentReturns(
               Seq(Return(
-              nextPeriod,
-              nextPeriod.firstDay,
-              nextPeriod.lastDay,
-              nextPeriod.paymentDeadline,
-              SubmissionStatus.Next,
-              false,
-              false
-            ))))
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                false,
+                false
+              ))))
           )
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
@@ -81,13 +94,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-          ).build()
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .build()
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
@@ -95,6 +112,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val result = route(application, request).value
 
           val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
 
@@ -107,7 +126,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-            paymentError = false
+            paymentError = false,
+            None,
+            hasSubmittedFinalReturn = false,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
         }
       }
@@ -132,13 +154,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
 
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
             ).build()
 
           running(application) {
@@ -147,6 +171,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val result = route(application, request).value
 
             val view = application.injector.instanceOf[IndexView]
+
+            val config = application.injector.instanceOf[FrontendAppConfig]
 
             status(result) mustEqual OK
 
@@ -159,7 +185,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              None,
+              hasSubmittedFinalReturn = false,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -183,13 +212,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq(userAnswers)))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
             ).build()
 
           running(application) {
@@ -198,6 +229,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val result = route(application, request).value
 
             val view = application.injector.instanceOf[IndexView]
+
+            val config = application.injector.instanceOf[FrontendAppConfig]
 
             status(result) mustEqual OK
 
@@ -210,7 +243,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              None,
+              hasSubmittedFinalReturn = false,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -235,13 +271,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
             ).build()
 
           running(application) {
@@ -250,6 +288,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val result = route(application, request).value
 
             val view = application.injector.instanceOf[IndexView]
+
+            val config = application.injector.instanceOf[FrontendAppConfig]
 
             status(result) mustEqual OK
 
@@ -262,7 +302,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              None,
+              hasSubmittedFinalReturn = false,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -290,13 +333,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[UserAnswersRepository].toInstance(sessionRepository)
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
             ).build()
 
           running(application) {
@@ -305,6 +350,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val result = route(application, request).value
 
             val view = application.injector.instanceOf[IndexView]
+
+            val config = application.injector.instanceOf[FrontendAppConfig]
 
             status(result) mustEqual OK
 
@@ -318,7 +365,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              None,
+              hasSubmittedFinalReturn = false,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -343,13 +393,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
           ).build()
 
         running(application) {
@@ -359,6 +411,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val view = application.injector.instanceOf[IndexView]
 
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
           status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
@@ -367,7 +421,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(Seq(
               Return.fromPeriod(Period(2021, Q3), Overdue, false, true)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-            paymentError = false
+            paymentError = false,
+            None,
+            hasSubmittedFinalReturn = false,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
         }
       }
@@ -397,6 +454,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -404,6 +462,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
           ).build()
 
         running(application) {
@@ -412,6 +471,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val result = route(application, request).value
 
           val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
 
@@ -422,7 +483,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Return.fromPeriod(firstPeriod, Overdue, false, true),
               Return.fromPeriod(secondPeriod, Overdue, false, false)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-            paymentError = false
+            paymentError = false,
+            None,
+            hasSubmittedFinalReturn = false,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
         }
       }
@@ -453,13 +517,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
             ).build()
 
 
@@ -470,6 +536,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -479,7 +547,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PaymentsViewModel(
                 Seq(payment),
                 Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              None,
+              hasSubmittedFinalReturn = false,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -510,6 +581,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -517,7 +589,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
             ).build()
 
           running(application) {
@@ -527,6 +600,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -535,7 +610,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               PaymentsViewModel(Seq(payment),
                 Seq.empty)(messages(application)),
-              paymentError = false
+              paymentError = false,
+              None,
+              hasSubmittedFinalReturn = false,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
 
           }
@@ -572,13 +650,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
             ).build()
 
           running(application) {
@@ -588,6 +668,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -595,7 +677,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               PaymentsViewModel(Seq.empty, Seq(overduePayment))(messages(application)),
-              paymentError = false
+              paymentError = false,
+              None,
+              hasSubmittedFinalReturn = false,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -621,13 +706,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
             ).build()
 
           running(application) {
@@ -637,6 +724,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val view = application.injector.instanceOf[IndexView]
 
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -644,7 +733,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-              paymentError = true
+              paymentError = true,
+              None,
+              hasSubmittedFinalReturn = false,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -669,6 +761,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -676,7 +769,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
             ).build()
 
           running(application) {
@@ -685,6 +779,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val result = route(application, request).value
 
             val view = application.injector.instanceOf[IndexView]
+
+            val config = application.injector.instanceOf[FrontendAppConfig]
 
             status(result) mustEqual OK
 
@@ -696,7 +792,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Seq(payment),
                 Seq.empty
               )(messages(application)),
-              paymentError = true
+              paymentError = true,
+              None,
+              hasSubmittedFinalReturn = false,
+              config.exclusionsEnabled
             )(request, messages(application)).toString
           }
         }
@@ -724,6 +823,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -731,7 +831,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
           ).build()
 
         running(application) {
@@ -740,6 +841,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val result = route(application, request).value
 
           val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
 
@@ -750,7 +853,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             PaymentsViewModel(
               Seq(payment),
               Seq.empty)(messages(application)),
-            paymentError = true
+            paymentError = true,
+            None,
+            hasSubmittedFinalReturn = false,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
         }
       }
@@ -774,13 +880,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(Some(answers)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
           ).build()
 
         running(application) {
@@ -790,6 +898,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val view = application.injector.instanceOf[IndexView]
 
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
           status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
@@ -797,12 +907,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, true, true)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-            paymentError = false
+            paymentError = false,
+            None,
+            hasSubmittedFinalReturn = false,
+            config.exclusionsEnabled
           )(request, messages(application)).toString
 
         }
       }
-
     }
 
     "must throw and exception when an error is returned from both connectors" in {
@@ -850,6 +962,500 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val result = route(application, request).value
 
         whenReady(result.failed) { exp => exp mustBe a[Exception] }
+      }
+    }
+
+    "trader is excluded by HMRC" - {
+
+      "has not submitted final return" in {
+
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = Period(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                false,
+                false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            paymentError = false,
+            excludedTraderHMRC,
+            hasSubmittedFinalReturn = false,
+            config.exclusionsEnabled
+          )(request, messages(application)).toString
+        }
+      }
+
+      "has submitted final return" in {
+
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = Period(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                false,
+                false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            paymentError = false,
+            excludedTraderHMRC,
+            hasSubmittedFinalReturn = true,
+            config.exclusionsEnabled
+          )(request, messages(application)).toString
+        }
+      }
+    }
+
+    "trader is excluded but exclusions is disabled" in {
+
+      val instant = Instant.parse("2021-10-11T12:00:00Z")
+      val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+      val nextPeriod = Period(2021, Q4)
+
+      when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+        Future.successful(
+          Right(CurrentReturns(
+            Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Next,
+              false,
+              false
+            ))))
+        )
+
+      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+        Future.successful(
+          Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+      when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+      when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+      when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[UserAnswersRepository].toInstance(sessionRepository),
+          bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
+        )
+        .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
+        .configure("features.exclusions.enabled" -> false)
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[IndexView]
+
+        val config = application.injector.instanceOf[FrontendAppConfig]
+
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(
+          registration.registeredCompanyName,
+          registration.vrn.vrn,
+          ReturnsViewModel(
+            Seq(
+              Return.fromPeriod(nextPeriod, Next, false, false)
+            )
+          )(messages(application)),
+          PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+          paymentError = false,
+          None,
+          hasSubmittedFinalReturn = true,
+          config.exclusionsEnabled
+        )(request, messages(application)).toString
+      }
+    }
+
+    "trader is excluded by self" - {
+
+      "has not submitted final return" in {
+
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = Period(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                false,
+                false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
+          .configure("features.exclusions.excluded-traders.1.exclusionSource" -> "TRADER")
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            paymentError = false,
+            excludedTraderSelf,
+            hasSubmittedFinalReturn = false,
+            config.exclusionsEnabled
+          )(request, messages(application)).toString
+        }
+      }
+      "has submitted final return" in {
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = Period(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                false,
+                false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
+          .configure("features.exclusions.excluded-traders.1.exclusionSource" -> "TRADER")
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            paymentError = false,
+            excludedTraderSelf,
+            hasSubmittedFinalReturn = true,
+            config.exclusionsEnabled
+          )(request, messages(application)).toString
+        }
+      }
+    }
+
+    "trader is excluded and quarantined" - {
+
+      "has not submitted final return" in {
+
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = Period(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                false,
+                false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
+          .configure("features.exclusions.excluded-traders.1.exclusionReason" -> 4)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            paymentError = false,
+            excludedTraderQuarantined,
+            hasSubmittedFinalReturn = false,
+            config.exclusionsEnabled
+          )(request, messages(application)).toString
+        }
+      }
+      "has submitted final return" in {
+
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = Period(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                false,
+                false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
+          .configure("features.exclusions.excluded-traders.1.exclusionReason" -> 4)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            paymentError = false,
+            excludedTraderQuarantined,
+            hasSubmittedFinalReturn = true,
+            config.exclusionsEnabled
+          )(request, messages(application)).toString
+        }
       }
     }
   }

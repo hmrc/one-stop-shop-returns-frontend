@@ -513,3 +513,10 @@ excludedNotPermitted.title = You cannot use this service
 excludedNotPermitted.heading = You cannot use this service
 excludedNotPermitted.link = Back to your account.
 
+yourAccount.warning.exclusion.trader = You have left this service, but you must complete and pay your final return.
+yourAccount.warning.exclusion.hmrc = We''ve removed you from this service, but you must complete and pay your final return.
+yourAccount.warning.exclusion.quarantineUser = We''ve removed you from this service, but you must complete and pay your final return. You cannot re-join until [{0}].
+yourAccount.warning.leftService = You have left this service.
+yourAccount.previous.return.correct = You can correct previous returns directly with the country where you made the sales.
+yourAccount.finalReturn.completed = You''ve completed your final return.
+yourAccount.oss.account.message = If you have any questions about your OSS account, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>

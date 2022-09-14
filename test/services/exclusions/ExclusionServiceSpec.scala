@@ -20,20 +20,30 @@ import base.SpecBase
 import config.FrontendAppConfig
 import models.Period
 import models.Quarter.Q3
+import connectors.VatReturnConnector
 import models.exclusions.ExcludedTrader
+import models.responses.NotFound
 import org.mockito.{Mockito, MockitoSugar}
+import org.mockito.ArgumentMatchers.any
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.bind
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.util.{Failure, Success, Try}
 
+import scala.concurrent.{ExecutionContext, Future}
 
 class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
+  implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
+  implicit private lazy val ec: ExecutionContext = ExecutionContext.global
+
   val mockConfig = mock[FrontendAppConfig]
-  val service = new ExclusionService(mockConfig)
+  val vatReturnConnector = mock[VatReturnConnector]
+  val exclusionService = new ExclusionService(mockConfig, vatReturnConnector)
+
   private val exclusionSource = Gen.oneOf("HMRC", "TRADER").sample.value
   private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
   private val exclusionPeriod = Period(2022, Q3)
@@ -50,9 +60,9 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
-      val expected = ExcludedTrader(vrn, exclusionSource, exclusionReason, exclusionPeriod)
+      val expected: Option[ExcludedTrader] = Some(ExcludedTrader(vrn, exclusionSource, exclusionReason, exclusionPeriod))
 
-      service.findExcludedTrader(vrn).futureValue mustBe Some(expected)
+      exclusionService.findExcludedTrader(vrn).futureValue mustBe expected
 
     }
 
@@ -60,7 +70,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       when(mockConfig.excludedTraders) thenReturn Seq.empty
 
-      service.findExcludedTrader(vrn).futureValue mustBe None
+      exclusionService.findExcludedTrader(vrn).futureValue mustBe None
 
     }
 
@@ -79,6 +89,25 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
           exception mustBe a[Exception]
           exception.getCause.getMessage mustBe ("Unable to parse period")
       }
+    }
+  }
+
+  ".hasSubmittedFinalReturn" - {
+
+    "must return true if final return completed" in {
+      when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
+
+      exclusionService.hasSubmittedFinalReturn(vrn).futureValue mustBe true
+    }
+
+    "must return false if final return not completed" in {
+      when(mockConfig.excludedTraders) thenReturn Seq(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
+
+      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+      exclusionService.hasSubmittedFinalReturn(vrn).futureValue mustBe false
     }
   }
 
