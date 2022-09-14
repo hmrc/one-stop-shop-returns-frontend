@@ -22,24 +22,24 @@ import models.Period
 import models.requests.OptionalDataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
-import services.exclusions.ExclusionService
+import services.PeriodService
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckExcludedTraderFilterImpl(exclusionService: ExclusionService,
+class CheckExcludedTraderFilterImpl(periodService: PeriodService,
                                     startReturnPeriod: Period,
                                     frontendAppConfig: FrontendAppConfig
                                    )(implicit val executionContext: ExecutionContext)
   extends ActionFilter[OptionalDataRequest] {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
-    if(frontendAppConfig.exclusionsEnabled) {
-      exclusionService.findExcludedTrader(request.vrn).map {
-        case Some(excludedTrader) if startReturnPeriod.lastDay.isAfter(excludedTrader.effectivePeriod.firstDay) =>
-          Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad()))
+    if (frontendAppConfig.exclusionsEnabled) {
+      request.registration.excludedTrader match {
+        case Some(excludedTrader) if startReturnPeriod.lastDay.isAfter(periodService.getNextPeriod(excludedTrader.effectivePeriod).firstDay) =>
+          Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
         case _ =>
-          None
+          Future.successful(None)
       }
     } else {
       Future.successful(None)
@@ -47,10 +47,10 @@ class CheckExcludedTraderFilterImpl(exclusionService: ExclusionService,
   }
 }
 
-class CheckExcludedTraderFilterProvider @Inject()(exclusionService: ExclusionService, frontendAppConfig: FrontendAppConfig)
+class CheckExcludedTraderFilterProvider @Inject()(periodService: PeriodService, frontendAppConfig: FrontendAppConfig)
                                                  (implicit ec: ExecutionContext) {
 
   def apply(startReturnPeriod: Period): CheckExcludedTraderFilterImpl =
-    new CheckExcludedTraderFilterImpl(exclusionService, startReturnPeriod, frontendAppConfig)
+    new CheckExcludedTraderFilterImpl(periodService, startReturnPeriod, frontendAppConfig)
 
 }

@@ -16,6 +16,7 @@
 
 package models.registration
 
+import models.exclusions.ExcludedTrader
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -28,7 +29,8 @@ case class Registration(
                          euRegistrations: Seq[EuTaxRegistration],
                          contactDetails: ContactDetails,
                          commencementDate: LocalDate,
-                         isOnlineMarketplace: Boolean
+                         isOnlineMarketplace: Boolean,
+                         excludedTrader: Option[ExcludedTrader]
                        )
 
 object Registration {

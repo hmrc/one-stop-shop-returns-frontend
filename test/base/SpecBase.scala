@@ -70,7 +70,8 @@ trait SpecBase
     euRegistrations       = Nil,
     contactDetails        = ContactDetails("name", "0123 456789", "email@example.com"),
     commencementDate      = LocalDate.now,
-    isOnlineMarketplace   = false
+    isOnlineMarketplace   = false,
+    None
   )
 
   val twentyPercentVatRate = VatRate(20, VatRateType.Reduced, arbitraryDate)
