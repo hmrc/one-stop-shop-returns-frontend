@@ -973,8 +973,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "has not submitted final return" in {
 
-        val mockRegistrationRequest = mock[RegistrationRequest[AnyContent]]
-
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
@@ -1003,9 +1001,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-        when(mockRegistrationRequest.registration) thenReturn registration.copy(excludedTrader = excludedTraderHMRC)
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderHMRC)
+        )
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1072,7 +1071,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderHMRC)
+        )
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1080,7 +1082,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector)
           )
-          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
           .build()
 
         running(application) {
@@ -1142,7 +1143,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+        clock = Some(clock),
+        registration = registration.copy(excludedTrader = excludedTraderHMRC)
+      )
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1214,7 +1218,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderSelf)
+        )
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1222,8 +1229,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector)
           )
-          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
-          .configure("features.exclusions.excluded-traders.1.exclusionSource" -> "TRADER")
           .build()
 
         running(application) {
@@ -1282,7 +1287,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderSelf)
+        )
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1290,8 +1298,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector)
           )
-          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
-          .configure("features.exclusions.excluded-traders.1.exclusionSource" -> "TRADER")
           .build()
 
         running(application) {
@@ -1355,7 +1361,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderQuarantined)
+        )
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1363,8 +1372,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector)
           )
-          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
-          .configure("features.exclusions.excluded-traders.1.exclusionReason" -> 4)
           .build()
 
         running(application) {
@@ -1424,7 +1431,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderQuarantined)
+        )
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1432,8 +1442,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector)
           )
-          .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
-          .configure("features.exclusions.excluded-traders.1.exclusionReason" -> 4)
           .build()
 
         running(application) {
