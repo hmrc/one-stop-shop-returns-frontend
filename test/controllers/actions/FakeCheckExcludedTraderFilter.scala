@@ -21,12 +21,12 @@ import models.Period
 import models.requests.OptionalDataRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
-import services.exclusions.ExclusionService
+import services.PeriodService
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeCheckExcludedTraderFilter() extends CheckExcludedTraderFilterImpl(
-  mock[ExclusionService],
+  mock[PeriodService],
   mock[Period],
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
@@ -38,7 +38,7 @@ class FakeCheckExcludedTraderFilter() extends CheckExcludedTraderFilterImpl(
 }
 
 class FakeCheckExcludedTraderFilterProvider()
-  extends CheckExcludedTraderFilterProvider(mock[ExclusionService], mock[FrontendAppConfig])(ExecutionContext.Implicits.global) {
+  extends CheckExcludedTraderFilterProvider(mock[PeriodService], mock[FrontendAppConfig])(ExecutionContext.Implicits.global) {
 
   override def apply(startReturnPeriod: Period): CheckExcludedTraderFilterImpl = new FakeCheckExcludedTraderFilter()
 

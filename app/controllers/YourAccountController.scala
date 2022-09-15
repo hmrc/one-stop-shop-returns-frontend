@@ -102,8 +102,7 @@ class YourAccountController @Inject()(
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
 
     for {
-      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.vrn)
-      maybeExcludedTrader <- exclusionService.findExcludedTrader(request.vrn)
+      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn()
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -116,7 +115,7 @@ class YourAccountController @Inject()(
           })),
         PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
         (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
-        maybeExcludedTrader,
+        request.registration.excludedTrader,
         hasSubmittedFinalReturn,
         frontendAppConfig.exclusionsEnabled
       ))
@@ -127,8 +126,7 @@ class YourAccountController @Inject()(
                                             (implicit request: RegistrationRequest[AnyContent]) = {
 
     for {
-      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.vrn)
-      maybeExcludedTrader <- exclusionService.findExcludedTrader(request.vrn)
+      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn()
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -141,7 +139,7 @@ class YourAccountController @Inject()(
           })),
         PaymentsViewModel(Seq.empty, Seq.empty),
         paymentError = true,
-        maybeExcludedTrader,
+        request.registration.excludedTrader,
         hasSubmittedFinalReturn,
         frontendAppConfig.exclusionsEnabled
       ))
