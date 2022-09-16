@@ -29,6 +29,18 @@ class ReturnsViewModelSpec extends SpecBase {
   private val period3 = Period(2022, Q1)
 
   "must return correct view model when" - {
+
+    "excluded" - {
+
+      "and there is no returns due, no returns overdue and none in progress" in {
+
+        val returns = Seq.empty
+        val resultModel = ReturnsViewModel(returns)(messages(app))
+        resultModel.contents mustBe Seq.empty
+        resultModel.linkToStart mustBe None
+      }
+    }
+
     "there is no returns due, multiple returns overdue and none in progress" in {
 
       val returns = Seq(

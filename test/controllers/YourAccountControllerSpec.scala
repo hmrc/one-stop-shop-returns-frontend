@@ -26,8 +26,6 @@ import models.SubmissionStatus.{Due, Next, Overdue}
 import models.domain.VatReturn
 import models.exclusions.ExcludedTrader
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
-import models.registration.Registration
-import models.requests.RegistrationRequest
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
 import models.{Period, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
@@ -37,12 +35,10 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.SavedProgressPage
 import play.api.inject.bind
-import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import services.VatReturnSalesService
-import services.exclusions.ExclusionService
 import viewmodels.yourAccount.{CurrentReturns, PaymentsViewModel, Return, ReturnsViewModel}
 import views.html.IndexView
 

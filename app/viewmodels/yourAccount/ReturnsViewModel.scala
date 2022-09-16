@@ -108,6 +108,11 @@ object ReturnsViewModel {
 
   private def dueReturnsModel(overdueReturns: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages) = {
     (overdueReturns.size, currentReturn, dueReturn) match {
+      case (0, None, None) =>
+        ReturnsViewModel(
+          contents = Seq.empty,
+          linkToStart = None
+        )
       case (0, None, Some(dueReturn)) =>
         ReturnsViewModel(
           contents = Seq(returnDueParagraph(dueReturn.period)),
