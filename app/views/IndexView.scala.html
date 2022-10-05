@@ -144,13 +144,10 @@
         <div id="payments" class="tile-body">
             <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
             @for(warningText <- paymentsViewModel.warning){
-                <div class="govuk-warning-text">
-                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                    <strong class="govuk-warning-text__text">
-                        <span class="govuk-warning-text__assistive">Warning</span>
-                        @warningText
-                    </strong>
-                </div>
+                @govukWarningText(WarningText(
+                    iconFallbackText = messages("site.warning"),
+                    content = Text(warningText)
+                ))
             }
             @for(section <- paymentsViewModel.sections){
                 @for(sectionHeading <- section.heading){

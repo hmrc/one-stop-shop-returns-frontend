@@ -18,106 +18,104 @@
 @import components.ButtonGroup
 
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukSummaryList: GovukSummaryList,
-    button: ButtonGroup,
-    govukButton: GovukButton
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukSummaryList: GovukSummaryList,
+        button: ButtonGroup,
+        govukButton: GovukButton,
+        govukWarningText: GovukWarningText
 )
 
 @(
-    summaryLists: Seq[(Option[String], SummaryList)],
-    period: Period,
-    totalVatToCountries: List[TotalVatToCountry],
-    totalVatOnSales: BigDecimal,
-    noPaymentDueCountries: List[TotalVatToCountry],
-    containsCorrections: Boolean,
-    missingData: List[String]
+        summaryLists: Seq[(Option[String], SummaryList)],
+        period: Period,
+        totalVatToCountries: List[TotalVatToCountry],
+        totalVatOnSales: BigDecimal,
+        noPaymentDueCountries: List[TotalVatToCountry],
+        containsCorrections: Boolean,
+        missingData: List[String]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
 
 
-        <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
+    <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
 
-        @if(!missingData.isEmpty) {
-            <div class="govuk-warning-text">
-                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                <strong class="govuk-warning-text__text">
-                    <span class="govuk-warning-text__assistive">Warning</span>
-                    @messages("error.missing_answers")
-                </strong>
-            </div>
-        }
+    @if(!missingData.isEmpty) {
+        @govukWarningText(WarningText(
+            iconFallbackText = messages("site.warning"),
+            content = Text(messages("error.missing_answers"))
+        ))
+    }
 
-        @summaryLists.map { case (heading, summaryList) =>
-            @if(heading.isDefined) {
-                <h2 class="govuk-heading-l">@messages(heading.get)</h2>
-            }
-            @govukSummaryList(summaryList)
+    @summaryLists.map { case (heading, summaryList) =>
+        @if(heading.isDefined) {
+            <h2 class="govuk-heading-l">@messages(heading.get)</h2>
         }
-        @if(containsCorrections) {
-            <p class="govuk-table__caption--l">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>
-            @if(noPaymentDueCountries.nonEmpty) {
-                <table class="govuk-table">
-                    <caption class="govuk-table__caption">
-                        <p class="govuk-table__caption--m">@messages("checkYourAnswers.noPaymentsDue.heading")</p>
-                        <p class="govuk-body">@messages("checkYourAnswers.noPaymentsDue.caption")</p>
-                    </caption>
-                    <thead class="govuk-table__head">
-                        <tr class="govuk-table__row">
-                            <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswersLabel.country")</th>
-                            <th scope="col" class="govuk-table__header">@messages("checkYourAnswersLabel.amount")</th>
-                        </tr>
-                    </thead>
-                    <tbody class="govuk-table__body">
-                    @for(noPaymentDueCountry <- noPaymentDueCountries) {
-                        <tr class="govuk-table__row">
-                            <td class="govuk-table__cell">@noPaymentDueCountry.country.name</td>
-                            <td class="govuk-table__cell">@Html(currencyFormat(noPaymentDueCountry.totalVat))</td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
-            }
-        }
-
-        @if(totalVatOnSales > 0) {
-            <table class="govuk-table govuk-!-margin-bottom-8">
+        @govukSummaryList(summaryList)
+    }
+    @if(containsCorrections) {
+        <p class="govuk-table__caption--l">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>
+        @if(noPaymentDueCountries.nonEmpty) {
+            <table class="govuk-table">
                 <caption class="govuk-table__caption">
-                    @if(containsCorrections) {
-                        <p class="govuk-table__caption--m">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption")</p>
-                    } else {
-                        <p class="govuk-table__caption--m">@messages("checkYourAnswers.vatOwedToEuCountries.heading")</p>
-                    }
+                    <p class="govuk-table__caption--m">@messages("checkYourAnswers.noPaymentsDue.heading")</p>
+                    <p class="govuk-body">@messages("checkYourAnswers.noPaymentsDue.caption")</p>
                 </caption>
                 <thead class="govuk-table__head">
-                <tr class="govuk-table__row">
-                    <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswersLabel.country")</th>
-                    <th scope="col" class="govuk-table__header">@messages("checkYourAnswersLabel.amount")</th>
-                </tr>
+                    <tr class="govuk-table__row">
+                        <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswersLabel.country")</th>
+                        <th scope="col" class="govuk-table__header">@messages("checkYourAnswersLabel.amount")</th>
+                    </tr>
                 </thead>
                 <tbody class="govuk-table__body">
-                @for(totalVatToCountry <- totalVatToCountries) {
+                @for(noPaymentDueCountry <- noPaymentDueCountries) {
                     <tr class="govuk-table__row">
-                        <td class="govuk-table__cell">@totalVatToCountry.country.name</td>
-                        <td class="govuk-table__cell">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
+                        <td class="govuk-table__cell">@noPaymentDueCountry.country.name</td>
+                        <td class="govuk-table__cell">@Html(currencyFormat(noPaymentDueCountry.totalVat))</td>
                     </tr>
                 }
                 </tbody>
             </table>
         }
+    }
 
-        <dl class="govuk-summary-list  govuk-!-margin-bottom-9">
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-third">
-                    @messages("checkYourAnswers.vatOnSales.checkYourAnswersLabel")
-                </dt>
-                <dd class="govuk-summary-list__value govuk-!-font-weight-bold">
-                    @Html(currencyFormat(totalVatOnSales))
-                </dd>
-            </div>
-        </dl>
+    @if(totalVatOnSales > 0) {
+        <table class="govuk-table govuk-!-margin-bottom-8">
+            <caption class="govuk-table__caption">
+            @if(containsCorrections) {
+                <p class="govuk-table__caption--m">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption")</p>
+            } else {
+                <p class="govuk-table__caption--m">@messages("checkYourAnswers.vatOwedToEuCountries.heading")</p>
+            }
+            </caption>
+            <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswersLabel.country")</th>
+                    <th scope="col" class="govuk-table__header">@messages("checkYourAnswersLabel.amount")</th>
+                </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+            @for(totalVatToCountry <- totalVatToCountries) {
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">@totalVatToCountry.country.name</td>
+                    <td class="govuk-table__cell">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <dl class="govuk-summary-list  govuk-!-margin-bottom-9">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-third">
+            @messages("checkYourAnswers.vatOnSales.checkYourAnswersLabel")
+            </dt>
+            <dd class="govuk-summary-list__value govuk-!-font-weight-bold">
+            @Html(currencyFormat(totalVatOnSales))
+            </dd>
+        </div>
+    </dl>
 
     @if(missingData.isEmpty) {
         @formHelper(action = routes.CheckYourAnswersController.onSubmit(period, false)) {
