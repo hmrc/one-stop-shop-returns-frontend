@@ -25,7 +25,8 @@
         govukRadios: GovukRadios,
         govukButton: GovukButton,
         button: ButtonGroup,
-        addToList: components.addToList
+        addToList: components.addToList,
+        govukWarningText: GovukWarningText
 )
 
 @(form: Form[_], mode: Mode, list: Seq[ListItem], period: Period, canAddCountries: Boolean, incompleteCountries: Seq[Country] = List.empty)(implicit request: Request[_], messages: Messages)
@@ -42,13 +43,10 @@
             }
 
             @if(incompleteCountries.nonEmpty) {
-            <div class="govuk-warning-text">
-                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                <strong class="govuk-warning-text__text">
-                    <span class="govuk-warning-text__assistive">Warning</span>
-                    @messages("error.missing_answers")
-                </strong>
-            </div>
+                @govukWarningText(WarningText(
+                    iconFallbackText = messages("site.warning"),
+                    content = Text(messages("error.missing_answers"))
+                ))
             }
             <header class="hmrc-page-heading">
                 <h1 class="govuk-heading-xl">@messages("salesFromNiList.heading" + messageSuffix, list.size)</h1>

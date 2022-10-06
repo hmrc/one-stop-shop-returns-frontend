@@ -22,7 +22,8 @@
         formHelper: FormWithCSRF,
         govukSummaryList: GovukSummaryList,
         button: ButtonGroup,
-        govukButton: GovukButton
+        govukButton: GovukButton,
+        govukWarningText: GovukWarningText
 )
 
 @(
@@ -43,13 +44,10 @@
 )) {
 
     @if(incompleteSales.nonEmpty) {
-        <div class="govuk-warning-text">
-            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-            <strong class="govuk-warning-text__text">
-                <span class="govuk-warning-text__assistive">Warning</span>
-                @messages("error.missing_answers")
-            </strong>
-        </div>
+        @govukWarningText(WarningText(
+            iconFallbackText = messages("site.warning"),
+            content = Text(messages("error.missing_answers"))
+        ))
     }
 
     <header class="hmrc-page-heading">

@@ -15,10 +15,11 @@
  *@
 
 @this(
-    layout: templates.Layout,
-    govukSummaryList: GovukSummaryList,
-    govukButton: GovukButton,
-    formHelper: FormWithCSRF
+        layout: templates.Layout,
+        govukSummaryList: GovukSummaryList,
+        govukButton: GovukButton,
+        formHelper: FormWithCSRF,
+        govukWarningText: GovukWarningText
 )
 
 @(period: Period, summaryList: SummaryList, country: Country, mode: Mode, correctionPeriod: Period, periodIndex: Index, countryIndex: Index, countryCorrectionComplete: Boolean)(implicit request: Request[_], messages: Messages)
@@ -30,13 +31,10 @@
    </header>
 
     @if(!countryCorrectionComplete) {
-    <div class="govuk-warning-text">
-        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-        <strong class="govuk-warning-text__text">
-            <span class="govuk-warning-text__assistive">Warning</span>
-            @messages("error.missing_answers")
-        </strong>
-    </div>
+        @govukWarningText(WarningText(
+            iconFallbackText = messages("site.warning"),
+            content = Text(messages("error.missing_answers"))
+        ))
     }
 
     @govukSummaryList(summaryList)

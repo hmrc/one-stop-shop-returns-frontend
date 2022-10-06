@@ -17,14 +17,15 @@
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
 @import components.ButtonGroup
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukSummaryList: GovukSummaryList,
-    govukRadios: GovukRadios,
-    button: ButtonGroup,
-    govukButton: GovukButton,
-    addToList: components.addToSimpleList
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukSummaryList: GovukSummaryList,
+        govukRadios: GovukRadios,
+        button: ButtonGroup,
+        govukButton: GovukButton,
+        addToList: components.addToSimpleList,
+        govukWarningText: GovukWarningText
 )
 
 @(mode: Mode, period: Period, periodList: Seq[ListItem], incompletePeriods: Seq[Period])(implicit request: Request[_], messages: Messages)
@@ -32,31 +33,30 @@
 @defining(if(periodList.size == 0) {
     messages("vatPeriodCorrectionsList.title.empty")
 } else if(periodList.size == 1) {
-    messages("vatPeriodCorrectionsList.title.singular") }
+    messages("vatPeriodCorrectionsList.title.singular")
+}
 else {
-    messages("vatPeriodCorrectionsList.title", periodList.size) }) { dynamicTitle =>
+    messages("vatPeriodCorrectionsList.title", periodList.size)
+}) { dynamicTitle =>
 
-    @layout(pageTitle = dynamicTitle ) {
+    @layout(pageTitle = dynamicTitle) {
 
         <header class="hmrc-page-heading">
             <h1 class="govuk-heading-xl">@dynamicTitle</h1>
         </header>
 
         @if(incompletePeriods.nonEmpty) {
-        <div class="govuk-warning-text">
-            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-            <strong class="govuk-warning-text__text">
-                <span class="govuk-warning-text__assistive">Warning</span>
-                @messages("error.missing_answers")
-            </strong>
-        </div>
+            @govukWarningText(WarningText(
+                iconFallbackText = messages("site.warning"),
+                content = Text(messages("error.missing_answers"))
+            ))
         }
 
         @addToList(periodList, itemSize = Long, "vatPeriodCorrectionsList.change.hidden", "vatPeriodCorrectionsList.remove.hidden")
 
         @if(incompletePeriods.isEmpty) {
             @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, false), 'autoComplete -> "off") {
-                @button("site.continue",  period, controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period).url)
+                @button("site.continue", period, controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period).url)
             }
         } else {
             @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, true), 'autoComplete -> "off") {
