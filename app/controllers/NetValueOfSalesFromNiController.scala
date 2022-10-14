@@ -18,6 +18,7 @@ package controllers
 
 import controllers.actions._
 import forms.NetValueOfSalesFromNiFormProvider
+import logging.Logging
 import models.{Index, Mode, Period}
 import pages.NetValueOfSalesFromNiPage
 import play.api.i18n.I18nSupport
@@ -33,7 +34,7 @@ class NetValueOfSalesFromNiController @Inject()(
                                         formProvider: NetValueOfSalesFromNiFormProvider,
                                         view: NetValueOfSalesFromNiView
                                       )(implicit ec: ExecutionContext)
-  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
+  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -43,12 +44,12 @@ class NetValueOfSalesFromNiController @Inject()(
         case (country, vatRate) =>
 
           val form = formProvider(vatRate)
-
           val preparedForm = request.userAnswers.get(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
 
+          logger.info(s"*******FORM********: ${preparedForm.value}")
           Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex, country, vatRate))
       }
   }
@@ -70,6 +71,7 @@ class NetValueOfSalesFromNiController @Inject()(
                 _ <- cc.sessionRepository.set(updatedAnswers)
               } yield Redirect(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex).navigate(mode, updatedAnswers))
           )
+
       }
   }
 }

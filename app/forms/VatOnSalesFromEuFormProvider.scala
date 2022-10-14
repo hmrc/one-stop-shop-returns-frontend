@@ -38,7 +38,7 @@ class VatOnSalesFromEuFormProvider @Inject()(vatRateService: VatRateService) ext
           "vatOnSalesFromEu.amount.error.decimalFormat",
           "vatOnSalesFromEu.amount.error.nonNumeric"
         )
-          .verifying(inRange[BigDecimal](0.01, maxCurrencyAmount, "vatOnSalesFromEu.amount.error.outOfRange"))
+          .verifying(inRange[BigDecimal](0.01, maxCurrencyAmount, "vatOnSalesFromEu.amount.error.calculatedVatRateOutOfRange"))
         )
       )(a(vatRate, netSales))(u)
     )

@@ -69,7 +69,7 @@ class VatOnSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
           "choice" -> NonStandard.toString,
           "amount" -> "-1"
         ))
-        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.outOfRange", Seq(0.01, maxCurrencyAmount))
+        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.calculatedVatRateOutOfRange", Seq(0.01, maxCurrencyAmount))
       }
 
       "must not bind when a zero amount is supplied" in {
@@ -78,7 +78,7 @@ class VatOnSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
           "choice" -> NonStandard.toString,
           "amount" -> "0"
         ))
-        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.outOfRange", Seq(0.01, maxCurrencyAmount))
+        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.calculatedVatRateOutOfRange", Seq(0.01, maxCurrencyAmount))
       }
 
       "must not bind when an amount greater than 1,000,000,000 is supplied" in {
@@ -87,7 +87,7 @@ class VatOnSalesFromNiFormProviderSpec extends DecimalFieldBehaviours {
           "choice" -> NonStandard.toString,
           "amount" -> (maxCurrencyAmount + 1).toString
         ))
-        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.outOfRange", Seq(0.01, maxCurrencyAmount))
+        result.errors must contain only FormError("amount", "vatOnSalesFromNi.amount.error.calculatedVatRateOutOfRange", Seq(0.01, maxCurrencyAmount))
       }
 
       "must not bind when a non-numeric amount is supplied" in {

@@ -71,6 +71,7 @@ trait SalesFromNiBaseController {
       netSales <- request.userAnswers.get(NetValueOfSalesFromNiPage(countryIndex, vatRateIndex))
     } yield block(country, vatRate, netSales))
       .orRecoverJourney
+
   protected def getCountryVatRateAndNetSalesAsync(countryIndex: Index, vatRateIndex: Index)
                                                  (block: (Country, VatRate, BigDecimal) => Future[Result])
                                                  (implicit request: DataRequest[AnyContent]): Future[Result] =
