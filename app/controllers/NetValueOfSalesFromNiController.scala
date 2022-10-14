@@ -34,7 +34,7 @@ class NetValueOfSalesFromNiController @Inject()(
                                         formProvider: NetValueOfSalesFromNiFormProvider,
                                         view: NetValueOfSalesFromNiView
                                       )(implicit ec: ExecutionContext)
-  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport with Logging {
+  extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -49,7 +49,6 @@ class NetValueOfSalesFromNiController @Inject()(
             case Some(value) => form.fill(value)
           }
 
-          logger.info(s"*******FORM********: ${preparedForm.value}")
           Ok(view(preparedForm, mode, period, countryIndex, vatRateIndex, country, vatRate))
       }
   }
