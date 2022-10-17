@@ -28,11 +28,14 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
+import services.VatRateService
 import views.html.NetValueOfSalesFromNiView
 
 import scala.concurrent.Future
 
 class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
+
+  private val mockVatRateService = mock[VatRateService]
 
   private val validAnswer: BigDecimal = 1
 
@@ -45,7 +48,7 @@ class NetValueOfSalesFromNiControllerSpec extends SpecBase with MockitoSugar {
       .set(CountryOfConsumptionFromNiPage(index), country).success.value
       .set(VatRatesFromNiPage(index), List(vatRate)).success.value
 
-  private val formProvider = new NetValueOfSalesFromNiFormProvider()
+  private val formProvider = new NetValueOfSalesFromNiFormProvider(mockVatRateService)
   private val form = formProvider(vatRate)
 
   "NetValueOfSalesFromNi Controller" - {

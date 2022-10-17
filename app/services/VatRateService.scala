@@ -53,5 +53,5 @@ class VatRateService @Inject()(env: Environment, config: Configuration) {
       .filter(rate => rate.validUntil.fold(true)(_.isAfter(period.firstDay.minusDays(1))))
 
   def standardVatOnSales(netSales: BigDecimal, vatRate: VatRate): BigDecimal =
-    ((netSales * vatRate.rate) / 100).setScale(2, RoundingMode.HALF_UP)
+    ((netSales * vatRate.rate) / 100).setScale(2, RoundingMode.HALF_EVEN)
 }

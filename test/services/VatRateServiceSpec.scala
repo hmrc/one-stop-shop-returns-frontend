@@ -33,7 +33,7 @@ import play.api.{Configuration, Environment}
 
 import java.io.ByteArrayInputStream
 import java.time.LocalDate
-import scala.math.BigDecimal.RoundingMode.HALF_UP
+import scala.math.BigDecimal.RoundingMode.HALF_EVEN
 
 class VatRateServiceSpec
   extends AnyFreeSpec
@@ -126,7 +126,7 @@ class VatRateServiceSpec
           case (netSales, vatRate) =>
 
             val result = service.standardVatOnSales(netSales, vatRate)
-            result mustEqual ((netSales * vatRate.rate) / 100).setScale(2, HALF_UP)
+            result mustEqual ((netSales * vatRate.rate) / 100).setScale(2, HALF_EVEN)
         }
       }
 
@@ -144,10 +144,10 @@ class VatRateServiceSpec
           service.standardVatOnSales(BigDecimal(100.024), vatRate) mustEqual BigDecimal(20)
         }
 
-        "£100.025 at 20% must equal £20.01" in {
+        "£100.025 at 20% must equal £20.00" in {
 
           val vatRate = VatRate(20, Standard, LocalDate.now)
-          service.standardVatOnSales(BigDecimal(100.025), vatRate) mustEqual BigDecimal(20.01)
+          service.standardVatOnSales(BigDecimal(100.025), vatRate) mustEqual BigDecimal(20.00)
         }
 
         "£100 at 20.004% must equal £20.00" in {
@@ -156,10 +156,10 @@ class VatRateServiceSpec
           service.standardVatOnSales(100, vatRate) mustEqual BigDecimal(20)
         }
 
-        "£100 at 20.005% must equal £20.01" in {
+        "£100 at 20.005% must equal £20.00" in {
 
           val vatRate = VatRate(BigDecimal(20.005), Standard, LocalDate.now)
-          service.standardVatOnSales(100, vatRate) mustEqual BigDecimal(20.01)
+          service.standardVatOnSales(100, vatRate) mustEqual BigDecimal(20.00)
         }
       }
     }

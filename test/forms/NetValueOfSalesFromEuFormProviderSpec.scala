@@ -19,16 +19,22 @@ package forms
 import config.Constants.maxCurrencyAmount
 import forms.behaviours.DecimalFieldBehaviours
 import models.VatRate
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.data.FormError
+import services.VatRateService
 
 import scala.math.BigDecimal.RoundingMode
 
 class NetValueOfSalesFromEuFormProviderSpec extends DecimalFieldBehaviours {
 
+  private val mockVatRateService = mock[VatRateService]
+
   private val vatRate = arbitrary[VatRate].sample.value
-  val form = new NetValueOfSalesFromEuFormProvider()(vatRate)
+  val form = new NetValueOfSalesFromEuFormProvider(mockVatRateService)(vatRate)
 
   ".value" - {
 
@@ -39,8 +45,10 @@ class NetValueOfSalesFromEuFormProviderSpec extends DecimalFieldBehaviours {
 
     val validDataGenerator =
       Gen.choose[BigDecimal](minimum, maximum)
-        .map(_.setScale(2, RoundingMode.HALF_UP))
+        .map(_.setScale(2, RoundingMode.HALF_EVEN))
         .map(_.toString)
+
+    when(mockVatRateService.standardVatOnSales(any(), any())) thenReturn BigDecimal(1)
 
     behave like fieldThatBindsValidData(
       form,
@@ -68,5 +76,16 @@ class NetValueOfSalesFromEuFormProviderSpec extends DecimalFieldBehaviours {
       fieldName,
       requiredError = FormError(fieldName, "netValueOfSalesFromEu.error.required", Seq(vatRate.rateForDisplay))
     )
+
+    "must not bind when calculated vat amount is less than or equal to zero" in {
+
+      when(mockVatRateService.standardVatOnSales(any(), any())) thenReturn BigDecimal(0)
+
+      val result = form.bind(Map(
+        fieldName -> "0.02"
+      ))
+
+      result.errors must contain only FormError(fieldName, "netValueOfSalesFromEu.error.calculatedVatRateOutOfRange")
+    }
   }
 }

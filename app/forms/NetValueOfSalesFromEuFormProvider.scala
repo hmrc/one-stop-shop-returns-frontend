@@ -20,10 +20,11 @@ import config.Constants.maxCurrencyAmount
 import forms.mappings.Mappings
 import models.VatRate
 import play.api.data.Form
+import services.VatRateService
 
 import javax.inject.Inject
 
-class NetValueOfSalesFromEuFormProvider @Inject() extends Mappings {
+class NetValueOfSalesFromEuFormProvider @Inject()(vatRateService: VatRateService) extends Mappings {
 
   def apply(vatRate: VatRate): Form[BigDecimal] =
     Form(
@@ -33,5 +34,8 @@ class NetValueOfSalesFromEuFormProvider @Inject() extends Mappings {
         "netValueOfSalesFromEu.error.nonNumeric",
         args = Seq(vatRate.rateForDisplay))
           .verifying(inRange[BigDecimal](0.01, maxCurrencyAmount, "netValueOfSalesFromEu.error.outOfRange"))
+        .verifying("netValueOfSalesFromEu.error.calculatedVatRateOutOfRange", value => {
+          vatRateService.standardVatOnSales(value, vatRate) > BigDecimal(0)
+        })
     )
 }
