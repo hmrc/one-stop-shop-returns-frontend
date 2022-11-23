@@ -35,7 +35,7 @@ class PaymentsViewModelSpec extends SpecBase{
 
     "there is no payments due or overdue" in {
       val result = PaymentsViewModel(Seq.empty, Seq.empty)(messages(app))
-      result.sections mustBe Seq(PaymentsSection(Seq("You have no tax to pay.")))
+      result.sections mustBe Seq(PaymentsSection(Seq("You do not owe anything right now.")))
       result.link must not be defined
       result.warning must not be defined
     }
