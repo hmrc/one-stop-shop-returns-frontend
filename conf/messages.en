@@ -50,7 +50,7 @@ error.resolve_missing_answers = Resolve missing answers
 index.title = Your account
 index.heading = Your account
 index.vrn = VAT registration number: {0}
-index.paragraph = You can correct a previous return when you submit your next one.
+index.paragraph = You can correct a previous return when you submit your final one.
 index.yourReturns.inProgress = Your return for {0} is in progress.
 index.yourReturns.inProgress.due = This is due by {0}.
 index.yourReturns = Your returns
@@ -231,6 +231,7 @@ checkYourAnswers.corrections.heading = Corrections
 checkYourAnswers.netValueOfSales.checkYourAnswersLabel = Total sales excluding VAT
 checkYourAnswers.vatOnSales.checkYourAnswersLabel = Total VAT payable
 checkYourAnswers.correctionReturnPeriod.checkYourAnswersLabel = Periods with corrections
+checkYourAnswers.corrections.warning = After you submit this return, you will not be able to make any corrections using the One Stop Shop service.
 
 salesFromEuList.title.singular = You added sales from one EU country
 salesFromEuList.heading.singular = You added sales from one EU country
@@ -374,6 +375,7 @@ correctPreviousReturn.heading = Do you want to correct a previous return?
 correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
+correctPreviousReturn.lastChance.hint = This is your last chance to correct a previous return on this service.
 
 correctionCountry.title = Which country would you like to correct?
 correctionCountry.heading = Which country would you like to correct?
@@ -522,3 +524,4 @@ yourAccount.warning.leftService = You have left this service.
 yourAccount.previous.return.correct = You can correct previous returns directly with the country where you made the sales.
 yourAccount.finalReturn.completed = You''ve completed your final return.
 yourAccount.oss.account.message = If you have any questions about your OSS account, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
+yourAccount.finalReturn.message = This is your final return on this service.
