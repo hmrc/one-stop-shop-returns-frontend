@@ -38,6 +38,8 @@
             RadiosViewModel.yesNo(
                 field = form("value"),
                 legend = LegendViewModel(messages("correctPreviousReturn.heading")).asPageHeading()
+            ).withHint(
+                HintViewModel(messages("correctPreviousReturn.lastChance.hint"))
             )
         )
 

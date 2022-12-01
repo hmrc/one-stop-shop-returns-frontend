@@ -75,7 +75,8 @@ object ReturnsViewModel {
     )
 
   private def returnDueParagraph(period: Period)(implicit messages: Messages) =
-    ParagraphSimple(messages("index.yourReturns.returnDue", period.displayShortText, period.paymentDeadlineDisplay))
+    ParagraphSimple(s"""${messages("index.yourReturns.returnDue", period.displayShortText, period.paymentDeadlineDisplay)}
+      |<br><br>${messages("yourAccount.finalReturn.message")} <br>""".stripMargin)
 
   private def returnDueInProgressParagraph(period: Period)(implicit messages: Messages) =
     ParagraphSimple(s"""${messages("index.yourReturns.inProgress", period.displayText)}
