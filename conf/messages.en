@@ -1,4 +1,4 @@
-service.name = Submit a One Stop Shop return and pay VAT
+service.name = Submit a One Stop Shop VAT return and pay VAT
 
 site.back = Back
 site.remove = Remove
@@ -47,8 +47,8 @@ error.missing_answers_prompt = You need to complete the missing information for 
 error.missing_answers_prompt.general = You need to complete the missing information before you continue.
 error.resolve_missing_answers = Resolve missing answers
 
-index.title = Your account
-index.heading = Your account
+index.title = Your One Stop Shop account
+index.heading = Your One Stop Shop account
 index.vrn = VAT registration number: {0}
 index.paragraph = You can correct a previous return when you submit your next one.
 index.yourReturns.inProgress = Your return for {0} is in progress.
@@ -69,7 +69,7 @@ index.payment.heading = Payments
 index.payment.dueHeading = Due Payments
 index.payment.overdueHeading = Overdue Payments
 index.payment.pendingPayments = There may be a delay in showing your payments
-index.payment.nothingOwed = You have no tax to pay.
+index.payment.nothingOwed = You do not owe anything right now.
 index.payment.makeAPayment = Make a payment
 
 index.payment.dueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}. You must pay this by {2}.
@@ -77,7 +77,7 @@ index.payment.dueAmountMaybeOwed = You may still owe VAT for {0}. You must pay t
 index.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}, which was due by {2}.
 index.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, which was due by {1}.
 
-index.history = History
+index.history = Details
 index.history.previousReturns = View submitted returns
 index.nextPeriod = You can complete your {0} return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
@@ -519,6 +519,6 @@ yourAccount.warning.exclusion.trader = You have left this service, but you must 
 yourAccount.warning.exclusion.hmrc = We''ve removed you from this service, but you must complete and pay your final return.
 yourAccount.warning.exclusion.quarantineUser = We''ve removed you from this service, but you must complete and pay your final return. You cannot re-join until [{0}].
 yourAccount.warning.leftService = You have left this service.
-yourAccount.previous.return.correct = You can correct previous returns directly with the country where you made the sales.
+yourAccount.previous.return.correct = You can no longer use this service to correct previous returns. You must make any corrections directly with the country where you made the sales.
 yourAccount.finalReturn.completed = You''ve completed your final return.
 yourAccount.oss.account.message = If you have any questions about your OSS account, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
