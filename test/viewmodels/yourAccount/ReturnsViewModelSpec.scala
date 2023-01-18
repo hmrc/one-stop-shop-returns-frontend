@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,9 +95,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period3, Due, false, false)
       )
       val resultModel = ReturnsViewModel(returns)(messages(app))
-      assert(resultModel.contents.map(p => p.content).contains(
-        """January to March 2022 is due by 30 April 2022.
-          |<br><br>This is your final return on this service. <br>""".stripMargin))
+      assert(resultModel.contents.map(p => p.content).contains("January to March 2022 is due by 30 April 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You also have 2 overdue returns."))
       resultModel.linkToStart mustBe (defined)
       resultModel.linkToStart.get.linkText mustBe "Start your July to September 2021 return"
@@ -111,9 +109,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period3, Due, false, false)
       )
       val resultModel = ReturnsViewModel(returns)(messages(app))
-      assert(resultModel.contents.map(p => p.content).contains(
-        """January to March 2022 is due by 30 April 2022.
-          |<br><br>This is your final return on this service. <br>""".stripMargin))
+      assert(resultModel.contents.map(p => p.content).contains("January to March 2022 is due by 30 April 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You also have 2 overdue returns."))
       resultModel.linkToStart mustBe (defined)
       resultModel.linkToStart.get.linkText mustBe "Continue your July to September 2021 return"
@@ -126,9 +122,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period2, Due, false, false)
       )
       val resultModel = ReturnsViewModel(returns)(messages(app))
-      assert(resultModel.contents.map(p => p.content).contains(
-        """October to December 2021 is due by 31 January 2022.
-          |<br><br>This is your final return on this service. <br>""".stripMargin))
+      assert(resultModel.contents.map(p => p.content).contains("October to December 2021 is due by 31 January 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You also have an overdue return in progress."))
       resultModel.linkToStart mustBe (defined)
       resultModel.linkToStart.get.linkText mustBe "Continue your July to September 2021 return"
@@ -141,9 +135,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period2, Due, false, false)
       )
       val resultModel = ReturnsViewModel(returns)(messages(app))
-      assert(resultModel.contents.map(p => p.content).contains(
-        """October to December 2021 is due by 31 January 2022.
-          |<br><br>This is your final return on this service. <br>""".stripMargin))
+      assert(resultModel.contents.map(p => p.content).contains("October to December 2021 is due by 31 January 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You also have an overdue return."))
       resultModel.linkToStart mustBe (defined)
       resultModel.linkToStart.get.linkText mustBe "Start your July to September 2021 return"
@@ -171,9 +163,7 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content)
-        .contains(
-          """July to September 2021 is due by 31 October 2021.
-            |<br><br>This is your final return on this service. <br>""".stripMargin))
+        .contains("July to September 2021 is due by 31 October 2021."))
       resultModel.linkToStart mustBe (defined)
       resultModel.linkToStart.get.linkText mustBe "Start your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(period1).url
