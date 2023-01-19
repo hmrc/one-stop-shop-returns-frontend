@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,8 +75,7 @@ object ReturnsViewModel {
     )
 
   private def returnDueParagraph(period: Period)(implicit messages: Messages) =
-    ParagraphSimple(s"""${messages("index.yourReturns.returnDue", period.displayShortText, period.paymentDeadlineDisplay)}
-      |<br><br>${messages("yourAccount.finalReturn.message")} <br>""".stripMargin)
+    ParagraphSimple(messages("index.yourReturns.returnDue", period.displayShortText, period.paymentDeadlineDisplay))
 
   private def returnDueInProgressParagraph(period: Period)(implicit messages: Messages) =
     ParagraphSimple(s"""${messages("index.yourReturns.inProgress", period.displayText)}

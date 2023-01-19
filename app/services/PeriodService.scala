@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,19 @@ class PeriodService @Inject()(clock: Clock) {
         Period(currentPeriod.year, Q3)
       case Q1 =>
         Period(currentPeriod.year, Q2)
+    }
+  }
+
+  def getPreviousPeriod(currentPeriod: Period): Period = {
+    currentPeriod.quarter match {
+      case Q1 =>
+        Period(currentPeriod.year - 1, Q4)
+      case Q2 =>
+        Period(currentPeriod.year, Q1)
+      case Q3 =>
+        Period(currentPeriod.year, Q2)
+      case Q4 =>
+        Period(currentPeriod.year, Q3)
     }
   }
 }

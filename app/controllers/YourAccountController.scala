@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import services.exclusions.ExclusionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.yourAccount._
 import views.html.IndexView
+
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import config.FrontendAppConfig
@@ -103,6 +104,7 @@ class YourAccountController @Inject()(
 
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn()
+      currentReturnIsFinal <- exclusionService.currentReturnIsFinal()
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -117,6 +119,7 @@ class YourAccountController @Inject()(
         (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
         request.registration.excludedTrader,
         hasSubmittedFinalReturn,
+        currentReturnIsFinal,
         frontendAppConfig.exclusionsEnabled
       ))
     }
@@ -127,6 +130,7 @@ class YourAccountController @Inject()(
 
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn()
+      currentReturnIsFinal <- exclusionService.currentReturnIsFinal()
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -141,6 +145,7 @@ class YourAccountController @Inject()(
         paymentError = true,
         request.registration.excludedTrader,
         hasSubmittedFinalReturn,
+        currentReturnIsFinal,
         frontendAppConfig.exclusionsEnabled
       ))
     }

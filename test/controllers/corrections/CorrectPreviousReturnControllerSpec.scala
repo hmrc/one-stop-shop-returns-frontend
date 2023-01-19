@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar wit
         val view = application.injector.instanceOf[CorrectPreviousReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, period, None)(request, messages(application)).toString
       }
     }
 
@@ -83,7 +83,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar wit
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period, None)(request, messages(application)).toString
       }
     }
 
@@ -137,7 +137,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar wit
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, NormalMode, period, None)(request, messages(application)).toString
       }
     }
 

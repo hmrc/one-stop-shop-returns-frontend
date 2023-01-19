@@ -1,5 +1,5 @@
 @*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  *@
 
 @import components.ButtonGroup
+@import models.exclusions.ExcludedTrader
 
 @this(
     layout: templates.Layout,
@@ -24,7 +25,7 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, maybeExcludedTrader: Option[ExcludedTrader])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctPreviousReturn.title"))) {
 
@@ -34,14 +35,23 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(messages("correctPreviousReturn.heading")).asPageHeading()
-            ).withHint(
-                HintViewModel(messages("correctPreviousReturn.lastChance.hint"))
+        @if(maybeExcludedTrader.isDefined) {
+            @govukRadios(
+                RadiosViewModel.yesNo(
+                    field = form("value"),
+                    legend = LegendViewModel(messages("correctPreviousReturn.heading")).asPageHeading()
+                ).withHint(
+                    HintViewModel(messages("correctPreviousReturn.lastChance.hint"))
+                )
             )
-        )
+        } else {
+            @govukRadios(
+                RadiosViewModel.yesNo(
+                    field = form("value"),
+                    legend = LegendViewModel(messages("correctPreviousReturn.heading")).asPageHeading()
+                )
+            )
+        }
 
         @button("site.continue",  period, controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, period).url)
     }

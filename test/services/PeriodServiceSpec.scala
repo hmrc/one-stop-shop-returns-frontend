@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,6 +127,49 @@ class PeriodServiceSpec
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val service = new PeriodService(stubClock)
       service.getNextPeriod(current) mustBe expected
+    }
+  }
+
+  ".getPreviousPeriod" - {
+
+    "when current period is Q1" in {
+      val year = 2021
+      val current = Period(year, Q1)
+      val expected = Period(year - 1, Q4)
+      val instant = Instant.parse("2022-01-11T12:00:00Z")
+      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+      val service = new PeriodService(stubClock)
+      service.getPreviousPeriod(current) mustBe expected
+    }
+
+    "when current period is Q2" in {
+      val year = 2021
+      val current = Period(year, Q2)
+      val expected = Period(year, Q1)
+      val instant = Instant.parse("2022-01-11T12:00:00Z")
+      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+      val service = new PeriodService(stubClock)
+      service.getPreviousPeriod(current) mustBe expected
+    }
+
+    "when current period is Q3" in {
+      val year = 2021
+      val current = Period(year, Q3)
+      val expected = Period(year, Q2)
+      val instant = Instant.parse("2022-01-11T12:00:00Z")
+      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+      val service = new PeriodService(stubClock)
+      service.getPreviousPeriod(current) mustBe expected
+    }
+
+    "when current period is Q4" in {
+      val year = 2021
+      val current = Period(year, Q4)
+      val expected = Period(year, Q3)
+      val instant = Instant.parse("2022-01-11T12:00:00Z")
+      val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+      val service = new PeriodService(stubClock)
+      service.getPreviousPeriod(current) mustBe expected
     }
   }
 }

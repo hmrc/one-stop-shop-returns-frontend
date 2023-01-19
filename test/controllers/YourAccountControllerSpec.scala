@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,6 +129,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }
@@ -188,6 +189,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
               config.exclusionsEnabled
             )(request, messages(application)).toString
           }
@@ -246,6 +248,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
               config.exclusionsEnabled
             )(request, messages(application)).toString
           }
@@ -305,6 +308,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
               config.exclusionsEnabled
             )(request, messages(application)).toString
           }
@@ -368,6 +372,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
               config.exclusionsEnabled
             )(request, messages(application)).toString
           }
@@ -424,6 +429,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }
@@ -486,6 +492,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }
@@ -550,6 +557,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
               config.exclusionsEnabled
             )(request, messages(application)).toString
           }
@@ -613,6 +621,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
               config.exclusionsEnabled
             )(request, messages(application)).toString
 
@@ -680,6 +689,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
               config.exclusionsEnabled
             )(request, messages(application)).toString
           }
@@ -736,6 +746,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               paymentError = true,
               None,
               hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
               config.exclusionsEnabled
             )(request, messages(application)).toString
           }
@@ -795,6 +806,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               paymentError = true,
               None,
               hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
               config.exclusionsEnabled
             )(request, messages(application)).toString
           }
@@ -856,6 +868,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = true,
             None,
             hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }
@@ -910,6 +923,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
 
@@ -1032,6 +1046,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             excludedTraderHMRC,
             hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }
@@ -1103,6 +1118,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             excludedTraderHMRC,
             hasSubmittedFinalReturn = true,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }
@@ -1177,6 +1193,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           paymentError = false,
           None,
           hasSubmittedFinalReturn = true,
+          currentReturnIsFinal = false,
           config.exclusionsEnabled
         )(request, messages(application)).toString
       }
@@ -1250,6 +1267,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }
@@ -1319,6 +1337,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = true,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }
@@ -1393,6 +1412,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }
@@ -1463,6 +1483,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = true,
+            currentReturnIsFinal = false,
             config.exclusionsEnabled
           )(request, messages(application)).toString
         }

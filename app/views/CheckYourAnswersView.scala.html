@@ -1,5 +1,5 @@
 @*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 @import utils.CurrencyFormatter.currencyFormat
 @import components.ButtonGroup
+@import models.exclusions.ExcludedTrader
 
 @this(
         layout: templates.Layout,
@@ -33,7 +34,8 @@
         totalVatOnSales: BigDecimal,
         noPaymentDueCountries: List[TotalVatToCountry],
         containsCorrections: Boolean,
-        missingData: List[String]
+        missingData: List[String],
+        maybeExcludedTrader: Option[ExcludedTrader]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
@@ -117,10 +119,12 @@
         </div>
     </dl>
 
-    @govukWarningText(WarningText(
-        iconFallbackText = messages("site.warning"),
-        content = Text(messages("checkYourAnswers.corrections.warning"))
-    ))
+    @if(maybeExcludedTrader.isDefined) {
+        @govukWarningText(WarningText(
+            iconFallbackText = messages("site.warning"),
+            content = Text(messages("checkYourAnswers.corrections.warning"))
+        ))
+    }
 
     @if(missingData.isEmpty) {
         @formHelper(action = routes.CheckYourAnswersController.onSubmit(period, false)) {
