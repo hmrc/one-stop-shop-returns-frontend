@@ -38,6 +38,7 @@ import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQue
 import repositories.CachedVatReturnRepository
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
 import services.corrections.CorrectionService
+import services.exclusions.ExclusionService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -52,6 +53,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CheckYourAnswersController @Inject()(
                                             cc: AuthenticatedControllerComponents,
                                             service: SalesAtVatRateService,
+                                            exclusionService: ExclusionService,
                                             view: CheckYourAnswersView,
                                             vatReturnService: VatReturnService,
                                             correctionService: CorrectionService,
@@ -87,16 +89,21 @@ class CheckYourAnswersController @Inject()(
 
       val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromNiSummaryList, salesFromEuSummaryList)
 
-      Future.successful(Ok(view(
-        summaryLists,
-        request.userAnswers.period,
-        totalVatToCountries,
-        totalVatOnSales,
-        noPaymentDueCountries,
-        containsCorrections,
-        errors.map(_.errorMessage),
-        request.registration.excludedTrader
-      )))
+      for {
+        currentReturnIsFinal <- exclusionService.currentReturnIsFinal(request.registration, request.userAnswers.period)
+      } yield {
+        Ok(view(
+          summaryLists,
+          request.userAnswers.period,
+          totalVatToCountries,
+          totalVatOnSales,
+          noPaymentDueCountries,
+          containsCorrections,
+          errors.map(_.errorMessage),
+          request.registration.excludedTrader,
+          currentReturnIsFinal
+        ))
+      }
   }
 
   private def getAllSummaryLists(

@@ -29,7 +29,6 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import play.api.mvc.AnyContent
-import services.PeriodService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -40,17 +39,14 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
   implicit private lazy val ec: ExecutionContext = ExecutionContext.global
 
-  private val mockExclusionService = mock[ExclusionService]
-  private val mockPeriodService = mock[PeriodService]
   private val mockRegistrationRequest = mock[RegistrationRequest[AnyContent]]
   private val mockRegistration = mock[Registration]
   private val vatReturnConnector = mock[VatReturnConnector]
-  private val exclusionService = new ExclusionService(vatReturnConnector, mockPeriodService)
+  private val exclusionService = new ExclusionService(vatReturnConnector)
 
   private val exclusionSource = Gen.oneOf("HMRC", "TRADER").sample.value
   private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
   private val exclusionPeriod = Period(2022, Q3)
-  private val previousPeriod = Period(2022,Q2)
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockRegistrationRequest)
@@ -67,7 +63,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
 
-      exclusionService.hasSubmittedFinalReturn()(hc, ec, mockRegistrationRequest).futureValue mustBe true
+      exclusionService.hasSubmittedFinalReturn(mockRegistrationRequest.registration)(hc, ec).futureValue mustBe true
     }
 
     "must return false if final return not completed" in {
@@ -78,7 +74,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-      exclusionService.hasSubmittedFinalReturn()(hc, ec, mockRegistrationRequest).futureValue mustBe false
+      exclusionService.hasSubmittedFinalReturn(mockRegistrationRequest.registration)(hc, ec).futureValue mustBe false
     }
   }
 
@@ -86,21 +82,18 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
     "must return true if current return is final" in {
 
-      when(mockPeriodService.getPreviousPeriod(exclusionPeriod)) thenReturn previousPeriod
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
         Some(ExcludedTrader(Vrn("123456789"), exclusionSource, exclusionReason, exclusionPeriod))
 
       when(vatReturnConnector.get(eqTo(exclusionPeriod))(any())) thenReturn Future.successful(Left(NotFound))
-      when(vatReturnConnector.get(eqTo(previousPeriod))(any())) thenReturn Future.successful(Right(completeVatReturn))
 
-      exclusionService.currentReturnIsFinal()(hc, ec, mockRegistrationRequest).futureValue mustBe true
+      exclusionService.currentReturnIsFinal(mockRegistrationRequest.registration, Period(2022, Q3))(hc, ec).futureValue mustBe true
     }
 
-    "must return false if current return is not final" in {
+    "must return false if the current return is not final for excluded trader" in {
 
-      when(mockPeriodService.getPreviousPeriod(exclusionPeriod)) thenReturn previousPeriod
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
@@ -108,7 +101,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       when(vatReturnConnector.get(eqTo(exclusionPeriod))(any())) thenReturn Future.successful(Right(completeVatReturn))
 
-      exclusionService.currentReturnIsFinal()(hc, ec, mockRegistrationRequest).futureValue mustBe false
+      exclusionService.currentReturnIsFinal(mockRegistrationRequest.registration, Period(2022, Q2))(hc, ec).futureValue mustBe false
     }
   }
 

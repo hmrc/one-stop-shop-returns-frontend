@@ -50,7 +50,7 @@ error.resolve_missing_answers = Resolve missing answers
 index.title = Your One Stop Shop account
 index.heading = Your One Stop Shop account
 index.vrn = VAT registration number: {0}
-index.paragraph = You can correct a previous return when you submit your final one.
+index.paragraph = You can correct a previous return when you submit your next one.
 index.yourReturns.inProgress = Your return for {0} is in progress.
 index.yourReturns.inProgress.due = This is due by {0}.
 index.yourReturns = Your returns
@@ -525,3 +525,4 @@ yourAccount.previous.return.correct = You can no longer use this service to corr
 yourAccount.finalReturn.completed = You''ve completed your final return.
 yourAccount.oss.account.message = If you have any questions about your OSS account, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 yourAccount.finalReturn.message = This is your final return on this service.
+yourAccount.previousCorrectReturn.finalReturn = You can correct a previous return when you submit your final one.
