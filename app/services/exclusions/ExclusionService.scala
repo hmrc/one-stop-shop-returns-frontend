@@ -19,18 +19,17 @@ package services.exclusions
 import connectors.VatReturnConnector
 import logging.Logging
 import models.exclusions.ExcludedTrader
-import models.requests.RegistrationRequest
-import play.api.mvc.AnyContent
-import services.PeriodService
+import models.Period
+import models.registration.Registration
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ExclusionService @Inject()(connector: VatReturnConnector, periodService: PeriodService) extends Logging {
+class ExclusionService @Inject()(connector: VatReturnConnector) extends Logging {
 
-  def hasSubmittedFinalReturn()(implicit hc: HeaderCarrier, ec: ExecutionContext, request: RegistrationRequest[AnyContent]): Future[Boolean] = {
-    request.registration.excludedTrader match {
+  def hasSubmittedFinalReturn(registration: Registration)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+    registration.excludedTrader match {
       case Some(ExcludedTrader(_, _, _, effectivePeriod)) =>
         connector.get(effectivePeriod).map {
           case Right(_) => true
@@ -40,27 +39,15 @@ class ExclusionService @Inject()(connector: VatReturnConnector, periodService: P
     }
   }
 
-  /* TODO:
-       when we come to implementing API this could be a spot for performance improvement - instead of doing multiple connector calls, we could do:
-       * A single call with multiple periods
-       * Refactor to use the initial "returns seq" in the controller to work out if the current period
-       the user is submitting compares to the exclusion effective date period (IE final return)
-   */
-  def currentReturnIsFinal()(implicit hc: HeaderCarrier, ec: ExecutionContext, request: RegistrationRequest[AnyContent]): Future[Boolean] = {
+  def currentReturnIsFinal(registration: Registration, currentPeriod: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
 
-    hasSubmittedFinalReturn().flatMap {
+    hasSubmittedFinalReturn(registration).flatMap {
       case true =>
         Future.successful(false)
       case _ =>
-        request.registration.excludedTrader match {
-          case Some(ExcludedTrader(_, _, _, effectivePeriod)) =>
-            val previousPeriod = periodService.getPreviousPeriod(effectivePeriod)
-
-            connector.get(previousPeriod).map {
-              case Right(_) => true
-
-              case _ => false
-            }
+        registration.excludedTrader match {
+          case Some(ExcludedTrader(_, _, _, effectivePeriod))
+            if currentPeriod == effectivePeriod => Future.successful(true)
           case _ =>
             Future.successful(false)
         }

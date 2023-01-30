@@ -103,8 +103,12 @@
     }
 }
 
-@if(exclusionsEnabled && hasSubmittedFinalReturn) {
-    <p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>
+@if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
+    @if(hasSubmittedFinalReturn) {
+        <p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>
+    } else {
+        <p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>
+    }
 } else {
     <p class="govuk-body">@messages("index.paragraph")</p>
 }

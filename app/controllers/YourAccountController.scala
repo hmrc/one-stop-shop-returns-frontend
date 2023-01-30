@@ -103,8 +103,8 @@ class YourAccountController @Inject()(
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
 
     for {
-      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn()
-      currentReturnIsFinal <- exclusionService.currentReturnIsFinal()
+      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
+      currentReturnIsFinal <- exclusionService.currentReturnIsFinal(request.registration, returnsViewModel.minBy(_.period.firstDay.toEpochDay).period)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -129,8 +129,8 @@ class YourAccountController @Inject()(
                                             (implicit request: RegistrationRequest[AnyContent]) = {
 
     for {
-      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn()
-      currentReturnIsFinal <- exclusionService.currentReturnIsFinal()
+      hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
+      currentReturnIsFinal <- exclusionService.currentReturnIsFinal(request.registration, returnsViewModel.minBy(_.period.firstDay.toEpochDay).period)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
