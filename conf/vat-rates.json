@@ -316,15 +316,15 @@
   "LU": [
     {
       "validFrom": "2021-07-01",
-      "validUntil": "2022-12-31",
       "rate": 17.0,
-      "rateType": "STANDARD"
+      "rateType": "STANDARD",
+      "validUntil": "2022-12-31"
     },
     {
       "validFrom": "2023-01-01",
-      "validUntil": "2023-12-31",
       "rate": 16.0,
-      "rateType": "STANDARD"
+      "rateType": "STANDARD",
+      "validUntil": "2023-12-31"
     },
     {
       "validFrom": "2024-01-01",
@@ -333,15 +333,15 @@
     },
     {
       "validFrom": "2021-07-01",
-      "validUntil": "2022-12-31",
       "rate": 14.0,
-      "rateType": "REDUCED"
+      "rateType": "REDUCED",
+      "validUntil": "2022-12-31"
     },
     {
       "validFrom": "2023-01-01",
-      "validUntil": "2023-12-31",
       "rate": 13.0,
-      "rateType": "REDUCED"
+      "rateType": "REDUCED",
+      "validUntil": "2023-12-31"
     },
     {
       "validFrom": "2024-01-01",
@@ -350,15 +350,15 @@
     },
     {
       "validFrom": "2021-07-01",
-      "validUntil": "2022-12-31",
       "rate": 8.0,
-      "rateType": "REDUCED"
+      "rateType": "REDUCED",
+      "validUntil": "2022-12-31"
     },
     {
       "validFrom": "2023-01-01",
-      "validUntil": "2023-12-31",
       "rate": 7.0,
-      "rateType": "REDUCED"
+      "rateType": "REDUCED",
+      "validUntil": "2023-12-31"
     },
     {
       "validFrom": "2024-01-01",
