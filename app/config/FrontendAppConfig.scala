@@ -64,4 +64,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val exclusionsEnabled: Boolean = configuration.get[Boolean]("features.exclusions.enabled")
 
+  val auditLogins: Boolean = configuration.get[Boolean]("features.auditLogins")
+
 }

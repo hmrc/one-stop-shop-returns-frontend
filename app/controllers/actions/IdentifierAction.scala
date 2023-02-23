@@ -19,9 +19,11 @@ package controllers.actions
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
+import models.audit.LoginAuditModel
 import models.requests.IdentifierRequest
 import play.api.mvc.Results._
 import play.api.mvc._
+import services.AuditService
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
@@ -35,6 +37,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class IdentifierAction @Inject()(
                                   override val authConnector: AuthConnector,
+                                  auditService: AuditService,
                                   config: FrontendAppConfig
                                 )
                                 (implicit val executionContext: ExecutionContext)
@@ -53,23 +56,29 @@ class IdentifierAction @Inject()(
     ).retrieve( Retrievals.credentials and
                 Retrievals.allEnrolments and
                 Retrievals.affinityGroup and
+                Retrievals.groupIdentifier and
                 Retrievals.confidenceLevel and
                 Retrievals.credentialRole ) {
 
-      case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == User =>
+      case Some(credentials) ~ enrolments ~ Some(Organisation) ~ Some(groupId) ~ _ ~ Some(credentialRole) if credentialRole == User =>
         (findVrnFromEnrolments(enrolments), hasOssEnrolment(enrolments)) match {
-          case (Some(vrn), true) => Right(IdentifierRequest(request, credentials, vrn)).toFuture
+          case (Some(vrn), true) =>
+            val identifierRequest = IdentifierRequest(request, credentials, vrn)
+            auditLogin(groupId, identifierRequest)
+            Right(identifierRequest).toFuture
           case _     => throw InsufficientEnrolments()
         }
 
-      case _ ~ _ ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
+      case _ ~ _ ~ Some(Organisation) ~ _ ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
         throw UnsupportedCredentialRole()
 
-      case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
+      case Some(credentials) ~ enrolments ~ Some(Individual) ~ Some(groupId) ~ confidence ~ _ =>
         (findVrnFromEnrolments(enrolments), hasOssEnrolment(enrolments)) match {
           case (Some(vrn), true) =>
             if (confidence >= ConfidenceLevel.L200) {
-              Right(IdentifierRequest(request, credentials, vrn)).toFuture
+              val identifierRequest = IdentifierRequest(request, credentials, vrn)
+              auditLogin(groupId, identifierRequest)
+              Right(identifierRequest).toFuture
             } else {
               throw InsufficientConfidenceLevel()
             }
@@ -89,7 +98,7 @@ class IdentifierAction @Inject()(
   }
 
   private def hasOssEnrolment(enrolments: Enrolments): Boolean = {
-    !config.ossEnrolmentEnabled ||  enrolments.enrolments.exists(_.key == config.ossEnrolment)
+    !config.ossEnrolmentEnabled || enrolments.enrolments.exists(_.key == config.ossEnrolment)
   }
 
   private def findVrnFromEnrolments(enrolments: Enrolments): Option[Vrn] =
@@ -97,4 +106,12 @@ class IdentifierAction @Inject()(
       .flatMap { enrolment => enrolment.identifiers.find(_.key == "VRN").map(e => Vrn(e.value))
       } orElse enrolments.enrolments.find(_.key == "HMCE-VATDEC-ORG")
       .flatMap { enrolment => enrolment.identifiers.find(_.key == "VATRegNo").map(e => Vrn(e.value)) }
+
+  private def auditLogin(groupId: String, request: IdentifierRequest[_])(implicit hc: HeaderCarrier): Unit = {
+    if(config.auditLogins) {
+      val loginAuditModel = LoginAuditModel.build(groupId, request)
+      auditService.audit(loginAuditModel)(hc, request)
+    }
+
+  }
 }

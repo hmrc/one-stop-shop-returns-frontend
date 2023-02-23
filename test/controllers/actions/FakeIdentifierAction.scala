@@ -20,6 +20,7 @@ import config.FrontendAppConfig
 import models.requests.IdentifierRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc._
+import services.AuditService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
@@ -29,6 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FakeIdentifierAction extends IdentifierAction(
   mock[AuthConnector],
+  mock[AuditService],
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
 
