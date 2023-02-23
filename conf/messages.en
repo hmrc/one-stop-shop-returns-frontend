@@ -319,7 +319,7 @@ netValueOfSalesFromNi.error.nonNumeric = Enter your sales excluding VAT using nu
 netValueOfSalesFromNi.error.required = Enter your sales excluding VAT
 netValueOfSalesFromNi.error.wholeNumber = Enter your sales excluding VAT up to two decimal places
 netValueOfSalesFromNi.error.outOfRange = Sales excluding VAT must be between {0} and {1}
-netValueOfSalesFromNi.error.calculatedVatRateOutOfRange = Sales must have a VAT total above £0.00
+netValueOfSalesFromNi.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
 netValueOfSalesFromNi.change.hidden = your sales excluding VAT for {0} VAT rate
 netValueOfSalesFromNi.hint = For example, £600 or £193.54.
 
@@ -332,7 +332,7 @@ vatOnSalesFromNi.choice.error.required = Select how much VAT you charged
 vatOnSalesFromNi.amount.error.nonNumeric = Enter the amount of VAT charged using numbers
 vatOnSalesFromNi.amount.error.required = Enter the amount of VAT charged
 vatOnSalesFromNi.amount.error.decimalFormat = Enter the amount of VAT charged up to two decimal places
-vatOnSalesFromNi.amount.error.calculatedVatRateOutOfRange = Sales must have a VAT total above £0.00
+vatOnSalesFromNi.amount.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
 vatOnSalesFromNi.change.hidden = how much VAT you charged on sales for {0} VAT rate
 vatOnSalesFromNi.hint = For example, £600 or £193.54.
 
@@ -343,7 +343,7 @@ netValueOfSalesFromEu.error.nonNumeric = Enter your sales excluding VAT using nu
 netValueOfSalesFromEu.error.required = Enter your sales excluding VAT
 netValueOfSalesFromEu.error.wholeNumber = Enter your sales excluding VAT up to two decimal places
 netValueOfSalesFromEu.error.outOfRange = Sales excluding VAT must be between {0} and {1}
-netValueOfSalesFromEu.error.calculatedVatRateOutOfRange = Sales must have a VAT total above £0.00
+netValueOfSalesFromEu.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
 netValueOfSalesFromEu.change.hidden = your sales excluding VAT for {0} VAT rate
 netValueOfSalesFromEu.hint = For example, £600 or £193.54.
 
@@ -356,7 +356,7 @@ vatOnSalesFromEu.choice.error.required = Select how much VAT you charged
 vatOnSalesFromEu.amount.error.nonNumeric = Enter the amount of VAT charged using numbers
 vatOnSalesFromEu.amount.error.required = Enter the amount of VAT charged
 vatOnSalesFromEu.amount.error.decimalFormat = Enter the amount of VAT charged up to two decimal places
-vatOnSalesFromEu.amount.error.calculatedVatRateOutOfRange = Sales must have a VAT total above £0.00
+vatOnSalesFromEu.amount.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
 vatOnSalesFromEu.change.hidden = how much VAT you charged on sales for {0} VAT rate
 vatOnSalesFromEu.hint = For example, £600 or £193.54.
 
