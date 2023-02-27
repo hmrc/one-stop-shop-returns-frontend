@@ -24,7 +24,7 @@ import models.financialdata.{CurrentPayments, PaymentStatus}
 import models.requests.RegistrationRequest
 import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.UserAnswersRepository
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -100,11 +100,12 @@ class YourAccountController @Inject()(
 
   private def prepareViewWithFinancialData(returnsViewModel: Seq[Return],
                                            currentPayments: CurrentPayments,
-                                           periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]) = {
+                                           periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+
 
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
-      currentReturnIsFinal <- exclusionService.currentReturnIsFinal(request.registration, returnsViewModel.minBy(_.period.firstDay.toEpochDay).period)
+      currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -126,11 +127,11 @@ class YourAccountController @Inject()(
   }
 
   private def prepareViewWithNoFinancialData(returnsViewModel: Seq[Return], periodInProgress: Option[Period])
-                                            (implicit request: RegistrationRequest[AnyContent]) = {
+                                            (implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
-      currentReturnIsFinal <- exclusionService.currentReturnIsFinal(request.registration, returnsViewModel.minBy(_.period.firstDay.toEpochDay).period)
+      currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -148,6 +149,14 @@ class YourAccountController @Inject()(
         currentReturnIsFinal,
         frontendAppConfig.exclusionsEnabled
       ))
+    }
+  }
+
+  private def checkCurrentReturn(returnsViewModel: Seq[Return])(implicit request: RegistrationRequest[AnyContent]): Future[Boolean] = {
+    if (returnsViewModel.isEmpty) {
+      Future.successful(false)
+    } else {
+      exclusionService.currentReturnIsFinal(request.registration, returnsViewModel.minBy(_.period.firstDay.toEpochDay).period)
     }
   }
 
