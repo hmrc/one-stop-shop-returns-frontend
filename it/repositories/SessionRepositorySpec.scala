@@ -13,6 +13,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.{Clock, Instant, ZoneId}
+import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SessionRepositorySpec
@@ -42,7 +43,7 @@ class SessionRepositorySpec
     "must set the last updated time on the supplied session data to `now`, and save them" in {
 
       val sessionData = SessionData("id")
-      val expectedResult = sessionData copy (lastUpdated = instant)
+      val expectedResult = sessionData copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
       val setResult     = repository.set(sessionData).futureValue
       val updatedRecord = find(Filters.equal("userId", sessionData.userId)).futureValue.headOption.value
@@ -64,7 +65,7 @@ class SessionRepositorySpec
         insert(otherAnswers).futureValue
 
         val result         = repository.get(answers.userId).futureValue
-        val expectedResult = answers copy (lastUpdated = instant)
+        val expectedResult = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
         result.head mustEqual expectedResult
       }
@@ -115,7 +116,7 @@ class SessionRepositorySpec
         val result = repository.keepAlive("id").futureValue
 
         val expectedUpdatedAnswers = Seq(
-          answers copy (lastUpdated = instant)
+          answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
         )
 
         result mustEqual true

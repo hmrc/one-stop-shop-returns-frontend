@@ -84,7 +84,7 @@ class PaymentConnectorSpec extends SpecBase with WireMockHelper with EitherValue
 
         whenReady(connector.submit(paymentRequest), Timeout(Span(30, Seconds))) { exp =>
           exp.isLeft mustBe true
-          exp.left.get mustBe a[ErrorResponse]
+          exp.left.toOption.get mustBe a[ErrorResponse]
         }
       }
     }

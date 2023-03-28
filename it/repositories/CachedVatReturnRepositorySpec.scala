@@ -13,6 +13,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.{Clock, Instant, ZoneId}
+import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class CachedVatReturnRepositorySpec
@@ -29,7 +30,7 @@ class CachedVatReturnRepositorySpec
   private val instant = Instant.now
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
   private val vatReturn: VatReturn = arbitrary[VatReturn].sample.value
-  private val cachedVatReturnWrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), instant)
+  private val cachedVatReturnWrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
 
   private val mockAppConfig = mock[FrontendAppConfig]
@@ -45,7 +46,7 @@ class CachedVatReturnRepositorySpec
 
     "must set the last updated time to `now` and save the vat return" in {
 
-      val expectedResult = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), instant)
+      val expectedResult = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
       val setResult = repository.set(userId, vatReturn.period, Some(vatReturn)).futureValue
       val dbRecord  = findAll().futureValue.headOption.value
@@ -61,7 +62,7 @@ class CachedVatReturnRepositorySpec
 
       "must get the record" in {
 
-        val wrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), instant)
+        val wrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
         insert(wrapper).futureValue
 
         val result = repository.get(userId, vatReturn.period).futureValue
@@ -83,7 +84,7 @@ class CachedVatReturnRepositorySpec
 
     "must remove a record" in {
 
-      val wrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), instant)
+      val wrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
       insert(wrapper).futureValue
 
       val result = repository.clear(wrapper.userId, vatReturn.period).futureValue

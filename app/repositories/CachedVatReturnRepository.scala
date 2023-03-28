@@ -63,7 +63,7 @@ class CachedVatReturnRepository @Inject()(
   def get(id: String, period: Period): Future[Option[CachedVatReturnWrapper]] =
     collection
       .find(byId(id, period))
-      .headOption
+      .headOption()
 
   def set(userId: String, period: Period, vatReturn: Option[VatReturn]): Future[Boolean] = {
 
@@ -82,7 +82,7 @@ class CachedVatReturnRepository @Inject()(
   def clear(userId: String, period: Period): Future[Boolean] =
     collection
       .deleteOne(byId(userId, period))
-      .toFuture
+      .toFuture()
       .map(_ => true)
 }
 

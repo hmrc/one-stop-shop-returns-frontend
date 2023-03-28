@@ -14,6 +14,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.{Clock, Instant, ZoneId}
+import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class UserAnswersRepositorySpec
@@ -43,7 +44,7 @@ class UserAnswersRepositorySpec
     "must set the last updated time on the supplied user answers to `now`, and save them" in {
 
       val answers = UserAnswers("id", Period(2021, Q3))
-      val expectedResult = answers copy (lastUpdated = instant)
+      val expectedResult = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
       val setResult     = repository.set(answers).futureValue
       val updatedRecord = find(Filters.equal("userId", answers.userId)).futureValue.headOption.value
@@ -65,7 +66,7 @@ class UserAnswersRepositorySpec
         insert(otherAnswers).futureValue
 
         val result         = repository.get(answers.userId, Period(2021, Q3)).futureValue
-        val expectedResult = answers copy (lastUpdated = instant)
+        val expectedResult = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
         result.value mustEqual expectedResult
       }
@@ -120,8 +121,8 @@ class UserAnswersRepositorySpec
         val result = repository.keepAlive("id").futureValue
 
         val expectedUpdatedAnswers = Seq(
-          answers copy (lastUpdated = instant),
-          otherAnswers copy (lastUpdated = instant)
+          answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS)),
+          otherAnswers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
         )
 
         result mustEqual true

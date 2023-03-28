@@ -26,7 +26,7 @@
 
 @layout(pageTitle = title(form, messages("continueReturn.title"))) {
 
-    @formHelper(action = routes.ContinueReturnController.onSubmit(period), 'autoComplete -> "off") {
+    @formHelper(action = routes.ContinueReturnController.onSubmit(period), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))

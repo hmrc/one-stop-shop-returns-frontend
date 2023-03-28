@@ -56,7 +56,7 @@ class RegistrationRepository @Inject()(
   def get(id: String): Future[Option[Registration]] =
     collection
       .find(byId(id))
-      .headOption
+      .headOption()
       .map(_.map(_.registration))
 
   def set(userId: String, registration: Registration): Future[Boolean] = {

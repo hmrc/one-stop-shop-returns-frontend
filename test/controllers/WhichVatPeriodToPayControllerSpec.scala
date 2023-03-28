@@ -131,7 +131,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         status(result) mustEqual SEE_OTHER
 
         redirectLocation(result).value mustEqual routes.PaymentController.makePayment(
-          duePayments.head.period, duePayments.head.amountOwed.longValue() * 100).url
+          duePayments.head.period, duePayments.head.amountOwed.longValue * 100).url
 
       }
     }

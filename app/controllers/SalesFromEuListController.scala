@@ -62,7 +62,7 @@ class SalesFromEuListController @Inject()(
         data = getIncompleteFromEuSales _,
         onFailure = (_: Seq[SalesFromEuWithOptionalVat]) => {
         if(incompletePromptShown) {
-          firstIndexedIncompleteSaleFromEu match {
+          firstIndexedIncompleteSaleFromEu() match {
             case Some(incompleteSalesFromCountry) if incompleteSalesFromCountry._1.salesFromCountry.isEmpty =>
               Redirect(routes.CountryOfConsumptionFromEuController.onPageLoad( mode,  period, Index(incompleteSalesFromCountry._2), Index(0)))
             case Some(incompleteSalesFromCountry) =>
