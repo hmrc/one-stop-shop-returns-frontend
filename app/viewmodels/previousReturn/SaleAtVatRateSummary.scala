@@ -48,7 +48,7 @@ object SaleAtVatRateSummary extends CurrencyFormatter {
     TitledTable(
       title = messages("previousReturn.salesAtVatRate.title", salesFromCountry.name),
       list = TableViewModel(
-        rows = Seq(headers) ++ rows(salesToCountry)
+        rows = Seq(headers()) ++ rows(salesToCountry)
       )
     )
   }

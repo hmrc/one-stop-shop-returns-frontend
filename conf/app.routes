@@ -2,9 +2,9 @@
 
 ->          /hmrc-frontend                                                                                   hmrcfrontend.Routes
 
-GET         /                                                                                                controllers.IndexController.onPageLoad
+GET         /                                                                                                controllers.IndexController.onPageLoad()
 
-GET         /your-account                                                                                    controllers.YourAccountController.onPageLoad
+GET         /your-account                                                                                    controllers.YourAccountController.onPageLoad()
 
 GET         /make-payment/:period/:amountInPence                                                             controllers.PaymentController.makePayment(period: Period, amountInPence: Long)
 
@@ -12,13 +12,13 @@ GET         /assets/*file                                                       
 
 GET         /language/:lang                                                                                  controllers.LanguageSwitchController.switchToLanguage(lang: String)
 
-GET         /refresh-session                                                                                 controllers.KeepAliveController.keepAlive
+GET         /refresh-session                                                                                 controllers.KeepAliveController.keepAlive()
 
 GET         /there-is-a-problem                                                                              controllers.JourneyRecoveryController.onPageLoad(continueUrl: Option[RedirectUrl] ?= None)
 
-GET         /account/sign-out-survey                                                                         controllers.auth.AuthController.signOut
-GET         /account/sign-out                                                                                controllers.auth.AuthController.signOutNoSurvey
-GET         /account/signed-out                                                                              controllers.auth.SignedOutController.onPageLoad
+GET         /account/sign-out-survey                                                                         controllers.auth.AuthController.signOut()
+GET         /account/sign-out                                                                                controllers.auth.AuthController.signOutNoSurvey()
+GET         /account/signed-out                                                                              controllers.auth.SignedOutController.onPageLoad()
 
 GET         /cannot-use-not-registered                                                                       controllers.NotRegisteredController.onPageLoad()
 

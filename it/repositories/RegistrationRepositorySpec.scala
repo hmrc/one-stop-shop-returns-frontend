@@ -14,6 +14,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.{Clock, Instant, ZoneId}
+import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationRepositorySpec
@@ -44,7 +45,7 @@ class RegistrationRepositorySpec
 
     "must set the last updated time to `now` and save the registration" in {
 
-      val expectedResult = RegistrationWrapper(userId, registration, instant)
+      val expectedResult = RegistrationWrapper(userId, registration, Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
       val setResult = repository.set(userId, registration).futureValue
       val dbRecord  = find(Filters.equal("_id", userId)).futureValue.headOption.value
@@ -60,7 +61,7 @@ class RegistrationRepositorySpec
 
       "must get the record" in {
 
-        val wrapper = RegistrationWrapper(userId, registration, instant)
+        val wrapper = RegistrationWrapper(userId, registration, Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
         insert(wrapper).futureValue
 
         val result = repository.get(userId).futureValue

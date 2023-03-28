@@ -73,7 +73,7 @@ class UserAnswersRepository @Inject()(
         filter = byUserId(userId),
         update = Updates.set("lastUpdated", Instant.now(clock)),
       )
-      .toFuture
+      .toFuture()
       .map(_ => true)
 
   def get(userId: String, period: Period): Future[Option[UserAnswers]] =
@@ -81,7 +81,7 @@ class UserAnswersRepository @Inject()(
       _ =>
         collection
           .find(byUserIdAndPeriod(userId, period))
-          .headOption
+          .headOption()
     }
 
   def get(userId: String): Future[Seq[UserAnswers]] =
@@ -101,13 +101,13 @@ class UserAnswersRepository @Inject()(
         replacement = updatedAnswers,
         options     = ReplaceOptions().upsert(true)
       )
-      .toFuture
+      .toFuture()
       .map(_ => true)
   }
 
   def clear(userId: String): Future[Boolean] =
     collection
       .deleteOne(byUserId(userId))
-      .toFuture
+      .toFuture()
       .map(_ => true)
 }

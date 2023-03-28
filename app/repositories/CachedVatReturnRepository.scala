@@ -27,9 +27,10 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class CachedVatReturnRepository @Inject()(
                                          mongoComponent: MongoComponent,
                                          appConfig: FrontendAppConfig,
@@ -63,7 +64,7 @@ class CachedVatReturnRepository @Inject()(
   def get(id: String, period: Period): Future[Option[CachedVatReturnWrapper]] =
     collection
       .find(byId(id, period))
-      .headOption
+      .headOption()
 
   def set(userId: String, period: Period, vatReturn: Option[VatReturn]): Future[Boolean] = {
 
@@ -82,7 +83,7 @@ class CachedVatReturnRepository @Inject()(
   def clear(userId: String, period: Period): Future[Boolean] =
     collection
       .deleteOne(byId(userId, period))
-      .toFuture
+      .toFuture()
       .map(_ => true)
 }
 

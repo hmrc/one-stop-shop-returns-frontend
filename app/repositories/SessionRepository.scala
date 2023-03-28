@@ -60,7 +60,7 @@ class SessionRepository @Inject()(
         filter = byUserId(userId),
         update = Updates.set("lastUpdated", Instant.now(clock)),
       )
-      .toFuture
+      .toFuture()
       .map(_ => true)
 
   def get(userId: String): Future[Seq[SessionData]] =
@@ -80,14 +80,14 @@ class SessionRepository @Inject()(
         replacement = updatedSessionData,
         options     = ReplaceOptions().upsert(true)
       )
-      .toFuture
+      .toFuture()
       .map(_.wasAcknowledged())
   }
 
   def clear(userId: String): Future[Boolean] =
     collection
       .deleteOne(byUserId(userId))
-      .toFuture
+      .toFuture()
       .map(_ => true)
 
 }

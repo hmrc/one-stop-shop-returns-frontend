@@ -18,7 +18,6 @@ package controllers
 
 import controllers.actions._
 import forms.NetValueOfSalesFromNiFormProvider
-import logging.Logging
 import models.{Index, Mode, Period}
 import pages.NetValueOfSalesFromNiPage
 import play.api.i18n.I18nSupport
