@@ -21,7 +21,6 @@ import controllers.actions.AuthenticatedControllerComponents
 import models.Period
 import models.external._
 import play.api.mvc.{Action, AnyContent}
-import services.external.ExternalService
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -29,7 +28,6 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class TestOnlyController @Inject()(testConnector: TestOnlyConnector,
-                                   externalService: ExternalService,
                                cc: AuthenticatedControllerComponents)(implicit ec: ExecutionContext) extends FrontendController(cc) {
 
   def deleteAccounts(): Action[AnyContent] = Action.async { implicit request =>
@@ -42,42 +40,41 @@ class TestOnlyController @Inject()(testConnector: TestOnlyConnector,
 
   private val externalRequest = ExternalRequest("BTA", "/business-account")
 
-  def yourAccountFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth  {
+  def yourAccountFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
     implicit request =>
-      externalService.getExternalResponse(externalRequest, request.userId, YourAccount.name, language = lang) match {
-        case Right(response) => Redirect(response.redirectUrl)
-        case Left(_) => InternalServerError
-      }
-
-  }
-
-  def startReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth {
-    implicit request =>
-      externalService.getExternalResponse(externalRequest, request.userId, StartReturn.name, Some(period), language = lang) match {
+      testConnector.externalEntry(externalRequest, YourAccount.name, None, lang) map {
         case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
   }
 
-  def continueReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth {
+  def startReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
     implicit request =>
-      externalService.getExternalResponse(externalRequest, request.userId, ContinueReturn.name, Some(period), language = lang) match {
+      testConnector.externalEntry(externalRequest, StartReturn.name, Some(period), lang) map {
         case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
   }
 
-  def returnsHistoryFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth {
+  def continueReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
     implicit request =>
-      externalService.getExternalResponse(externalRequest, request.userId, ReturnsHistory.name, language = lang) match {
+      testConnector.externalEntry(externalRequest, ContinueReturn.name, Some(period), lang) map {
         case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
   }
 
-  def paymentsFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth  {
+  def returnsHistoryFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
     implicit request =>
-      externalService.getExternalResponse(externalRequest, request.userId, Payment.name, language = lang) match {
+      testConnector.externalEntry(externalRequest, ReturnsHistory.name, None, lang) map {
+        case Right(response) => Redirect(response.redirectUrl)
+        case Left(_) => InternalServerError
+      }
+  }
+
+  def paymentsFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
+    implicit request =>
+      testConnector.externalEntry(externalRequest, Payment.name, None, lang) map {
         case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }

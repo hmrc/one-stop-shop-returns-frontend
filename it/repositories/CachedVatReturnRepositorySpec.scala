@@ -27,7 +27,7 @@ class CachedVatReturnRepositorySpec
     with Generators {
 
   private val userId  = "id-123"
-  private val instant = Instant.now
+  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
   private val vatReturn: VatReturn = arbitrary[VatReturn].sample.value
   private val cachedVatReturnWrapper = CachedVatReturnWrapper(userId, vatReturn.period, Some(vatReturn), Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))

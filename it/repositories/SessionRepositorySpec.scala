@@ -26,7 +26,7 @@ class SessionRepositorySpec
     with MockitoSugar
     with Generators {
 
-  private val instant = Instant.now
+  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
   private val mockAppConfig = mock[FrontendAppConfig]

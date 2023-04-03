@@ -28,7 +28,7 @@ class RegistrationRepositorySpec
     with Generators {
 
   private val userId  = "id-123"
-  private val instant = Instant.now
+  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
   private val registration: Registration = arbitrary[Registration].sample.value
 

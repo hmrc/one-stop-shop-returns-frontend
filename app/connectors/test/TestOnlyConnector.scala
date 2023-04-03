@@ -17,8 +17,11 @@
 package connectors.test
 
 import config.Service
+import connectors.test.TestOnlyExternalResponseHttpParser.ExternalResponseResponse
+import connectors.test.TestOnlyExternalResponseHttpParser.ExternalResponseReads
+import models.external.ExternalRequest
+import models.Period
 import play.api.Configuration
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.Inject
@@ -32,5 +35,21 @@ class TestOnlyConnector @Inject()(
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
   lazy val url = s"${baseUrl}/test-only/delete-accounts"
 
-  def dropAccounts()(implicit hc: HeaderCarrier): Future[HttpResponse] = httpClient.DELETE(url)
+  def dropAccounts()(implicit hc: HeaderCarrier): Future[HttpResponse] = httpClient.DELETE[HttpResponse](url)
+
+  def externalEntry(externalRequest: ExternalRequest, endpointName: String, maybePeriod: Option[Period], maybeLang: Option[String])
+                   (implicit hc: HeaderCarrier): Future[ExternalResponseResponse] = {
+    val url =
+      (maybePeriod, maybeLang) match {
+        case (Some(period), Some(lang)) =>
+          s"$baseUrl/external-entry/$endpointName?period=$period&lang=$lang"
+        case (Some(period), None) =>
+          s"$baseUrl/external-entry/$endpointName?period=$period"
+        case (None, Some(lang)) =>
+          s"$baseUrl/external-entry/$endpointName?lang=$lang"
+        case _ =>
+          s"$baseUrl/external-entry/$endpointName"
+      }
+    httpClient.POST[ExternalRequest, ExternalResponseResponse](url, externalRequest)
+  }
 }
