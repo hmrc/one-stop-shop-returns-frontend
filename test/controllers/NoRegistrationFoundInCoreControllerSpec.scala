@@ -17,15 +17,14 @@
 package controllers
 
 import base.SpecBase
-import models.SessionData
+import connectors.VatReturnConnector
+import models.external.ExternalEntryUrl
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import queries.external.ExternalReturnUrlQuery
-import repositories.SessionRepository
 import views.html.NoRegistrationFoundInCoreView
 
 import scala.concurrent.Future
@@ -35,11 +34,11 @@ class NoRegistrationFoundInCoreControllerSpec extends SpecBase {
   "NoRegistrationFoundInCore Controller" - {
 
       "must return OK and the correct view for a GET" in {
-        val sessionRepository = mock[SessionRepository]
-        when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+        val vatReturnConnector = mock[VatReturnConnector]
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
         val application = applicationBuilder(userAnswers = None)
-          .overrides(inject.bind[SessionRepository].toInstance(sessionRepository))
+          .overrides(inject.bind[VatReturnConnector].toInstance(vatReturnConnector))
           .build()
 
         running(application) {
@@ -55,11 +54,11 @@ class NoRegistrationFoundInCoreControllerSpec extends SpecBase {
       }
 
     "must return OK and the correct view for a GET and add the external backToYourAccount url that has been saved" in {
-      val sessionRepository = mock[SessionRepository]
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, "example").get))
+      val vatReturnConnector = mock[VatReturnConnector]
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
 
       val application = applicationBuilder(userAnswers = None)
-        .overrides(inject.bind[SessionRepository].toInstance(sessionRepository))
+        .overrides(inject.bind[VatReturnConnector].toInstance(vatReturnConnector))
         .build()
 
       running(application) {

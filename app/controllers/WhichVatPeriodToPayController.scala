@@ -17,6 +17,7 @@
 package controllers
 
 import connectors.financialdata.FinancialDataConnector
+import connectors.VatReturnConnector
 import controllers.actions._
 import forms.WhichVatPeriodToPayFormProvider
 import models.Period
@@ -24,8 +25,6 @@ import models.financialdata.{Payment, PaymentStatus}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import queries.external.ExternalReturnUrlQuery
-import repositories.SessionRepository
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.payments.{NoPaymentsView, WhichVatPeriodToPayView}
@@ -36,7 +35,7 @@ import scala.concurrent.ExecutionContext
 class WhichVatPeriodToPayController @Inject()(
                                                cc: AuthenticatedControllerComponents,
                                                financialDataConnector: FinancialDataConnector,
-                                               sessionRepository: SessionRepository,
+                                               vatReturnConnector: VatReturnConnector,
                                                formProvider: WhichVatPeriodToPayFormProvider,
                                                view: WhichVatPeriodToPayView,
                                                viewNoPayment: NoPaymentsView
@@ -49,14 +48,14 @@ class WhichVatPeriodToPayController @Inject()(
     implicit request =>
       (for {
         financialDataResponse <- financialDataConnector.getCurrentPayments(request.vrn)
-        sessionData <- sessionRepository.get(request.userId)
+        maybeSavedReturnUrl <- vatReturnConnector.getSavedExternalEntry()
       } yield {
         financialDataResponse match {
           case Right(payments) =>
             val allPayments = payments.overduePayments ++ payments.duePayments
             val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
             if (allPayments.isEmpty) {
-              val backToYourAccountUrl = sessionData.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
+              val backToYourAccountUrl = maybeSavedReturnUrl.fold(_ => None, _.url)
                 .getOrElse(routes.YourAccountController.onPageLoad().url)
               Ok(viewNoPayment(backToYourAccountUrl))
             } else if (allPayments.size == 1) {
