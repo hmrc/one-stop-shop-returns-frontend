@@ -24,8 +24,6 @@ import models.{Period, ReturnReference}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.EmailConfirmationQuery
-import queries.external.ExternalReturnUrlQuery
-import repositories.SessionRepository
 import services.VatReturnSalesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CurrencyFormatter._
@@ -41,7 +39,6 @@ class ReturnSubmittedController @Inject()(
                                            vatReturnConnector: VatReturnConnector,
                                            correctionConnector: CorrectionConnector,
                                            vatReturnSalesService: VatReturnSalesService,
-                                           sessionRepository: SessionRepository,
                                            clock: Clock
                                          )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
@@ -54,9 +51,9 @@ class ReturnSubmittedController @Inject()(
       (for {
         vatReturnResponse <- vatReturnConnector.get(period)
         correctionResponse <- correctionConnector.get(period)
-        sessionData <- sessionRepository.get(request.userId)
-       } yield (vatReturnResponse, correctionResponse, sessionData)).flatMap {
-        case (Right(vatReturn), correctionResponse, externalUrl) =>
+        maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
+       } yield (vatReturnResponse, correctionResponse, maybeSavedExternalUrl)).flatMap {
+        case (Right(vatReturn), correctionResponse, maybeSavedExternalUrl) =>
 
           val maybeCorrectionPayload =
             correctionResponse match {
@@ -72,7 +69,7 @@ class ReturnSubmittedController @Inject()(
           val amountToPayInPence: Long = (vatOwed * 100).toLong
           val overdueReturn = period.paymentDeadline.isBefore(LocalDate.now(clock))
 
-          val backToYourAccountUrl = externalUrl.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
+          val backToYourAccountUrl = maybeSavedExternalUrl.fold(_ => None, _.url)
 
           for {
             _ <- cc.sessionRepository.clear(request.userId)

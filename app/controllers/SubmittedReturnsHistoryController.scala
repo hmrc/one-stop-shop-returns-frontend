@@ -17,14 +17,13 @@
 package controllers
 
 import connectors.financialdata.FinancialDataConnector
+import connectors.VatReturnConnector
 import controllers.actions._
 import logging.Logging
 import models.financialdata.VatReturnWithFinancialData
 import models.responses.ErrorResponse
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.external.ExternalReturnUrlQuery
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmittedReturnsHistoryView
 
@@ -35,7 +34,7 @@ class SubmittedReturnsHistoryController @Inject()(
                                                    cc: AuthenticatedControllerComponents,
                                                    view: SubmittedReturnsHistoryView,
                                                    financialDataConnector: FinancialDataConnector,
-                                                   sessionRepository: SessionRepository
+                                                   vatReturnConnector: VatReturnConnector
                                                  )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -46,10 +45,10 @@ class SubmittedReturnsHistoryController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       for{
-        sessionData <- sessionRepository.get(request.userId)
+        maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
         financialDataResponse <- financialDataConnector.getVatReturnWithFinancialData(request.registration.commencementDate)
       } yield {
-        val externalUrl = sessionData.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
+        val externalUrl = maybeSavedExternalUrl.fold(_ => None, _.url)
         financialDataResponse match {
           case Right(vatReturnsWithFinancialData) =>
             val displayBanner = {

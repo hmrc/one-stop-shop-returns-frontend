@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package queries.external
+package models.external
 
-import play.api.libs.json.JsPath
+import play.api.libs.json._
 
-object ExternalReturnUrlQuery {
- def path = (JsPath \ "returnUrl")
+case class ExternalEntryUrl(url: Option[String])
+
+object ExternalEntryUrl {
+  implicit val format: OFormat[ExternalEntryUrl] = Json.format[ExternalEntryUrl]
 }

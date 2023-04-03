@@ -18,8 +18,9 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{SaveForLaterConnector, SavedUserAnswers}
+import connectors.{SavedUserAnswers, SaveForLaterConnector, VatReturnConnector}
 import models.SessionData
+import models.external.ExternalEntryUrl
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -30,8 +31,7 @@ import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import queries.external.ExternalReturnUrlQuery
-import repositories.{SessionRepository, UserAnswersRepository}
+import repositories.UserAnswersRepository
 import views.html.SavedProgressView
 
 import java.time.format.DateTimeFormatter
@@ -53,7 +53,7 @@ class SavedProgressControllerSpec extends SpecBase {
       val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
       val mockSaveForLaterConnector = mock[SaveForLaterConnector]
       val mockUARepository = mock[UserAnswersRepository]
-      val mockSessionRepository = mock[SessionRepository]
+      val mockVatReturnConnector = mock[VatReturnConnector]
 
       val savedAnswers = SavedUserAnswers(
         vrn,
@@ -67,12 +67,13 @@ class SavedProgressControllerSpec extends SpecBase {
       when(mockUARepository.clear(any())) thenReturn Future.successful(true)
       when(mockUARepository.set(any())) thenReturn Future.successful(true)
       when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
-      when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
         .overrides(
           bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
           bind[UserAnswersRepository].toInstance(mockUARepository),
-          bind[SessionRepository].toInstance(mockSessionRepository)
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector)
         ).build()
 
       running(app) {
@@ -101,7 +102,7 @@ class SavedProgressControllerSpec extends SpecBase {
       val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
       val mockSaveForLaterConnector = mock[SaveForLaterConnector]
       val mockUARepository = mock[UserAnswersRepository]
-      val mockSessionRepository = mock[SessionRepository]
+      val mockVatReturnConnector = mock[VatReturnConnector]
 
       val savedAnswers = SavedUserAnswers(
         vrn,
@@ -116,12 +117,13 @@ class SavedProgressControllerSpec extends SpecBase {
       when(mockUARepository.clear(any())) thenReturn Future.successful(true)
       when(mockUARepository.set(any())) thenReturn Future.successful(true)
       when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
-      when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, "example").get))
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
+
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
         .overrides(
           bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
           bind[UserAnswersRepository].toInstance(mockUARepository),
-          bind[SessionRepository].toInstance(mockSessionRepository)
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector)
         ).build()
 
       running(app) {
@@ -143,17 +145,17 @@ class SavedProgressControllerSpec extends SpecBase {
 
       val mockSaveForLaterConnector = mock[SaveForLaterConnector]
       val mockUARepository = mock[UserAnswersRepository]
-      val mockSessionRepository = mock[SessionRepository]
+      val mockVatReturnConnector = mock[VatReturnConnector]
 
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
       when(mockUARepository.clear(any())) thenReturn Future.successful(false)
-      when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
               .overrides(
                 bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
                 bind[UserAnswersRepository].toInstance(mockUARepository),
-                bind[SessionRepository].toInstance(mockSessionRepository)
+                bind[VatReturnConnector].toInstance(mockVatReturnConnector)
               ).build()
 
       running(app) {
@@ -172,17 +174,17 @@ class SavedProgressControllerSpec extends SpecBase {
 
       val mockSaveForLaterConnector = mock[SaveForLaterConnector]
       val mockUARepository = mock[UserAnswersRepository]
-      val mockSessionRepository = mock[SessionRepository]
+      val mockVatReturnConnector = mock[VatReturnConnector]
 
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
       when(mockUARepository.clear(any())) thenReturn Future.successful(false)
-      when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, "example").get))
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
 
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
               .overrides(
                 bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
                 bind[UserAnswersRepository].toInstance(mockUARepository),
-                bind[SessionRepository].toInstance(mockSessionRepository)
+                bind[VatReturnConnector].toInstance(mockVatReturnConnector)
               ).build()
 
       running(app) {
@@ -201,17 +203,17 @@ class SavedProgressControllerSpec extends SpecBase {
 
       val mockSaveForLaterConnector = mock[SaveForLaterConnector]
       val mockUARepository = mock[UserAnswersRepository]
-      val mockSessionRepository = mock[SessionRepository]
+      val mockVatReturnConnector = mock[VatReturnConnector]
 
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
       when(mockUARepository.clear(any())) thenReturn Future.successful(false)
-      when(mockSessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
           bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
           bind[UserAnswersRepository].toInstance(mockUARepository),
-          bind[SessionRepository].toInstance(mockSessionRepository)
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector)
         ).build()
 
       running(app) {

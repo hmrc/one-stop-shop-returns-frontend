@@ -17,6 +17,8 @@
 package connectors
 
 import config.Service
+import connectors.ExternalEntryUrlHttpParser.ExternalEntryUrlResponse
+import connectors.ExternalEntryUrlHttpParser._
 import connectors.VatReturnHttpParser._
 import connectors.VatReturnWithCorrectionHttpParser._
 import models.Period
@@ -48,5 +50,9 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
     val url = s"$baseUrl/vat-returns/period/${period.toString}"
 
     httpClient.GET[VatReturnResponse](url)
+  }
+
+  def getSavedExternalEntry()(implicit hc: HeaderCarrier): Future[ExternalEntryUrlResponse] = {
+    httpClient.GET[ExternalEntryUrlResponse](s"$baseUrl/external-entry")
   }
 }

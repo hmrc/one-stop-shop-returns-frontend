@@ -23,7 +23,8 @@ import models.Quarter.{Q1, Q2}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.financialdata.{Charge, VatReturnWithFinancialData}
 import models.responses.UnexpectedResponseStatus
-import models.{Period, SessionData}
+import models.Period
+import models.external.ExternalEntryUrl
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -33,8 +34,6 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import queries.external.ExternalReturnUrlQuery
-import repositories.SessionRepository
 import uk.gov.hmrc.domain.Vrn
 import views.html.SubmittedReturnsHistoryView
 
@@ -45,7 +44,6 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
   private val vatReturnConnector = mock[VatReturnConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
-  private val sessionRepository = mock[SessionRepository]
 
   private val period1 = Period(2021, Q1)
   private val period2 = Period(2021, Q2)
@@ -58,7 +56,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   private val vatReturnWithFinancialData = VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, None)
 
   override def beforeEach(): Unit = {
-    Mockito.reset(vatReturnConnector, sessionRepository)
+    Mockito.reset(vatReturnConnector)
     super.beforeEach()
   }
 
@@ -69,11 +67,11 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SessionRepository].toInstance(sessionRepository)
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
@@ -92,11 +90,11 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SessionRepository].toInstance(sessionRepository)
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq.empty))
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -117,11 +115,11 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SessionRepository].toInstance(sessionRepository)
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -136,11 +134,11 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SessionRepository].toInstance(sessionRepository)
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -156,14 +154,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SessionRepository].toInstance(sessionRepository)
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
           vatReturnWithFinancialData.copy(charge = None, vatOwed = 66666)
         ))))
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -184,14 +182,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SessionRepository].toInstance(sessionRepository)
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
           vatReturnWithFinancialData.copy(charge = None, vatOwed = 0)
         ))))
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -214,7 +212,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SessionRepository].toInstance(sessionRepository)
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
@@ -222,7 +220,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           vatReturnWithFinancialData,
           VatReturnWithFinancialData(completeVatReturn2, Some(charge2), vatOwed2, None)
         ))))
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -247,7 +245,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SessionRepository].toInstance(sessionRepository)
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       val completedCorrectionPayload: CorrectionPayload =
@@ -269,7 +267,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       )
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -289,7 +287,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SessionRepository].toInstance(sessionRepository)
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       val completedCorrectionPayload: CorrectionPayload =
@@ -311,7 +309,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       )
 
       when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
-      when(sessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, "example").get))
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)

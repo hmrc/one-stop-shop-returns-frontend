@@ -16,11 +16,11 @@
 
 package controllers
 
+import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
+import logging.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.external.ExternalReturnUrlQuery
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ReceivedErrorFromCoreView
 
@@ -30,19 +30,20 @@ import scala.concurrent.ExecutionContext
 class ReceivedErrorFromCoreController @Inject()(
                                  cc: AuthenticatedControllerComponents,
                                  view: ReceivedErrorFromCoreView,
-                                 sessionRepository: SessionRepository
+                                 vatReturnConnector: VatReturnConnector
                                ) (implicit ec: ExecutionContext)
-  extends FrontendBaseController with I18nSupport {
+  extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      for{
-        sessionData <- sessionRepository.get(request.userId)
-      } yield {
-        val externalUrl = sessionData.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
-        Ok(view(externalUrl))
+      vatReturnConnector.getSavedExternalEntry().map {
+        case Right(response) =>
+          Ok(view(response.url))
+        case Left(e) =>
+          logger.warn(s"There was an error when getting saved external entry url ${e.body} but we didn't block the user from continuing the journey")
+          Ok(view(None))
       }
   }
 }

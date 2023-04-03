@@ -19,9 +19,11 @@ package controllers
 import base.SpecBase
 import connectors.financialdata.CurrentPaymentsHttpParser.CurrentPaymentsResponse
 import connectors.financialdata.FinancialDataConnector
+import connectors.VatReturnConnector
+import models.{Period, Quarter}
+import models.external.ExternalEntryUrl
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.InvalidJson
-import models.{Period, Quarter, SessionData}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -29,8 +31,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import queries.external.ExternalReturnUrlQuery
-import repositories.SessionRepository
 import uk.gov.hmrc.http.GatewayTimeoutException
 import views.html.payments.NoPaymentsView
 
@@ -46,18 +46,18 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "when there is no periods must display no payments view" - {
       "with YourAccount url if no external url saved in session" in {
         val financialDataConnector = mock[FinancialDataConnector]
-        val sessionRepository = mock[SessionRepository]
+        val vatReturnConnector = mock[VatReturnConnector]
 
         val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
           .overrides(
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository)
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
           ).build()
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn Future.successful(Seq.empty)
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
         running(application) {
           val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -74,19 +74,19 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       "with external url if an external url is saved in session" in {
         val financialDataConnector = mock[FinancialDataConnector]
-        val sessionRepository = mock[SessionRepository]
+        val vatReturnConnector = mock[VatReturnConnector]
         val externalUrl = "testUrl"
 
         val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
           .overrides(
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[SessionRepository].toInstance(sessionRepository)
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
           ).build()
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn Future.successful(Seq(SessionData("id").set(ExternalReturnUrlQuery.path, externalUrl).get))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some(externalUrl))))
 
         running(application) {
           val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -105,10 +105,12 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "when there is 1 period must redirect to payment controller " in {
 
       val financialDataConnector = mock[FinancialDataConnector]
+      val vatReturnConnector = mock[VatReturnConnector]
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       val duePayments = Seq(
@@ -122,6 +124,8 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
         Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
+
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -139,10 +143,12 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "if all statuses are UNPAID or PARTIAL" - {
 
       val financialDataConnector = mock[FinancialDataConnector]
+      val vatReturnConnector = mock[VatReturnConnector]
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       val duePayments = Seq(
@@ -162,6 +168,8 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
         Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
+
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -191,10 +199,12 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "if any statuses are UNKNOWN" - {
 
       val financialDataConnector = mock[FinancialDataConnector]
+      val vatReturnConnector = mock[VatReturnConnector]
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       val duePayments = Seq(
@@ -220,6 +230,8 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
         Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
+
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -250,10 +262,12 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to Journey Recovery if call to Financial Controller fails" in {
 
       val financialDataConnector = mock[FinancialDataConnector]
+      val vatReturnConnector = mock[VatReturnConnector]
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       val msg = "GET failed. Caused by: TimeoutException"
@@ -274,10 +288,12 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to Journey Recovery if Financial Data Controller receives error from backend" in {
 
       val financialDataConnector = mock[FinancialDataConnector]
+      val vatReturnConnector = mock[VatReturnConnector]
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         )
         .build()
 
@@ -285,6 +301,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.successful[CurrentPaymentsResponse](Left(InvalidJson))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
         val result = route(application, request).value
 
@@ -300,10 +317,12 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "when there is 1 period must redirect to payment controller " in {
 
       val financialDataConnector = mock[FinancialDataConnector]
+      val vatReturnConnector = mock[VatReturnConnector]
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       val amountOwed = 200.22
@@ -319,6 +338,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
         Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
         val request = FakeRequest(POST, whichVatPeriodToPayRoute)
@@ -336,10 +356,12 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "when there is more than one period must redirect to payment controller and selected period" in {
 
       val financialDataConnector = mock[FinancialDataConnector]
+      val vatReturnConnector = mock[VatReturnConnector]
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       val duePayments = Seq(
@@ -381,10 +403,12 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to Journey Recovery if call to Financial Controller fails" in {
 
       val financialDataConnector = mock[FinancialDataConnector]
+      val vatReturnConnector = mock[VatReturnConnector]
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
 
       val duePayments = Seq(
@@ -427,12 +451,16 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to Journey Recovery if Financial Data Controller receives error from backend" in {
 
       val financialDataConnector = mock[FinancialDataConnector]
+      val vatReturnConnector = mock[VatReturnConnector]
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[VatReturnConnector].toInstance(vatReturnConnector)
         )
         .build()
+
+      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
 

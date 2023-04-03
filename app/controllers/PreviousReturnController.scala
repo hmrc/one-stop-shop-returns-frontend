@@ -25,8 +25,6 @@ import models.Period
 import models.responses.{NotFound => NotFoundResponse}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.external.ExternalReturnUrlQuery
-import repositories.SessionRepository
 import services.VatReturnSalesService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.govuk.summarylist._
@@ -44,8 +42,7 @@ class PreviousReturnController @Inject()(
                                           vatReturnConnector: VatReturnConnector,
                                           correctionConnector: CorrectionConnector,
                                           vatReturnSalesService: VatReturnSalesService,
-                                          financialDataConnector: FinancialDataConnector,
-                                          sessionRepository: SessionRepository
+                                          financialDataConnector: FinancialDataConnector
                                         )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -57,10 +54,10 @@ class PreviousReturnController @Inject()(
         vatReturnResult <- vatReturnConnector.get(period)
         getChargeResult <- financialDataConnector.getCharge(period)
         correctionPayload <- correctionConnector.get(period)
-        sessionData <- sessionRepository.get(request.userId)
-      } yield (vatReturnResult, getChargeResult, correctionPayload, sessionData)
+        maybeExternalUrl <- vatReturnConnector.getSavedExternalEntry()
+      } yield (vatReturnResult, getChargeResult, correctionPayload, maybeExternalUrl)
     }.map {
-      case (Right(vatReturn), chargeResponse, correctionPayload, sessionData) =>
+      case (Right(vatReturn), chargeResponse, correctionPayload, maybeExternalUrl) =>
         val maybeCorrectionPayload =
           correctionPayload match {
             case Right(correction) => Some(correction)
@@ -86,7 +83,7 @@ class PreviousReturnController @Inject()(
 
         val hasCorrections = maybeCorrectionPayload.exists(_.corrections.nonEmpty)
         val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOwed, hasCorrections))
-        val externalUrl = sessionData.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
+        val externalUrl = maybeExternalUrl.fold(_ => None, _.url)
         Ok(view(
           vatReturn = vatReturn,
           mainList = mainList,
@@ -101,8 +98,8 @@ class PreviousReturnController @Inject()(
           externalUrl = externalUrl
         ))
 
-      case (Left(NotFoundResponse), _, _, sessionData) =>
-        val externalUrl = sessionData.headOption.flatMap(_.get[String](ExternalReturnUrlQuery.path))
+      case (Left(NotFoundResponse), _, _, maybeExternalUrl) =>
+        val externalUrl = maybeExternalUrl.fold(_ => None, _.url)
         Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url))
       case (Left(e), _, _, _) =>
         logger.error(s"Unexpected result from api while getting return: $e")
