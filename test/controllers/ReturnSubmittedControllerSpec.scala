@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
-import models.{ReturnReference, SessionData}
+import models.ReturnReference
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.external.ExternalEntryUrl
