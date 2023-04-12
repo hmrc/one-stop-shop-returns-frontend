@@ -62,7 +62,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val s4lConnector = mock[SaveForLaterConnector]
 
   override def beforeEach(): Unit = {
-    Mockito.reset(vatReturnConnector, correctionConnector, vatReturnService, auditService, salesAtVatRateService, emailService, s4lConnector)
+    Mockito.reset(vatReturnConnector)
+    Mockito.reset(correctionConnector)
+    Mockito.reset(vatReturnService)
+    Mockito.reset(auditService)
+    Mockito.reset(salesAtVatRateService)
+    Mockito.reset(emailService)
+    Mockito.reset(s4lConnector)
     super.beforeEach()
   }
 

@@ -50,7 +50,8 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
 
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockConnector, mockRepository)
+    Mockito.reset(mockConnector)
+    Mockito.reset(mockRepository)
   }
 
   ".filter" - {

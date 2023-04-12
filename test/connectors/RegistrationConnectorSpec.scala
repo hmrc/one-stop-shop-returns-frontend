@@ -23,6 +23,7 @@ import models.registration.Registration
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
+import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
@@ -77,5 +78,26 @@ class RegistrationConnectorSpec
         result must not be defined
       }
     }
+  }
+
+  ".enrolUser" - {
+
+    "must return 204 when successful response" in {
+
+      val url = s"/one-stop-shop-registration/confirm-enrolment"
+      val app = application
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(noContent()))
+
+        val result = connector.enrolUser().futureValue
+
+        result.status mustEqual NO_CONTENT
+      }
+
+    }
+
   }
 }

@@ -19,7 +19,6 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{SavedUserAnswers, SaveForLaterConnector, VatReturnConnector}
-import models.SessionData
 import models.external.ExternalEntryUrl
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
@@ -34,8 +33,8 @@ import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import views.html.SavedProgressView
 
-import java.time.format.DateTimeFormatter
 import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
 class SavedProgressControllerSpec extends SpecBase {

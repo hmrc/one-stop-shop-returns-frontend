@@ -19,7 +19,7 @@ package connectors
 import config.Service
 import models.registration.Registration
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import javax.inject.Inject
@@ -32,4 +32,8 @@ class RegistrationConnector @Inject()(config: Configuration, httpClient: HttpCli
 
   def get()(implicit hc: HeaderCarrier): Future[Option[Registration]] =
     httpClient.GET[Option[Registration]](s"$baseUrl/registration")
+
+  def enrolUser()(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    httpClient.POSTEmpty[HttpResponse](s"$baseUrl/confirm-enrolment")
+
 }

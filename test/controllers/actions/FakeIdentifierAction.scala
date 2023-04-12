@@ -17,6 +17,7 @@
 package controllers.actions
 
 import config.FrontendAppConfig
+import connectors.RegistrationConnector
 import models.requests.IdentifierRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc._
@@ -31,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class FakeIdentifierAction extends IdentifierAction(
   mock[AuthConnector],
   mock[AuditService],
+  mock[RegistrationConnector],
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
 

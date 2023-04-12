@@ -18,9 +18,12 @@ package controllers.actions
 
 import com.google.inject.Inject
 import config.FrontendAppConfig
+import connectors.RegistrationConnector
 import controllers.routes
+import logging.Logging
 import models.audit.LoginAuditModel
 import models.requests.IdentifierRequest
+import play.api.http.Status.NO_CONTENT
 import play.api.mvc.Results._
 import play.api.mvc._
 import services.AuditService
@@ -38,11 +41,12 @@ import scala.concurrent.{ExecutionContext, Future}
 class IdentifierAction @Inject()(
                                   override val authConnector: AuthConnector,
                                   auditService: AuditService,
+                                  registrationConnector: RegistrationConnector,
                                   config: FrontendAppConfig
                                 )
                                 (implicit val executionContext: ExecutionContext)
   extends ActionRefiner[Request, IdentifierRequest]
-    with AuthorisedFunctions {
+    with AuthorisedFunctions with Logging {
 
   //noinspection ScalaStyle
   override def refine[A](request: Request[A]): Future[Either[Result, IdentifierRequest[A]]] = {
@@ -61,24 +65,28 @@ class IdentifierAction @Inject()(
                 Retrievals.credentialRole ) {
 
       case Some(credentials) ~ enrolments ~ Some(Organisation) ~ Some(groupId) ~ _ ~ Some(credentialRole) if credentialRole == User =>
-        (findVrnFromEnrolments(enrolments), hasOssEnrolment(enrolments)) match {
-          case (Some(vrn), true) =>
-            val identifierRequest = IdentifierRequest(request, credentials, vrn)
-            auditLogin(groupId, identifierRequest)
-            Right(identifierRequest).toFuture
-          case _     => throw InsufficientEnrolments()
+        (findVrnFromEnrolments(enrolments), ossEnrolmentEnabled(), hasOssEnrolment(enrolments)) match {
+          case (Some(vrn), true, true) =>
+            getSuccessfulResponse(request, credentials, vrn, groupId)
+          case (Some(vrn), false, _) =>
+            getSuccessfulResponse(request, credentials, vrn, groupId)
+          case (Some(vrn), true, false) =>
+            enrolUserIfRegistrationExists(request, credentials, vrn, groupId)
+          case _ => throw InsufficientEnrolments()
         }
 
       case _ ~ _ ~ Some(Organisation) ~ _ ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
         throw UnsupportedCredentialRole()
 
       case Some(credentials) ~ enrolments ~ Some(Individual) ~ Some(groupId) ~ confidence ~ _ =>
-        (findVrnFromEnrolments(enrolments), hasOssEnrolment(enrolments)) match {
-          case (Some(vrn), true) =>
+        (findVrnFromEnrolments(enrolments), ossEnrolmentEnabled(), hasOssEnrolment(enrolments)) match {
+          case (Some(vrn), true, true) =>
+            checkConfidenceAndGetResponse(request, credentials, vrn, groupId, confidence)
+          case (Some(vrn), false, _) =>
+            checkConfidenceAndGetResponse(request, credentials, vrn, groupId, confidence)
+          case (Some(vrn), true, false) =>
             if (confidence >= ConfidenceLevel.L200) {
-              val identifierRequest = IdentifierRequest(request, credentials, vrn)
-              auditLogin(groupId, identifierRequest)
-              Right(identifierRequest).toFuture
+              enrolUserIfRegistrationExists(request, credentials, vrn, groupId)
             } else {
               throw InsufficientConfidenceLevel()
             }
@@ -97,8 +105,49 @@ class IdentifierAction @Inject()(
     }
   }
 
+  private def enrolUserIfRegistrationExists[A](request: Request[A], credentials: Credentials, vrn: Vrn, groupId: String)
+                                              (implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
+
+    registrationConnector.get().flatMap {
+      case Some(_) =>
+        logger.info(s"Registration found for user ${vrn.vrn} but no enrolment, attempting enrolment")
+        registrationConnector.enrolUser().flatMap { response =>
+          response.status match {
+            case NO_CONTENT =>
+              logger.info(s"Successfully retrospectively enrolled user ${vrn.vrn}")
+              getSuccessfulResponse(request, credentials, vrn, groupId)
+            case status =>
+              logger.error(s"Failure enrolling an existing user, got status $status from registration service")
+              throw new IllegalStateException("Existing user didn't have enrolment and was unable to enrol user")
+          }
+        }
+      case _ => throw InsufficientEnrolments()
+    }
+  }
+
+
+  private def getSuccessfulResponse[A](request: Request[A], credentials: Credentials, vrn: Vrn, groupId: String)
+                                      (implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
+    val identifierRequest = IdentifierRequest(request, credentials, vrn)
+    auditLogin(groupId, identifierRequest)
+    Right(identifierRequest).toFuture
+  }
+
+  private def checkConfidenceAndGetResponse[A](request: Request[A], credentials: Credentials, vrn: Vrn, groupId: String, confidence: ConfidenceLevel)
+                                              (implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
+    if (confidence >= ConfidenceLevel.L200) {
+      getSuccessfulResponse(request, credentials, vrn, groupId)
+    } else {
+      throw InsufficientConfidenceLevel()
+    }
+  }
+
+  private def ossEnrolmentEnabled(): Boolean = {
+    config.ossEnrolmentEnabled
+  }
+
   private def hasOssEnrolment(enrolments: Enrolments): Boolean = {
-    !config.ossEnrolmentEnabled || enrolments.enrolments.exists(_.key == config.ossEnrolment)
+     enrolments.enrolments.exists(_.key == config.ossEnrolment)
   }
 
   private def findVrnFromEnrolments(enrolments: Enrolments): Option[Vrn] =
