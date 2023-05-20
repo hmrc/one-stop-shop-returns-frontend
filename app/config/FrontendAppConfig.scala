@@ -66,4 +66,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val auditLogins: Boolean = configuration.get[Boolean]("features.auditLogins")
 
+  val changeYourRegistrationUrl: String = configuration.get[String]("urls.changeYourRegistration")
+
 }

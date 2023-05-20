@@ -77,8 +77,9 @@ index.payment.dueAmountMaybeOwed = You may still owe VAT for {0}. You must pay t
 index.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}, which was due by {2}.
 index.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, which was due by {1}.
 
-index.history = Details
-index.history.previousReturns = View submitted returns
+index.details = Details
+index.details.previousReturns = View submitted returns
+index.details.changeYourRegistration = Change your registration
 index.nextPeriod = You can complete your {0} return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service

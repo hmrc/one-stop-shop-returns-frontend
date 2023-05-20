@@ -121,7 +121,8 @@ class YourAccountController @Inject()(
         request.registration.excludedTrader,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
-        frontendAppConfig.exclusionsEnabled
+        frontendAppConfig.exclusionsEnabled,
+        frontendAppConfig.changeYourRegistrationUrl
       ))
     }
   }
@@ -147,7 +148,8 @@ class YourAccountController @Inject()(
         request.registration.excludedTrader,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
-        frontendAppConfig.exclusionsEnabled
+        frontendAppConfig.exclusionsEnabled,
+        frontendAppConfig.changeYourRegistrationUrl
       ))
     }
   }
