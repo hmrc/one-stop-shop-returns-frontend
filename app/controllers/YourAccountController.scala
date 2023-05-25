@@ -16,24 +16,26 @@
 
 package controllers
 
-import connectors.financialdata.FinancialDataConnector
+import config.FrontendAppConfig
 import connectors.{ReturnStatusConnector, SaveForLaterConnector}
+import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.financialdata.{CurrentPayments, PaymentStatus}
-import models.requests.RegistrationRequest
 import models.{Period, UserAnswers}
+import models.financialdata.{CurrentPayments, PaymentStatus}
+import models.registration.RegistrationWithFixedEstablishment
+import models.requests.RegistrationRequest
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.UserAnswersRepository
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount._
 import views.html.IndexView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import config.FrontendAppConfig
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -51,22 +53,34 @@ class YourAccountController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
 
-      results.flatMap {
-        case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
-          prepareViewWithFinancialData(availablePeriodsWithStatus.returns, vatReturnsWithFinancialData, answers.map(_.period))
-        case (Right(availablePeriodsWithStatus), Left(error), answers) =>
-          logger.warn(s"There was an error with getting payment information $error")
-          prepareViewWithNoFinancialData(availablePeriodsWithStatus.returns, answers.map(_.period))
-        case (Left(error), Left(error2), _) =>
-          logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
-          throw new Exception(error.toString)
-        case (Left(error), _, _) =>
-          logger.error(s"there was an error during period with status $error")
-          throw new Exception(error.toString)
+      if(request.registration.vatDetails.partOfVatGroup && hasFixedEstablishment()) {
+        Redirect(frontendAppConfig.deleteAllFixedEstablishmentUrl).toFuture
+      } else {
+        val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
+
+        results.flatMap {
+          case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
+            prepareViewWithFinancialData(availablePeriodsWithStatus.returns, vatReturnsWithFinancialData, answers.map(_.period))
+          case (Right(availablePeriodsWithStatus), Left(error), answers) =>
+            logger.warn(s"There was an error with getting payment information $error")
+            prepareViewWithNoFinancialData(availablePeriodsWithStatus.returns, answers.map(_.period))
+          case (Left(error), Left(error2), _) =>
+            logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
+            throw new Exception(error.toString)
+          case (Left(error), _, _) =>
+            logger.error(s"there was an error during period with status $error")
+            throw new Exception(error.toString)
+        }
       }
+  }
 
+  private def hasFixedEstablishment()(implicit request: RegistrationRequest[AnyContent]): Boolean = {
+
+    request.registration.euRegistrations.exists {
+      case _: RegistrationWithFixedEstablishment => true
+      case _ => false
+    }
   }
 
   private def getCurrentReturnsAndFinancialDataAndUserAnswers()(implicit request: RegistrationRequest[AnyContent]) = {

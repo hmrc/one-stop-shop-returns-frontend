@@ -68,4 +68,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val changeYourRegistrationUrl: String = configuration.get[String]("urls.changeYourRegistration")
 
+  val deleteAllFixedEstablishmentUrl: String = configuration.get[String]("urls.deleteAllFixedEstablishment")
+
 }
