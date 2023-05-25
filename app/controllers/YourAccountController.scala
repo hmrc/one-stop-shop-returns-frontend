@@ -76,7 +76,6 @@ class YourAccountController @Inject()(
   }
 
   private def hasFixedEstablishment()(implicit request: RegistrationRequest[AnyContent]): Boolean = {
-
     request.registration.euRegistrations.exists {
       case _: RegistrationWithFixedEstablishment => true
       case _ => false
