@@ -51,8 +51,8 @@
     }
 
     <header class="hmrc-page-heading">
-        <h1 class="govuk-heading-xl">@messages("checkSalesToEu.heading")</h1>
         <p class="govuk-caption-xl hmrc-caption-xl">@messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)</p>
+        <h1 class="govuk-heading-xl">@messages("checkSalesToEu.heading")</h1>
     </header>
 
     @if(incompleteSales.isEmpty) {

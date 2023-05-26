@@ -26,8 +26,8 @@
 
 @layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title"))) {
    <header class="hmrc-page-heading">
-    <h1 class="govuk-heading-xl">@messages("checkVatPayableAmount.heading")</h1>
-    <p class="govuk-caption-xl hmrc-caption-xl">@messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)</p>
+       <p class="govuk-caption-xl hmrc-caption-xl">@messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)</p>
+       <h1 class="govuk-heading-xl">@messages("checkVatPayableAmount.heading")</h1>
    </header>
 
     @if(!countryCorrectionComplete) {

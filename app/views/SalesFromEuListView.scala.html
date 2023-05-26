@@ -49,8 +49,8 @@
             }
 
             <header class="hmrc-page-heading">
-                <h1 class="govuk-heading-xl">@messages("salesFromEuList.heading" + messageSuffix, list.size)</h1>
                 <p class="govuk-caption-xl hmrc-caption-xl">@period.displayText</p>
+                <h1 class="govuk-heading-xl">@messages("salesFromEuList.heading" + messageSuffix, list.size)</h1>
             </header>
 
             @addToList(list, Long, "salesFromEuList.change.hidden", "salesFromEuList.remove.hidden", None)
