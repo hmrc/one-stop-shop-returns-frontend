@@ -49,8 +49,8 @@
             ))
         }
         <header class="hmrc-page-heading">
-            <h1 class="govuk-heading-xl">@messages("vatCorrectionsList.heading" + messageSuffix, list.size)</h1>
             <p class="govuk-caption-xl hmrc-caption-xl">@messages("vatCorrectionsList.section", correctionPeriod.displayText)</p>
+            <h1 class="govuk-heading-xl">@messages("vatCorrectionsList.heading" + messageSuffix, list.size)</h1>
         </header>
 
         @addToList(list, itemSize = Long, "vatCorrectionsList.change.hidden", "vatCorrectionsList.remove.hidden")
