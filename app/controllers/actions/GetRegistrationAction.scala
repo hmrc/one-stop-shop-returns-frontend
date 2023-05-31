@@ -16,8 +16,10 @@
 
 package controllers.actions
 
+import config.FrontendAppConfig
 import connectors.RegistrationConnector
 import controllers.routes
+import models.registration.Registration
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionRefiner, Result}
@@ -31,19 +33,20 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class GetRegistrationAction @Inject()(
                                        val registrationRepository: RegistrationRepository,
-                                       val registrationConnector: RegistrationConnector
+                                       val registrationConnector: RegistrationConnector,
+                                       appConfig: FrontendAppConfig
                                      )(implicit val executionContext: ExecutionContext)
   extends ActionRefiner[IdentifierRequest, RegistrationRequest] {
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
-    registrationRepository.get(request.userId) flatMap {
+    getCachedRegistrationIfEnabled(request) flatMap {
       case Some(registration) =>
         Right(RegistrationRequest(request.request, request.credentials, request.vrn, registration)).toFuture
       case None =>
         val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
         registrationConnector.get()(hc) flatMap {
           case Some(registration) =>
-            registrationRepository.set(request.userId, registration).map {
+            setCachedRegistrationIfEnabled(request, registration).map {
               _ =>
                 Right(RegistrationRequest(request.request, request.credentials, request.vrn, registration))
             }
@@ -51,4 +54,21 @@ class GetRegistrationAction @Inject()(
             Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture
         }
     }
+
+  private def getCachedRegistrationIfEnabled[A](request: IdentifierRequest[A]): Future[Option[Registration]] = {
+    if(appConfig.cacheRegistrations) {
+      registrationRepository.get(request.userId)
+    } else {
+      Future.successful(None)
+    }
+  }
+
+  private def setCachedRegistrationIfEnabled[A](request: IdentifierRequest[A], registration: Registration): Future[Boolean] = {
+    if(appConfig.cacheRegistrations) {
+      registrationRepository.set(request.userId, registration)
+    } else {
+      Future.successful(true)
+    }
+
+  }
 }

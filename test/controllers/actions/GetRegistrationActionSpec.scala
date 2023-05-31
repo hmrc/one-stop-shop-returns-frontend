@@ -17,11 +17,12 @@
 package controllers.actions
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.RegistrationConnector
 import controllers.routes
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
 import org.scalatest.EitherValues
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.Result
@@ -36,69 +37,99 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
 
   class Harness(
                  repository: RegistrationRepository,
-                 connector: RegistrationConnector
-               ) extends GetRegistrationAction(repository, connector) {
+                 connector: RegistrationConnector,
+                 appConfig: FrontendAppConfig
+               ) extends GetRegistrationAction(repository, connector, appConfig) {
     def callRefine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
       refine(request)
   }
 
   "Get Registration Action" - {
 
-    "when there is a registration in the repository" - {
+    "when registration cache is enabled" - {
 
-      "must return Right" in {
+      "when there is a registration in the repository" - {
 
-        val request = FakeRequest()
-        val repository = mock[RegistrationRepository]
-        val connector  = mock[RegistrationConnector]
-        when(repository.get(userAnswersId)) thenReturn Future.successful(Some(registration))
-        val action = new Harness(repository, connector)
-
-        val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn)).futureValue
-
-        result.isRight mustEqual true
-      }
-    }
-
-    "when there is no registration in the repository" - {
-
-      "and a registration can be retrieved from the backend" - {
-
-        "must save the registration to the repository and return Right" in {
+        "must return Right" in {
 
           val request = FakeRequest()
           val repository = mock[RegistrationRepository]
-          val connector  = mock[RegistrationConnector]
-          when(repository.get(userAnswersId)) thenReturn Future.successful(None)
-          when(repository.set(any(), any()))  thenReturn Future.successful(true)
-          when(connector.get()(any()))        thenReturn Future.successful(Some(registration))
-
-          val action = new Harness(repository, connector)
+          val connector = mock[RegistrationConnector]
+          val appConfig = mock[FrontendAppConfig]
+          when(appConfig.cacheRegistrations) thenReturn true
+          when(repository.get(userAnswersId)) thenReturn Future.successful(Some(registration))
+          val action = new Harness(repository, connector, appConfig)
 
           val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn)).futureValue
 
           result.isRight mustEqual true
-          verify(repository, times(1)).set(eqTo(userAnswersId), eqTo(registration))
         }
       }
 
-      "and a registration cannot be retrieved from the backend" - {
+      "when there is no registration in the repository" - {
 
-        "must return Left and redirect to Not Registered" in {
+        "and a registration can be retrieved from the backend" - {
 
-          val request = FakeRequest()
-          val repository = mock[RegistrationRepository]
-          val connector  = mock[RegistrationConnector]
-          when(repository.get(userAnswersId)) thenReturn Future.successful(None)
-          when(connector.get()(any()))        thenReturn Future.successful(None)
+          "must save the registration to the repository and return Right" in {
 
-          val action = new Harness(repository, connector)
+            val request = FakeRequest()
+            val repository = mock[RegistrationRepository]
+            val connector = mock[RegistrationConnector]
+            val appConfig = mock[FrontendAppConfig]
+            when(appConfig.cacheRegistrations) thenReturn true
+            when(repository.get(userAnswersId)) thenReturn Future.successful(None)
+            when(repository.set(any(), any())) thenReturn Future.successful(true)
+            when(connector.get()(any())) thenReturn Future.successful(Some(registration))
 
-          val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn)).futureValue
+            val action = new Harness(repository, connector, appConfig)
 
-          result.left.value mustEqual Redirect(routes.NotRegisteredController.onPageLoad())
+            val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn)).futureValue
+
+            result.isRight mustEqual true
+            verify(repository, times(1)).set(eqTo(userAnswersId), eqTo(registration))
+          }
+        }
+
+        "and a registration cannot be retrieved from the backend" - {
+
+          "must return Left and redirect to Not Registered" in {
+
+            val request = FakeRequest()
+            val repository = mock[RegistrationRepository]
+            val connector = mock[RegistrationConnector]
+            val appConfig = mock[FrontendAppConfig]
+            when(appConfig.cacheRegistrations) thenReturn true
+            when(repository.get(userAnswersId)) thenReturn Future.successful(None)
+            when(connector.get()(any())) thenReturn Future.successful(None)
+
+            val action = new Harness(repository, connector, appConfig)
+
+            val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn)).futureValue
+
+            result.left.value mustEqual Redirect(routes.NotRegisteredController.onPageLoad())
+          }
         }
       }
+    }
+
+    "when registration cache is disabled" - {
+
+      "must not save registration in repository" - {
+        val request = FakeRequest()
+        val repository = mock[RegistrationRepository]
+        val connector = mock[RegistrationConnector]
+        val appConfig = mock[FrontendAppConfig]
+        when(appConfig.cacheRegistrations) thenReturn false
+        when(connector.get()(any())) thenReturn Future.successful(Some(registration))
+
+        val action = new Harness(repository, connector, appConfig)
+
+        val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn)).futureValue
+
+        result.isRight mustEqual true
+        verifyNoInteractions(repository)
+      }
+
     }
   }
 }

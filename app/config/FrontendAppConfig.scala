@@ -70,4 +70,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val deleteAllFixedEstablishmentUrl: String = configuration.get[String]("urls.deleteAllFixedEstablishment")
 
+  val cacheRegistrations: Boolean = configuration.get[Boolean]("features.cacheRegistrations")
+
 }
