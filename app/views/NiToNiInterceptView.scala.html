@@ -1,0 +1,42 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this(
+        layout: templates.Layout,
+        govukButton: GovukButton,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary
+)
+
+@(period: Period)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = titleNoForm(messages("niToNiIntercept.title"))) {
+
+    @formHelper(action = routes.NiToNiInterceptController.onSubmit(period), Symbol("autoComplete") -> "off") {
+
+        <h1 class="govuk-heading-xl">@messages("niToNiIntercept.heading")</h1>
+        <p class="govuk-body">@messages("niToNiIntercept.paragraph.line1")</p>
+        <p class="govuk-body">@messages("niToNiIntercept.paragraph.line2")</p>
+        <p class="govuk-body">@messages("niToNiIntercept.paragraph.line3")</p>
+        <p class="govuk-body">@messages("niToNiIntercept.paragraph.line4")</p>
+        <p class="govuk-body">@Html(messages("niToNiIntercept.contactUs"))</p>
+
+
+        @govukButton(
+            ButtonViewModel(messages("Confirm")).withAttribute(("id", "continue"))
+        )
+    }
+}

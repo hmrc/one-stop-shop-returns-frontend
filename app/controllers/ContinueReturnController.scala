@@ -18,10 +18,11 @@ package controllers
 
 import controllers.actions._
 import forms.ContinueReturnFormProvider
-import models.Period
+import models.{ContinueReturn, Period}
 import pages.{ContinueReturnPage, SavedProgressPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.AllSalesFromNiWithOptionalVatQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ContinueReturnView
 
@@ -31,7 +32,7 @@ class ContinueReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: ContinueReturnFormProvider,
                                        view: ContinueReturnView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                     ) extends FrontendBaseController with SalesFromNiBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -48,11 +49,21 @@ class ContinueReturnController @Inject()(
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-
       form.bindFromRequest().fold(
         formWithErrors =>
           BadRequest(view(formWithErrors, period)),
-        value => Redirect(ContinueReturnPage.navigate(request.userAnswers, value))
+        value => {
+          val isOMP = request.registration.isOnlineMarketplace
+          val hasNiToNiSale = request.userAnswers.get(AllSalesFromNiWithOptionalVatQuery).getOrElse(List.empty)
+            .exists(indexedSalesFromCountryWithOptionalVat => indexedSalesFromCountryWithOptionalVat.countryOfConsumption.code == "XI")
+
+          if (!isOMP && hasNiToNiSale && value == ContinueReturn.Continue) {
+            Redirect(routes.NiToNiInterceptController.onPageLoad(period))
+          } else {
+            Redirect(ContinueReturnPage.navigate(request.userAnswers, value))
+          }
+
+        }
       )
   }
 }

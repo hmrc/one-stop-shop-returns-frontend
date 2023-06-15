@@ -312,3 +312,6 @@ GET        /outstanding-payments                                                
 POST       /outstanding-payments                                                                             controllers.WhichVatPeriodToPayController.onSubmit()
 
 GET        /excluded-cannot-use-service                                                                      controllers.exclusions.ExcludedNotPermittedController.onPageLoad()
+
+GET        /:period/ni-to-ni-intercept                                                                       controllers.NiToNiInterceptController.onPageLoad(period: Period)
+POST       /:period/ni-to-ni-intercept                                                                       controllers.NiToNiInterceptController.onSubmit(period: Period)

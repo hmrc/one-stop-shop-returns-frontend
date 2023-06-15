@@ -527,3 +527,13 @@ yourAccount.finalReturn.completed = You''ve completed your final return.
 yourAccount.oss.account.message = If you have any questions about your OSS account, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 yourAccount.finalReturn.message = This is your final return on this service.
 yourAccount.previousCorrectReturn.finalReturn = You can correct a previous return when you submit your final one.
+
+niToNiIntercept.title = Delete your information about sales from within Northern Ireland to customers in Northern Ireland
+niToNiIntercept.heading = Delete your information about sales from within Northern Ireland to customers in Northern Ireland
+niToNiIntercept.paragraph.line1 = You have updated your registration to tell us your business is not an online marketplace.
+niToNiIntercept.paragraph.line2 = Only businesses registered as online marketplaces can declare sales from Northern Ireland to customers also in Northern Ireland on a One Stop Shop return.
+niToNiIntercept.paragraph.line3 = Confirm to remove these sales that you have declared on your return.
+niToNiIntercept.paragraph.line4 = This will not affect returns you have already submitted.
+niToNiIntercept.contactUs = If you have any questions, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
+niToNiIntercept.error.required = Select confirm if you want to delete your current return
+niToNiIntercept.confirm = Confirm
