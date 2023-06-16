@@ -36,6 +36,7 @@
     hasSubmittedFinalReturn: Boolean,
     currentReturnIsFinal: Boolean,
     exclusionsEnabled: Boolean,
+    amendRegistrationLinkEnabled: Boolean,
     changeYourRegistrationUrl: String
 )(implicit request: Request[_], messages: Messages)
 
@@ -196,12 +197,14 @@
                 </a>
             </p>
 
-            <p class="govuk-body">
-                <a class="govuk-link" href="@changeYourRegistrationUrl"
-                   id="change-your-registration">
+            @if(amendRegistrationLinkEnabled) {
+                <p class="govuk-body">
+                    <a class="govuk-link" href="@changeYourRegistrationUrl"
+                    id="change-your-registration">
                     @messages("index.details.changeYourRegistration")
-                </a>
-            </p>
+                    </a>
+                </p>
+            }
         </div>
     </div>
     @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {

@@ -134,6 +134,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
@@ -195,6 +196,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
               amendRegistrationUrl
             )(request, messages(application)).toString
           }
@@ -255,6 +257,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
               amendRegistrationUrl
             )(request, messages(application)).toString
           }
@@ -316,6 +319,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
               amendRegistrationUrl
             )(request, messages(application)).toString
           }
@@ -381,6 +385,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
               amendRegistrationUrl
             )(request, messages(application)).toString
           }
@@ -439,6 +444,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
@@ -503,6 +509,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
@@ -569,6 +576,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
               amendRegistrationUrl
             )(request, messages(application)).toString
           }
@@ -634,6 +642,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
               amendRegistrationUrl
             )(request, messages(application)).toString
 
@@ -703,6 +712,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
               amendRegistrationUrl
             )(request, messages(application)).toString
           }
@@ -761,6 +771,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
               amendRegistrationUrl
             )(request, messages(application)).toString
           }
@@ -822,6 +833,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
               amendRegistrationUrl
             )(request, messages(application)).toString
           }
@@ -885,6 +897,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
@@ -941,6 +954,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
 
@@ -1065,6 +1079,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
@@ -1138,6 +1153,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
@@ -1214,6 +1230,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           hasSubmittedFinalReturn = true,
           currentReturnIsFinal = false,
           config.exclusionsEnabled,
+          config.amendRegistrationEnabled,
           amendRegistrationUrl
         )(request, messages(application)).toString
       }
@@ -1289,6 +1306,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
@@ -1360,6 +1378,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
@@ -1436,6 +1455,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
@@ -1508,6 +1528,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
         }
