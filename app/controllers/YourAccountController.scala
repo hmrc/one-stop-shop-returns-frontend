@@ -163,6 +163,7 @@ class YourAccountController @Inject()(
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
         frontendAppConfig.exclusionsEnabled,
+        frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl
       ))
     }
