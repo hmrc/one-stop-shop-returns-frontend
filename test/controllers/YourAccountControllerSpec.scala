@@ -18,16 +18,17 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
+import connectors.financialdata.FinancialDataConnector
 import generators.Generators
+import models.{Country, Period, SubmissionStatus}
 import models.Quarter._
 import models.SubmissionStatus.{Due, Next, Overdue}
-import models.domain.VatReturn
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
 import models.exclusions.ExcludedTrader
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
+import models.registration._
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
-import models.{Period, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
@@ -42,7 +43,7 @@ import services.VatReturnSalesService
 import viewmodels.yourAccount.{CurrentReturns, PaymentsViewModel, Return, ReturnsViewModel}
 import views.html.IndexView
 
-import java.time.{Clock, Instant, ZoneId}
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
@@ -61,6 +62,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     registration.vrn, "TRADER", 1, Period.fromString("2022-Q2").get))
   private val excludedTraderQuarantined: Option[ExcludedTrader] = Some(ExcludedTrader(
     registration.vrn, "HMRC", 4, Period.fromString("2022-Q2").get))
+
+  private val amendRegistrationUrl = "http://localhost:10200/pay-vat-on-goods-sold-to-eu/northern-ireland-register/start-amend-journey"
 
   "Your Account Controller" - {
 
@@ -130,7 +133,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
@@ -190,7 +195,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl
             )(request, messages(application)).toString
           }
         }
@@ -249,7 +256,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl
             )(request, messages(application)).toString
           }
         }
@@ -309,7 +318,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl
             )(request, messages(application)).toString
           }
         }
@@ -373,7 +384,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl
             )(request, messages(application)).toString
           }
         }
@@ -430,7 +443,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
@@ -493,7 +508,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
@@ -558,7 +575,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl
             )(request, messages(application)).toString
           }
         }
@@ -622,7 +641,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl
             )(request, messages(application)).toString
 
           }
@@ -690,7 +711,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl
             )(request, messages(application)).toString
           }
         }
@@ -747,7 +770,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl
             )(request, messages(application)).toString
           }
         }
@@ -807,7 +832,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl
             )(request, messages(application)).toString
           }
         }
@@ -869,7 +896,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
@@ -924,7 +953,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
 
         }
@@ -1047,7 +1078,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedTraderHMRC,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
@@ -1119,7 +1152,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedTraderHMRC,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
@@ -1194,7 +1229,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           hasSubmittedFinalReturn = true,
           currentReturnIsFinal = false,
-          config.exclusionsEnabled
+          config.exclusionsEnabled,
+          config.amendRegistrationEnabled,
+          amendRegistrationUrl
         )(request, messages(application)).toString
       }
     }
@@ -1268,7 +1305,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
@@ -1338,7 +1377,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedTraderSelf,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
@@ -1413,7 +1454,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
@@ -1484,10 +1527,45 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl
           )(request, messages(application)).toString
         }
       }
     }
+
+    "when part of vat group is true and has fixed establishment" in {
+
+      val newRegistration: Registration = Registration(
+        vrn = vrn,
+        registeredCompanyName = arbitrary[String].sample.value,
+        vatDetails = VatDetails(LocalDate.of(2000, 1, 1), address, true, VatDetailSource.Mixed),
+        euRegistrations = Seq(RegistrationWithFixedEstablishment(
+          Country("ES", "Spain"),
+          EuTaxIdentifier(EuTaxIdentifierType.Vat, "ES123456789"),
+          TradeDetails("Spanish trading name", InternationalAddress("Line 1", None, "Town", None, None, Country("ES", "Spain")))
+        )),
+        contactDetails = ContactDetails("name", "0123 456789", "email@example.com"),
+        commencementDate = LocalDate.now,
+        isOnlineMarketplace = false,
+        None
+      )
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock= None, registration=newRegistration)
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        val config = application.injector.instanceOf[FrontendAppConfig]
+
+        status(result) mustEqual SEE_OTHER
+
+      }
+    }
+
   }
 }

@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import config.FrontendAppConfig
 import connectors.RegistrationConnector
 import models.registration.Registration
 import models.requests.{IdentifierRequest, RegistrationRequest}
@@ -28,7 +29,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class FakeGetRegistrationAction(registration: Registration)
-  extends GetRegistrationAction(mock[RegistrationRepository], mock[RegistrationConnector]) {
+  extends GetRegistrationAction(mock[RegistrationRepository], mock[RegistrationConnector], mock[FrontendAppConfig]) {
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
     Right(RegistrationRequest(request.request, request.credentials, request.vrn, registration)).toFuture

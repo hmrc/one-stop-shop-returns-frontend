@@ -35,7 +35,9 @@
     maybeExcludedTrader: Option[ExcludedTrader],
     hasSubmittedFinalReturn: Boolean,
     currentReturnIsFinal: Boolean,
-    exclusionsEnabled: Boolean
+    exclusionsEnabled: Boolean,
+    amendRegistrationLinkEnabled: Boolean,
+    changeYourRegistrationUrl: String
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -185,15 +187,24 @@
     </div>
 
     <div class="tile tile-no-border">
-        <div id="history" class="tile-body">
-            <h2 class="govuk-heading-m">@messages("index.history")</h2>
+        <div id="details" class="tile-body">
+            <h2 class="govuk-heading-m">@messages("index.details")</h2>
 
             <p class="govuk-body">
                 <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url"
                    id="view-past-returns">
-                    @messages("index.history.previousReturns")
+                    @messages("index.details.previousReturns")
                 </a>
             </p>
+
+            @if(amendRegistrationLinkEnabled) {
+                <p class="govuk-body">
+                    <a class="govuk-link" href="@changeYourRegistrationUrl"
+                    id="change-your-registration">
+                    @messages("index.details.changeYourRegistration")
+                    </a>
+                </p>
+            }
         </div>
     </div>
     @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
