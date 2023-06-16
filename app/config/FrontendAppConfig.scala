@@ -72,4 +72,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val cacheRegistrations: Boolean = configuration.get[Boolean]("features.cacheRegistrations")
 
+  val amendRegistrationEnabled: Boolean = configuration.get[Boolean]("features.amendRegistrationEnabled")
+
 }
