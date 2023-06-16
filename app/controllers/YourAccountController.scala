@@ -54,7 +54,7 @@ class YourAccountController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
-      if(request.registration.vatDetails.partOfVatGroup && hasFixedEstablishment()) {
+      if(request.registration.vatDetails.partOfVatGroup && hasFixedEstablishment() && frontendAppConfig.amendRegistrationEnabled) {
         Redirect(frontendAppConfig.deleteAllFixedEstablishmentUrl).toFuture
       } else {
         val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
