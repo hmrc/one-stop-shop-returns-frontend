@@ -18,7 +18,7 @@ package controllers
 
 import controllers.actions._
 import forms.ContinueReturnFormProvider
-import models.{ContinueReturn, Period}
+import models.{ContinueReturn, Country, Period}
 import pages.{ContinueReturnPage, SavedProgressPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -55,7 +55,7 @@ class ContinueReturnController @Inject()(
         value => {
           val isOMP = request.registration.isOnlineMarketplace
           val hasNiToNiSale = request.userAnswers.get(AllSalesFromNiWithOptionalVatQuery).getOrElse(List.empty)
-            .exists(indexedSalesFromCountryWithOptionalVat => indexedSalesFromCountryWithOptionalVat.countryOfConsumption.code == "XI")
+            .exists(indexedSalesFromCountryWithOptionalVat => indexedSalesFromCountryWithOptionalVat.countryOfConsumption.code == Country.northernIreland.code)
 
           if (!isOMP && hasNiToNiSale && value == ContinueReturn.Continue) {
             Redirect(routes.NiToNiInterceptController.onPageLoad(period))
