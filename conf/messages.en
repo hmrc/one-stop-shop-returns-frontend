@@ -488,10 +488,10 @@ deleteReturn.error.required = Select yes if you want to delete this return
 deleteReturn.button = Delete return
 
 notRegisteredCore.title = Return not submitted
-notRegisteredCore.heading = We are processing your registration
-notRegisteredCore.registrationNeedsApproval = You cannot submit your return until we have approved your One Stop Shop registration.
-notRegisteredCore.time = This can take up to 2 working days.
-notRegisteredCore.savedAnswers = We have saved the information in your return. You can submit it from your account once it has been approved.
+notRegisteredCore.heading = We are having problems with the service
+notRegisteredCore.registrationNeedsApproval = You cannot submit your return until we have updated your One Stop Shop registration.
+notRegisteredCore.savedAnswers = We have saved the information in your return. You can try to submit it again later.
+notRegisteredCore.contactUs = If the error continues, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 notRegisteredCore.your.account = Back to your account
 
 
