@@ -71,7 +71,7 @@
 @if(exclusionsEnabled) {
     @if(hasSubmittedFinalReturn) {
         @govukWarningText(WarningText(
-        iconFallbackText = messages("site.warning"),
+        iconFallbackText = Option(messages("site.warning")),
         content = Text(messages("yourAccount.warning.leftService"))
         ))
     } else {
@@ -80,20 +80,20 @@
                 @(excludedTrader.exclusionReason, excludedTrader.exclusionSource) match {
                 case (4, _) => {
                     @govukWarningText(WarningText(
-                            iconFallbackText = messages("site.warning"),
+                            iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.exclusion.quarantineUser",
                                             excludedTrader.effectivePeriod.firstDay.plusYears(2)))
                     ))
                 }
                 case (_, "HMRC") => {
                     @govukWarningText(WarningText(
-                            iconFallbackText = messages("site.warning"),
+                            iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.exclusion.hmrc"))
                     ))
                 }
                 case (_, "TRADER") => {
                     @govukWarningText(WarningText(
-                            iconFallbackText = messages("site.warning"),
+                            iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.exclusion.trader"))
                     ))
                 }
@@ -160,7 +160,7 @@
             <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
             @for(warningText <- paymentsViewModel.warning){
                 @govukWarningText(WarningText(
-                    iconFallbackText = messages("site.warning"),
+                    iconFallbackText = Option(messages("site.warning")),
                     content = Text(warningText)
                 ))
             }

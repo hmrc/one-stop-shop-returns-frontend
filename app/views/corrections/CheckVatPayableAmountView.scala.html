@@ -32,7 +32,7 @@
 
     @if(!countryCorrectionComplete) {
         @govukWarningText(WarningText(
-            iconFallbackText = messages("site.warning"),
+            iconFallbackText = Option(messages("site.warning")),
             content = Text(messages("error.missing_answers"))
         ))
     }
