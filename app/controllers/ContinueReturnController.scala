@@ -22,7 +22,7 @@ import models.{ContinueReturn, Country, Period}
 import pages.{ContinueReturnPage, SavedProgressPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.AllSalesFromNiWithOptionalVatQuery
+import queries.{AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiWithOptionalVatQuery}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ContinueReturnView
 
@@ -56,9 +56,15 @@ class ContinueReturnController @Inject()(
           val isOMP = request.registration.isOnlineMarketplace
           val hasNiToNiSale = request.userAnswers.get(AllSalesFromNiWithOptionalVatQuery).getOrElse(List.empty)
             .exists(indexedSalesFromCountryWithOptionalVat => indexedSalesFromCountryWithOptionalVat.countryOfConsumption.code == Country.northernIreland.code)
+          val hasSameEuToEuSale = request.userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
+            .exists(indexedSalesFromEuCountryWithOptionalVat => {
+              Country.euCountries.map(_.code).contains(indexedSalesFromEuCountryWithOptionalVat.countryOfSale.code)
+            })
 
           if (!isOMP && hasNiToNiSale && value == ContinueReturn.Continue) {
             Redirect(routes.NiToNiInterceptController.onPageLoad(period))
+          } else if (!isOMP && hasSameEuToEuSale && value == ContinueReturn.Continue){
+            Redirect(routes.CountryToSameCountryController.onPageLoad(period))
           } else {
             Redirect(ContinueReturnPage.navigate(request.userAnswers, value))
           }

@@ -315,3 +315,6 @@ GET        /excluded-cannot-use-service                                         
 
 GET        /:period/ni-to-ni-intercept                                                                       controllers.NiToNiInterceptController.onPageLoad(period: Period)
 POST       /:period/ni-to-ni-intercept                                                                       controllers.NiToNiInterceptController.onSubmit(period: Period)
+
+GET        /:period/countryToSameCountry                                                                     controllers.CountryToSameCountryController.onPageLoad(period: Period)
+POST       /:period/countryToSameCountry                                                                     controllers.CountryToSameCountryController.onSubmit(period: Period)
