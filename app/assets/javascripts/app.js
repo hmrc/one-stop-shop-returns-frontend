@@ -4,7 +4,7 @@ if (window.history && window.history.replaceState && typeof window.history.repla
 }
 
 // handle back click
-var backLink = document.querySelector('.govuk-back-link');
+const backLink = document.querySelector('.govuk-back-link');
 if (backLink) {
   backLink.addEventListener('click', function (e) {
     e.preventDefault();
