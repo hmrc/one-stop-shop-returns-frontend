@@ -17,6 +17,7 @@
 @import config.FrontendAppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.config.StandardBetaBanner
 @import views.html.templates.FullWidthLayout
+@import views.html.helper.CSPNonce
 
 @this(
     appConfig: FrontendAppConfig,
@@ -35,7 +36,7 @@
     fullWidthLayout: FullWidthLayout
 )
 
-@(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true, fullWidth: Boolean = false)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true, fullWidth: Boolean = false)(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
 
 @head = {
 
@@ -59,8 +60,8 @@
 }
 
 @additionalScripts = {
-    <script src='@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.js")'></script>
-    <script src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
+    <script @CSPNonce.attr src='@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.js")'></script>
+    <script @CSPNonce.attr src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
 }
 
 @beforeContent = {
