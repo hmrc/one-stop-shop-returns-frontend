@@ -17,22 +17,24 @@
 package controllers
 
 import controllers.actions._
+import logging.Logging
 import models.requests.DataRequest
 
 import javax.inject.Inject
-import models.{Country, Index, NormalMode, Period}
+import models.{Index, NormalMode, Period, SalesFromEuWithOptionalVat, UserAnswers}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.mvc._
 import queries.{AllSalesFromEuQueryWithOptionalVatQuery, SalesFromEuQuery}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.CountryToSameCountryView
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class CountryToSameCountryController @Inject()(
                                        cc: AuthenticatedControllerComponents,
-                                       view: CountryToSameCountryView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                       view: CountryToSameCountryView,
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging{
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -45,32 +47,54 @@ class CountryToSameCountryController @Inject()(
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
-      val maybeEuSaleWithIndex = request.userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty).zipWithIndex
-        .find {
-          case (salesFromEuCountryWithOptionalVat, _) => Country.euCountries.exists(_.code == salesFromEuCountryWithOptionalVat.countryOfSale.code)
-
-        }
-
-      maybeEuSaleWithIndex match {
-        case Some(_ @ (_, index)) =>
-          for {
-            updatedReturn <- Future.fromTry(request.userAnswers.remove(SalesFromEuQuery(Index(index))))
+      for {
+            updatedReturn <- Future.fromTry(deleteEuToSameEuCountry(request.userAnswers, period))
             _ <- cc.sessionRepository.set(updatedReturn)
-          } yield {
-            navigate(period)
-          }
-        case _ =>
-          Future.successful(navigate(period))
+      } yield {
+        navigate(period)
       }
+
+  }
+
+  private def deleteEuToSameEuCountry(userAnswers: UserAnswers, period: Period): Try[UserAnswers] = {
+
+    val allEuSaleWithIndex = userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty).zipWithIndex
+
+    def recursivelyRemoveSalesFromEu(currentUserAnswers: UserAnswers,  remainingEuSales: List[(SalesFromEuWithOptionalVat, Int)]): Try[UserAnswers] = {
+
+      remainingEuSales match {
+        case Nil => Try(currentUserAnswers)
+        case (salesFromEuCountry, index) :: Nil
+          if salesFromEuCountry.salesFromCountry.exists(_.exists(_.countryOfConsumption.code == salesFromEuCountry.countryOfSale.code)) =>
+          removeUserAnswer(currentUserAnswers, index)
+        case _ :: Nil => Try(currentUserAnswers)
+        case (salesFromEuCountry, index) :: otherEuSales =>
+          if (salesFromEuCountry.salesFromCountry.exists(_.exists(_.countryOfConsumption.code == salesFromEuCountry.countryOfSale.code))) {
+            removeUserAnswer(currentUserAnswers, index).flatMap { cleanedUserAnswers =>
+              recursivelyRemoveSalesFromEu(cleanedUserAnswers, otherEuSales)
+            }
+          } else {
+            recursivelyRemoveSalesFromEu(currentUserAnswers, otherEuSales)
+          }
+      }
+    }
+    recursivelyRemoveSalesFromEu(userAnswers, allEuSaleWithIndex)
+
+  }
+
+  private def removeUserAnswer(currentUserAnswers: UserAnswers, index: Int): Try[UserAnswers] = {
+    currentUserAnswers.remove(SalesFromEuQuery(Index(index)))
   }
 
   private def navigate(period: Period)(implicit request: DataRequest[AnyContent]): Result = {
-    request.userAnswers
-      .get(AllSalesFromEuQueryWithOptionalVatQuery) match {
+
+    val allSalesFromEuQuery = request.userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery)
+
+    allSalesFromEuQuery match {
       case Some(n) if n.nonEmpty =>
-        Redirect(controllers.routes.SalesFromEuListController.onPageLoad(NormalMode, period).url)
+        Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url)
       case _ =>
-        Redirect(controllers.routes.SoldGoodsFromEuController.onPageLoad(NormalMode, period).url)
+        Redirect(controllers.routes.SalesFromEuListController.onPageLoad(NormalMode, period).url)
     }
 
   }

@@ -61,12 +61,17 @@ class ContinueReturnController @Inject()(
               Country.euCountries.map(_.code).contains(indexedSalesFromEuCountryWithOptionalVat.countryOfSale.code)
             })
 
-          if (!isOMP && hasNiToNiSale && value == ContinueReturn.Continue) {
-            Redirect(routes.NiToNiInterceptController.onPageLoad(period))
-          } else if (!isOMP && hasSameEuToEuSale && value == ContinueReturn.Continue){
-            Redirect(routes.CountryToSameCountryController.onPageLoad(period))
-          } else {
-            Redirect(ContinueReturnPage.navigate(request.userAnswers, value))
+          (isOMP, hasNiToNiSale, hasSameEuToEuSale, value) match {
+            case (false, true, false, ContinueReturn.Continue) =>
+              Redirect(routes.NiToNiInterceptController.onPageLoad(period))
+            case (false, false, true, ContinueReturn.Continue) =>
+              Redirect(routes.CountryToSameCountryController.onPageLoad(period))
+            case (false, true, true, ContinueReturn.Continue) =>
+              Redirect(routes.NiToNiInterceptController.onPageLoad(period))
+            case (false, false, false, ContinueReturn.Continue) =>
+              Redirect(ContinueReturnPage.navigate(request.userAnswers, value))
+            case _ =>
+              Redirect(ContinueReturnPage.navigate(request.userAnswers, value))
           }
 
         }

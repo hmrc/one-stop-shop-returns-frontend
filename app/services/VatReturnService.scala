@@ -94,7 +94,7 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
             }
         }
 
-      case None =>
+      case _ =>
         DataMissingError(AllSalesFromNiQuery).invalidNec
     }
   }
@@ -158,7 +158,7 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
             }
         }
 
-      case None =>
+      case _ =>
         DataMissingError(AllSalesFromEuQuery).invalidNec
     }
 

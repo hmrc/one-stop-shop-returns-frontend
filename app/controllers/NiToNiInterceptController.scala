@@ -23,7 +23,7 @@ import models.{Country, Index, NormalMode, Period}
 import models.requests.DataRequest
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import queries.{AllSalesFromNiWithOptionalVatQuery, SalesFromNiQuery}
+import queries.{AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiWithOptionalVatQuery, SalesFromNiQuery}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.NiToNiInterceptView
 
@@ -64,12 +64,17 @@ class NiToNiInterceptController @Inject()(
   }
 
   private def navigate(period: Period)(implicit request: DataRequest[AnyContent]): Result = {
-    request.userAnswers
-      .get(AllSalesFromNiWithOptionalVatQuery) match {
-      case Some(n) if n.nonEmpty =>
-        Redirect(controllers.routes.SalesFromNiListController.onPageLoad(NormalMode, period).url)
-      case _ =>
-        Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url)
+
+    val allSalesFromNiQuery = request.userAnswers.get(AllSalesFromNiWithOptionalVatQuery)
+    val allSalesFromEuQuery = request.userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery)
+
+    if (allSalesFromEuQuery.exists(_.nonEmpty) && allSalesFromNiQuery.exists(_.nonEmpty)) {
+      Redirect(controllers.routes.CountryToSameCountryController.onPageLoad(period).url) // redirects here if user has said yes to sales from NI & from EU
+    } else if (allSalesFromNiQuery.exists(_.nonEmpty)) {
+      Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url) // redirects here if user has says from NI Only
+    } else {
+      Redirect(controllers.routes.SalesFromNiListController.onPageLoad(NormalMode, period).url)
     }
   }
+
 }
