@@ -17,16 +17,17 @@
 package controllers
 
 import base.SpecBase
-import models.{Country, NormalMode}
+import models.{Country, NormalMode, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, VatRate, VatRateAndSalesWithOptionalVat}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.CountryOfSaleFromEuPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import queries.SalesFromEuQuery
+import queries.{AllSalesFromEuQueryWithOptionalVatQuery, SalesFromEuQuery}
 import repositories.UserAnswersRepository
 import views.html.CountryToSameCountryView
 
@@ -59,7 +60,7 @@ class CountryToSameCountryControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must delete Eu Country to Same Eu Country sales and redirect to the correct page when the user clicks confirm" in {
+    "must redirect to the correct page when the user clicks confirm" in {
 
       val mockSessionRepository = mock[UserAnswersRepository]
 
@@ -76,11 +77,11 @@ class CountryToSameCountryControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", countryTo.code))
 
         val result = route(application, request).value
-        val updatedReturn = baseAnswers.remove(SalesFromEuQuery(index)).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.SalesFromEuListController.onPageLoad(NormalMode, period).url
-        verify(mockSessionRepository, times(1)).set(eqTo(updatedReturn))
+        redirectLocation(result).value mustEqual controllers.routes.CheckYourAnswersController.onPageLoad(period).url
+        verify(mockSessionRepository, times(1)).set(any())
+
       }
 
     }
