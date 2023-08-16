@@ -21,15 +21,16 @@ import logging.Logging
 import models.requests.DataRequest
 
 import javax.inject.Inject
-import models.{Index, NormalMode, Period, SalesFromEuWithOptionalVat, UserAnswers}
+import models.{Index, NormalMode, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import queries.{AllSalesFromEuQueryWithOptionalVatQuery, SalesFromEuQuery}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.CountryToSameCountryView
 
+import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util._
 
 class CountryToSameCountryController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -60,31 +61,29 @@ class CountryToSameCountryController @Inject()(
 
     val allEuSaleWithIndex = userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty).zipWithIndex
 
-    def recursivelyRemoveSalesFromEu(currentUserAnswers: UserAnswers,  remainingEuSales: List[(SalesFromEuWithOptionalVat, Int)]): Try[UserAnswers] = {
+    @tailrec
+    def recursivelyRemoveSalesFromEu(currentUserAnswers: UserAnswers, remainingEuSales: List[(SalesFromEuWithOptionalVat, Int)]): Try[UserAnswers] = {
 
       remainingEuSales match {
         case Nil => Try(currentUserAnswers)
-        case (salesFromEuCountry, index) :: Nil
-          if salesFromEuCountry.salesFromCountry.exists(_.exists(_.countryOfConsumption.code == salesFromEuCountry.countryOfSale.code)) =>
-          removeUserAnswer(currentUserAnswers, index)
-        case _ :: Nil => Try(currentUserAnswers)
         case (salesFromEuCountry, index) :: otherEuSales =>
-          if (salesFromEuCountry.salesFromCountry.exists(_.exists(_.countryOfConsumption.code == salesFromEuCountry.countryOfSale.code))) {
-            removeUserAnswer(currentUserAnswers, index).flatMap { cleanedUserAnswers =>
-              recursivelyRemoveSalesFromEu(cleanedUserAnswers, otherEuSales)
-            }
-          } else {
-            recursivelyRemoveSalesFromEu(currentUserAnswers, otherEuSales)
-          }
+          val updatedSalesFromCountry = salesFromEuCountry.salesFromCountry
+          .map(_.filterNot(_.countryOfConsumption.code == salesFromEuCountry.countryOfSale.code))
+
+          val updatedSalesFromEu = salesFromEuCountry.copy(salesFromCountry = updatedSalesFromCountry)
+
+          val updatedAllSales = currentUserAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
+            .updated(index, updatedSalesFromEu)
+
+          val updatedUserAnswers = currentUserAnswers.set(AllSalesFromEuQueryWithOptionalVatQuery, updatedAllSales)
+
+          recursivelyRemoveSalesFromEu(updatedUserAnswers.get, otherEuSales)
       }
     }
     recursivelyRemoveSalesFromEu(userAnswers, allEuSaleWithIndex)
 
   }
 
-  private def removeUserAnswer(currentUserAnswers: UserAnswers, index: Int): Try[UserAnswers] = {
-    currentUserAnswers.remove(SalesFromEuQuery(Index(index)))
-  }
 
   private def navigate(period: Period)(implicit request: DataRequest[AnyContent]): Result = {
 

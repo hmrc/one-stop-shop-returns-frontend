@@ -17,7 +17,7 @@
 package controllers
 
 import base.SpecBase
-import models.{Country, NormalMode}
+import models.Country
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -76,7 +76,7 @@ class NiToNiInterceptControllerSpec extends SpecBase with MockitoSugar {
         val updatedReturn = baseAnswers.remove(SalesFromNiQuery(index)).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.SalesFromNiListController.onPageLoad(NormalMode, period).url
+        redirectLocation(result).value mustEqual controllers.routes.CheckYourAnswersController.onPageLoad(period).url
         verify(mockSessionRepository, times(1)).set(eqTo(updatedReturn))
 
       }
