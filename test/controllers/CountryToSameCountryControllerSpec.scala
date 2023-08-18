@@ -17,17 +17,14 @@
 package controllers
 
 import base.SpecBase
-import models.{Country, NormalMode, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, VatRate, VatRateAndSalesWithOptionalVat}
+import models.Country
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.CountryOfSaleFromEuPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import queries.{AllSalesFromEuQueryWithOptionalVatQuery, SalesFromEuQuery}
 import repositories.UserAnswersRepository
 import views.html.CountryToSameCountryView
 

@@ -21,20 +21,20 @@ import logging.Logging
 import models.requests.DataRequest
 
 import javax.inject.Inject
-import models.{Index, NormalMode, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, UserAnswers}
+import models.{NormalMode, Period}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import queries.{AllSalesFromEuQueryWithOptionalVatQuery, SalesFromEuQuery}
+import queries.AllSalesFromEuQueryWithOptionalVatQuery
+import services.RemoveSameEuToEuService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.CountryToSameCountryView
 
-import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util._
 
 class CountryToSameCountryController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: CountryToSameCountryView,
+                                       removeEuToSameEuService: RemoveSameEuToEuService
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging{
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -49,38 +49,11 @@ class CountryToSameCountryController @Inject()(
     implicit request =>
 
       for {
-            updatedReturn <- Future.fromTry(deleteEuToSameEuCountry(request.userAnswers, period))
+            updatedReturn <- Future.fromTry(removeEuToSameEuService.deleteEuToSameEuCountry(request.userAnswers, period))
             _ <- cc.sessionRepository.set(updatedReturn)
       } yield {
         navigate(period)
       }
-
-  }
-
-  private def deleteEuToSameEuCountry(userAnswers: UserAnswers, period: Period): Try[UserAnswers] = {
-
-    val allEuSaleWithIndex = userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty).zipWithIndex
-
-    @tailrec
-    def recursivelyRemoveSalesFromEu(currentUserAnswers: UserAnswers, remainingEuSales: List[(SalesFromEuWithOptionalVat, Int)]): Try[UserAnswers] = {
-
-      remainingEuSales match {
-        case Nil => Try(currentUserAnswers)
-        case (salesFromEuCountry, index) :: otherEuSales =>
-          val updatedSalesFromCountry = salesFromEuCountry.salesFromCountry
-          .map(_.filterNot(_.countryOfConsumption.code == salesFromEuCountry.countryOfSale.code))
-
-          val updatedSalesFromEu = salesFromEuCountry.copy(salesFromCountry = updatedSalesFromCountry)
-
-          val updatedAllSales = currentUserAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
-            .updated(index, updatedSalesFromEu)
-
-          val updatedUserAnswers = currentUserAnswers.set(AllSalesFromEuQueryWithOptionalVatQuery, updatedAllSales)
-
-          recursivelyRemoveSalesFromEu(updatedUserAnswers.get, otherEuSales)
-      }
-    }
-    recursivelyRemoveSalesFromEu(userAnswers, allEuSaleWithIndex)
 
   }
 
