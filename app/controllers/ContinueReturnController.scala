@@ -57,9 +57,10 @@ class ContinueReturnController @Inject()(
           val hasNiToNiSale = request.userAnswers.get(AllSalesFromNiWithOptionalVatQuery).getOrElse(List.empty)
             .exists(indexedSalesFromCountryWithOptionalVat => indexedSalesFromCountryWithOptionalVat.countryOfConsumption.code == Country.northernIreland.code)
           val hasSameEuToEuSale = request.userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
-            .exists(indexedSalesFromEuCountryWithOptionalVat => {
-              Country.euCountries.map(_.code).contains(indexedSalesFromEuCountryWithOptionalVat.countryOfSale.code)
-            })
+            .exists(indexedSalesFromEuCountryWithOptionalVat =>
+              indexedSalesFromEuCountryWithOptionalVat.salesFromCountry.exists(_.headOption
+                .exists(_.countryOfConsumption.code == indexedSalesFromEuCountryWithOptionalVat.countryOfSale.code))
+            )
 
           (isOMP, hasNiToNiSale, hasSameEuToEuSale, value) match {
             case (false, true, false, ContinueReturn.Continue) =>
