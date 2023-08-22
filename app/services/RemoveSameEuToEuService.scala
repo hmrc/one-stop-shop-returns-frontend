@@ -37,15 +37,25 @@ class RemoveSameEuToEuService {
         case (salesFromEuCountry, index) :: otherEuSales =>
           val updatedSalesFromCountry = salesFromEuCountry.salesFromCountry
             .map(_.filterNot(_.countryOfConsumption.code == salesFromEuCountry.countryOfSale.code))
+            .filterNot(_.isEmpty)
 
-          val updatedSalesFromEu = salesFromEuCountry.copy(salesFromCountry = updatedSalesFromCountry)
+          if (updatedSalesFromCountry.nonEmpty) {
+            val updatedSalesFromEu = salesFromEuCountry.copy(salesFromCountry = updatedSalesFromCountry)
 
-          val updatedAllSales = currentUserAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
-            .updated(index, updatedSalesFromEu)
+            val updatedAllSales = currentUserAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
+              .updated(index, updatedSalesFromEu)
 
-          val updatedUserAnswers = currentUserAnswers.set(AllSalesFromEuQueryWithOptionalVatQuery, updatedAllSales)
+            val updatedUserAnswers = currentUserAnswers.set(AllSalesFromEuQueryWithOptionalVatQuery, updatedAllSales)
 
-          recursivelyRemoveSalesFromEu(updatedUserAnswers.get, otherEuSales)
+            recursivelyRemoveSalesFromEu(updatedUserAnswers.get, otherEuSales)
+
+          } else {
+            val updatedAllSales = currentUserAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
+              .patch(index, Nil, 1)
+            val updatedUserAnswers = currentUserAnswers.set(AllSalesFromEuQueryWithOptionalVatQuery, updatedAllSales)
+
+            recursivelyRemoveSalesFromEu(updatedUserAnswers.get, otherEuSales)
+          }
       }
     }
 

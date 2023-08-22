@@ -21,7 +21,7 @@ import forms.ContinueReturnFormProvider
 import models.{ContinueReturn, Country}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{ContinueReturnPage, CountryOfConsumptionFromNiPage, CountryOfSaleFromEuPage, SavedProgressPage}
+import pages.{ContinueReturnPage, CountryOfConsumptionFromEuPage, CountryOfConsumptionFromNiPage, CountryOfSaleFromEuPage, SavedProgressPage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.ContinueReturnView
@@ -38,7 +38,9 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
       .set(CountryOfConsumptionFromNiPage(index), Country("XI", "Northern Ireland")).success.value
 
   private val sameEuCountryAnswers =
-    emptyUserAnswers.set(CountryOfSaleFromEuPage(index), Country("LV", "Latvia")).success.value
+    emptyUserAnswers
+      .set(CountryOfSaleFromEuPage(index), Country("LV", "Latvia")).success.value
+      .set(CountryOfConsumptionFromEuPage(index, index), Country("LV", "Latvia")).success.value
 
   val country: Country = arbitrary[Country].sample.value
 
@@ -166,7 +168,7 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
     "must return the Intercept page if user has changed OMP to NO and has a saved return with same Eu to EU country sales" in {
 
       val reg = registration.copy(isOnlineMarketplace = false)
-
+      val hasSameEuToEu = true
       val application =
         applicationBuilder(
           userAnswers = Some(sameEuCountryAnswers),
@@ -178,7 +180,6 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
           .withFormUrlEncodedBody(("value", ContinueReturn.values.head.toString))
 
         val result = route(application, request).value
-
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.CountryToSameCountryController.onPageLoad(period).url
       }
