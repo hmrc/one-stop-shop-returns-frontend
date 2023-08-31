@@ -17,18 +17,18 @@
 package controllers
 
 import base.SpecBase
-import models.Country
-import org.mockito.ArgumentMatchers.any
+import models.{CheckMode, Country, NormalMode}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.CountryOfSaleFromEuPage
+import pages._
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.UserAnswersRepository
+import services.RemoveSameEuToEuService
 import views.html.CountryToSameCountryView
 
-import scala.concurrent.Future
+import scala.util.Try
 
 class CountryToSameCountryControllerSpec extends SpecBase with MockitoSugar {
 
@@ -41,44 +41,135 @@ class CountryToSameCountryControllerSpec extends SpecBase with MockitoSugar {
 
   "CountryToSameCountry Controller" - {
 
-    "must return OK and the correct the intercept page when isOnlineMarketplace false" in {
-      val reg = registration.copy(isOnlineMarketplace = false)
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = reg).build()
+    "#onpageload" - {
 
-      running(application) {
-        val request = FakeRequest(GET, CountryToSameCountryRoute)
+      "must return OK and the correct the intercept page when isOnlineMarketplace false" in {
+        val reg = registration.copy(isOnlineMarketplace = false)
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = reg).build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request = FakeRequest(GET, CountryToSameCountryRoute)
 
-        val view = application.injector.instanceOf[CountryToSameCountryView]
+          val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(period)(request, messages(application)).toString
+          val view = application.injector.instanceOf[CountryToSameCountryView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(period)(request, messages(application)).toString
+        }
       }
+
+
     }
 
-    "must redirect to the correct page when the user clicks confirm" in {
+    "#onSubmit" - {
 
-      val mockSessionRepository = mock[UserAnswersRepository]
+      "when there are sales still remaining then navigate to check your answers" in {
+        val mockRemoveSameEuToEuService = mock[RemoveSameEuToEuService]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+        when(mockRemoveSameEuToEuService.deleteEuToSameEuCountry(any())) thenReturn Try(completeUserAnswers)
 
-      val application =
-        applicationBuilder(userAnswers = Some(baseAnswers))
-          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
-          .build()
+        val application =
+          applicationBuilder(userAnswers = Some(baseAnswers))
+            .overrides(bind[RemoveSameEuToEuService].toInstance(mockRemoveSameEuToEuService))
+            .build()
 
-      running(application) {
-        val request =
-          FakeRequest(POST, CountryToSameCountryRoute)
-            .withFormUrlEncodedBody(("value", countryTo.code))
+        running(application) {
+          val request =
+            FakeRequest(POST, CountryToSameCountryRoute)
 
-        val result = route(application, request).value
+          val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.CheckYourAnswersController.onPageLoad(period).url
-        verify(mockSessionRepository, times(1)).set(any())
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad(period).url
+          verify(mockRemoveSameEuToEuService, times(1)).deleteEuToSameEuCountry(eqTo(baseAnswers))
+        }
+      }
 
+      "when there are no NI or EU sales remaining then navigate to sales to NI question in normal mode" in {
+        val mockRemoveSameEuToEuService = mock[RemoveSameEuToEuService]
+
+        val updatedUserAnswers = completeUserAnswers.remove(CountryOfConsumptionFromNiPage(index)).success.value
+          .remove(VatRatesFromNiPage(index)).success.value
+          .remove(NetValueOfSalesFromNiPage(index, index)).success.value
+          .remove(VatOnSalesFromNiPage(index, index)).success.value
+          .remove(CountryOfConsumptionFromEuPage(index, index)).success.value
+          .remove(VatRatesFromEuPage(index, index)).success.value
+          .remove(NetValueOfSalesFromEuPage(index, index, index)).success.value
+          .remove(VatOnSalesFromEuPage(index, index, index)).success.value
+
+        when(mockRemoveSameEuToEuService.deleteEuToSameEuCountry(any())) thenReturn Try(updatedUserAnswers)
+
+        val application =
+          applicationBuilder(userAnswers = Some(baseAnswers))
+            .overrides(bind[RemoveSameEuToEuService].toInstance(mockRemoveSameEuToEuService))
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, CountryToSameCountryRoute)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url
+          verify(mockRemoveSameEuToEuService, times(1)).deleteEuToSameEuCountry(eqTo(baseAnswers))
+        }
+      }
+
+      "when there are no EU but there are NI sales remaining then navigate to sales to EU question" in {
+        val mockRemoveSameEuToEuService = mock[RemoveSameEuToEuService]
+
+        val updatedUserAnswers = completeUserAnswers.remove(CountryOfSaleFromEuPage(index)).success.value
+          .remove(CountryOfConsumptionFromEuPage(index, index)).success.value
+          .remove(VatRatesFromEuPage(index, index)).success.value
+          .remove(NetValueOfSalesFromEuPage(index, index, index)).success.value
+          .remove(VatOnSalesFromEuPage(index, index, index)).success.value
+
+        when(mockRemoveSameEuToEuService.deleteEuToSameEuCountry(any())) thenReturn Try(updatedUserAnswers)
+
+        val application =
+          applicationBuilder(userAnswers = Some(baseAnswers))
+            .overrides(bind[RemoveSameEuToEuService].toInstance(mockRemoveSameEuToEuService))
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, CountryToSameCountryRoute)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.SoldGoodsFromEuController.onPageLoad(CheckMode, period).url
+          verify(mockRemoveSameEuToEuService, times(1)).deleteEuToSameEuCountry(eqTo(baseAnswers))
+        }
+      }
+
+      "when there are no NI but there are EU sales remaining then navigate to sales to NI question in check mode" in {
+        val mockRemoveSameEuToEuService = mock[RemoveSameEuToEuService]
+
+        val updatedUserAnswers = completeUserAnswers.remove(CountryOfConsumptionFromNiPage(index)).success.value
+          .remove(VatRatesFromNiPage(index)).success.value
+          .remove(NetValueOfSalesFromNiPage(index, index)).success.value
+          .remove(VatOnSalesFromNiPage(index, index)).success.value
+
+        when(mockRemoveSameEuToEuService.deleteEuToSameEuCountry(any())) thenReturn Try(updatedUserAnswers)
+
+        val application =
+          applicationBuilder(userAnswers = Some(baseAnswers))
+            .overrides(bind[RemoveSameEuToEuService].toInstance(mockRemoveSameEuToEuService))
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, CountryToSameCountryRoute)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.SoldGoodsFromNiController.onPageLoad(CheckMode, period).url
+          verify(mockRemoveSameEuToEuService, times(1)).deleteEuToSameEuCountry(eqTo(baseAnswers))
+        }
       }
 
     }

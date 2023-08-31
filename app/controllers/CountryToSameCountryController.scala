@@ -18,13 +18,13 @@ package controllers
 
 import controllers.actions._
 import logging.Logging
-import models.requests.DataRequest
 
 import javax.inject.Inject
-import models.{NormalMode, Period}
+import models.{CheckMode, NormalMode, Period, UserAnswers}
+import pages.{SoldGoodsFromEuPage, SoldGoodsFromNiPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import queries.AllSalesFromEuQueryWithOptionalVatQuery
+import queries.{AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiWithOptionalVatQuery}
 import services.RemoveSameEuToEuService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.CountryToSameCountryView
@@ -49,26 +49,32 @@ class CountryToSameCountryController @Inject()(
     implicit request =>
 
       for {
-            updatedReturn <- Future.fromTry(removeEuToSameEuService.deleteEuToSameEuCountry(request.userAnswers, period))
+            updatedReturn <- Future.fromTry(removeEuToSameEuService.deleteEuToSameEuCountry(request.userAnswers))
             _ <- cc.sessionRepository.set(updatedReturn)
       } yield {
-        navigate(period)
+        val updatedUserAnswers = updatedReturn
+        navigate(period, updatedUserAnswers)
       }
-
   }
 
+  private def navigate(period: Period, userAnswers: UserAnswers): Result = {
+    val soldGoodsToNi = userAnswers.get(SoldGoodsFromNiPage)
+    val numberOfSalesFromNi = userAnswers.get(AllSalesFromNiWithOptionalVatQuery).getOrElse(List.empty)
+    val soldGoodsToEu = userAnswers.get(SoldGoodsFromEuPage)
+    val numberOfSalesFromEu = userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
 
-  private def navigate(period: Period)(implicit request: DataRequest[AnyContent]): Result = {
-
-    val allSalesFromEuQuery = request.userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery)
-
-    allSalesFromEuQuery match {
-      case Some(n) if n.nonEmpty =>
-        Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url)
+    (soldGoodsToNi, numberOfSalesFromNi, soldGoodsToEu, numberOfSalesFromEu) match {
+      case (Some(true), Nil, _, Nil) =>
+        Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url)
+      case (Some(true), Nil, _, _) =>
+        Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(CheckMode, period).url)
+      case(_, _, Some(true), Nil) =>
+        Redirect(controllers.routes.SoldGoodsFromEuController.onPageLoad(CheckMode, period).url)
+      case (Some(true), Nil, Some(true), Nil) =>
+        Redirect(controllers.routes.SoldGoodsFromEuController.onPageLoad(CheckMode, period).url)
       case _ =>
-        Redirect(controllers.routes.SalesFromEuListController.onPageLoad(NormalMode, period).url)
+        Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url)
     }
-
   }
 
 }

@@ -16,7 +16,7 @@
 
 package services
 
-import models.{Period, SalesFromEuWithOptionalVat, UserAnswers}
+import models.{SalesFromEuWithOptionalVat, UserAnswers}
 import queries.AllSalesFromEuQueryWithOptionalVatQuery
 
 import scala.annotation.tailrec
@@ -25,7 +25,7 @@ import scala.util.Try
 class RemoveSameEuToEuService {
 
 
-  def deleteEuToSameEuCountry(userAnswers: UserAnswers, period: Period): Try[UserAnswers] = {
+  def deleteEuToSameEuCountry(userAnswers: UserAnswers): Try[UserAnswers] = {
 
     val allEuSaleWithIndex = userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty).zipWithIndex
 

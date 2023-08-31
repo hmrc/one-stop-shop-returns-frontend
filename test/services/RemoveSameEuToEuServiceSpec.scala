@@ -17,10 +17,7 @@
 package services
 
 import base.SpecBase
-import controllers.CountryToSameCountryController
-import models.{Country, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat}
-import org.scalacheck.Arbitrary.arbitrary
-import org.scalatestplus.mockito.MockitoSugar.mock
+import models.{Country, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat}
 import queries.AllSalesFromEuQueryWithOptionalVatQuery
 
 class RemoveSameEuToEuServiceSpec extends SpecBase{
@@ -58,8 +55,7 @@ class RemoveSameEuToEuServiceSpec extends SpecBase{
 
       val service = new RemoveSameEuToEuService()
 
-      val period = arbitrary[Period].sample.value
-      val result = service.deleteEuToSameEuCountry(userAnswers, period)
+      val result = service.deleteEuToSameEuCountry(userAnswers)
 
       val updateUserAnswers = result.get
 

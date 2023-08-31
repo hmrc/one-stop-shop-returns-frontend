@@ -19,8 +19,8 @@ package controllers
 import controllers.actions._
 
 import javax.inject.Inject
-import models.{Country, Index, NormalMode, Period}
-import models.requests.DataRequest
+import models.{Country, Index, NormalMode, Period, UserAnswers}
+import pages.{SoldGoodsFromEuPage, SoldGoodsFromNiPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import queries.{AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiWithOptionalVatQuery, SalesFromNiQuery}
@@ -56,24 +56,31 @@ class NiToNiInterceptController @Inject()(
             updatedReturn <- Future.fromTry(request.userAnswers.remove(SalesFromNiQuery(Index(index))))
             _ <- cc.sessionRepository.set(updatedReturn)
           } yield {
-            navigate(period)
+            val updatedUserAnswers = updatedReturn
+            navigate(period, updatedUserAnswers)
           }
-        case _ =>
-          Future.successful(navigate(period))
       }
   }
 
-  private def navigate(period: Period)(implicit request: DataRequest[AnyContent]): Result = {
+  private def navigate(period: Period, userAnswers: UserAnswers): Result = {
+    val soldGoodsToNi = userAnswers.get(SoldGoodsFromNiPage)
+    val numberOfSalesFromNi = userAnswers.get(AllSalesFromNiWithOptionalVatQuery).getOrElse(List.empty)
+    val soldGoodsToEu = userAnswers.get(SoldGoodsFromEuPage)
+    val numberOfSalesFromEu = userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
 
-    val allSalesFromNiQuery = request.userAnswers.get(AllSalesFromNiWithOptionalVatQuery)
-    val allSalesFromEuQuery = request.userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery)
-
-    if (allSalesFromEuQuery.exists(_.nonEmpty) && allSalesFromNiQuery.exists(_.nonEmpty)) {
-      Redirect(controllers.routes.CountryToSameCountryController.onPageLoad(period).url) // redirects here if user has said yes to sales from NI & from EU
-    } else if (allSalesFromNiQuery.exists(_.nonEmpty)) {
-      Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url) // redirects here if user has says from NI Only
-    } else {
-      Redirect(controllers.routes.SalesFromNiListController.onPageLoad(NormalMode, period).url)
+    (soldGoodsToNi,numberOfSalesFromNi,soldGoodsToEu, numberOfSalesFromEu) match {
+      case (Some(true), Nil, Some(true), _) =>
+        Redirect(controllers.routes.CountryToSameCountryController.onPageLoad(period).url)
+      case (Some(true), Nil, _, _) =>
+        Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url)
+      case (Some(true), _, Some(true), _) =>
+        Redirect(controllers.routes.CountryToSameCountryController.onPageLoad(period).url)
+      case (Some(true), Nil, Some(true), Nil) =>
+        Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url)
+      case (Some(true), _, Some(true), Nil) =>
+        Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url)
+      case _ =>
+        Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url)
     }
   }
 
