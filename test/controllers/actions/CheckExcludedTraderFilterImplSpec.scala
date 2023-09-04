@@ -54,7 +54,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
   }
 
   private val periodYear = 2022
-  private val exclusionSource = Gen.oneOf("HMRC", "TRADER").sample.value
+  private val exclusionCode = Gen.oneOf("02", "04",  "01", "03", "05", "06").sample.value.toInt
   private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
 
   ".filter" - {
@@ -86,7 +86,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
       val excludedPeriod = Period(periodYear, Q2)
       val startReturnPeriod = Period(periodYear, Q2)
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, exclusionSource, exclusionReason, excludedPeriod)
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, exclusionCode, exclusionReason, excludedPeriod)
 
       val excludedRegistration = registration.copy(excludedTrader = Some(excludedTrader))
 
@@ -114,7 +114,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
       val startReturnPeriod = Period(periodYear, Q3)
 
       val excludedTrader: ExcludedTrader =
-        ExcludedTrader(vrn, exclusionSource, exclusionReason, excludedPeriod)
+        ExcludedTrader(vrn, exclusionCode, exclusionReason, excludedPeriod)
 
       val excludedRegistration = registration.copy(excludedTrader = Some(excludedTrader))
 
@@ -143,7 +143,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
       val startReturnPeriod = Period(periodYear, Q3)
 
       val excludedTrader: ExcludedTrader =
-        ExcludedTrader(vrn, exclusionSource, exclusionReason, excludedPeriod)
+        ExcludedTrader(vrn, exclusionCode, exclusionReason, excludedPeriod)
 
       val excludedRegistration = registration.copy(excludedTrader = Some(excludedTrader))
 

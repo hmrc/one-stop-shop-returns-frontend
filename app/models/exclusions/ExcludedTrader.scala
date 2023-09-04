@@ -24,7 +24,7 @@ import uk.gov.hmrc.domain.Vrn
 
 case class ExcludedTrader(
                            vrn: Vrn,
-                           exclusionSource: String,
+                           exclusionCode: Int,
                            exclusionReason: Int,
                            effectivePeriod: Period
                          )
