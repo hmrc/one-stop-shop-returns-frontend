@@ -77,27 +77,21 @@
     } else {
         @maybeExcludedTrader match {
             case Some(excludedTrader) => {
-                @(excludedTrader.exclusionReason, excludedTrader.exclusionCode) match {
-                case (4, _) => {
+                @(excludedTrader.exclusionReason) match {
+                case (4) => {
                     @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.exclusion.quarantineUser",
                                             excludedTrader.effectivePeriod.firstDay.plusYears(2)))
                     ))
                 }
-                case (_, 2) => {
+                case (_) => {
                     @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.exclusion.hmrc"))
                     ))
                 }
-                case (_, 1) => {
-                    @govukWarningText(WarningText(
-                            iconFallbackText = Option(messages("site.warning")),
-                            content = Text(messages("yourAccount.warning.exclusion.trader"))
-                    ))
-                }
-                case (_, _) => {}
+                case (_) => {}
             }
         }
             case _ => {}
