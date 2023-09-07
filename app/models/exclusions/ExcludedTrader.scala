@@ -31,7 +31,7 @@ case class ExcludedTrader(
 
   private def derriveExclusionSource(code: Int) = {
     code match {
-      case x if x == 1 || x == 2 => "HMRC"
+      case x if x == 2 || x == 4 => "HMRC"
       case _ => "TRADER"
     }
   }

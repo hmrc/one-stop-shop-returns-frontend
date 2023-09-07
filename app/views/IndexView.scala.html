@@ -85,10 +85,16 @@
                                             excludedTrader.effectivePeriod.firstDay.plusYears(2)))
                     ))
                 }
-                case (_) => {
+                case (2) => {
                     @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.exclusion.hmrc"))
+                    ))
+                }
+                case (_) => {
+                    @govukWarningText(WarningText(
+                        iconFallbackText = Option(messages("site.warning")),
+                        content = Text(messages("yourAccount.warning.exclusion.trader"))
                     ))
                 }
                 case (_) => {}
