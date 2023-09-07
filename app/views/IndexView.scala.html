@@ -81,10 +81,7 @@
                 case (4) => {
                     @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
-                            content = Text(
-                                            messages("yourAccount.warning.exclusion.quarantineUser")
-                                            +" "+
-                                            messages("yourAccount.warning.exclusion.quarantineUser.p",
+                            content = Text(messages("yourAccount.warning.exclusion.quarantineUser",
                                             excludedTrader.effectivePeriod.firstDay.plusYears(2)))
                     ))
                 }

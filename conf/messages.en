@@ -520,8 +520,7 @@ excludedNotPermitted.link = Back to your account.
 
 yourAccount.warning.exclusion.trader = You have left this service, but you must complete your final return and pay any VAT you still owe.
 yourAccount.warning.exclusion.hmrc = We''ve removed you from this service, but you must complete your final return and pay any VAT you still owe.
-yourAccount.warning.exclusion.quarantineUser = We''ve removed you from the One Stop Shop scheme, but you must complete your final return and pay any VAT you still owe.
-yourAccount.warning.exclusion.quarantineUser.p = You cannot re-join until {0}.
+yourAccount.warning.exclusion.quarantineUser = We''ve removed you from the One Stop Shop scheme, but you must complete your final return and pay any VAT you still owe. You cannot re-join until {0}.
 yourAccount.warning.leftService = You have left this service.
 yourAccount.previous.return.correct = You can no longer use this service to correct previous returns. You must make any corrections directly with the country where you made the sales.
 yourAccount.finalReturn.completed = You''ve completed your final return.
