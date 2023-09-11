@@ -28,6 +28,7 @@ import org.mockito.{Mockito, MockitoSugar}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.must.Matchers
 import play.api.mvc.AnyContent
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
@@ -102,6 +103,27 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       exclusionService.currentReturnIsFinal(mockRegistrationRequest.registration, Period(2022, Q2))(hc, ec).futureValue mustBe false
     }
+  }
+
+  ".derriveExclusionSource" - {
+    "must return 'HMRC' for exclusion reason 2 and 4" in {
+      val exclusionReasons = Seq(2, 4)
+
+      exclusionReasons.foreach { reason =>
+        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod)
+        excludedTrader.exclusionSource mustBe "HMRC"
+      }
+    }
+
+    "must return 'Trader' for other exclusion reasons" in {
+      val exclusionReasons = Seq(1, 3, 5, 6)
+
+      exclusionReasons.foreach { reason =>
+        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod)
+        excludedTrader.exclusionSource mustBe "TRADER"
+      }
+    }
+
   }
 
 }
