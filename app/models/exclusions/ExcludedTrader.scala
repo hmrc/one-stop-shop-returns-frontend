@@ -24,10 +24,18 @@ import uk.gov.hmrc.domain.Vrn
 
 case class ExcludedTrader(
                            vrn: Vrn,
-                           exclusionSource: String,
                            exclusionReason: Int,
                            effectivePeriod: Period
-                         )
+                         ) {
+  val exclusionSource: String = derriveExclusionSource(exclusionReason)
+
+  private def derriveExclusionSource(code: Int) = {
+    code match {
+      case x if x == 2 || x == 4 => "HMRC"
+      case _ => "TRADER"
+    }
+  }
+}
 
 object ExcludedTrader extends Logging {
 

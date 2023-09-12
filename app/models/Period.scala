@@ -32,11 +32,13 @@ case class Period(year: Int, quarter: Quarter) {
   val firstDay: LocalDate = LocalDate.of(year, quarter.startMonth, 1)
   val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
   val paymentDeadline: LocalDate = firstDay.plusMonths(4).minusDays(1)
+  val rejoinDate: LocalDate = firstDay.plusYears(2)
 
   private val firstDayFormatter = DateTimeFormatter.ofPattern("d MMMM")
   private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
   private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
+  private val rejoinDateFormatter = DateTimeFormatter.ofPattern("d MMMM YYYY")
 
   def displayText(implicit messages: Messages): String =
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
@@ -44,6 +46,8 @@ case class Period(year: Int, quarter: Quarter) {
   def displayShortText(implicit messages: Messages): String =
     s"${firstDay.format(firstMonthFormatter)} ${messages("site.to")} ${lastDay.format(lastMonthYearFormatter)}"
 
+  def displayRejoinDate (implicit messages: Messages): String =
+    s"${rejoinDate.format(rejoinDateFormatter)}"
   val paymentDeadlineDisplay: String = paymentDeadline.format(lastDayFormatter)
 
   def isOverdue(clock: Clock): Boolean = {

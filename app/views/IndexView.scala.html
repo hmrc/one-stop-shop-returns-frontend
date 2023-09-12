@@ -70,34 +70,64 @@
 
 @if(exclusionsEnabled) {
     @if(hasSubmittedFinalReturn) {
-        @govukWarningText(WarningText(
-        iconFallbackText = Option(messages("site.warning")),
-        content = Text(messages("yourAccount.warning.leftService"))
-        ))
+        @maybeExcludedTrader match {
+            case Some(excludedTrader) => {
+                @(excludedTrader.exclusionReason) match {
+                    case (4) => {
+                        <div class="govuk-warning-text">
+                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                            <strong class="govuk-warning-text__text">
+                                <span class="govuk-warning-text__assistive">Warning:</span>
+                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser")</p>
+                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser.p", excludedTrader.effectivePeriod.displayRejoinDate)</p>
+                            </strong>
+                        </div>
+                    }
+                    case (2) => {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(messages("yourAccount.warning.removedFromService"))
+                        ))
+                    }
+                    case (_) => {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(messages("yourAccount.warning.leftService"))
+                        ))
+                    }
+                    case (_) => {}
+                }
+            }
+            case _ => {}
+        }
+
     } else {
         @maybeExcludedTrader match {
             case Some(excludedTrader) => {
-                @(excludedTrader.exclusionReason, excludedTrader.exclusionSource) match {
-                case (4, _) => {
-                    @govukWarningText(WarningText(
-                            iconFallbackText = Option(messages("site.warning")),
-                            content = Text(messages("yourAccount.warning.exclusion.quarantineUser",
-                                            excludedTrader.effectivePeriod.firstDay.plusYears(2)))
-                    ))
+                @(excludedTrader.exclusionReason) match {
+                case (4) => {
+                    <div class="govuk-warning-text">
+                        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                        <strong class="govuk-warning-text__text">
+                            <span class="govuk-warning-text__assistive">Warning:</span>
+                            <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser")</p>
+                            <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser.p", excludedTrader.effectivePeriod.displayRejoinDate)</p>
+                        </strong>
+                    </div>
                 }
-                case (_, "HMRC") => {
+                case (2) => {
                     @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.exclusion.hmrc"))
                     ))
                 }
-                case (_, "TRADER") => {
+                case (_) => {
                     @govukWarningText(WarningText(
-                            iconFallbackText = Option(messages("site.warning")),
-                            content = Text(messages("yourAccount.warning.exclusion.trader"))
+                        iconFallbackText = Option(messages("site.warning")),
+                        content = Text(messages("yourAccount.warning.exclusion.trader"))
                     ))
                 }
-                case (_, _) => {}
+                case (_) => {}
             }
         }
             case _ => {}
