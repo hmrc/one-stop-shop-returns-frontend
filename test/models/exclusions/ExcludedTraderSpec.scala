@@ -17,31 +17,14 @@
 package models.exclusions
 
 import base.SpecBase
-import connectors.VatReturnConnector
 import models.Period
-import models.Quarter.{Q2, Q3}
-import models.registration.Registration
-import models.requests.RegistrationRequest
-import models.responses.NotFound
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.{Mockito, MockitoSugar}
-import org.scalacheck.Gen
-import org.scalatest.BeforeAndAfterEach
-import play.api.mvc.AnyContent
+import models.Quarter._
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
 
-class ExcludedTraderSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+class ExcludedTraderSpec extends SpecBase {
 
-  private val mockRegistrationRequest = mock[RegistrationRequest[AnyContent]]
   private val exclusionPeriod = Period(2022, Q3)
-
-  override def beforeEach(): Unit = {
-    Mockito.reset(mockRegistrationRequest)
-    super.beforeEach()
-  }
 
 
   ".derriveExclusionSource" - {

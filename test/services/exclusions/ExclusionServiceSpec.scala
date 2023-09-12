@@ -28,7 +28,6 @@ import org.mockito.{Mockito, MockitoSugar}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.matchers.must.Matchers
 import play.api.mvc.AnyContent
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
