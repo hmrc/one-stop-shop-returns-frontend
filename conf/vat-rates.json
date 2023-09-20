@@ -310,10 +310,9 @@
   ],
   "LU": [
     {
-      "validFrom": "2021-07-01",
+      "validFrom": "2024-01-01",
       "rate": 17.0,
-      "rateType": "STANDARD",
-      "validUntil": "2022-12-31"
+      "rateType": "STANDARD"
     },
     {
       "validFrom": "2023-01-01",
@@ -480,8 +479,8 @@
       "rateType": "REDUCED"
     },
     {
-      "validFrom": "2023-07-01",
-      "rate": 5.0,
+      "validFrom": "2021-07-01",
+      "rate": 6.0,
       "rateType": "REDUCED"
     }
   ],
