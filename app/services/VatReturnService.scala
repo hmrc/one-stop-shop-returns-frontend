@@ -94,7 +94,7 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
             }
         }
 
-      case None =>
+      case _ =>
         DataMissingError(AllSalesFromNiQuery).invalidNec
     }
   }
@@ -158,7 +158,7 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
             }
         }
 
-      case None =>
+      case _ =>
         DataMissingError(AllSalesFromEuQuery).invalidNec
     }
 
@@ -176,7 +176,7 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
             }
         }
 
-      case None =>
+      case _ =>
         DataMissingError(AllSalesToEuQuery(countryFromIndex)).invalidNec
     }
 
@@ -208,7 +208,7 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
         ).validNec
       case Some(SalesAtVatRateWithOptionalVat(_, None)) =>
         DataMissingError(VatOnSalesFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
-      case None =>
+      case _ =>
         DataMissingError(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
     }
 

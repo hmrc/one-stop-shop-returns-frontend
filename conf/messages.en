@@ -541,3 +541,13 @@ niToNiIntercept.paragraph.line4 = This will not affect returns you have already 
 niToNiIntercept.contactUs = If you have any questions, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 niToNiIntercept.error.required = Select confirm if you want to delete your current return
 niToNiIntercept.confirm = Confirm
+
+countryToSameCountry.title = Delete your information about sales from an EU country to consumers in that same country
+countryToSameCountry.heading = Delete your information about sales from an EU country to consumers in that same country
+countryToSameCountry.paragraph.line1 = You have updated your registration to tell us your business is not an online marketplace.
+countryToSameCountry.paragraph.line2 = Only businesses registered as online marketplaces can declare sales from an EU country to consumers in that same country on a One Stop Shop return.
+countryToSameCountry.paragraph.line3 = Confirm to remove these sales that you have declared on your return.
+countryToSameCountry.paragraph.line4 = This will not affect returns you have already submitted.
+countryToSameCountry.contactUs = If you have any questions, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
+countryToSameCountry..error.required = Select confirm if you want to delete your current return
+countryToSameCountry.confirm = Confirm

@@ -18,7 +18,7 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
-import connectors.{SavedUserAnswers, SaveForLaterConnector, VatReturnConnector}
+import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import controllers.corrections.{routes => correctionsRoutes}
 import logging.Logging
@@ -36,7 +36,7 @@ import play.api.mvc._
 import queries._
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import repositories.CachedVatReturnRepository
-import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
+import services.{AuditService, EmailService, RedirectService, SalesAtVatRateService, VatReturnService}
 import services.corrections.CorrectionService
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
@@ -44,7 +44,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -56,6 +56,7 @@ class CheckYourAnswersController @Inject()(
                                             exclusionService: ExclusionService,
                                             view: CheckYourAnswersView,
                                             vatReturnService: VatReturnService,
+                                            redirectService: RedirectService,
                                             correctionService: CorrectionService,
                                             auditService: AuditService,
                                             emailService: EmailService,
@@ -69,7 +70,7 @@ class CheckYourAnswersController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
-      val errors = validate(period)
+      val errors = redirectService.validate(period)
 
       val businessSummaryList = getBusinessSummaryList(request)
 
@@ -163,29 +164,10 @@ class CheckYourAnswersController @Inject()(
     ).withCssClass("govuk-!-margin-bottom-9")
   }
 
-  def validate(period: Period)( implicit request: DataRequest[AnyContent]): List[ValidationError] = {
-
-    val validatedVatReturnRequest =
-      vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
-
-    val validatedCorrectionRequest = request.userAnswers.get(CorrectPreviousReturnPage).map(_ =>
-      correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate))
-
-    (validatedVatReturnRequest, validatedCorrectionRequest) match {
-      case (Invalid(vatReturnErrors), Some(Invalid(correctionErrors))) =>
-        (vatReturnErrors ++ correctionErrors).toChain.toList
-      case (Invalid(errors), _) =>
-        errors.toChain.toList
-      case (_, Some(Invalid(errors))) =>
-        errors.toChain.toList
-      case _ => List.empty[ValidationError]
-    }
-  }
-
   def onSubmit(period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
-      val redirectToFirstError = getRedirect(validate(period), period).headOption
+      val redirectToFirstError = redirectService.getRedirect(redirectService.validate(period), period).headOption
 
       (redirectToFirstError, incompletePromptShown) match {
         case (Some(redirect), true) => Future.successful(Redirect(redirect))
@@ -220,58 +202,6 @@ class CheckYourAnswersController @Inject()(
               Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
           }
       }
-  }
-
-  def getRedirect(errors: List[ValidationError], period: Period): List[Call] = {
-    errors.flatMap {
-      case DataMissingError(AllSalesFromNiQuery) =>
-        logger.error(s"Data missing - no data provided for NI sales")
-        Some(routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, period, Index(0)))
-      case DataMissingError(VatRatesFromNiPage(index)) =>
-        logger.error(s"Data missing - vat rates with index ${index.position}")
-        Some(routes.VatRatesFromNiController.onPageLoad(CheckMode, period, index))
-      case DataMissingError(NiSalesAtVatRateQuery(countryIndex, vatRateIndex)) =>
-        logger.error(s"Data missing - net value of sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
-        Some(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, period, countryIndex, vatRateIndex))
-      case DataMissingError(VatOnSalesFromNiQuery(countryIndex, vatRateIndex)) =>
-        logger.error(s"Data missing - vat charged on sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
-        Some(routes.VatOnSalesFromNiController.onPageLoad(CheckMode, period, countryIndex, vatRateIndex))
-
-      case DataMissingError(AllSalesFromEuQuery) =>
-        logger.error(s"Data missing - no data provided for EU sales")
-        Some(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, period, Index(0)))
-      case DataMissingError(AllSalesToEuQuery(countryFromIndex)) =>
-        logger.error(s"Data missing - country of consumption from country ${countryFromIndex.position}")
-        Some(routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, period, countryFromIndex, Index(0)))
-      case DataMissingError(VatRatesFromEuPage(countryFromIndex, countryToIndex)) =>
-        logger.error(s"Data missing - vat rates for sales from country ${countryFromIndex.position} to country ${countryToIndex.position}")
-        Some(routes.VatRatesFromEuController.onPageLoad(CheckMode, period, countryFromIndex, countryToIndex))
-      case DataMissingError(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)) =>
-        logger.error(s"Data missing - net value of sales from country ${countryFromIndex.position} to country " +
-          s"${countryToIndex.position} at vat rate ${vatRateIndex.position} ")
-        Some(routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, period, countryFromIndex, countryToIndex, vatRateIndex))
-      case DataMissingError(VatOnSalesFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex)) =>
-        logger.error(s"Data missing - vat charged on sales from country ${countryFromIndex.position} to country " +
-          s"${countryToIndex.position} at vat rate ${vatRateIndex.position} ")
-        Some(routes.VatOnSalesFromEuController.onPageLoad(CheckMode, period, countryFromIndex, countryToIndex, vatRateIndex))
-
-      case DataMissingError(AllCorrectionPeriodsQuery) =>
-        logger.error(s"Data missing - no data provided for corrections")
-        Some(correctionsRoutes.CorrectionReturnPeriodController.onPageLoad(CheckMode, period, Index(0)))
-      case DataMissingError(AllCorrectionCountriesQuery(periodIndex)) =>
-        logger.error(s"Data missing - no countries found for corrections to period ${periodIndex.position}")
-        Some(correctionsRoutes.CorrectionCountryController.onPageLoad(CheckMode, period, periodIndex, Index(0)))
-      case DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)) =>
-        logger.error(s"Data missing - correction to country ${countryIndex.position} in period ${periodIndex.position}")
-        Some(correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, periodIndex, countryIndex, false))
-
-      case DataMissingError(_) =>
-        logger.error(s"Unhandled DataMissingError")
-        None
-      case _ =>
-        logger.error(s"Unhandled ValidationError")
-        None
-    }
   }
 
   def submitReturn(vatReturnRequest: VatReturnRequest, correctionRequest: Option[CorrectionRequest], period: Period)
