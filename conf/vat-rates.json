@@ -271,7 +271,8 @@
     {
       "validFrom": "2021-07-01",
       "rate": 4.8,
-      "rateType": "REDUCED"
+      "rateType": "REDUCED",
+      "validUntil": "2023-09-30"
     }
   ],
   "IT": [
@@ -318,7 +319,7 @@
       "validFrom": "2021-07-01",
       "rate": 17.0,
       "rateType": "STANDARD",
-      "validUntil": "2022-12-31"
+      "validUntil": "2023-09-30"
     },
     {
       "validFrom": "2023-01-01",
@@ -521,6 +522,11 @@
     {
       "validFrom": "2021-07-01",
       "rate": 10.0,
+      "rateType": "REDUCED"
+    },
+    {
+      "validFrom": "2023-07-01",
+      "rate": 5.0,
       "rateType": "REDUCED"
     }
   ],
