@@ -22,7 +22,7 @@ import models.{Index, Mode, Period}
 import pages.CountryOfSaleFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.AllSalesFromEuQuery
+import queries.AllSalesFromEuQueryWithOptionalVatQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.CountryOfSaleFromEuView
 
@@ -44,7 +44,7 @@ class CountryOfSaleFromEuController @Inject()(
         formProvider(
           index,
           request.userAnswers
-            .get(AllSalesFromEuQuery)
+            .get(AllSalesFromEuQueryWithOptionalVatQuery)
             .getOrElse(Seq.empty)
             .map(_.countryOfSale)
         )
@@ -64,7 +64,7 @@ class CountryOfSaleFromEuController @Inject()(
         formProvider(
           index,
           request.userAnswers
-            .get(AllSalesFromEuQuery)
+            .get(AllSalesFromEuQueryWithOptionalVatQuery)
             .getOrElse(Seq.empty)
             .map(_.countryOfSale)
         )
