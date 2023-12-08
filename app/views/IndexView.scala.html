@@ -235,6 +235,12 @@
                     </a>
                 </p>
             }
+            <p class="govuk-body">
+                <a class="govuk-link" href="@controllers.exclusions.routes.LeaveThisServiceController.onPageLoad().url"
+                id="leave-this-service">
+                @messages("index.details.leaveThisService")
+                </a>
+            </p>
         </div>
     </div>
     @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {

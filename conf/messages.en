@@ -80,6 +80,8 @@ index.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, which was 
 index.details = Details
 index.details.previousReturns = View submitted returns
 index.details.changeYourRegistration = Change your registration
+index.details.leaveThisService = Leave this service
+
 index.nextPeriod = You can complete your {0} return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
@@ -551,3 +553,25 @@ countryToSameCountry.paragraph.line4 = This will not affect returns you have alr
 countryToSameCountry.contactUs = If you have any questions, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 countryToSameCountry..error.required = Select confirm if you want to delete your current return
 countryToSameCountry.confirm = Confirm
+
+leaveThisService.title = Do you want to leave the One Stop Shop service?
+leaveThisService.heading = Do you want to leave the One Stop Shop service?
+leaveThisService.p1 = If your business is moving to a different EU country, email <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a> to request to leave this service.
+leaveThisService.p2.preface = You must tell us:
+leaveThisService.p2.li1 = your One Stop Shop reference, which is {0}
+leaveThisService.p2.li2 = your company name, which is {0}
+leaveThisService.p2.li3 = which country your business is moving to
+leaveThisService.p2.li4 = the date your business moved or will move
+leaveThisService.p3.preface = You must also confirm you understand:
+leaveThisService.p3.li1 = the risks of using email
+leaveThisService.p3.li2 = your financial information may be sent by email
+leaveThisService.p3.li3 = we may send you attachments
+leaveThisService.p4 = If you are the authorised agent or representative you must confirm that your client understands and accepts the risks.
+leaveThisService.p5.preface = The main risks associated with using email that concern HMRC are:
+leaveThisService.p5.li1 = confidentiality and privacy – there’s a risk that emails sent over the internet may be intercepted
+leaveThisService.p5.li2 = confirming your identity – it’s crucial that we only communicate with established contacts at their correct email addresses
+leaveThisService.p5.li3 = there’s no guarantee that an email received over an insecure network, like the internet, hasn’t been altered during transit
+leaveThisService.p5.li4 = attachments could contain a virus or malicious code
+leaveThisService.whatHappensNext.heading = What happens next
+leaveThisService.whatHappensNext.p1 = We’ll email you with any more information you may need and to confirm your details are correct.
+leaveThisService.returnToYourAccount = Return to your account
