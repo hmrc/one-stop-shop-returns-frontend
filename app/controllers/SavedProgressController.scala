@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import connectors.{SavedUserAnswers, SaveForLaterConnector, VatReturnConnector}
 import controllers.actions._
 import logging.Logging
-import models.Period
+import models.{Period, StandardPeriod}
 import models.requests.SaveForLaterRequest
 import models.responses.ConflictFound
 import pages.SavedProgressPage
@@ -52,7 +52,7 @@ class SavedProgressController @Inject()(
         .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
       Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl)).flatMap {
         updatedAnswers =>
-          val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, period)
+          val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, StandardPeriod.fromPeriod(period))
           (for{
             maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
             s4laterResult <- connector.submit(s4LRequest)

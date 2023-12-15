@@ -18,10 +18,10 @@ package services
 
 import base.SpecBase
 import connectors.EmailConnector
-import models.Period
 import models.Quarter.Q2
-import models.emails.EmailSendingResult.EMAIL_ACCEPTED
+import models.StandardPeriod
 import models.emails.{EmailToSendRequest, ReturnsConfirmationEmailNoVatOwedParameters, ReturnsConfirmationEmailParameters}
+import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -83,7 +83,7 @@ class EmailServiceSpec extends SpecBase {
     }
 
     "Call sendConfirmationEmail with oss_overdue_returns_email_confirmation with the correct parameters" in {
-      val period = Period(2021, Q2)
+      val period = StandardPeriod(2021, Q2)
       val instant = Instant.parse("2021-11-01T00:00:00.00Z")
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val emailService = new EmailService(connector, stubClock)

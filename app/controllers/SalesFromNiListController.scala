@@ -47,16 +47,15 @@ class SalesFromNiListController @Inject()(
         number =>
 
           val canAddCountries = number < Country.euCountries.size
-          val list            = SalesFromNiSummary.addToListRows(request.userAnswers, mode)
+          val list = SalesFromNiSummary.addToListRows(request.userAnswers, mode)
 
-          Ok(view(form, mode, list, period, canAddCountries))
-         withCompleteData[Country](
-           data = getNiCountriesWithIncompleteSales _,
-           onFailure = (incomplete: Seq[Country]) => {
-            Ok(view(form, mode, list, period, canAddCountries, incomplete))
+          withCompleteData[Country](
+            data = getNiCountriesWithIncompleteSales _,
+            onFailure = (incomplete: Seq[Country]) => {
+              Ok(view(form, mode, list, request.userAnswers.period, canAddCountries, incomplete))
             }) {
-              Ok(view(form, mode, list, period, canAddCountries))
-            }
+            Ok(view(form, mode, list, request.userAnswers.period, canAddCountries))
+          }
       }
   }
 
@@ -68,7 +67,7 @@ class SalesFromNiListController @Inject()(
           if (incompletePromptShown) {
             firstIndexedIncompleteNiCountrySales(incompleteCountries) match {
               case Some(incompleteCountry) =>
-                if(incompleteCountry._1.vatRates.isEmpty) {
+                if (incompleteCountry._1.vatRates.isEmpty) {
                   Redirect(routes.VatRatesFromNiController.onPageLoad(mode, period, Index(incompleteCountry._2)))
                 } else {
                   Redirect(routes.CheckSalesFromNiController.onPageLoad(mode, period, Index(incompleteCountry._2)))
@@ -80,7 +79,7 @@ class SalesFromNiListController @Inject()(
             Redirect(routes.SalesFromNiListController.onPageLoad(mode, period))
           }
         }
-      )( getNumberOfSalesFromNi {
+      )(getNumberOfSalesFromNi {
         number =>
 
           val canAddCountries = number < Country.euCountries.size
@@ -88,7 +87,7 @@ class SalesFromNiListController @Inject()(
           form.bindFromRequest().fold(
             formWithErrors => {
               val list = SalesFromNiSummary.addToListRows(request.userAnswers, mode)
-              BadRequest(view(formWithErrors, mode, list, period, canAddCountries))
+              BadRequest(view(formWithErrors, mode, list, request.userAnswers.period, canAddCountries))
             },
             value =>
               Redirect(SalesFromNiListPage.navigate(request.userAnswers, mode, value))

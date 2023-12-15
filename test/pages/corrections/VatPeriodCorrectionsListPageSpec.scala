@@ -18,7 +18,7 @@ package pages.corrections
 
 import connectors.ReturnStatusConnector
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Index, NormalMode, Period}
+import models.{Index, NormalMode, StandardPeriod}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.behaviours.PageBehaviours
 import play.api.inject.bind
@@ -66,13 +66,13 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
       }
     }
 
-    "cleanup" -{
+    "cleanup" - {
       "must delete empty periods" in {
         val mockReturnStatusConnector = mock[ReturnStatusConnector]
 
         val answers = emptyUserAnswers
-          .set(CorrectionReturnPeriodPage(index), Period("2021", "Q3").get).success.value
-          .set(CorrectionReturnPeriodPage(Index(1)), Period("2022", "Q1").get).success.value
+          .set(CorrectionReturnPeriodPage(index), StandardPeriod("2021", "Q3").get).success.value
+          .set(CorrectionReturnPeriodPage(Index(1)), StandardPeriod("2022", "Q1").get).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
           .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -81,7 +81,7 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
         val cc = application.injector.instanceOf(classOf[AuthenticatedControllerComponents])
 
         val result = VatPeriodCorrectionsListPage.cleanup(answers, cc)
-        result.futureValue mustEqual(Success(emptyUserAnswers))
+        result.futureValue mustEqual (Success(emptyUserAnswers))
       }
     }
   }

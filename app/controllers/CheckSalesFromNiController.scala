@@ -67,9 +67,9 @@ class CheckSalesFromNiController @Inject()(
             index,
             data = getIncompleteNiVatRateAndSales _,
             onFailure = (incomplete: Seq[VatRateAndSalesWithOptionalVat]) => {
-            Ok(view(mode, mainList, vatRateLists, period, index, country, incomplete))
+            Ok(view(mode, mainList, vatRateLists, request.userAnswers.period, index, country, incomplete))
           }) {
-            Ok(view(mode, mainList, vatRateLists, period, index, country))
+            Ok(view(mode, mainList, vatRateLists, request.userAnswers.period, index, country))
           }
       }
   }

@@ -20,7 +20,7 @@ import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.SubmissionStatus.Complete
-import models.{Index, Mode, Period}
+import models.{Index, Mode, Period, StandardPeriod}
 import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -48,7 +48,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
       returnStatusConnector.listStatuses(request.registration.commencementDate).map {
         case Right(returnStatuses) =>
 
-          val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+          val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
           val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 
@@ -73,7 +73,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
       returnStatusConnector.listStatuses(request.registration.commencementDate).flatMap {
         case Right(returnStatuses) =>
 
-          val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+          val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
           val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
 

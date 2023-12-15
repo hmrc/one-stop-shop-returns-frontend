@@ -25,14 +25,14 @@ import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesF
 import models.registration._
 import models.requests.VatReturnRequest
 import models.requests.corrections.CorrectionRequest
-import models.{Country, Index, PaymentReference, Period, Quarter, ReturnReference, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
+import models.{Country, Index, PaymentReference, Period, Quarter, ReturnReference, StandardPeriod, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
 import pages._
-import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -53,7 +53,7 @@ trait SpecBase
     with Generators {
 
   val index: Index                 = Index(0)
-  def period: Period               = Period(2021, Quarter.Q3)
+  def period: StandardPeriod       = StandardPeriod(2021, Quarter.Q3)
   val userAnswersId: String        = "12345-credId"
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn                     = Vrn("123456789")
@@ -71,7 +71,8 @@ trait SpecBase
     contactDetails        = ContactDetails("name", "0123 456789", "email@example.com"),
     commencementDate      = LocalDate.now,
     isOnlineMarketplace   = false,
-    None
+    None,
+    None // TODO
   )
 
   val twentyPercentVatRate = VatRate(20, VatRateType.Reduced, arbitraryDate)
@@ -236,7 +237,7 @@ trait SpecBase
       List.empty
     )
 
-  val testPeriodsList = Seq(Period(2021, Q1), Period(2021, Q2), Period(2021, Q3), Period(2021, Q4), Period(2022, Q1), Period(2022, Q2))
+  val testPeriodsList = Seq(StandardPeriod(2021, Q1), StandardPeriod(2021, Q2), StandardPeriod(2021, Q3), StandardPeriod(2021, Q4), StandardPeriod(2022, Q1), StandardPeriod(2022, Q2))
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

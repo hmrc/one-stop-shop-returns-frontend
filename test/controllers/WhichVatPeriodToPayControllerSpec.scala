@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.financialdata.CurrentPaymentsHttpParser.CurrentPaymentsResponse
 import connectors.financialdata.FinancialDataConnector
 import connectors.VatReturnConnector
-import models.{Period, Quarter}
+import models.{Quarter, StandardPeriod}
 import models.external.ExternalEntryUrl
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.InvalidJson
@@ -115,7 +115,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       val duePayments = Seq(
         Payment(
-          Period(2022, Quarter.Q1),
+          StandardPeriod(2022, Quarter.Q1),
           BigDecimal(200.0),
           LocalDate.now(),
           PaymentStatus.Unpaid
@@ -153,13 +153,13 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       val duePayments = Seq(
         Payment(
-          Period(2021, Quarter.Q4),
+          StandardPeriod(2021, Quarter.Q4),
           BigDecimal(100.0),
           LocalDate.now(),
           PaymentStatus.Partial
         ),
         Payment(
-          Period(2022, Quarter.Q1),
+          StandardPeriod(2022, Quarter.Q1),
           BigDecimal(200.0),
           LocalDate.now(),
           PaymentStatus.Unpaid
@@ -209,19 +209,19 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       val duePayments = Seq(
         Payment(
-          Period(2021, Quarter.Q3),
+          StandardPeriod(2021, Quarter.Q3),
           BigDecimal(100.0),
           LocalDate.now(),
           PaymentStatus.Unpaid
         ),
         Payment(
-          Period(2021, Quarter.Q4),
+          StandardPeriod(2021, Quarter.Q4),
           BigDecimal(200.0),
           LocalDate.now(),
           PaymentStatus.Partial
         ),
         Payment(
-          Period(2022, Quarter.Q1),
+          StandardPeriod(2022, Quarter.Q1),
           BigDecimal(300.0),
           LocalDate.now(),
           PaymentStatus.Unknown
@@ -329,7 +329,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       val duePayments = Seq(
         Payment(
-          Period(2022, Quarter.Q1),
+          StandardPeriod(2022, Quarter.Q1),
           BigDecimal(amountOwed),
           LocalDate.now(),
           PaymentStatus.Unpaid
@@ -366,19 +366,19 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       val duePayments = Seq(
         Payment(
-          Period(2021, Quarter.Q3),
+          StandardPeriod(2021, Quarter.Q3),
           BigDecimal(100.0),
           LocalDate.now(),
           PaymentStatus.Unpaid
         ),
         Payment(
-          Period(2021, Quarter.Q4),
+          StandardPeriod(2021, Quarter.Q4),
           BigDecimal(200.0),
           LocalDate.now(),
           PaymentStatus.Unpaid
         ),
         Payment(
-          Period(2022, Quarter.Q1),
+          StandardPeriod(2022, Quarter.Q1),
           BigDecimal(300.22),
           LocalDate.now(),
           PaymentStatus.Unpaid
@@ -413,19 +413,19 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       val duePayments = Seq(
         Payment(
-          Period(2021, Quarter.Q3),
+          StandardPeriod(2021, Quarter.Q3),
           BigDecimal(100.0),
           LocalDate.now(),
           PaymentStatus.Unpaid
         ),
         Payment(
-          Period(2021, Quarter.Q4),
+          StandardPeriod(2021, Quarter.Q4),
           BigDecimal(200.0),
           LocalDate.now(),
           PaymentStatus.Unpaid
         ),
         Payment(
-          Period(2022, Quarter.Q1),
+          StandardPeriod(2022, Quarter.Q1),
           BigDecimal(300.0),
           LocalDate.now(),
           PaymentStatus.Unpaid
@@ -466,19 +466,19 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
         val duePayments = Seq(
           Payment(
-            Period(2021, Quarter.Q3),
+            StandardPeriod(2021, Quarter.Q3),
             BigDecimal(100.0),
             LocalDate.now(),
             PaymentStatus.Unpaid
           ),
           Payment(
-            Period(2021, Quarter.Q4),
+            StandardPeriod(2021, Quarter.Q4),
             BigDecimal(200.0),
             LocalDate.now(),
             PaymentStatus.Unpaid
           ),
           Payment(
-            Period(2022, Quarter.Q1),
+            StandardPeriod(2022, Quarter.Q1),
             BigDecimal(300.0),
             LocalDate.now(),
             PaymentStatus.Unpaid

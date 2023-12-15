@@ -40,7 +40,7 @@ class ContinueReturnController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
       request.userAnswers.get(SavedProgressPage).map(
-        _ => Ok(view(form, period))
+        _ => Ok(view(form, request.userAnswers.period))
       ).getOrElse(
         Redirect(controllers.routes.StartReturnController.onPageLoad(period))
       )
@@ -51,7 +51,7 @@ class ContinueReturnController @Inject()(
     implicit request =>
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, period)),
+          BadRequest(view(formWithErrors, request.userAnswers.period)),
         value => {
           val isOMP = request.registration.isOnlineMarketplace
           val hasNiToNiSale = request.userAnswers.get(AllSalesFromNiWithOptionalVatQuery).getOrElse(List.empty)

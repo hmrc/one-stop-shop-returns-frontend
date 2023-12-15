@@ -17,16 +17,16 @@
 package viewmodels.yourAccount
 
 import base.SpecBase
-import models.Period
 import models.Quarter.{Q1, Q3, Q4}
+import models.StandardPeriod
 import models.SubmissionStatus.{Due, Next, Overdue}
 
 class ReturnsViewModelSpec extends SpecBase {
   val app = applicationBuilder().build()
 
-  private val period1 = Period(2021, Q3)
-  private val period2 = Period(2021, Q4)
-  private val period3 = Period(2022, Q1)
+  private val period1 = StandardPeriod(2021, Q3)
+  private val period2 = StandardPeriod(2021, Q4)
+  private val period3 = StandardPeriod(2022, Q1)
 
   "must return correct view model when" - {
 

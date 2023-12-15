@@ -16,7 +16,7 @@
 
 package models.corrections
 
-import models.Period
+import models.StandardPeriod
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -24,7 +24,7 @@ import java.time.Instant
 
 case class CorrectionPayload(
                               vrn: Vrn,
-                              period: Period,
+                              period: StandardPeriod,
                               corrections: List[PeriodWithCorrections],
                               submissionReceived: Instant,
                               lastUpdated: Instant

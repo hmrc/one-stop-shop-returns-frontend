@@ -63,9 +63,27 @@ class CheckVatPayableAmountController @Inject()(
               periodIndex,
               data = getIncompleteCorrections _,
               onFailure = (_: Seq[CorrectionToCountry]) => {
-              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = false))
+              Ok(view(
+                request.userAnswers.period,
+                summaryList,
+                country,
+                newMode,
+                correctionPeriod,
+                periodIndex,
+                countryIndex,
+                countryCorrectionComplete = false
+              ))
             }) {
-              Ok(view(period, summaryList, country, newMode, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = true))
+              Ok(view(
+                request.userAnswers.period,
+                summaryList,
+                country,
+                newMode,
+                correctionPeriod,
+                periodIndex,
+                countryIndex,
+                countryCorrectionComplete = true
+              ))
             }
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

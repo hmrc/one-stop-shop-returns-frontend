@@ -18,7 +18,8 @@ package controllers
 
 import base.SpecBase
 import forms.StartReturnFormProvider
-import models.Country
+import models.{Country, PartialReturnPeriod}
+import models.Quarter.Q4
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -31,6 +32,7 @@ import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import views.html.StartReturnView
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar {
@@ -55,7 +57,27 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[StartReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, period, None)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when partial return" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
+
+      val expectedPartialReturn = Some(PartialReturnPeriod(LocalDate.now, LocalDate.now, 2023, Q4))
+
+      running(application) {
+        val form = formProvider(period)(messages(application))
+        val request = FakeRequest(GET, startReturnRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[StartReturnView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(form, period, expectedPartialReturn)(request, messages(application)).toString
       }
     }
 
@@ -141,7 +163,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, period, None)(request, messages(application)).toString
       }
     }
   }

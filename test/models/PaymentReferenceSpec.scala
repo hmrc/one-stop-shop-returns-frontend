@@ -56,7 +56,7 @@ class PaymentReferenceSpec extends AnyFreeSpec with Matchers with ScalaCheckProp
 
   "must serialise and deserialise to / from a valid payment reference" in {
 
-    forAll(arbitrary[Period], arbitrary[Vrn]) {
+    forAll(arbitrary[StandardPeriod], arbitrary[Vrn]) {
       case (period, vrn) =>
 
         val paymentReference = PaymentReference(vrn, period)

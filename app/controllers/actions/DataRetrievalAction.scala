@@ -16,7 +16,7 @@
 
 package controllers.actions
 
-import models.Period
+import models.{Period, StandardPeriod}
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import play.api.mvc.ActionTransformer
 import repositories.UserAnswersRepository
@@ -24,7 +24,7 @@ import repositories.UserAnswersRepository
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DataRetrievalAction (period: Period, repository: UserAnswersRepository)
+class DataRetrievalAction(period: Period, repository: UserAnswersRepository)
                           (implicit val executionContext: ExecutionContext)
   extends ActionTransformer[RegistrationRequest, OptionalDataRequest] {
 

@@ -17,18 +17,18 @@
 package viewmodels.yourAccount
 
 import base.SpecBase
-import models.Period
 import models.Quarter.{Q1, Q3, Q4}
+import models.StandardPeriod
 import models.financialdata.{Payment, PaymentStatus}
 
 import java.time.LocalDate
 
-class PaymentsViewModelSpec extends SpecBase{
+class PaymentsViewModelSpec extends SpecBase {
 
   private val paymentDue = Payment(period, BigDecimal(1000), LocalDate.now, PaymentStatus.Unpaid)
-  val period1 = Period(2021, Q3)
-  val period2 = Period(2021, Q4)
-  val period3 = Period(2022, Q1)
+  val period1 = StandardPeriod(2021, Q3)
+  val period2 = StandardPeriod(2021, Q4)
+  val period3 = StandardPeriod(2022, Q1)
 
   "must return correct view model when" - {
     val app = applicationBuilder().build()
@@ -92,9 +92,9 @@ class PaymentsViewModelSpec extends SpecBase{
       val result = PaymentsViewModel(Seq(paymentDue.copy(period = period3)), Seq(paymentDue.copy(period = period1, paymentStatus = PaymentStatus.Unknown), paymentDue.copy(period = period2)))(messages(app))
       result.sections mustBe Seq(
         PaymentsSection(
-        Seq(
-          s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period3.displayShortText(messages(app))}. You must pay this by ${period3.paymentDeadlineDisplay}.""",
-        ),
+          Seq(
+            s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period3.displayShortText(messages(app))}. You must pay this by ${period3.paymentDeadlineDisplay}.""",
+          ),
           Some("Due Payments")),
         PaymentsSection(
           Seq(

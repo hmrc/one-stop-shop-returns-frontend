@@ -16,8 +16,8 @@
 
 package controllers.actions
 
+import models.{Period, StandardPeriod, UserAnswers}
 import models.requests.{OptionalDataRequest, RegistrationRequest}
-import models.{Period, UserAnswers}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import repositories.UserAnswersRepository
 
@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers])
   extends DataRetrievalAction(
-    mock[Period],
+    mock[StandardPeriod],
     mock[UserAnswersRepository]
   )(ExecutionContext.Implicits.global) {
 

@@ -19,9 +19,9 @@ package controllers.actions
 import base.SpecBase
 import connectors.ReturnStatusConnector
 import controllers.routes
+import models.{PeriodWithStatus, StandardPeriod, SubmissionStatus}
 import models.requests.OptionalDataRequest
 import models.responses.UnexpectedResponseStatus
-import models.{Period, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -71,10 +71,10 @@ class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with B
     "must return None if the return period is the most overdue" in {
 
       when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
-        PeriodWithStatus(Period("2021", "Q2").success.value, SubmissionStatus.Complete),
-        PeriodWithStatus(Period("2021", "Q3").success.value, SubmissionStatus.Overdue),
-        PeriodWithStatus(Period("2021", "Q4").success.value, SubmissionStatus.Overdue),
-        PeriodWithStatus(Period("2022", "Q1").success.value, SubmissionStatus.Due)
+        PeriodWithStatus(StandardPeriod("2021", "Q2").success.value, SubmissionStatus.Complete),
+        PeriodWithStatus(StandardPeriod("2021", "Q3").success.value, SubmissionStatus.Overdue),
+        PeriodWithStatus(StandardPeriod("2021", "Q4").success.value, SubmissionStatus.Overdue),
+        PeriodWithStatus(StandardPeriod("2022", "Q1").success.value, SubmissionStatus.Due)
       )))
 
       val app = applicationBuilder(None)
@@ -94,10 +94,10 @@ class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with B
     "must redirect to CannotStartReturn if the return period is not the most overdue" in {
 
       when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
-        PeriodWithStatus(Period("2021", "Q2").success.value, SubmissionStatus.Overdue),
-        PeriodWithStatus(Period("2021", "Q3").success.value, SubmissionStatus.Overdue),
-        PeriodWithStatus(Period("2021", "Q4").success.value, SubmissionStatus.Overdue),
-        PeriodWithStatus(Period("2022", "Q1").success.value, SubmissionStatus.Due)
+        PeriodWithStatus(StandardPeriod("2021", "Q2").success.value, SubmissionStatus.Overdue),
+        PeriodWithStatus(StandardPeriod("2021", "Q3").success.value, SubmissionStatus.Overdue),
+        PeriodWithStatus(StandardPeriod("2021", "Q4").success.value, SubmissionStatus.Overdue),
+        PeriodWithStatus(StandardPeriod("2022", "Q1").success.value, SubmissionStatus.Due)
       )))
 
       val app = applicationBuilder(None)
@@ -117,10 +117,10 @@ class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with B
     "must redirect to NoOtherPeriodsAvailable if there are no returns due" in {
 
       when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
-        PeriodWithStatus(Period("2021", "Q2").success.value, SubmissionStatus.Complete),
-        PeriodWithStatus(Period("2021", "Q3").success.value, SubmissionStatus.Complete),
-        PeriodWithStatus(Period("2021", "Q4").success.value, SubmissionStatus.Complete),
-        PeriodWithStatus(Period("2022", "Q1").success.value, SubmissionStatus.Complete)
+        PeriodWithStatus(StandardPeriod("2021", "Q2").success.value, SubmissionStatus.Complete),
+        PeriodWithStatus(StandardPeriod("2021", "Q3").success.value, SubmissionStatus.Complete),
+        PeriodWithStatus(StandardPeriod("2021", "Q4").success.value, SubmissionStatus.Complete),
+        PeriodWithStatus(StandardPeriod("2022", "Q1").success.value, SubmissionStatus.Complete)
       )))
 
       val app = applicationBuilder(None)

@@ -18,8 +18,8 @@ package controllers
 
 import controllers.actions._
 import forms.CountryOfConsumptionFromEuFormProvider
-import models.Country.euCountriesWithNI
 import models.{Country, Index, Mode, Period}
+import models.Country.euCountriesWithNI
 import pages.CountryOfConsumptionFromEuPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -40,10 +40,10 @@ class CountryOfConsumptionFromEuController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(
-    mode: Mode,
-    period: Period,
-    countryFromIndex: Index,
-    countryToIndex: Index
+                  mode: Mode,
+                  period: Period,
+                  countryFromIndex: Index,
+                  countryToIndex: Index
   ): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
       getCountryFrom(countryFromIndex) {

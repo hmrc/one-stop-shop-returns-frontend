@@ -19,10 +19,10 @@ package controllers.corrections
 import base.SpecBase
 import connectors.ReturnStatusConnector
 import forms.corrections.VatPeriodCorrectionsListFormProvider
+import models.{CheckThirdLoopMode, Country, Index, NormalMode, PeriodWithStatus, StandardPeriod, SubmissionStatus, UserAnswers}
 import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.{Complete, Overdue}
 import models.responses.UnexpectedResponseStatus
-import models.{CheckThirdLoopMode, Country, Index, NormalMode, Period, PeriodWithStatus, SubmissionStatus, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -42,17 +42,17 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
   private lazy val vatPeriodCorrectionsListRoute = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(NormalMode, period).url
 
-  private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] =
+  private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[StandardPeriod]): Option[UserAnswers] =
     periods.zipWithIndex
-      .foldLeft (Option(userAnswers))((ua, indexedPeriod) =>
+      .foldLeft(Option(userAnswers))((ua, indexedPeriod) =>
         ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption)
           .flatMap(_.set(CorrectionCountryPage(Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
           .flatMap(_.set(CountryVatCorrectionPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
 
-  private def getStatusResponse(periods: Seq[Period]): Future[Right[Nothing, Seq[PeriodWithStatus]]] =
+  private def getStatusResponse(periods: Seq[StandardPeriod]): Future[Right[Nothing, Seq[PeriodWithStatus]]] =
     getStatusResponse(periods, Complete)
 
-  private def getStatusResponse(periods: Seq[Period], status: SubmissionStatus): Future[Right[Nothing, Seq[PeriodWithStatus]]] = {
+  private def getStatusResponse(periods: Seq[StandardPeriod], status: SubmissionStatus): Future[Right[Nothing, Seq[PeriodWithStatus]]] = {
     Future.successful(Right(periods.map(period => PeriodWithStatus(period, status))))
   }
 
@@ -67,9 +67,9 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
   }
 
   val allPeriods = Seq(
-    Period(2021, Q3),
-    Period(2021, Q4),
-    Period(2022, Q1)
+    StandardPeriod(2021, Q3),
+    StandardPeriod(2021, Q4),
+    StandardPeriod(2022, Q1)
   )
 
   "VatPeriodCorrectionsListWithFormController" - {
@@ -114,7 +114,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         val expectedTitle = "You have not corrected the VAT amount for any return periods"
         val expectedTableRows = 0
 
-        val completedCorrections = List.empty[Period]
+        val completedCorrections = List.empty[StandardPeriod]
         val completedCorrectionsModel = Seq.empty[ListItem]
 
         val application = applicationBuilder(userAnswers = addCorrectionPeriods(completeUserAnswers, completedCorrections))
@@ -147,7 +147,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
           val expectedTitle = "You have corrected the VAT amount for one return period"
           val expectedTableRows = 1
-          val periodQ3 = Period(2021, Q3)
+          val periodQ3 = StandardPeriod(2021, Q3)
 
           val completedCorrections = List(periodQ3)
 

@@ -16,15 +16,15 @@
 
 package queries.corrections
 
-import models.Period
+import models.StandardPeriod
 import models.corrections.PeriodWithCorrections
 import pages.PageConstants
 import play.api.libs.json.{JsObject, JsPath}
 import queries.Derivable
 
-case object DeriveCompletedCorrectionPeriods extends Derivable[List[JsObject], List[Period]] {
+case object DeriveCompletedCorrectionPeriods extends Derivable[List[JsObject], List[StandardPeriod]] {
 
-  override val derive: List[JsObject] => List[Period] = _.flatMap(_.asOpt[PeriodWithCorrections]).filter(_.correctionsToCountry.isDefined).map(_.correctionReturnPeriod)
+  override val derive: List[JsObject] => List[StandardPeriod] = _.flatMap(_.asOpt[PeriodWithCorrections]).filter(_.correctionsToCountry.isDefined).map(_.correctionReturnPeriod)
 
   override def path: JsPath = JsPath \ PageConstants.corrections
 }

@@ -16,7 +16,7 @@
 
 package models.domain
 
-import models.{PaymentReference, Period, ReturnReference}
+import models.{PaymentReference, ReturnReference, StandardPeriod}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -24,7 +24,7 @@ import java.time.{Instant, LocalDate}
 
 case class VatReturn(
                       vrn: Vrn,
-                      period: Period,
+                      period: StandardPeriod,
                       reference: ReturnReference,
                       paymentReference: PaymentReference,
                       startDate: Option[LocalDate],

@@ -16,19 +16,19 @@
 
 package models.requests
 
-import models.{Period, UserAnswers}
-import play.api.libs.json.{JsValue, Json, OFormat}
+import models.{StandardPeriod, UserAnswers}
+import play.api.libs.json.{Json, JsValue, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 case class SaveForLaterRequest(
-                             vrn: Vrn,
-                             period: Period,
-                             data: JsValue
+                                vrn: Vrn,
+                                period: StandardPeriod,
+                                data: JsValue
                            )
 
 object SaveForLaterRequest {
 
   implicit val format: OFormat[SaveForLaterRequest] = Json.format[SaveForLaterRequest]
 
-  def apply(answers: UserAnswers, vrn: Vrn, period: Period): SaveForLaterRequest = SaveForLaterRequest(vrn, period, answers.data)
+  def apply(answers: UserAnswers, vrn: Vrn, period: StandardPeriod): SaveForLaterRequest = SaveForLaterRequest(vrn, period, answers.data)
 }

@@ -16,7 +16,7 @@
 
 package forms.mappings
 
-import models.{Enumerable, Period}
+import models.{Enumerable, Period, StandardPeriod}
 import play.api.data.FormError
 import play.api.data.format.Formatter
 

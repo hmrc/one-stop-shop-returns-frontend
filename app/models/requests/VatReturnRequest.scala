@@ -16,7 +16,7 @@
 
 package models.requests
 
-import models.Period
+import models.StandardPeriod
 import models.domain.{SalesFromEuCountry, SalesToCountry}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
@@ -25,7 +25,7 @@ import java.time.LocalDate
 
 case class VatReturnRequest(
                              vrn: Vrn,
-                             period: Period,
+                             period: StandardPeriod,
                              startDate: Option[LocalDate],
                              endDate: Option[LocalDate],
                              salesFromNi: List[SalesToCountry],

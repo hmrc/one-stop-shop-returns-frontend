@@ -17,12 +17,12 @@
 package utils
 
 import cats.implicits._
+import models.{Country, Index, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, StandardPeriod, VatRateAndSalesWithOptionalVat}
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
-import models.{Country, Index, Period, SalesFromCountryWithOptionalVat, SalesFromEuWithOptionalVat, VatRateAndSalesWithOptionalVat}
 import play.api.mvc.{AnyContent, Result}
-import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import queries.{AllNiVatRateAndSalesWithOptionalVatQuery, AllSalesFromEuQueryWithOptionalVatQuery, AllSalesFromNiWithOptionalVatQuery, AllSalesToEuWithOptionalVatQuery}
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 
 import scala.concurrent.Future
 
@@ -74,7 +74,7 @@ trait CompletionChecks {
       .map(_.filter(_.countryVatCorrection.isEmpty)).getOrElse(List.empty)
   }
 
-  def getPeriodsWithIncompleteCorrections()(implicit request: DataRequest[AnyContent]): List[Period] = {
+  def getPeriodsWithIncompleteCorrections()(implicit request: DataRequest[AnyContent]): List[StandardPeriod] = {
     request.userAnswers
       .get(AllCorrectionPeriodsQuery)
       .map(_.filter(_.correctionsToCountry.getOrElse(List.empty).exists(_.countryVatCorrection.isEmpty)))

@@ -18,25 +18,24 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
-import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
+import connectors.{SavedUserAnswers, SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
-import controllers.corrections.{routes => correctionsRoutes}
 import logging.Logging
-import models.{CheckMode, DataMissingError, Index, NormalMode, Period, ValidationError}
+import models.{NormalMode, Period, StandardPeriod}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.requests.corrections.CorrectionRequest
 import models.responses.{ConflictFound, ErrorResponse, ReceivedErrorFromCore, RegistrationNotFound}
-import pages.{CheckYourAnswersPage, SavedProgressPage, VatRatesFromEuPage, VatRatesFromNiPage}
+import pages.{CheckYourAnswersPage, SavedProgressPage}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import queries._
-import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
+import queries.corrections.AllCorrectionPeriodsQuery
 import repositories.CachedVatReturnRepository
-import services.{AuditService, EmailService, RedirectService, SalesAtVatRateService, VatReturnService}
+import services._
 import services.corrections.CorrectionService
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
@@ -44,7 +43,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
+import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -174,10 +173,10 @@ class CheckYourAnswersController @Inject()(
         case (Some(_), false) => Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad(period)))
         case _ =>
           val validatedVatReturnRequest =
-            vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
+            vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, request.userAnswers.period, request.registration)
 
           val validatedCorrectionRequest = request.userAnswers.get(CorrectPreviousReturnPage).map(_ =>
-            correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate))
+            correctionService.fromUserAnswers(request.userAnswers, request.vrn, request.userAnswers.period, request.registration.commencementDate))
 
           (validatedVatReturnRequest, validatedCorrectionRequest) match {
             case (Valid(vatReturnRequest), Some(Valid(correctionRequest))) =>
@@ -285,7 +284,7 @@ class CheckYourAnswersController @Inject()(
         for {
           updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
           _ <- cc.sessionRepository.set(updatedAnswers)
-          _ <- cachedVatReturnRepository.clear(request.userId, period)
+          _ <- cachedVatReturnRepository.clear(request.userId, StandardPeriod.fromPeriod(period))
           _ <- saveForLaterConnector.delete(period)
         } yield {
           Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
@@ -296,7 +295,7 @@ class CheckYourAnswersController @Inject()(
   private def saveUserAnswersOnCoreError(period: Period, redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] =
     Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad(period).url)).flatMap {
     updatedAnswers =>
-      val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, period)
+      val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, StandardPeriod.fromPeriod(period))
 
       saveForLaterConnector.submit(s4LRequest).flatMap {
         case Right(Some(_: SavedUserAnswers)) =>

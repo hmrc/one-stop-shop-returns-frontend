@@ -17,8 +17,8 @@
 package services
 
 import generators.Generators
-import models.Period
 import models.Quarter._
+import models.StandardPeriod
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -27,7 +27,7 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import java.time.{Clock, Instant, LocalDate, ZoneId}
 
-class PeriodServiceSpec
+class StandardPeriodServiceSpec
   extends AnyFreeSpec
     with Matchers
     with MockitoSugar
@@ -47,7 +47,7 @@ class PeriodServiceSpec
 
         val service = new PeriodService(stubClock)
 
-        val expectedPeriods = Seq(Period(2021, Q3))
+        val expectedPeriods = Seq(StandardPeriod(2021, Q3))
 
         service.getReturnPeriods(commencementDate) must contain theSameElementsAs expectedPeriods
       }
@@ -71,7 +71,7 @@ class PeriodServiceSpec
 
       val service = new PeriodService(stubClock)
 
-      val expectedPeriods = Seq(Period(2021, Q3))
+      val expectedPeriods = Seq(StandardPeriod(2021, Q3))
 
       service.getAllPeriods must contain theSameElementsAs expectedPeriods
     }
@@ -83,7 +83,7 @@ class PeriodServiceSpec
 
       val service = new PeriodService(stubClock)
 
-      val expectedPeriods = Seq(Period(2021, Q3), Period(2021, Q4))
+      val expectedPeriods = Seq(StandardPeriod(2021, Q3), StandardPeriod(2021, Q4))
 
       service.getAllPeriods must contain theSameElementsAs expectedPeriods
     }
@@ -91,8 +91,8 @@ class PeriodServiceSpec
   ".getNextPeriod" - {
     "when current period is Q1" in {
       val year = 2021
-      val current = Period(year, Q1)
-      val expected = Period(year, Q2)
+      val current = StandardPeriod(year, Q1)
+      val expected = StandardPeriod(year, Q2)
       val instant = Instant.parse("2022-01-11T12:00:00Z")
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val service = new PeriodService(stubClock)
@@ -101,8 +101,8 @@ class PeriodServiceSpec
 
     "when current period is Q2" in {
       val year = 2021
-      val current = Period(year, Q2)
-      val expected = Period(year, Q3)
+      val current = StandardPeriod(year, Q2)
+      val expected = StandardPeriod(year, Q3)
       val instant = Instant.parse("2022-01-11T12:00:00Z")
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val service = new PeriodService(stubClock)
@@ -111,8 +111,8 @@ class PeriodServiceSpec
 
     "when current period is Q3" in {
       val year = 2021
-      val current = Period(year, Q3)
-      val expected = Period(year, Q4)
+      val current = StandardPeriod(year, Q3)
+      val expected = StandardPeriod(year, Q4)
       val instant = Instant.parse("2022-01-11T12:00:00Z")
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val service = new PeriodService(stubClock)
@@ -121,8 +121,8 @@ class PeriodServiceSpec
 
     "when current period is Q4" in {
       val year = 2021
-      val current = Period(year, Q4)
-      val expected = Period(year + 1, Q1)
+      val current = StandardPeriod(year, Q4)
+      val expected = StandardPeriod(year + 1, Q1)
       val instant = Instant.parse("2022-01-11T12:00:00Z")
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val service = new PeriodService(stubClock)
@@ -134,8 +134,8 @@ class PeriodServiceSpec
 
     "when current period is Q1" in {
       val year = 2021
-      val current = Period(year, Q1)
-      val expected = Period(year - 1, Q4)
+      val current = StandardPeriod(year, Q1)
+      val expected = StandardPeriod(year - 1, Q4)
       val instant = Instant.parse("2022-01-11T12:00:00Z")
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val service = new PeriodService(stubClock)
@@ -144,8 +144,8 @@ class PeriodServiceSpec
 
     "when current period is Q2" in {
       val year = 2021
-      val current = Period(year, Q2)
-      val expected = Period(year, Q1)
+      val current = StandardPeriod(year, Q2)
+      val expected = StandardPeriod(year, Q1)
       val instant = Instant.parse("2022-01-11T12:00:00Z")
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val service = new PeriodService(stubClock)
@@ -154,8 +154,8 @@ class PeriodServiceSpec
 
     "when current period is Q3" in {
       val year = 2021
-      val current = Period(year, Q3)
-      val expected = Period(year, Q2)
+      val current = StandardPeriod(year, Q3)
+      val expected = StandardPeriod(year, Q2)
       val instant = Instant.parse("2022-01-11T12:00:00Z")
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val service = new PeriodService(stubClock)
@@ -164,8 +164,8 @@ class PeriodServiceSpec
 
     "when current period is Q4" in {
       val year = 2021
-      val current = Period(year, Q4)
-      val expected = Period(year, Q3)
+      val current = StandardPeriod(year, Q4)
+      val expected = StandardPeriod(year, Q3)
       val instant = Instant.parse("2022-01-11T12:00:00Z")
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
       val service = new PeriodService(stubClock)

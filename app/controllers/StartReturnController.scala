@@ -18,43 +18,53 @@ package controllers
 
 import controllers.actions._
 import forms.StartReturnFormProvider
-import models.Period
+import models.{PartialReturnPeriod, Period, Quarter}
 import pages.StartReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.PartialReturnPeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.StartReturnView
 
+import java.time.LocalDate
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 class StartReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
+                                       partialReturnPeriodService: PartialReturnPeriodService,
                                        view: StartReturnView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period) {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
     implicit request =>
       val form = formProvider(period)
-      Ok(view(form, period))
+
+      partialReturnPeriodService.getPartialReturnPeriod(request.registration).map { maybePartialReturnPeriod =>
+        Ok(view(form, period, maybePartialReturnPeriod))
+      }
   }
 
-  def onSubmit(period: Period): Action[AnyContent] = cc.auth {
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
     implicit request =>
 
       val form = formProvider(period)
 
       form.bindFromRequest().fold(
-        formWithErrors =>
-          BadRequest(view(formWithErrors, period)),
+        formWithErrors => {
+          partialReturnPeriodService.getPartialReturnPeriod(request.registration).map { maybePartialReturnPeriod =>
+            BadRequest(view(formWithErrors, period, maybePartialReturnPeriod))
+          }
+        },
 
         value => {
-          if(!value) {
+          if (!value) {
             cc.sessionRepository.clear(request.userId)
           }
-          Redirect(StartReturnPage.navigate(period, value))
+          Future.successful(Redirect(StartReturnPage.navigate(period, value)))
         }
       )
   }

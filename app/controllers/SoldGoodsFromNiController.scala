@@ -18,10 +18,12 @@ package controllers
 
 import controllers.actions._
 import forms.SoldGoodsFromNiFormProvider
-import models.{Mode, Period, UserAnswers}
+import models.{Mode, PartialReturnPeriod, Period, StandardPeriod, UserAnswers}
+import models.registration.Registration
 import pages.SoldGoodsFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.PartialReturnPeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SoldGoodsFromNiView
 
@@ -33,21 +35,25 @@ class SoldGoodsFromNiController @Inject()(
                                            cc: AuthenticatedControllerComponents,
                                            formProvider: SoldGoodsFromNiFormProvider,
                                            view: SoldGoodsFromNiView,
+                                           partialReturnPeriodService: PartialReturnPeriodService,
                                            clock: Clock
                                          )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period) {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
     implicit request =>
 
-      val preparedForm = request.userAnswers.getOrElse(UserAnswers(request.userId, period)).get(SoldGoodsFromNiPage) match {
+      val preparedForm = request.userAnswers.getOrElse(UserAnswers(request.userId, StandardPeriod.fromPeriod(period))).get(SoldGoodsFromNiPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period))
+      partialReturnPeriodService.getPartialReturnPeriod(request.registration).map { maybePartialReturnPeriod =>
+        Ok(view(preparedForm, mode, maybePartialReturnPeriod.getOrElse(period)))
+      }
+
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
@@ -57,16 +63,20 @@ class SoldGoodsFromNiController @Inject()(
         formWithErrors =>
           Future.successful(BadRequest(view(formWithErrors, mode, period))),
 
-        value =>
+        value => {
+
           for {
+            maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.registration)
+            settingPeriod = maybePartialReturnPeriod.getOrElse(period)
             updatedAnswers <- Future.fromTry(request.userAnswers
               .getOrElse(UserAnswers(
                 userId = request.userId,
-                period = period,
+                period = settingPeriod,
                 lastUpdated = Instant.now(clock))
               ).set(SoldGoodsFromNiPage, value))
             _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(SoldGoodsFromNiPage.navigate(mode, updatedAnswers))
+        }
       )
   }
 }

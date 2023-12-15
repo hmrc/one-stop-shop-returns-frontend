@@ -51,7 +51,7 @@ class DeleteSalesToEuController @Inject()(
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo))
+          Ok(view(preparedForm, mode, request.userAnswers.period, countryFromIndex, countryToIndex, countryFrom, countryTo))
       }
   }
 
@@ -64,7 +64,15 @@ class DeleteSalesToEuController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo))),
+              Future.successful(BadRequest(view(
+                formWithErrors,
+                mode,
+                request.userAnswers.period,
+                countryFromIndex,
+                countryToIndex,
+                countryFrom,
+                countryTo
+              ))),
 
             value =>
               if(value) {

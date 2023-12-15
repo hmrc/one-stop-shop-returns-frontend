@@ -17,7 +17,7 @@
 package controllers.actions
 
 import connectors.ReturnStatusConnector
-import models.Period
+import models.{Period, StandardPeriod}
 import models.requests.OptionalDataRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
@@ -25,7 +25,7 @@ import play.api.mvc.Result
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeCheckMostOverdueReturnFilter() extends CheckMostOverdueReturnFilterImpl(
-  mock[Period],
+  mock[StandardPeriod],
   mock[ReturnStatusConnector]
 )(ExecutionContext.Implicits.global) {
 

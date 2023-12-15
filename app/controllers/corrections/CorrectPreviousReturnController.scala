@@ -19,8 +19,8 @@ package controllers.corrections
 import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.corrections.CorrectPreviousReturnFormProvider
+import models.{Mode, Period, StandardPeriod}
 import models.SubmissionStatus.Complete
-import models.{Mode, Period}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.I18nSupport
 import play.api.i18n.Lang.logger
@@ -69,7 +69,7 @@ class CorrectPreviousReturnController @Inject()(
 
         periods match {
           case Right(periods) => {
-            val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+            val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
             val allPeriods = periods.filter(_.status.equals(Complete)).map(_.period)
             val uncompletedCorrectionPeriods = allPeriods.diff(completedCorrectionPeriods).distinct
             Redirect(CorrectPreviousReturnPage.navigate(mode, updatedAnswers, uncompletedCorrectionPeriods.size))

@@ -17,11 +17,11 @@
 package utils
 
 import base.SpecBase
+import models.{Country, StandardPeriod, VatOnSales}
 import models.Quarter.{Q3, Q4}
 import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.domain.{SalesDetails, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
-import models.{Country, Period, VatOnSales}
 import org.scalacheck.Arbitrary.arbitrary
 import uk.gov.hmrc.domain.Vrn
 
@@ -40,12 +40,12 @@ class CorrectionUtilsSpec extends SpecBase {
         period = completeVatReturn.period,
         corrections = List(
           PeriodWithCorrections(
-            correctionReturnPeriod = Period(2021, Q3),
+            correctionReturnPeriod = StandardPeriod(2021, Q3),
             correctionsToCountry = Some(List(
               CorrectionToCountry(country1, Some(BigDecimal(10)))
             ))),
           PeriodWithCorrections(
-            correctionReturnPeriod = Period(2021, Q4),
+            correctionReturnPeriod = StandardPeriod(2021, Q4),
             correctionsToCountry = Some(List(
               CorrectionToCountry(country1, Some(BigDecimal(10)))
             )))
@@ -73,16 +73,16 @@ class CorrectionUtilsSpec extends SpecBase {
 
       val correctionPayload = CorrectionPayload(
         vrn = arbitrary[Vrn].sample.value,
-        period = arbitrary[Period].sample.value,
+        period = arbitrary[StandardPeriod].sample.value,
         corrections = List(
           PeriodWithCorrections(
-            correctionReturnPeriod = Period(2021, Q3),
+            correctionReturnPeriod = StandardPeriod(2021, Q3),
             correctionsToCountry = Some(List(
               CorrectionToCountry(country1, Some(BigDecimal(10))),
               CorrectionToCountry(country2, Some(BigDecimal(-10)))
             ))),
           PeriodWithCorrections(
-            correctionReturnPeriod = Period(2021, Q4),
+            correctionReturnPeriod = StandardPeriod(2021, Q4),
             correctionsToCountry = Some(List(
               CorrectionToCountry(country1, Some(BigDecimal(-10))),
               CorrectionToCountry(country2, Some(BigDecimal(10)))
@@ -116,16 +116,16 @@ class CorrectionUtilsSpec extends SpecBase {
 
       val correctionPayload = CorrectionPayload(
         vrn = arbitrary[Vrn].sample.value,
-        period = arbitrary[Period].sample.value,
+        period = arbitrary[StandardPeriod].sample.value,
         corrections = List(
           PeriodWithCorrections(
-            correctionReturnPeriod = Period(2021, Q3),
+            correctionReturnPeriod = StandardPeriod(2021, Q3),
             correctionsToCountry = Some(List(
               CorrectionToCountry(country1, Some(BigDecimal(52.44))),
               CorrectionToCountry(country2, Some(BigDecimal(-589.24)))
             ))),
           PeriodWithCorrections(
-            correctionReturnPeriod = Period(2021, Q4),
+            correctionReturnPeriod = StandardPeriod(2021, Q4),
             correctionsToCountry = Some(List(
               CorrectionToCountry(country1, Some(BigDecimal(-10))),
             )))

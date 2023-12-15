@@ -20,11 +20,11 @@ import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import connectors.corrections.CorrectionConnector
+import models.{Country, DataMissingError, Index, StandardPeriod}
 import models.Quarter.{Q1, Q2}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.requests.corrections.CorrectionRequest
 import models.responses.UnexpectedResponseStatus
-import models.{Country, DataMissingError, Index, Period}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalacheck.Arbitrary.arbitrary
@@ -62,7 +62,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
         private val country = arbitrary[Country].sample.value
         private val correctionAmount = BigDecimal(1000)
-        private val correctionPeriod = Period(2021, Q1)
+        private val correctionPeriod = StandardPeriod(2021, Q1)
 
         private val answers =
           emptyUserAnswers
@@ -100,8 +100,8 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
         private val correctionAmount1 = BigDecimal(1000)
         private val correctionAmount2 = BigDecimal(-544.23)
         private val correctionAmount3 = BigDecimal(145.99)
-        private val correctionPeriod1 = Period(2021, Q1)
-        private val correctionPeriod2 = Period(2021, Q2)
+        private val correctionPeriod1 = StandardPeriod(2021, Q1)
+        private val correctionPeriod2 = StandardPeriod(2021, Q2)
 
         private val answers =
           emptyUserAnswers
@@ -168,7 +168,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
       "when user is expected adds a correction period but doesn't add anything else" in new Fixture {
 
-        private val correctionPeriod = Period(2021, Q1)
+        private val correctionPeriod = StandardPeriod(2021, Q1)
 
         private val answers =
           emptyUserAnswers
@@ -187,7 +187,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
         private val country1 = arbitrary[Country].sample.value
         private val country2 = arbitrary[Country].sample.value
-        private val correctionPeriod1 = Period(2021, Q1)
+        private val correctionPeriod1 = StandardPeriod(2021, Q1)
 
         val periodIndex: Index = Index(0)
 

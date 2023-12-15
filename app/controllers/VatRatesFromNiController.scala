@@ -65,7 +65,7 @@ class VatRatesFromNiController @Inject()(
                   updateAndContinue(mode, index, request, vatRates.toList)
               }
             case _ =>
-              Ok(view(preparedForm, mode, period, index, country, checkboxItems(vatRates))).toFuture
+              Ok(view(preparedForm, mode, request.userAnswers.period, index, country, checkboxItems(vatRates))).toFuture
           }
       }
   }
@@ -80,7 +80,7 @@ class VatRatesFromNiController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, mode, period, index, country, checkboxItems(vatRates))).toFuture,
+              BadRequest(view(formWithErrors, mode, request.userAnswers.period, index, country, checkboxItems(vatRates))).toFuture,
 
             value => {
               val existingAnswers = request.userAnswers.get(VatRatesFromNiPage(index)).getOrElse(List.empty)

@@ -16,7 +16,7 @@
 
 package pages.corrections
 
-import models.{CheckMode, Index, NormalMode, Period, Quarter}
+import models.{CheckMode, Index, NormalMode, Quarter, StandardPeriod}
 import org.scalacheck.Arbitrary._
 import pages.behaviours.PageBehaviours
 
@@ -42,7 +42,7 @@ class RemovePeriodCorrectionPageSpec extends PageBehaviours {
 
       "to VatPeriodCorrectionsList page when there are multiple correction periods present" in {
 
-        val period1 = Period(2021, Quarter.Q4)
+        val period1 = StandardPeriod(2021, Quarter.Q4)
 
         val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
           .set(CorrectionReturnPeriodPage(Index(1)), period1).success.value
@@ -73,7 +73,7 @@ class RemovePeriodCorrectionPageSpec extends PageBehaviours {
 
       "to VatPeriodCorrectionsList page when there are multiple correction periods present" in {
 
-        val period1 = Period(2021, Quarter.Q4)
+        val period1 = StandardPeriod(2021, Quarter.Q4)
 
         val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
           .set(CorrectionReturnPeriodPage(Index(1)), period1).success.value

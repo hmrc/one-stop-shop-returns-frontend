@@ -29,7 +29,7 @@ import play.api.mvc.{PathBindable, QueryStringBindable}
 import java.time.Month._
 import java.time.{Clock, Instant, LocalDate, ZoneId}
 
-class PeriodSpec
+class StandardPeriodSpec
   extends AnyFreeSpec
     with Matchers
     with ScalaCheckPropertyChecks
@@ -37,13 +37,12 @@ class PeriodSpec
     with EitherValues {
 
   private val pathBindable = implicitly[PathBindable[Period]]
-  private val queryBindable = implicitly[QueryStringBindable[Period]]
 
   "Period" - {
     "pathBindable" - {
       "must bind from a URL" in {
 
-        forAll(arbitrary[Period]) {
+        forAll(arbitrary[StandardPeriod]) {
           period =>
 
             pathBindable.bind("key", period.toString).value mustEqual period
@@ -56,27 +55,6 @@ class PeriodSpec
       }
     }
 
-    "queryBindable" - {
-      "must bind from a query parameter when valid period present" in {
-
-        forAll(arbitrary[Period]) {
-          period =>
-
-            queryBindable.bind("key", Map("key" -> Seq(period.toString))) mustBe Some(Right(period))
-        }
-      }
-
-      "must not bind from an invalid value" in {
-
-        queryBindable.bind("key", Map("key" -> Seq("invalid"))) mustBe Some(Left("Invalid period"))
-      }
-
-      "must return none if no query parameter present" in {
-         queryBindable.bind("key", Map("key" -> Seq.empty)) mustBe None
-      }
-    }
-
-
   }
 
   ".firstDay" - {
@@ -85,7 +63,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q1)
+          val period = StandardPeriod(year, Q1)
           period.firstDay mustEqual LocalDate.of(year, JANUARY, 1)
       }
     }
@@ -94,7 +72,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q2)
+          val period = StandardPeriod(year, Q2)
           period.firstDay mustEqual LocalDate.of(year, APRIL, 1)
       }
     }
@@ -103,7 +81,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2021, 2100)) {
         year =>
-          val period = Period(year, Q3)
+          val period = StandardPeriod(year, Q3)
           period.firstDay mustEqual LocalDate.of(year, JULY, 1)
       }
     }
@@ -112,7 +90,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2021, 2100)) {
         year =>
-          val period = Period(year, Q4)
+          val period = StandardPeriod(year, Q4)
           period.firstDay mustEqual LocalDate.of(year, OCTOBER, 1)
       }
     }
@@ -124,7 +102,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q1)
+          val period = StandardPeriod(year, Q1)
           period.lastDay mustEqual LocalDate.of(year, MARCH, 31)
       }
     }
@@ -133,7 +111,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q2)
+          val period = StandardPeriod(year, Q2)
           period.lastDay mustEqual LocalDate.of(year, JUNE, 30)
       }
     }
@@ -142,7 +120,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2021, 2100)) {
         year =>
-          val period = Period(year, Q3)
+          val period = StandardPeriod(year, Q3)
           period.lastDay mustEqual LocalDate.of(year, SEPTEMBER, 30)
       }
     }
@@ -151,7 +129,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2021, 2100)) {
         year =>
-          val period = Period(year, Q4)
+          val period = StandardPeriod(year, Q4)
           period.lastDay mustEqual LocalDate.of(year, DECEMBER, 31)
       }
     }
@@ -163,7 +141,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q1)
+          val period = StandardPeriod(year, Q1)
           period.paymentDeadline mustEqual LocalDate.of(year, APRIL, 30)
       }
     }
@@ -172,7 +150,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q2)
+          val period = StandardPeriod(year, Q2)
           period.paymentDeadline mustEqual LocalDate.of(year, JULY, 31)
       }
     }
@@ -181,7 +159,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2021, 2100)) {
         year =>
-          val period = Period(year, Q3)
+          val period = StandardPeriod(year, Q3)
           period.paymentDeadline mustEqual LocalDate.of(year, OCTOBER, 31)
       }
     }
@@ -190,7 +168,7 @@ class PeriodSpec
 
       forAll(Gen.choose(2021, 2100)) {
         year =>
-          val period = Period(year, Q4)
+          val period = StandardPeriod(year, Q4)
           period.paymentDeadline mustEqual LocalDate.of(year + 1, JANUARY, 31)
       }
     }
@@ -201,7 +179,7 @@ class PeriodSpec
     "returns true when" - {
 
       "period is 2021-Q3 and today is 1st December 2021" in {
-        val period = Period(2021, Q3)
+        val period = StandardPeriod(2021, Q3)
         val clock: Clock = Clock.fixed(Instant.parse("2021-12-01T12:00:00Z"), ZoneId.systemDefault)
 
         period.isOverdue(clock) mustBe true
@@ -212,7 +190,7 @@ class PeriodSpec
     "returns false when" - {
 
       "period is 2021-Q3 and today is 25th October" in {
-        val period = Period(2021, Q3)
+        val period = StandardPeriod(2021, Q3)
         val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
 
         period.isOverdue(clock) mustBe false

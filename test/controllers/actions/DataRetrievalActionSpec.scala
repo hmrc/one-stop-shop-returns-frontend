@@ -17,7 +17,7 @@
 package controllers.actions
 
 import base.SpecBase
-import models.Period
+import models.{Period, StandardPeriod}
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -43,7 +43,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
       "must set userAnswers to `None` in the request" in {
 
-        val period     = arbitrary[Period].sample.value
+        val period     = arbitrary[StandardPeriod].sample.value
         val repository = mock[UserAnswersRepository]
         val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, registration)
 
@@ -61,7 +61,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
       "must add the userAnswers to the request" in {
 
-        val period     = arbitrary[Period].sample.value
+        val period     = arbitrary[StandardPeriod].sample.value
         val repository = mock[UserAnswersRepository]
         val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, registration)
 

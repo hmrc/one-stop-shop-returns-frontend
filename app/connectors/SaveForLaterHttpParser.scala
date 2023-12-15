@@ -17,7 +17,7 @@
 package connectors
 
 import logging.Logging
-import models.Period
+import models.{Period, StandardPeriod}
 import models.responses._
 import play.api.http.Status._
 import play.api.libs.json._
@@ -81,7 +81,7 @@ object SaveForLaterHttpParser extends Logging {
 
 case class SavedUserAnswers(
                              vrn: Vrn,
-                             period: Period,
+                             period: StandardPeriod,
                              data: JsObject,
                              lastUpdated: Instant
                            )

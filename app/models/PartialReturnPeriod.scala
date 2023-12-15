@@ -14,31 +14,22 @@
  * limitations under the License.
  */
 
-package models.exclusions
+package models
 
-import logging.Logging
-import models.StandardPeriod
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain.Vrn
 
+import java.time.LocalDate
 
-case class ExcludedTrader(
-                           vrn: Vrn,
-                           exclusionReason: Int,
-                           effectivePeriod: StandardPeriod
-                         ) {
-  val exclusionSource: String = derriveExclusionSource(exclusionReason)
+case class PartialReturnPeriod(
+                                firstDay: LocalDate,
+                                lastDay: LocalDate,
+                                year: Int,
+                                quarter: Quarter
+                              ) extends Period {
 
-  private def derriveExclusionSource(code: Int) = {
-    code match {
-      case x if x == 2 || x == 4 => "HMRC"
-      case _ => "TRADER"
-    }
-  }
+  override val isPartial: Boolean = true
 }
 
-object ExcludedTrader extends Logging {
-
-  implicit val format: OFormat[ExcludedTrader] = Json.format[ExcludedTrader]
-
+object PartialReturnPeriod {
+  implicit val format: OFormat[PartialReturnPeriod] = Json.format[PartialReturnPeriod]
 }

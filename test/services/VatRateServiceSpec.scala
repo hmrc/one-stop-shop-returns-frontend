@@ -18,7 +18,7 @@ package services
 
 import generators.Generators
 import models.VatRateType.{Reduced, Standard}
-import models.{Country, Period, VatRate}
+import models.{Country, Period, StandardPeriod, VatRate}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
@@ -50,7 +50,7 @@ class VatRateServiceSpec
       "and which have no end date" in {
 
         val country = arbitrary[Country].sample.value
-        val period  = arbitrary[Period].sample.value
+        val period  = arbitrary[StandardPeriod].sample.value
 
         val rates: Map[String, Seq[VatRate]] = Map(
           country.code -> Seq(
@@ -81,7 +81,7 @@ class VatRateServiceSpec
       "and which have end dates that are on or after the first day of the period" in {
 
         val country = arbitrary[Country].sample.value
-        val period  = arbitrary[Period].sample.value
+        val period  = arbitrary[StandardPeriod].sample.value
 
         val rates: Map[String, Seq[VatRate]] = Map(
           country.code -> Seq(

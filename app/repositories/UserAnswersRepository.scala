@@ -17,7 +17,7 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.{Period, UserAnswers}
+import models.{Period, StandardPeriod, UserAnswers}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import play.api.libs.json.Format
@@ -79,9 +79,19 @@ class UserAnswersRepository @Inject()(
   def get(userId: String, period: Period): Future[Option[UserAnswers]] =
     keepAlive(userId).flatMap {
       _ =>
-        collection
-          .find(byUserIdAndPeriod(userId, period))
+        val periodToReturn = collection
+          .find(byUserId(userId))
+          .filter(userAnswers => userAnswers.period.year == period.year && userAnswers.period.quarter == period.quarter)
           .headOption()
+
+        periodToReturn.map { testPeriod =>
+          println("")
+          println("")
+          println(testPeriod.get.period.getClass)
+          println("")
+          println("")
+        }
+        periodToReturn
     }
 
   def get(userId: String): Future[Seq[UserAnswers]] =

@@ -55,7 +55,7 @@ class CorrectionCountryController @Inject()(
       }
 
       request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
-        case Some(correctionPeriod) => Ok(view(preparedForm, mode, period, periodIndex, correctionPeriod, countryIndex))
+        case Some(correctionPeriod) => Ok(view(preparedForm, mode, request.userAnswers.period, periodIndex, correctionPeriod, countryIndex))
         case None => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
       }
   }
@@ -69,7 +69,14 @@ class CorrectionCountryController @Inject()(
       form.bindFromRequest().fold(
         formWithErrors =>
           request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
-            case Some(correctionPeriod) => Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, correctionPeriod, countryIndex)))
+            case Some(correctionPeriod) => Future.successful(BadRequest(view(
+              formWithErrors,
+              mode,
+              request.userAnswers.period,
+              periodIndex,
+              correctionPeriod,
+              countryIndex
+            )))
             case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
           },
 
@@ -85,7 +92,7 @@ class CorrectionCountryController @Inject()(
                 vatReturnResult match {
                   case Right(vatReturn) => {
                     val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
-                    val countriesFromEU = vatReturn.salesFromEu.map(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption)).flatten
+                    val countriesFromEU = vatReturn.salesFromEu.flatMap(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption))
                     val allRecipientCountries = (countriesFromNi ::: countriesFromEU ::: correctionsForPeriod.map(_.correctionCountry).toList).distinct
 
                     Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, allRecipientCountries))

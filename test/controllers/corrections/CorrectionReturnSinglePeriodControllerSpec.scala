@@ -19,9 +19,9 @@ package controllers.corrections
 import base.SpecBase
 import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
+import models.{Index, NormalMode, PeriodWithStatus, StandardPeriod}
 import models.Quarter.Q4
 import models.SubmissionStatus.Complete
-import models.{Index, NormalMode, Period, PeriodWithStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -82,7 +82,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
       when(returnStatusConnector.listStatuses(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
           PeriodWithStatus(period, Complete),
-          PeriodWithStatus(Period(2021, Q4), Complete)
+          PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
         ))))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -180,7 +180,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
       when(returnStatusConnector.listStatuses(any())(any()))
         .thenReturn(Future.successful(Right(Seq(
           PeriodWithStatus(period, Complete),
-          PeriodWithStatus(Period(2021, Q4), Complete)
+          PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
         ))))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))

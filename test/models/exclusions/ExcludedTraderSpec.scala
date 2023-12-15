@@ -17,15 +17,14 @@
 package models.exclusions
 
 import base.SpecBase
-import models.Period
 import models.Quarter._
+import models.StandardPeriod
 import uk.gov.hmrc.domain.Vrn
 
 
 class ExcludedTraderSpec extends SpecBase {
 
-  private val exclusionPeriod = Period(2022, Q3)
-
+  private val exclusionPeriod = StandardPeriod(2022, Q3)
 
   ".derriveExclusionSource" - {
     "must return 'HMRC' for exclusion reason 2 and 4" in {

@@ -38,7 +38,12 @@ class VatPayableForCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
+  def onPageLoad(
+                  mode: Mode,
+                  period: Period,
+                  periodIndex: Index,
+                  countryIndex: Index
+                ): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
 
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
@@ -57,7 +62,7 @@ class VatPayableForCountryController @Inject()(
               case Some(value) => form.fill(value)
             }
 
-            Ok(view(preparedForm, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))
+            Ok(view(preparedForm, mode, request.userAnswers.period, periodIndex, countryIndex, country, correctionPeriod, newAmount))
           }
         case _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
@@ -77,7 +82,16 @@ class VatPayableForCountryController @Inject()(
               val form = formProvider(country, newAmount)
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, countryIndex, country, correctionPeriod, newAmount))),
+                  Future.successful(BadRequest(view(
+                    formWithErrors,
+                    mode,
+                    request.userAnswers.period,
+                    periodIndex,
+                    countryIndex,
+                    country,
+                    correctionPeriod,
+                    newAmount
+                  ))),
 
                 value =>
                   for {

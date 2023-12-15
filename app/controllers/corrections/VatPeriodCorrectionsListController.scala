@@ -17,10 +17,10 @@
 package controllers.corrections
 
 import connectors.ReturnStatusConnector
-import controllers.actions._
 import controllers.{routes => baseRoutes}
+import controllers.actions._
+import models.{Index, Mode, Period, StandardPeriod}
 import models.SubmissionStatus.Complete
-import models.{Index, Mode, Period}
 import pages.corrections.VatPeriodCorrectionsListPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -56,15 +56,15 @@ class VatPeriodCorrectionsListController @Inject()(
           if(allPeriods.isEmpty) {
             Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
           } else {
-            val completedCorrectionPeriods: List[Period] = request.userAnswers
+            val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers
               .get(DeriveCompletedCorrectionPeriods).getOrElse(List())
-            val uncompletedCorrectionPeriods: List[Period] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
+            val uncompletedCorrectionPeriods: List[StandardPeriod] = allPeriods.diff(completedCorrectionPeriods).distinct.toList
             val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(request.userAnswers, mode)
 
             if(uncompletedCorrectionPeriods.isEmpty) {
-              withCompleteData[Period](
+              withCompleteData[StandardPeriod](
                 data = getPeriodsWithIncompleteCorrections _,
-                onFailure = (incompletePeriods: Seq[Period]) =>
+                onFailure = (incompletePeriods: Seq[StandardPeriod]) =>
                 Ok(view(mode, period, completedCorrectionPeriodsModel, incompletePeriods)))(Ok(view(mode, period, completedCorrectionPeriodsModel, List.empty)))
             } else {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(mode, period))
@@ -81,9 +81,9 @@ class VatPeriodCorrectionsListController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
     implicit request =>
-        withCompleteData[Period](
+        withCompleteData[StandardPeriod](
         data = getPeriodsWithIncompleteCorrections _,
-        onFailure = (incompletePeriods: Seq[Period]) =>
+        onFailure = (incompletePeriods: Seq[StandardPeriod]) =>
           if (incompletePromptShown) {
             val correctionPeriods = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
               .getOrElse(List.empty).zipWithIndex

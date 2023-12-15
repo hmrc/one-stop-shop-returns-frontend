@@ -19,7 +19,7 @@ package controllers.corrections
 import controllers.actions._
 import controllers.{routes => baseRoutes}
 import logging.Logging
-import models.Period
+import models.{Period, StandardPeriod}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -46,7 +46,7 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
 
-      val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+      val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
       if(completedCorrectionPeriods.isEmpty) {
         val cleanup = for {
