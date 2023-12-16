@@ -25,7 +25,8 @@ import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate 
 import models.registration._
 import models.requests.VatReturnRequest
 import models.responses.UnexpectedResponseStatus
-import models.{Country, DataMissingError, Index, VatOnSales, VatRate, VatRateType}
+import models.{Country, DataMissingError, Index, PartialReturnPeriod, StandardPeriod, VatOnSales, VatRate, VatRateType}
+import models.Quarter.Q4
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
@@ -36,6 +37,7 @@ import queries._
 import services.corrections.CorrectionService
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
@@ -54,9 +56,27 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             .set(SoldGoodsFromNiPage, false).success.value
             .set(SoldGoodsFromEuPage, false).success.value
 
-        private val expectedResult = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
+        private val expectedResult = VatReturnRequest(vrn, period, Some(period.firstDay), Some(period.lastDay), List.empty, List.empty)
 
         service.fromUserAnswers(answers, vrn, period, registrationWithoutEuDetails) mustEqual Valid(expectedResult)
+      }
+
+      "when the user has not sold any goods with partial return period" in new Fixture {
+
+        private val answers =
+          emptyUserAnswers
+            .set(SoldGoodsFromNiPage, false).success.value
+            .set(SoldGoodsFromEuPage, false).success.value
+
+        val startDate = LocalDate.of(2023, 11, 16)
+
+        val standardPeriod = StandardPeriod(2023, Q4)
+
+        val partialReturnPeriod = PartialReturnPeriod(startDate, standardPeriod.lastDay, standardPeriod.year, standardPeriod.quarter)
+
+        private val expectedResult = VatReturnRequest(vrn, standardPeriod, Some(startDate), Some(standardPeriod.lastDay), List.empty, List.empty)
+
+        service.fromUserAnswers(answers, vrn, partialReturnPeriod, registrationWithoutEuDetails) mustEqual Valid(expectedResult)
       }
 
       "when the user has sold goods from NI" in new Fixture {
@@ -80,8 +100,8 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
           VatReturnRequest(
             vrn,
             period,
-            None,
-            None,
+            Some(period.firstDay),
+            Some(period.lastDay),
             List(
               SalesToCountry(
                 country1,
@@ -128,8 +148,8 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
           VatReturnRequest(
             vrn,
             period,
-            None,
-            None,
+            Some(period.firstDay),
+            Some(period.lastDay),
             List.empty,
             List(
               SalesFromEuCountry(
