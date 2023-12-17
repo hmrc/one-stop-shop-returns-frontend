@@ -19,18 +19,43 @@ package services
 import connectors.ReturnStatusConnector
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, SubmissionStatus}
 import models.registration.Registration
+import services.exclusions.ExclusionService
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PartialReturnPeriodService @Inject()(returnStatusConnector: ReturnStatusConnector)(implicit ec: ExecutionContext) {
+class PartialReturnPeriodService @Inject()(
+                                            exclusionService: ExclusionService,
+                                            returnStatusConnector: ReturnStatusConnector
+                                          )(implicit ec: ExecutionContext) {
 
-  def getPartialReturnPeriod(registration: Registration)(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
+  def getPartialReturnPeriod(registration: Registration, period: Period)(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
+    registration.excludedTrader match {
+      case None =>
+        getMaybeFirstPartialReturnPeriod(registration)
+      case Some(excludedTrader) =>
+        excludedTrader.exclusionReason match {
+          case 6 =>
+            exclusionService.currentReturnIsFinal(registration, period).map {
+              case true =>
+                Some(PartialReturnPeriod(
+                  period.firstDay,
+                  excludedTrader.effectiveDate.getOrElse(period.lastDay),
+                  period.year,
+                  period.quarter
+                ))
+              case _ => None
+            }
+          case _ => Future.successful(None)
+        }
+    }
+  }
+
+  private def getMaybeFirstPartialReturnPeriod(registration: Registration)(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
     returnStatusConnector.listStatuses(registration.commencementDate).map {
       case Right(returnPeriods) if isFirstPeriod(returnPeriods, registration.commencementDate) =>
-        println("test #3")
         val firstReturnPeriod = returnPeriods.head.period
         registration.transferringMsidEffectiveFromDate.flatMap {
           case transferringMsidEffectiveFromDate if isWithinPeriod(firstReturnPeriod, transferringMsidEffectiveFromDate) =>
@@ -41,27 +66,22 @@ class PartialReturnPeriodService @Inject()(returnStatusConnector: ReturnStatusCo
               firstReturnPeriod.quarter
             ))
           case _ =>
-            println("test #1")
             None
         }
-      case x =>
-        println(s"test #2 $x")
+      case _ =>
         None
     }
   }
 
   private def isFirstPeriod(periods: Seq[PeriodWithStatus], checkDate: LocalDate): Boolean = {
-    val firstUnsubmittedPeriod = periods.filter(period => Seq(SubmissionStatus.Next, SubmissionStatus.Due, SubmissionStatus.Overdue).contains(period.status)).head
+    val firstUnsubmittedPeriod = periods.filter(period =>
+      Seq(SubmissionStatus.Next, SubmissionStatus.Due, SubmissionStatus.Overdue).contains(period.status)
+    ).head
     isWithinPeriod(firstUnsubmittedPeriod.period, checkDate)
   }
 
-  private def isWithinPeriod(period: Period, checkDate: LocalDate): Boolean = {
-    val checker = (
-      !checkDate.isBefore(period.firstDay) &&
-        !checkDate.isAfter(period.lastDay))
-
-    println(s"checker ${checker}")
-    checker
-  }
+  private def isWithinPeriod(period: Period, checkDate: LocalDate): Boolean =
+    !checkDate.isBefore(period.firstDay) &&
+      !checkDate.isAfter(period.lastDay)
 
 }

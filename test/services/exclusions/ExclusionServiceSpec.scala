@@ -18,8 +18,8 @@ package services.exclusions
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import models.{Period, StandardPeriod}
 import models.Quarter.{Q2, Q3}
+import models.StandardPeriod
 import models.exclusions.ExcludedTrader
 import models.registration.Registration
 import models.requests.RegistrationRequest
@@ -58,7 +58,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-          Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod))
+          Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
 
@@ -69,7 +69,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
@@ -84,7 +84,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
 
       when(vatReturnConnector.get(eqTo(exclusionPeriod))(any())) thenReturn Future.successful(Left(NotFound))
 
@@ -96,7 +96,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
 
       when(vatReturnConnector.get(eqTo(exclusionPeriod))(any())) thenReturn Future.successful(Right(completeVatReturn))
 

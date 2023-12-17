@@ -48,7 +48,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(None)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
@@ -70,7 +70,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
     "must return OK and the correct view for a GET when partial return" in {
       val partialReturn = Some(PartialReturnPeriod(LocalDate.now, LocalDate.now, 2023, Q4))
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(partialReturn)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(partialReturn)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
@@ -92,7 +92,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to the next page when valid data is submitted" in {
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(None)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
@@ -160,7 +160,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(None)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))

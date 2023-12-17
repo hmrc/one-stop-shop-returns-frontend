@@ -18,8 +18,7 @@ package controllers
 
 import controllers.actions._
 import forms.SoldGoodsFromNiFormProvider
-import models.{Mode, PartialReturnPeriod, Period, StandardPeriod, UserAnswers}
-import models.registration.Registration
+import models.{Mode, Period, StandardPeriod, UserAnswers}
 import pages.SoldGoodsFromNiPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -50,7 +49,7 @@ class SoldGoodsFromNiController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      partialReturnPeriodService.getPartialReturnPeriod(request.registration).map { maybePartialReturnPeriod =>
+      partialReturnPeriodService.getPartialReturnPeriod(request.registration, period).map { maybePartialReturnPeriod =>
         Ok(view(preparedForm, mode, maybePartialReturnPeriod.getOrElse(period)))
       }
 
@@ -66,7 +65,7 @@ class SoldGoodsFromNiController @Inject()(
         value => {
 
           for {
-            maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.registration)
+            maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.registration, period)
             settingPeriod = maybePartialReturnPeriod.getOrElse(period)
             updatedAnswers <- Future.fromTry(request.userAnswers
               .getOrElse(UserAnswers(

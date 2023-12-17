@@ -18,7 +18,7 @@ package controllers
 
 import controllers.actions._
 import forms.StartReturnFormProvider
-import models.{PartialReturnPeriod, Period, Quarter}
+import models.Period
 import pages.StartReturnPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -26,7 +26,6 @@ import services.PartialReturnPeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.StartReturnView
 
-import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -43,7 +42,7 @@ class StartReturnController @Inject()(
     implicit request =>
       val form = formProvider(period)
 
-      partialReturnPeriodService.getPartialReturnPeriod(request.registration).map { maybePartialReturnPeriod =>
+      partialReturnPeriodService.getPartialReturnPeriod(request.registration, period).map { maybePartialReturnPeriod =>
         Ok(view(form, period, maybePartialReturnPeriod))
       }
   }
@@ -55,7 +54,7 @@ class StartReturnController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors => {
-          partialReturnPeriodService.getPartialReturnPeriod(request.registration).map { maybePartialReturnPeriod =>
+          partialReturnPeriodService.getPartialReturnPeriod(request.registration, period).map { maybePartialReturnPeriod =>
             BadRequest(view(formWithErrors, period, maybePartialReturnPeriod))
           }
         },

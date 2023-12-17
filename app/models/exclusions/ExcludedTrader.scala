@@ -21,11 +21,14 @@ import models.StandardPeriod
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
+import java.time.LocalDate
+
 
 case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionReason: Int,
-                           effectivePeriod: StandardPeriod
+                           effectivePeriod: StandardPeriod,
+                           effectiveDate: Option[LocalDate]
                          ) {
   val exclusionSource: String = derriveExclusionSource(exclusionReason)
 

@@ -57,11 +57,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   private val vatReturn = arbitrary[VatReturn].sample.value
   private val excludedTraderHMRC: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get))
+    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, None))
   private val excludedTraderSelf: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get))
+    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, None))
   private val excludedTraderQuarantined: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 4, StandardPeriod.fromString("2022-Q2").get))
+    registration.vrn, 4, StandardPeriod.fromString("2022-Q2").get, None))
 
   private val amendRegistrationUrl = "http://localhost:10200/pay-vat-on-goods-sold-to-eu/northern-ireland-register/start-amend-journey"
 

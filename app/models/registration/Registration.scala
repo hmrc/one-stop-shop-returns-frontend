@@ -17,7 +17,6 @@
 package models.registration
 
 import models.exclusions.ExcludedTrader
-import models.PartialReturnPeriod
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 

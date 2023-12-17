@@ -45,7 +45,7 @@ class SoldGoodsFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(None)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
@@ -65,7 +65,7 @@ class SoldGoodsFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(None)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val userAnswers = emptyUserAnswers.set(SoldGoodsFromNiPage, true).success.value
 
@@ -89,7 +89,7 @@ class SoldGoodsFromNiControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[UserAnswersRepository]
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(None)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
@@ -114,7 +114,7 @@ class SoldGoodsFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(None)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
@@ -138,7 +138,7 @@ class SoldGoodsFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET if no existing data is found" in {
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(None)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val application = applicationBuilder(userAnswers = None)
         .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
@@ -156,7 +156,7 @@ class SoldGoodsFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must save the answer and redirect to the next page for a POST if no existing data is found" in {
 
-      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any())(any())) thenReturn Future.successful(None)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val mockSessionRepository = mock[UserAnswersRepository]
 

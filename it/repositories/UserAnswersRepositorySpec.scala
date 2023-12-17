@@ -2,8 +2,8 @@ package repositories
 
 import config.FrontendAppConfig
 import generators.Generators
+import models.{StandardPeriod, UserAnswers}
 import models.Quarter.{Q3, Q4}
-import models.{Period, StandardPeriod, UserAnswers}
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues

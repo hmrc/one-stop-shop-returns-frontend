@@ -27,7 +27,7 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import java.time.{Clock, Instant, LocalDate, ZoneId}
 
-class StandardPeriodServiceSpec
+class PeriodServiceSpec
   extends AnyFreeSpec
     with Matchers
     with MockitoSugar
