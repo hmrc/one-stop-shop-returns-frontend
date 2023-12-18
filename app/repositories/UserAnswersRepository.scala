@@ -84,13 +84,6 @@ class UserAnswersRepository @Inject()(
           .filter(userAnswers => userAnswers.period.year == period.year && userAnswers.period.quarter == period.quarter)
           .headOption()
 
-        periodToReturn.map { testPeriod =>
-          println("")
-          println("")
-          println(testPeriod.get.period.getClass)
-          println("")
-          println("")
-        }
         periodToReturn
     }
 

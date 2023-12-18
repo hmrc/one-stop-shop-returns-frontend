@@ -39,10 +39,6 @@ class CountryOfConsumptionFromNiController @Inject()(
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
-      println("test5")
-      println("test5")
-      println("test5")
-      println("test5")
       val form =
         formProvider(
           index,
@@ -56,8 +52,6 @@ class CountryOfConsumptionFromNiController @Inject()(
         case None => form
         case Some(value) => form.fill(value)
       }
-
-      println("test1")
 
       Ok(view(preparedForm, mode, request.userAnswers.period, index, request.registration.isOnlineMarketplace))
   }
