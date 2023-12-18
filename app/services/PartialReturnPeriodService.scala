@@ -40,9 +40,10 @@ class PartialReturnPeriodService @Inject()(
           case 6 =>
             exclusionService.currentReturnIsFinal(registration, period).map {
               case true =>
+                val maybeEndDate = excludedTrader.effectiveDate.map(_.minusDays(1))
                 Some(PartialReturnPeriod(
                   period.firstDay,
-                  excludedTrader.effectiveDate.getOrElse(period.lastDay),
+                  maybeEndDate.getOrElse(period.lastDay),
                   period.year,
                   period.quarter
                 ))
