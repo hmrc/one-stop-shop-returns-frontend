@@ -49,9 +49,18 @@ class VatCorrectionsListController @Inject()(
           periodIndex,
           data = getIncompleteCorrections _,
           onFailure = (incompleteCorrections: Seq[CorrectionToCountry]) => {
-            Ok(view(form, mode, list, period, correctionPeriod, periodIndex, canAddCountries, incompleteCorrections.map(_.correctionCountry.name)))
+            Ok(view(
+              form,
+              mode,
+              list,
+              request.userAnswers.period,
+              correctionPeriod,
+              periodIndex,
+              canAddCountries,
+              incompleteCorrections.map(_.correctionCountry.name)
+            ))
           }) {
-          Ok(view(form, mode, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
+          Ok(view(form, mode, list, request.userAnswers.period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
         }
       }
   }
@@ -79,7 +88,7 @@ class VatCorrectionsListController @Inject()(
             form.bindFromRequest().fold(
               formWithErrors => {
                 val list = VatCorrectionsListSummary.addToListRows(request.userAnswers, mode, periodIndex)
-                BadRequest(view(formWithErrors, mode, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
+                BadRequest(view(formWithErrors, mode, list, request.userAnswers.period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
               },
               value =>
                 Redirect(VatCorrectionsListPage(periodIndex).navigate(request.userAnswers, mode, value))

@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{NormalMode, Period}
+import models.{NormalMode, Period, StandardPeriod}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -28,7 +28,7 @@ class StartReturnPageSpec extends PageBehaviours {
     ".navigate" - {
 
       "must go to Sold Goods From Unregistered Country when the answer is yes" in {
-        forAll(arbitrary[Period]) {
+        forAll(arbitrary[StandardPeriod]) {
           period =>
             StartReturnPage.navigate(period, startReturn = true)
               .mustEqual(routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period))
@@ -36,7 +36,7 @@ class StartReturnPageSpec extends PageBehaviours {
       }
 
       "must go to Index when the answer is no" in {
-        forAll(arbitrary[Period]) {
+        forAll(arbitrary[StandardPeriod]) {
           period =>
             StartReturnPage.navigate(period, startReturn = false)
               .mustEqual(routes.NoOtherPeriodsAvailableController.onPageLoad())

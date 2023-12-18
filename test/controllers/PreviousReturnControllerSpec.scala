@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
-import models.{Country, Period}
+import models.{Country, Period, StandardPeriod}
 import models.Quarter.Q3
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
@@ -99,7 +99,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       val clearedAmount = BigDecimal(3333.33)
       val outstandingAmount = BigDecimal(2247.22)
 
-      val charge = Charge(Period(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
+      val charge = Charge(StandardPeriod(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
       when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(Some(charge)))
@@ -482,7 +482,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       val clearedAmount = BigDecimal(3333.33)
       val outstandingAmount = BigDecimal(2247.22)
 
-      val charge = Charge(Period(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
+      val charge = Charge(StandardPeriod(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
       when(vatReturnsPaymentConnector.getCharge(any())(any())) thenReturn Future.successful(Right(Some(charge)))

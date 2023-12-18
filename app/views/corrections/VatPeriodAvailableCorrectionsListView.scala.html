@@ -29,7 +29,7 @@
         govukWarningText: GovukWarningText
 )
 
-@(form: Form[_], mode: Mode, period: Period, periodList: Seq[ListItem], incompletePeriods: Seq[Period])(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, periodList: Seq[ListItem], incompletePeriods: Seq[StandardPeriod])(implicit request: Request[_], messages: Messages)
 
 @defining(if(periodList.size == 0) {
     messages("vatPeriodCorrectionsList.title.empty")

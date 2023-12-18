@@ -33,7 +33,7 @@ object PaymentReference {
   private[models] def fromString(string: String): Option[PaymentReference] =
     string match {
       case pattern(vrn, quarter, year) =>
-        Period(year, quarter)
+        StandardPeriod(year, quarter)
           .toOption
           .map(period => PaymentReference(Vrn(vrn), period))
       case _ =>

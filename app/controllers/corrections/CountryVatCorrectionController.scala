@@ -18,7 +18,7 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.CountryVatCorrectionFormProvider
-import models.{Index, Mode, Period}
+import models.{Index, Mode, Period, StandardPeriod}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -40,11 +40,11 @@ class CountryVatCorrectionController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(
-    mode: Mode,
-    period: Period,
-    periodIndex: Index,
-    countryIndex: Index,
-    undeclaredCountry: Boolean = false
+                  mode: Mode,
+                  period: Period,
+                  periodIndex: Index,
+                  countryIndex: Index,
+                  undeclaredCountry: Boolean = false
   ): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
@@ -62,7 +62,7 @@ class CountryVatCorrectionController @Inject()(
             }
             Ok(view(
               preparedForm, mode, period,
-              country, correctionPeriod,
+              country, StandardPeriod.fromPeriod(correctionPeriod),
               periodIndex, countryIndex,
               vatOwedToCountryOnPrevReturn,
               undeclaredCountry
@@ -73,11 +73,11 @@ class CountryVatCorrectionController @Inject()(
   }
 
   def onSubmit(
-    mode: Mode,
-    period: Period,
-    periodIndex: Index,
-    countryIndex: Index,
-    undeclaredCountry: Boolean = false
+                mode: Mode,
+                period: Period,
+                periodIndex: Index,
+                countryIndex: Index,
+                undeclaredCountry: Boolean = false
   ): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
       val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
@@ -91,7 +91,7 @@ class CountryVatCorrectionController @Inject()(
                 formWithErrors =>
                   Future.successful(BadRequest(view(
                     formWithErrors, mode, period,
-                    country, correctionPeriod, periodIndex,
+                    country, StandardPeriod.fromPeriod(correctionPeriod), periodIndex,
                     countryIndex, vatOwedToCountryOnPrevReturn,
                     undeclaredCountry
                   ))),

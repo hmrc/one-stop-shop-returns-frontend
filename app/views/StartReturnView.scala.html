@@ -19,28 +19,57 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    govukButton: GovukButton
+    govukButton: GovukButton,
+    govukWarningText: GovukWarningText
 )
 
-@(form: Form[_], period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], period: Period, maybePartialReturnPeriod: Option[PartialReturnPeriod])(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("startReturn.title", period.displayText))) {
+@layout(pageTitle = title(
+  form,
+  if(maybePartialReturnPeriod.nonEmpty) {
+    messages("startReturn.shortTitle")
+  } else {
+    messages("startReturn.title", period.displayText)
+  }
+)) {
 
-    @formHelper(action = routes.StartReturnController.onSubmit(period), 'autoComplete -> "off") {
+    @formHelper(action = routes.StartReturnController.onSubmit(period), Symbol("autoComplete") -> "off") {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
+      @if(form.errors.nonEmpty) {
+          @govukErrorSummary(ErrorSummaryViewModel(form))
+      }
+
+      @{
+        val radioYesNo =
+          RadiosViewModel.yesNo(
+            field = form("value"),
+            legend = LegendViewModel(
+              if(maybePartialReturnPeriod.nonEmpty) {
+                messages("startReturn.shortHeading")
+              } else {
+                messages("startReturn.heading", period.displayText)
+              }
+            ).asPageHeading()
+          )
+
+        maybePartialReturnPeriod match {
+          case Some(partialReturnPeriod) =>
+            govukRadios(
+              radioYesNo
+              .withHint(HintViewModel(Text(messages("startReturn.partial", partialReturnPeriod.displayText))))
+            )
+          case _ =>
+            govukRadios(
+              radioYesNo
+            )
         }
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(messages("startReturn.heading", period.displayText)).asPageHeading()
-            )
-        )
+      }
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
-        )
+
+      @govukButton(
+          ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
+      )
     }
 }

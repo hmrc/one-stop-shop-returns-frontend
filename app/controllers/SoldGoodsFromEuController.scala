@@ -45,7 +45,7 @@ class SoldGoodsFromEuController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period))
+      Ok(view(preparedForm, mode, request.userAnswers.period))
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
@@ -53,7 +53,7 @@ class SoldGoodsFromEuController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          Future.successful(BadRequest(view(formWithErrors, mode, request.userAnswers.period))),
 
         value =>
           for {

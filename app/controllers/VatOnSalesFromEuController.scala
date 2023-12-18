@@ -54,7 +54,19 @@ class VatOnSalesFromEuController @Inject()(
               case Some(value) => form.fill(value)
             }
 
-            Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate, netSales, standardVat))
+            Ok(view(
+              preparedForm,
+              mode,
+              request.userAnswers.period,
+              countryFromIndex,
+              countryToIndex,
+              vatRateIndex,
+              countryFrom,
+              countryTo,
+              vatRate,
+              netSales,
+              standardVat
+            ))
         }
     }
 
@@ -69,7 +81,19 @@ class VatOnSalesFromEuController @Inject()(
 
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate, netSales, standardVat)).toFuture,
+                BadRequest(view(
+                  formWithErrors,
+                  mode,
+                  request.userAnswers.period,
+                  countryFromIndex,
+                  countryToIndex,
+                  vatRateIndex,
+                  countryFrom,
+                  countryTo,
+                  vatRate,
+                  netSales,
+                  standardVat
+                )).toFuture,
 
               value =>
                 for {

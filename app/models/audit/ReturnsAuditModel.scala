@@ -18,8 +18,8 @@ package models.audit
 
 import models.requests.corrections.CorrectionRequest
 import models.requests.{DataRequest, VatReturnRequest}
-import models.{PaymentReference, ReturnReference}
-import play.api.libs.json.{JsObject, JsValue, Json}
+import models.{PaymentReference, ReturnReference, StandardPeriod}
+import play.api.libs.json.{JsObject, Json, JsValue}
 
 case class ReturnsAuditModel(
                               credId: String,
@@ -64,7 +64,7 @@ case class ReturnsAuditModel(
 
   private val returnDetail: JsValue = Json.obj(
     "vatRegistrationNumber" -> vatReturnRequest.vrn,
-    "period" -> Json.toJson(vatReturnRequest.period),
+    "period" -> Json.toJson(StandardPeriod.fromPeriod(vatReturnRequest.period)),
     "salesFromNi" -> Json.toJson(vatReturnRequest.salesFromNi),
     "salesFromEu" -> Json.toJson(vatReturnRequest.salesFromEu),
   ) ++ referenceObj ++
@@ -78,7 +78,7 @@ case class ReturnsAuditModel(
         Json.obj(
           "correctionDetails" -> Json.obj(
             "vatRegistrationNumber" -> corrRequest.vrn,
-            "period" -> Json.toJson(corrRequest.period),
+            "period" -> Json.toJson(StandardPeriod.fromPeriod(corrRequest.period)),
             "corrections" -> Json.toJson(corrRequest.corrections)
           )
         )

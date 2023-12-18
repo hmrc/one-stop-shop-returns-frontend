@@ -46,7 +46,7 @@ case object ReturnsHistory extends ExternalTargetPage with ParameterlessUrl {
 
 case object StartReturn extends ExternalTargetPage with UrlWithPeriod {
   override val name: String = "start-your-return"
-  override def url(period:Period): String = controllers.routes.StartReturnController.onPageLoad(period).url
+  override def url(period: Period): String = controllers.routes.StartReturnController.onPageLoad(period).url
 }
 
 case object ContinueReturn extends ExternalTargetPage with UrlWithPeriod {

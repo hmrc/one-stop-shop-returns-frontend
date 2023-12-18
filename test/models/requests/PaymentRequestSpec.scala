@@ -17,7 +17,7 @@
 package models.requests
 
 import base.SpecBase
-import models.Period
+import models.{Period, StandardPeriod}
 import models.Quarter._
 
 class PaymentRequestSpec extends SpecBase {
@@ -27,28 +27,28 @@ class PaymentRequestSpec extends SpecBase {
   "PaymentPeriod" - {
     "should return correct PaymentPeriod object" - {
       "for Q1" in {
-        val period = Period(year, Q1)
+        val period = StandardPeriod(year, Q1)
         val expected = PaymentPeriod(year, "JanuaryToMarch")
 
         PaymentPeriod(period) mustBe expected
       }
 
       "for Q2" in {
-        val period = Period(year, Q2)
+        val period = StandardPeriod(year, Q2)
         val expected = PaymentPeriod(year, "AprilToJune")
 
         PaymentPeriod(period) mustBe expected
       }
 
       "for Q3" in {
-        val period = Period(year, Q3)
+        val period = StandardPeriod(year, Q3)
         val expected = PaymentPeriod(year, "JulyToSeptember")
 
         PaymentPeriod(period) mustBe expected
       }
 
       "for Q4" in {
-        val period = Period(year, Q4)
+        val period = StandardPeriod(year, Q4)
         val expected = PaymentPeriod(year, "OctoberToDecember")
 
         PaymentPeriod(period) mustBe expected

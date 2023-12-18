@@ -48,7 +48,7 @@ class UndeclaredCountryCorrectionController @Inject()(
             case None => form
             case Some(value) => form.fill(value)
           }
-          Ok(view(preparedForm, mode, period, country, correctionPeriod, periodIndex, countryIndex))
+          Ok(view(preparedForm, mode, request.userAnswers.period, country, correctionPeriod, periodIndex, countryIndex))
         case (_, _) =>
           Redirect(baseRoutes.JourneyRecoveryController.onPageLoad())
       }
@@ -63,7 +63,15 @@ class UndeclaredCountryCorrectionController @Inject()(
         case (Some(correctionPeriod), Some(country)) =>
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, mode, period, country, correctionPeriod, periodIndex, countryIndex))),
+              Future.successful(BadRequest(view(
+                formWithErrors,
+                mode,
+                request.userAnswers.period,
+                country,
+                correctionPeriod,
+                periodIndex,
+                countryIndex
+              ))),
 
             value =>
               for {

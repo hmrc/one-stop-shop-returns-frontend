@@ -46,7 +46,7 @@ class RemovePeriodCorrectionController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period, periodIndex))
+      Ok(view(preparedForm, mode, request.userAnswers.period, periodIndex))
   }
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
@@ -54,7 +54,7 @@ class RemovePeriodCorrectionController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex))),
+          Future.successful(BadRequest(view(formWithErrors, mode, request.userAnswers.period, periodIndex))),
 
         value =>
           if (value) {

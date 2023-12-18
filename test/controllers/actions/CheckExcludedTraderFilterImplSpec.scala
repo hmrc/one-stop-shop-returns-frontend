@@ -19,7 +19,7 @@ package controllers.actions
 import base.SpecBase
 import config.FrontendAppConfig
 import controllers.exclusions.routes
-import models.Period
+import models.{Period, StandardPeriod}
 import models.Quarter.{Q2, Q3}
 import models.exclusions.ExcludedTrader
 import models.requests.OptionalDataRequest
@@ -60,14 +60,14 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
     "must return None when trader is not excluded" in {
 
-      val startReturnPeriod = Period(periodYear, Q3)
+      val startReturnPeriod = StandardPeriod(periodYear, Q3)
 
       val app = applicationBuilder(None)
         .overrides(bind[PeriodService].toInstance(periodService))
         .build()
 
       when(mockConfig.exclusionsEnabled) thenReturn true
-      when(periodService.getNextPeriod(any())) thenReturn Period(periodYear, Q3)
+      when(periodService.getNextPeriod(any())) thenReturn StandardPeriod(periodYear, Q3)
 
       running(app) {
         val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, None)
@@ -82,10 +82,10 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
     "must return None when trader is excluded but can complete returns up to and including exclusion effective period" in {
 
-      val excludedPeriod = Period(periodYear, Q2)
-      val startReturnPeriod = Period(periodYear, Q2)
+      val excludedPeriod = StandardPeriod(periodYear, Q2)
+      val startReturnPeriod = StandardPeriod(periodYear, Q2)
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, exclusionReason, excludedPeriod)
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, exclusionReason, excludedPeriod, None)
 
       val excludedRegistration = registration.copy(excludedTrader = Some(excludedTrader))
 
@@ -94,7 +94,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
         .build()
 
       when(mockConfig.exclusionsEnabled) thenReturn true
-      when(periodService.getNextPeriod(any())) thenReturn Period(periodYear, Q3)
+      when(periodService.getNextPeriod(any())) thenReturn StandardPeriod(periodYear, Q3)
 
       running(app) {
         val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, excludedRegistration, None)
@@ -109,11 +109,11 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
     "must Redirect when trader is excluded" in {
 
-      val excludedPeriod = Period(periodYear, Q2)
-      val startReturnPeriod = Period(periodYear, Q3)
+      val excludedPeriod = StandardPeriod(periodYear, Q2)
+      val startReturnPeriod = StandardPeriod(periodYear, Q3)
 
       val excludedTrader: ExcludedTrader =
-        ExcludedTrader(vrn, exclusionReason, excludedPeriod)
+        ExcludedTrader(vrn, exclusionReason, excludedPeriod, None)
 
       val excludedRegistration = registration.copy(excludedTrader = Some(excludedTrader))
 
@@ -122,7 +122,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
         .build()
 
       when(mockConfig.exclusionsEnabled) thenReturn true
-      when(periodService.getNextPeriod(any())) thenReturn Period(periodYear, Q3)
+      when(periodService.getNextPeriod(any())) thenReturn StandardPeriod(periodYear, Q3)
 
       running(app) {
 
@@ -138,11 +138,11 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
 
     "must return None when trader is excluded but exclusions are disabled" in {
 
-      val excludedPeriod = Period(periodYear, Q2)
-      val startReturnPeriod = Period(periodYear, Q3)
+      val excludedPeriod = StandardPeriod(periodYear, Q2)
+      val startReturnPeriod = StandardPeriod(periodYear, Q3)
 
       val excludedTrader: ExcludedTrader =
-        ExcludedTrader(vrn, exclusionReason, excludedPeriod)
+        ExcludedTrader(vrn, exclusionReason, excludedPeriod, None)
 
       val excludedRegistration = registration.copy(excludedTrader = Some(excludedTrader))
 
@@ -151,7 +151,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
         .build()
 
       when(mockConfig.exclusionsEnabled) thenReturn false
-      when(periodService.getNextPeriod(any())) thenReturn Period(periodYear, Q3)
+      when(periodService.getNextPeriod(any())) thenReturn StandardPeriod(periodYear, Q3)
 
       running(app) {
 

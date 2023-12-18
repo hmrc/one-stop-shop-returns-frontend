@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import formats.Format
 import models.SubmissionStatus.Due
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
-import models.{Period, PeriodWithStatus}
+import models.{Period, PeriodWithStatus, StandardPeriod}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
@@ -102,7 +102,7 @@ class ReturnStatusConnectorSpec extends SpecBase with WireMockHelper with Either
 
   ".getCurrentReturns" - {
 
-    val period = arbitrary[Period].sample.value
+    val period = arbitrary[StandardPeriod].sample.value
     val responseJson = Json.toJson(CurrentReturns(Seq(Return.fromPeriod(period, Due, false, false))))
 
     "return a Returns model" in {

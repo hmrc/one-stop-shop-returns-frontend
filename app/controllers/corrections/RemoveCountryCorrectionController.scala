@@ -46,7 +46,7 @@ class RemoveCountryCorrectionController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period, periodIndex, countryIndex))
+      Ok(view(preparedForm, mode, request.userAnswers.period, periodIndex, countryIndex))
   }
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
@@ -54,7 +54,7 @@ class RemoveCountryCorrectionController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, periodIndex, countryIndex))),
+          Future.successful(BadRequest(view(formWithErrors, mode, request.userAnswers.period, periodIndex, countryIndex))),
 
         value =>
           if (value) {

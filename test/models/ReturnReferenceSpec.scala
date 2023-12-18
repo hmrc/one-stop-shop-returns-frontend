@@ -57,7 +57,7 @@ class ReturnReferenceSpec extends AnyFreeSpec with Matchers with ScalaCheckPrope
 
   "must serialise and deserialise to / from a valid return reference" in {
 
-    forAll(arbitrary[Period], arbitrary[Vrn]) {
+    forAll(arbitrary[StandardPeriod], arbitrary[Vrn]) {
       case (period, vrn) =>
 
         val reference = ReturnReference(vrn, period)

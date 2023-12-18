@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-package models.corrections
+package models
 
-import models.StandardPeriod
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain.Vrn
 
-import java.time.Instant
+import java.time.LocalDate
 
-case class CorrectionPayload(
-                              vrn: Vrn,
-                              period: StandardPeriod,
-                              corrections: List[PeriodWithCorrections],
-                              submissionReceived: Instant,
-                              lastUpdated: Instant
-                            )
+case class PartialReturnPeriod(
+                                firstDay: LocalDate,
+                                lastDay: LocalDate,
+                                year: Int,
+                                quarter: Quarter
+                              ) extends Period {
 
-object CorrectionPayload {
+  override val isPartial: Boolean = true
+}
 
-  implicit val format: OFormat[CorrectionPayload] = Json.format[CorrectionPayload]
+object PartialReturnPeriod {
+  implicit val format: OFormat[PartialReturnPeriod] = Json.format[PartialReturnPeriod]
 }

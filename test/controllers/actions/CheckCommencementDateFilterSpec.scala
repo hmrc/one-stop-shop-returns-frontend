@@ -18,7 +18,7 @@ package controllers.actions
 
 import base.SpecBase
 import controllers.routes
-import models.Period
+import models.{Period, StandardPeriod}
 import models.Quarter.Q3
 import models.requests.OptionalDataRequest
 import org.mockito.ArgumentMatchers.any
@@ -59,7 +59,7 @@ class CheckCommencementDateFilterSpec extends SpecBase with MockitoSugar with Be
 
       val registrationModel = registration.copy(commencementDate = LocalDate.of(2021, 9, 30))
 
-      when(periodService.getReturnPeriods(any())) thenReturn Seq(Period(2021, Q3))
+      when(periodService.getReturnPeriods(any())) thenReturn Seq(StandardPeriod(2021, Q3))
 
       running(app) {
         val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registrationModel, Some(emptyUserAnswers))

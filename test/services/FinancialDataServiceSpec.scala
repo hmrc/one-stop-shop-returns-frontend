@@ -17,8 +17,8 @@
 package services
 
 import base.SpecBase
-import models.Period
 import models.Quarter.Q3
+import models.StandardPeriod
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.financialdata.{Charge, VatReturnWithFinancialData}
@@ -35,13 +35,13 @@ class FinancialDataServiceSpec extends SpecBase with MockitoSugar {
   private val correctionPayload = arbitrary[CorrectionPayload].sample.value
 
   private val fullyPaidCharge = Charge(
-    period = Period(2021, Q3),
+    period = StandardPeriod(2021, Q3),
     originalAmount = BigDecimal(1000),
     outstandingAmount = BigDecimal(0),
     clearedAmount = BigDecimal(1000)
   )
   private val notPaidCharge = Charge(
-    period = Period(2021, Q3),
+    period = StandardPeriod(2021, Q3),
     originalAmount = BigDecimal(1000),
     outstandingAmount = BigDecimal(1000),
     clearedAmount = BigDecimal(0)

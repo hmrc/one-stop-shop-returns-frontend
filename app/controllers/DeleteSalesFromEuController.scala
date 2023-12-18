@@ -51,7 +51,7 @@ class DeleteSalesFromEuController @Inject()(
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, mode, period, index, country))
+          Ok(view(preparedForm, mode, request.userAnswers.period, index, country))
       }
   }
 
@@ -64,7 +64,7 @@ class DeleteSalesFromEuController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, mode, period, index, country)).toFuture,
+              BadRequest(view(formWithErrors, mode, request.userAnswers.period, index, country)).toFuture,
 
             value =>
               if(value) {

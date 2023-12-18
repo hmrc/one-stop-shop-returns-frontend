@@ -41,7 +41,7 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
       getSalesFromEu(answers, registration)
     ).mapN(
       (salesFromNi, salesFromEu) =>
-        VatReturnRequest(vrn, period, None, None, salesFromNi, salesFromEu)
+        VatReturnRequest(vrn, StandardPeriod.fromPeriod(period), Some(period.firstDay), Some(period.lastDay), salesFromNi, salesFromEu)
     )
 
   def getVatOwedToCountryOnReturn(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext) = {

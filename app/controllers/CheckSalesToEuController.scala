@@ -41,7 +41,7 @@ class CheckSalesToEuController @Inject()(
   def onPageLoad(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
       getCountries(countryFromIndex, countryToIndex) {
-        case(countryFrom, countryTo) =>
+        case (countryFrom, countryTo) =>
 
           val messages = messagesApi.preferred(request)
 
@@ -67,29 +67,42 @@ class CheckSalesToEuController @Inject()(
             index = countryFromIndex,
             data = getIncompleteToEuSales _,
             onFailure = (incompleteSales: Seq[SalesFromCountryWithOptionalVat]) =>
-              Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, incompleteSales.map(_.countryOfConsumption.name))))
-          {
-            Ok(view(mode, mainList, vatRateLists, period, countryFromIndex, countryToIndex, countryFrom, countryTo, Seq.empty))
+              Ok(view(
+                mode,
+                mainList,
+                vatRateLists,
+                request.userAnswers.period,
+                countryFromIndex,
+                countryToIndex,
+                countryFrom,
+                countryTo,
+                incompleteSales.map(_.countryOfConsumption.name)
+              ))) {
+            Ok(view(mode, mainList, vatRateLists, request.userAnswers.period, countryFromIndex, countryToIndex, countryFrom, countryTo, Seq.empty))
           }
       }
   }
 
   def onSubmit(mode: Mode, period: Period, countryFromIndex: Index, countryToIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
     cc.authAndGetData(period) {
-    implicit request => {
-      withCompleteData[SalesFromCountryWithOptionalVat](
-        index = countryFromIndex,
-        data = getIncompleteToEuSales _,
-        onFailure = (_ : Seq[SalesFromCountryWithOptionalVat]) =>
-        if(incompletePromptShown) firstIndexedIncompleteSaleToEu(countryFromIndex) match {
-          case Some(incompleteSales) =>
-            Redirect(routes.VatRatesFromEuController.onPageLoad( mode,  period,  countryFromIndex, Index(incompleteSales._2)))
-          case None =>
-            Redirect(routes.JourneyRecoveryController.onPageLoad())
-        } else Redirect(routes.CheckSalesToEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex))
-      ) {
-        Redirect(CheckSalesToEuPage(countryFromIndex).navigate(mode, request.userAnswers))
+      implicit request => {
+        withCompleteData[SalesFromCountryWithOptionalVat](
+          index = countryFromIndex,
+          data = getIncompleteToEuSales _,
+          onFailure = (_: Seq[SalesFromCountryWithOptionalVat]) =>
+            if (incompletePromptShown) {
+              firstIndexedIncompleteSaleToEu(countryFromIndex) match {
+                case Some(incompleteSales) =>
+                  Redirect(routes.VatRatesFromEuController.onPageLoad(mode, period, countryFromIndex, Index(incompleteSales._2)))
+                case None =>
+                  Redirect(routes.JourneyRecoveryController.onPageLoad())
+              }
+            } else {
+              Redirect(routes.CheckSalesToEuController.onPageLoad(mode, period, countryFromIndex, countryToIndex))
+            }
+        ) {
+          Redirect(CheckSalesToEuPage(countryFromIndex).navigate(mode, request.userAnswers))
+        }
       }
     }
-  }
 }

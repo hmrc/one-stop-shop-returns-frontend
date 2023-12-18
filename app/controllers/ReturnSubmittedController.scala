@@ -75,7 +75,7 @@ class ReturnSubmittedController @Inject()(
             _ <- cc.sessionRepository.clear(request.userId)
           } yield {
             Ok(view(
-              period,
+              request.userAnswers.period,
               returnReference,
               currencyFormat(vatOwed),
               showEmailConfirmation.getOrElse(false),

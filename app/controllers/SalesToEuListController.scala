@@ -53,8 +53,26 @@ class SalesToEuListController @Inject()(
             index,
             data = getIncompleteToEuSales _,
             onFailure = (incompleteSales: Seq[SalesFromCountryWithOptionalVat]) => {
-            Ok(view(form, mode, list, period, index, canAddCountries, country, incompleteSales.map(_.countryOfConsumption.name)))
-          })(Ok(view(form, mode, list, period, index, canAddCountries, country, Seq.empty)))
+            Ok(view(
+              form,
+              mode,
+              list,
+              request.userAnswers.period,
+              index,
+              canAddCountries,
+              country,
+              incompleteSales.map(_.countryOfConsumption.name)
+            ))
+          })(Ok(view(
+            form,
+            mode,
+            list,
+            request.userAnswers.period,
+            index,
+            canAddCountries,
+            country,
+            Seq.empty
+          )))
       }
   }
 
@@ -85,7 +103,7 @@ class SalesToEuListController @Inject()(
             form.bindFromRequest().fold(
               formWithErrors => {
                 val list = SalesToEuSummary.addToListRows(request.userAnswers, mode, index)
-                BadRequest(view(formWithErrors, mode, list, period, index, canAddCountries, country, Seq()))
+                BadRequest(view(formWithErrors, mode, list, request.userAnswers.period, index, canAddCountries, country, Seq()))
               },
               value =>
                 Redirect(SalesToEuListPage(index).navigate(request.userAnswers, mode, value))

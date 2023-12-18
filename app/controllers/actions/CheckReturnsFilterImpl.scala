@@ -18,7 +18,7 @@ package controllers.actions
 
 import connectors.VatReturnConnector
 import controllers.routes
-import models.Period
+import models.{Period, StandardPeriod}
 import models.requests.OptionalDataRequest
 import models.responses.NotFound
 import play.api.mvc.Results.Redirect
@@ -37,7 +37,7 @@ class CheckReturnsFilterImpl(period: Period, repository: CachedVatReturnReposito
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    repository.get(request.userId, period) flatMap {
+    repository.get(request.userId, StandardPeriod.fromPeriod(period)) flatMap {
       case Some(cachedVatReturn) if cachedVatReturn.vatReturn.isDefined =>
         Future.successful(Some(Redirect(routes.PreviousReturnController.onPageLoad(period))))
       case Some(_) =>
@@ -45,11 +45,11 @@ class CheckReturnsFilterImpl(period: Period, repository: CachedVatReturnReposito
       case None =>
         connector.get(period) flatMap  {
           case Right(vatReturn) =>
-            repository.set(request.userId, period, Some(vatReturn)).map {
+            repository.set(request.userId, StandardPeriod.fromPeriod(period), Some(vatReturn)).map {
              _ =>  Some(Redirect(routes.PreviousReturnController.onPageLoad(period)))
             }
           case Left(NotFound) =>
-            repository.set(request.userId, period, None).map(_ => None)
+            repository.set(request.userId, StandardPeriod.fromPeriod(period), None).map(_ => None)
           case _ =>
             Future.successful(None)
         }

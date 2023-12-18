@@ -18,9 +18,9 @@ package controllers.corrections
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
+import models.{Country, Index, NormalMode, PeriodWithStatus, StandardPeriod, UserAnswers}
 import models.Quarter.{Q1, Q3, Q4}
 import models.SubmissionStatus.Complete
-import models.{Country, Index, NormalMode, Period, PeriodWithStatus, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -41,21 +41,23 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
   private lazy val vatPeriodCorrectionsListRoute = controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(NormalMode, period).url
   private lazy val vatPeriodCorrectionsListRoutePost = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(NormalMode, period, false).url
 
-  private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] =
+  private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[StandardPeriod]): Option[UserAnswers] =
     periods.zipWithIndex
-      .foldLeft (Option(userAnswers))((ua, indexedPeriod) =>
+      .foldLeft(Option(userAnswers))((ua, indexedPeriod) =>
         ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption)
           .flatMap(_.set(CorrectionCountryPage(Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
           .flatMap(_.set(CountryVatCorrectionPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
 
-  private def getStatusResponse(periods: Seq[Period]) = {
+  private def getStatusResponse(periods: Seq[StandardPeriod]) = {
     Future.successful(Right(periods.map(period => PeriodWithStatus(period, Complete))))
   }
 
   private val mockReturnStatusConnector = mock[ReturnStatusConnector]
 
   private def vatCorrectionsListUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/2021-Q3/third-change-vat-correction-list/$index"
+
   private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/2021-Q3/remove-period-correction/$index"
+
   override def beforeEach(): Unit = {
     super.beforeEach()
     Mockito.reset(mockReturnStatusConnector)
@@ -86,9 +88,9 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
     "when there are previous return periods" - {
 
       val allPeriods = Seq(
-        Period(2021, Q3),
-        Period(2021, Q4),
-        Period(2022, Q1)
+        StandardPeriod(2021, Q3),
+        StandardPeriod(2021, Q4),
+        StandardPeriod(2022, Q1)
       )
 
       val allPeriodsModel = Seq(
@@ -193,11 +195,11 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
       }
     }
 
-    "POST" -{
+    "POST" - {
       val allPeriods = Seq(
-        Period(2021, Q3),
-        Period(2021, Q4),
-        Period(2022, Q1)
+        StandardPeriod(2021, Q3),
+        StandardPeriod(2021, Q4),
+        StandardPeriod(2022, Q1)
       )
       "must redirect to VatCorrectionsList if there are correction amounts missing for a period" in {
         when(mockReturnStatusConnector.listStatuses(any())(any()))
@@ -218,7 +220,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           val result = route(application, request).value
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.VatCorrectionsListController.onPageLoad(NormalMode, period, Index(allPeriods.size-1)).url
+          redirectLocation(result).value mustEqual routes.VatCorrectionsListController.onPageLoad(NormalMode, period, Index(allPeriods.size - 1)).url
         }
       }
 

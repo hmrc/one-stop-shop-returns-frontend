@@ -504,8 +504,8 @@ class ReturnForDataEntryAuditModelSpec extends SpecBase {
     protected val netSales1: BigDecimal          = arbitrary[BigDecimal].sample.value
     protected val netSales2: BigDecimal          = arbitrary[BigDecimal].sample.value
     protected val netSales3: BigDecimal          = arbitrary[BigDecimal].sample.value
-    protected val correctionPeriod1: Period      = arbitrary[Period].sample.value
-    protected val correctionPeriod2: Period      = arbitrary[Period].sample.value
+    protected val correctionPeriod1: StandardPeriod      = arbitrary[StandardPeriod].sample.value
+    protected val correctionPeriod2: StandardPeriod      = arbitrary[StandardPeriod].sample.value
     protected val correctionAmount: BigDecimal   = arbitrary[BigDecimal].sample.value
     protected val taxIdentifier: EuTaxIdentifier = arbitrary[EuTaxIdentifier].sample.value
 

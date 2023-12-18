@@ -20,8 +20,8 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.WireMockHelper
 import formats.Format
-import models.Period
 import models.Quarter.{Q1, Q3}
+import models.StandardPeriod
 import models.financialdata._
 import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalatest.EitherValues
@@ -85,7 +85,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
 
     "must return invalid response when invalid charge json returned" in {
 
-      val responseJson = Json.toJson(Period(2021, Q3))
+      val responseJson = Json.toJson(StandardPeriod(2021, Q3))
 
       running(application) {
         val connector = application.injector.instanceOf[FinancialDataConnector]
@@ -140,7 +140,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
 
     "must return invalid response when invalid charge json returned" in {
 
-      val responseJson = Json.toJson(Period(2021, Q3))
+      val responseJson = Json.toJson(StandardPeriod(2021, Q3))
 
       running(application) {
         val connector = application.injector.instanceOf[FinancialDataConnector]
@@ -232,7 +232,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
 
     "must return invalid response when invalid json returned" in {
 
-      val responseJson = Json.toJson(Period(2021, Q3))
+      val responseJson = Json.toJson(StandardPeriod(2021, Q3))
 
       running(application) {
         val connector = application.injector.instanceOf[FinancialDataConnector]
@@ -266,7 +266,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
 
   ".getCurrentPayments" - {
 
-    val period = Period(2022, Q1)
+    val period = StandardPeriod(2022, Q1)
 
     val url = s"$baseUrl/prepare/${vrn.vrn}"
 
@@ -292,7 +292,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
 
     "must return invalid response when invalid current payments json returned" in {
 
-      val responseJson = Json.toJson(Period(2021, Q3))
+      val responseJson = Json.toJson(StandardPeriod(2021, Q3))
 
       running(application) {
         val connector = application.injector.instanceOf[FinancialDataConnector]

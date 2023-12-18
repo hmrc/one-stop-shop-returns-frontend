@@ -20,7 +20,7 @@ import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import connectors.corrections.CorrectionConnector
-import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
+import connectors.{SavedUserAnswers, SaveForLaterConnector, VatReturnConnector}
 import controllers.corrections.{routes => correctionsRoutes}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.corrections.CorrectionPayload
@@ -28,7 +28,7 @@ import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, ReceivedErrorFromCore, RegistrationNotFound, UnexpectedResponseStatus}
-import models.{CheckMode, Country, DataMissingError, Index, NormalMode, Period, TotalVatToCountry, VatRate, VatRateType}
+import models.{CheckMode, Country, DataMissingError, Index, NormalMode, Period, StandardPeriod, TotalVatToCountry, VatRate, VatRateType}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -37,7 +37,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
-import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -898,7 +898,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           .set(SoldGoodsFromNiPage, false).success.value
           .set(SoldGoodsFromEuPage, false).success.value
           .set(CorrectPreviousReturnPage, true).success.value
-          .set(CorrectionReturnPeriodPage(Index(0)), Period("2022", "Q1").get).success.value
+          .set(CorrectionReturnPeriodPage(Index(0)), StandardPeriod("2022", "Q1").get).success.value
 
         val app = applicationBuilder(Some(answers)).build()
 
@@ -917,7 +917,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           .set(SoldGoodsFromNiPage, false).success.value
           .set(SoldGoodsFromEuPage, false).success.value
           .set(CorrectPreviousReturnPage, true).success.value
-          .set(CorrectionReturnPeriodPage(Index(0)), Period("2022", "Q1").get).success.value
+          .set(CorrectionReturnPeriodPage(Index(0)), StandardPeriod("2022", "Q1").get).success.value
           .set(CorrectionCountryPage(Index(0), Index(0)), Country.euCountries.head).success.value
 
         val app = applicationBuilder(Some(answers)).build()

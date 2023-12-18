@@ -17,7 +17,7 @@
 package controllers.actions
 
 import connectors.VatReturnConnector
-import models.Period
+import models.{Period, StandardPeriod}
 import models.requests.OptionalDataRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
@@ -26,7 +26,7 @@ import repositories.CachedVatReturnRepository
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeCheckReturnsFilter() extends CheckReturnsFilterImpl(
-  mock[Period],
+  mock[StandardPeriod],
   mock[CachedVatReturnRepository],
   mock[VatReturnConnector]
 )(ExecutionContext.Implicits.global) {

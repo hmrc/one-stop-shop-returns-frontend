@@ -17,8 +17,8 @@
 package forms
 
 import forms.behaviours.BooleanFieldBehaviours
-import models.Period
 import models.Quarter.Q3
+import models.StandardPeriod
 import play.api.data.FormError
 import play.api.i18n.Messages
 import play.api.test.StubMessagesFactory
@@ -27,7 +27,7 @@ class StartReturnFormProviderSpec extends BooleanFieldBehaviours with StubMessag
 
   val requiredKey = "startReturn.error.required"
   val invalidKey = "error.boolean"
-  val period = Period(2021, Q3)
+  val period = StandardPeriod(2021, Q3)
   implicit val m: Messages = stubMessages()
 
   val form = new StartReturnFormProvider()(period)

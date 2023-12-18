@@ -51,7 +51,17 @@ class NetValueOfSalesFromEuController @Inject()(
               case Some(value) => form.fill(value)
             }
 
-            Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate))
+            Ok(view(
+              preparedForm,
+              mode,
+              request.userAnswers.period,
+              countryFromIndex,
+              countryToIndex,
+              vatRateIndex,
+              countryFrom,
+              countryTo,
+              vatRate
+            ))
         }
     }
 
@@ -65,7 +75,17 @@ class NetValueOfSalesFromEuController @Inject()(
 
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, vatRateIndex, countryFrom, countryTo, vatRate)).toFuture,
+                BadRequest(view(
+                  formWithErrors,
+                  mode,
+                  request.userAnswers.period,
+                  countryFromIndex,
+                  countryToIndex,
+                  vatRateIndex,
+                  countryFrom,
+                  countryTo,
+                  vatRate
+                )).toFuture,
 
               value =>
                 for {

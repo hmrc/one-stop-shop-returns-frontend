@@ -42,7 +42,7 @@ class CountryToSameCountryController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
     implicit request =>
 
-      Ok(view(period))
+      Ok(view(request.userAnswers.period))
   }
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {

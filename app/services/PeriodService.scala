@@ -16,23 +16,23 @@
 
 package services
 
-import models.Period
 import models.Quarter._
+import models.StandardPeriod
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 
 class PeriodService @Inject()(clock: Clock) {
 
-  def getReturnPeriods(commencementDate: LocalDate): Seq[Period] =
+  def getReturnPeriods(commencementDate: LocalDate): Seq[StandardPeriod] =
     getAllPeriods.filterNot(_.lastDay.isBefore(commencementDate))
 
-  def getAllPeriods: Seq[Period] = {
-    val firstPeriod = Period(2021, Q3)
+  def getAllPeriods: Seq[StandardPeriod] = {
+    val firstPeriod = StandardPeriod(2021, Q3)
     getPeriodsUntilDate(firstPeriod, LocalDate.now(clock))
   }
 
-  private def getPeriodsUntilDate(currentPeriod: Period, endDate: LocalDate): Seq[Period] = {
+  private def getPeriodsUntilDate(currentPeriod: StandardPeriod, endDate: LocalDate): Seq[StandardPeriod] = {
     if(currentPeriod.lastDay.isBefore(endDate)) {
       Seq(currentPeriod) ++ getPeriodsUntilDate(getNextPeriod(currentPeriod), endDate)
     } else {
@@ -40,29 +40,29 @@ class PeriodService @Inject()(clock: Clock) {
     }
   }
 
-  def getNextPeriod(currentPeriod: Period): Period = {
+  def getNextPeriod(currentPeriod: StandardPeriod): StandardPeriod = {
     currentPeriod.quarter match {
       case Q4 =>
-        Period(currentPeriod.year + 1, Q1)
+        StandardPeriod(currentPeriod.year + 1, Q1)
       case Q3 =>
-        Period(currentPeriod.year, Q4)
+        StandardPeriod(currentPeriod.year, Q4)
       case Q2 =>
-        Period(currentPeriod.year, Q3)
+        StandardPeriod(currentPeriod.year, Q3)
       case Q1 =>
-        Period(currentPeriod.year, Q2)
+        StandardPeriod(currentPeriod.year, Q2)
     }
   }
 
-  def getPreviousPeriod(currentPeriod: Period): Period = {
+  def getPreviousPeriod(currentPeriod: StandardPeriod): StandardPeriod = {
     currentPeriod.quarter match {
       case Q1 =>
-        Period(currentPeriod.year - 1, Q4)
+        StandardPeriod(currentPeriod.year - 1, Q4)
       case Q2 =>
-        Period(currentPeriod.year, Q1)
+        StandardPeriod(currentPeriod.year, Q1)
       case Q3 =>
-        Period(currentPeriod.year, Q2)
+        StandardPeriod(currentPeriod.year, Q2)
       case Q4 =>
-        Period(currentPeriod.year, Q3)
+        StandardPeriod(currentPeriod.year, Q3)
     }
   }
 }

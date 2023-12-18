@@ -23,7 +23,7 @@ import models.Quarter.{Q1, Q2}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.financialdata.{Charge, VatReturnWithFinancialData}
 import models.responses.UnexpectedResponseStatus
-import models.Period
+import models.StandardPeriod
 import models.external.ExternalEntryUrl
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -45,8 +45,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   private val vatReturnConnector = mock[VatReturnConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
 
-  private val period1 = Period(2021, Q1)
-  private val period2 = Period(2021, Q2)
+  private val period1 = StandardPeriod(2021, Q1)
+  private val period2 = StandardPeriod(2021, Q2)
 
   private val charge = Charge(period1, BigDecimal(1000), BigDecimal(1000), BigDecimal(1000))
   private val charge2 = Charge(period2, BigDecimal(2000), BigDecimal(500), BigDecimal(1500))
@@ -251,7 +251,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val completedCorrectionPayload: CorrectionPayload =
         CorrectionPayload(
           Vrn("063407423"),
-          Period("2086", "Q3").get,
+          StandardPeriod("2086", "Q3").get,
           List(PeriodWithCorrections(
             period,
             Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
@@ -293,7 +293,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val completedCorrectionPayload: CorrectionPayload =
         CorrectionPayload(
           Vrn("063407423"),
-          Period("2086", "Q3").get,
+          StandardPeriod("2086", "Q3").get,
           List(PeriodWithCorrections(
             period,
             Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))

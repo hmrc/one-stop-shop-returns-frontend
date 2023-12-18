@@ -16,7 +16,7 @@
 
 package viewmodels.yourAccount
 
-import models.Period
+import models.StandardPeriod
 import models.SubmissionStatus.{Due, Next, Overdue}
 import play.api.i18n.Messages
 import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
@@ -45,7 +45,7 @@ object ReturnsViewModel {
     )
   }
 
-  private def startDueReturnLink(period: Period)(implicit messages: Messages) = {
+  private def startDueReturnLink(period: StandardPeriod)(implicit messages: Messages) = {
     LinkModel(
       linkText = messages("index.yourReturns.dueReturn.startReturn"),
       id = "start-your-return",
@@ -53,31 +53,31 @@ object ReturnsViewModel {
     )
   }
 
-  private def startOverdueReturnLink(period: Period)(implicit messages: Messages) =
+  private def startOverdueReturnLink(period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("index.yourReturns.startReturn", period.displayShortText),
       id = "start-your-return",
       url = controllers.routes.StartReturnController.onPageLoad(period).url
     )
 
-  private def continueDueReturnLink(period: Period)(implicit messages: Messages) =
+  private def continueDueReturnLink(period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("index.yourReturns.dueReturn.continueReturn"),
       id = "continue-your-return",
       url = controllers.routes.ContinueReturnController.onPageLoad(period).url
     )
 
-  private def continueOverdueReturnLink(period: Period)(implicit messages: Messages) =
+  private def continueOverdueReturnLink(period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("index.yourReturns.continueReturn", period.displayShortText),
       id = "continue-your-return",
       url = controllers.routes.ContinueReturnController.onPageLoad(period).url
     )
 
-  private def returnDueParagraph(period: Period)(implicit messages: Messages) =
+  private def returnDueParagraph(period: StandardPeriod)(implicit messages: Messages) =
     ParagraphSimple(messages("index.yourReturns.returnDue", period.displayShortText, period.paymentDeadlineDisplay))
 
-  private def returnDueInProgressParagraph(period: Period)(implicit messages: Messages) =
+  private def returnDueInProgressParagraph(period: StandardPeriod)(implicit messages: Messages) =
     ParagraphSimple(s"""${messages("index.yourReturns.inProgress", period.displayText)}
        |<br>${messages("index.yourReturns.inProgress.due", period.paymentDeadlineDisplay)}
        |<br>""".stripMargin)
@@ -100,7 +100,7 @@ object ReturnsViewModel {
   private def onlyReturnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
     ParagraphSimple(messages("index.yourReturns.onlyReturnsOverdue", numberOfOverdueReturns))
 
-  private def nextReturnParagraph(nextReturn: Period)(implicit messages: Messages) =
+  private def nextReturnParagraph(nextReturn: StandardPeriod)(implicit messages: Messages) =
     ParagraphWithId(messages("index.nextPeriod", nextReturn.displayShortText, nextReturn.lastDay.plusDays(1)
       .format(DateTimeFormatter.ofPattern("d MMMM yyyy"))),
       "next-period"

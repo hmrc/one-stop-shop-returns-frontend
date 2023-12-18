@@ -16,8 +16,8 @@
 
 package controllers.actions
 
-import models.Period
 import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest, RegistrationRequest}
+import models.Period
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
 import play.api.mvc._

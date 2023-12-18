@@ -65,7 +65,16 @@ class VatRatesFromEuController @Inject()(
                   updateAndContinue(mode, countryFromIndex, countryToIndex, request, vatRates.toList)
               }
             case _ =>
-              Ok(view(preparedForm, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo, checkboxItems(vatRates))).toFuture
+              Ok(view(
+                preparedForm,
+                mode,
+                request.userAnswers.period,
+                countryFromIndex,
+                countryToIndex,
+                countryFrom,
+                countryTo,
+                checkboxItems(vatRates)
+              )).toFuture
           }
       }
   }
@@ -80,7 +89,16 @@ class VatRatesFromEuController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, mode, period, countryFromIndex, countryToIndex, countryFrom, countryTo, checkboxItems(vatRates))).toFuture,
+              BadRequest(view(
+                formWithErrors,
+                mode,
+                request.userAnswers.period,
+                countryFromIndex,
+                countryToIndex,
+                countryFrom,
+                countryTo,
+                checkboxItems(vatRates)
+              )).toFuture,
 
             value => {
               val existingAnswers = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).getOrElse(List.empty)

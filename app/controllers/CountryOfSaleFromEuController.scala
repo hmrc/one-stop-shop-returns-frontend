@@ -54,7 +54,7 @@ class CountryOfSaleFromEuController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period, index))
+      Ok(view(preparedForm, mode, request.userAnswers.period, index))
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period).async {
@@ -71,7 +71,7 @@ class CountryOfSaleFromEuController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, index))),
+          Future.successful(BadRequest(view(formWithErrors, mode, request.userAnswers.period, index))),
 
         value =>
           for {

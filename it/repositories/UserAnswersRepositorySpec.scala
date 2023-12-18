@@ -2,8 +2,8 @@ package repositories
 
 import config.FrontendAppConfig
 import generators.Generators
+import models.{StandardPeriod, UserAnswers}
 import models.Quarter.{Q3, Q4}
-import models.{Period, UserAnswers}
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues
@@ -43,7 +43,7 @@ class UserAnswersRepositorySpec
 
     "must set the last updated time on the supplied user answers to `now`, and save them" in {
 
-      val answers = UserAnswers("id", Period(2021, Q3))
+      val answers = UserAnswers("id", StandardPeriod(2021, Q3))
       val expectedResult = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
       val setResult     = repository.set(answers).futureValue
@@ -60,12 +60,12 @@ class UserAnswersRepositorySpec
 
       "must update the lastUpdated time and get the record" in {
 
-        val answers = UserAnswers("id", Period(2021, Q3))
-        val otherAnswers = UserAnswers("id", Period(2021, Q4))
+        val answers = UserAnswers("id", StandardPeriod(2021, Q3))
+        val otherAnswers = UserAnswers("id", StandardPeriod(2021, Q4))
         insert(answers).futureValue
         insert(otherAnswers).futureValue
 
-        val result         = repository.get(answers.userId, Period(2021, Q3)).futureValue
+        val result         = repository.get(answers.userId, StandardPeriod(2021, Q3)).futureValue
         val expectedResult = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
         result.value mustEqual expectedResult
@@ -76,10 +76,10 @@ class UserAnswersRepositorySpec
 
       "must return None" in {
 
-        val answers = UserAnswers("id", Period(2021, Q3))
+        val answers = UserAnswers("id", StandardPeriod(2021, Q3))
         insert(answers).futureValue
 
-        repository.get("id", Period(2021, Q4)).futureValue must not be defined
+        repository.get("id", StandardPeriod(2021, Q4)).futureValue must not be defined
       }
     }
   }
@@ -88,7 +88,7 @@ class UserAnswersRepositorySpec
 
     "must remove a record" in {
 
-      val period = Period(2021, Q3)
+      val period = StandardPeriod(2021, Q3)
 
       val answers = UserAnswers("id", period)
 
@@ -113,8 +113,8 @@ class UserAnswersRepositorySpec
 
       "must update their lastUpdated to `now` and return true" in {
 
-        val answers = UserAnswers("id", Period(2021, Q3))
-        val otherAnswers = UserAnswers("id", Period(2021, Q4))
+        val answers = UserAnswers("id", StandardPeriod(2021, Q3))
+        val otherAnswers = UserAnswers("id", StandardPeriod(2021, Q4))
         insert(answers).futureValue
         insert(otherAnswers).futureValue
 

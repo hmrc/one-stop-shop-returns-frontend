@@ -15,12 +15,12 @@
  */
 
 package models.financialdata
-import models.Period
+import models.StandardPeriod
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.{Clock, LocalDate}
 
-case class PeriodWithOutstandingAmount(period: Period, outstandingAmount: BigDecimal) {
+case class PeriodWithOutstandingAmount(period: StandardPeriod, outstandingAmount: BigDecimal) {
   def isOverdue(clock: Clock): Boolean = {
     period.paymentDeadline.isBefore(LocalDate.now(clock))
   }

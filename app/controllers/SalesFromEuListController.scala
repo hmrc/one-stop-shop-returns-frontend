@@ -51,8 +51,8 @@ class SalesFromEuListController @Inject()(
           withCompleteData[SalesFromEuWithOptionalVat](
             data = getIncompleteFromEuSales _,
             onFailure = (incompleteSales: Seq[SalesFromEuWithOptionalVat]) => {
-            Ok(view(form, mode, list, period, canAddCountries, incompleteSales.map(_.countryOfSale)))
-          })(Ok(view(form, mode, list, period, canAddCountries)))
+            Ok(view(form, mode, list, request.userAnswers.period, canAddCountries, incompleteSales.map(_.countryOfSale)))
+          })(Ok(view(form, mode, list, request.userAnswers.period, canAddCountries)))
       }
   }
 
@@ -82,7 +82,7 @@ class SalesFromEuListController @Inject()(
             form.bindFromRequest().fold(
               formWithErrors => {
                 val list = SalesFromEuSummary.addToListRows(request.userAnswers, mode)
-                BadRequest(view(formWithErrors, mode, list, period, canAddCountries))
+                BadRequest(view(formWithErrors, mode, list, request.userAnswers.period, canAddCountries))
               },
               value =>
                 Redirect(SalesFromEuListPage.navigate(request.userAnswers, mode, value))

@@ -105,9 +105,12 @@ notRegistered.subHeading = If you have not registered
 notRegistered.registerLink = You can <a class="govuk-link" href="https://www.gov.uk/guidance/register-to-report-and-pay-vat-on-distance-sales-of-goods-from-northern-ireland-to-the-eu">register for the VAT One Stop Shop.</a>
 
 startReturn.title = Do you want to start your return for {0}?
+startReturn.shortTitle = Do you want to start your return?
 startReturn.heading = Do you want to start your return for {0}?
+startReturn.shortHeading = Do you want to start your return?
 startReturn.error.required = Select yes if you want to start your return for {0}
 startReturn.change.hidden = if you want to start your return
+startReturn.partial = Only include sales from {0}.
 
 countryOfConsumptionFromNi.title = Which EU country did you sell to from Northern Ireland?
 countryOfConsumptionFromNi.heading = Which EU country did you sell to from Northern Ireland?

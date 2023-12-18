@@ -33,7 +33,7 @@ object ReturnReference {
   private[models] def fromString(string: String): Option[ReturnReference] =
     string match {
       case pattern(vrn, quarter, year) =>
-        Period(year, quarter)
+        StandardPeriod(year, quarter)
           .toOption
           .map(period => ReturnReference(Vrn(vrn), period))
       case _ =>

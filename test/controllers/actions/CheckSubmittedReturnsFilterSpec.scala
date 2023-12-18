@@ -19,10 +19,10 @@ package controllers.actions
 import base.SpecBase
 import connectors.ReturnStatusConnector
 import controllers.routes
+import models.{PeriodWithStatus, StandardPeriod, SubmissionStatus}
 import models.Quarter.Q3
 import models.requests.DataRequest
 import models.responses.UnexpectedResponseStatus
-import models.{Period, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -54,7 +54,7 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
     "must return None when submitted returns are found" in {
 
       when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(
-        Right(Seq(PeriodWithStatus(Period(2021, Q3), SubmissionStatus.Complete))))
+        Right(Seq(PeriodWithStatus(StandardPeriod(2021, Q3), SubmissionStatus.Complete))))
 
       val app = applicationBuilder(None)
         .overrides(bind[ReturnStatusConnector].toInstance(mockConnector))
@@ -93,7 +93,7 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
       "when returns are found but there is no complete return" in {
 
         when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
-          PeriodWithStatus(Period(2021, Q3), SubmissionStatus.Due))))
+          PeriodWithStatus(StandardPeriod(2021, Q3), SubmissionStatus.Due))))
 
         val app = applicationBuilder(None)
           .overrides(bind[ReturnStatusConnector].toInstance(mockConnector))

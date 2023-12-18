@@ -24,7 +24,7 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], mode: Mode, period: Period, allReturnPeriods: Seq[Period], periodIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, period: Period, allReturnPeriods: Seq[StandardPeriod], periodIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionReturnPeriod.title"))) {
 
@@ -38,7 +38,7 @@
             RadiosViewModel(
                 field  = form("value"),
                 legend = LegendViewModel(messages("correctionReturnPeriod.heading")).asPageHeading(),
-                items  = Period.options(allReturnPeriods)
+                items  = StandardPeriod.options(allReturnPeriods)
             )
         )
 

@@ -20,7 +20,7 @@ import cats.implicits._
 import connectors.corrections.CorrectionConnector
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
 import models.requests.corrections.CorrectionRequest
-import models.{DataMissingError, Index, Period, UserAnswers, ValidationResult}
+import models.{DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.Lang.logger
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
@@ -39,10 +39,10 @@ class CorrectionService @Inject()(
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, commencementDate: LocalDate): ValidationResult[CorrectionRequest] = {
     if (firstPeriod(period, commencementDate)) {
-      CorrectionRequest(vrn, period, List.empty).validNec
+      CorrectionRequest(vrn, StandardPeriod.fromPeriod(period), List.empty).validNec
     } else {
       getCorrections(answers).map { corrections =>
-        CorrectionRequest(vrn, period, corrections)
+        CorrectionRequest(vrn, StandardPeriod.fromPeriod(period), corrections)
       }
     }
   }

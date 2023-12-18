@@ -16,10 +16,10 @@
 
 package models.corrections
 
-import models.Period
+import models.StandardPeriod
 import play.api.libs.json.{Format, Json}
 
-case class PeriodWithCorrections(correctionReturnPeriod: Period, correctionsToCountry: Option[List[CorrectionToCountry]])
+case class PeriodWithCorrections(correctionReturnPeriod: StandardPeriod, correctionsToCountry: Option[List[CorrectionToCountry]])
 
 object PeriodWithCorrections {
   implicit val format: Format[PeriodWithCorrections] = Json.format[PeriodWithCorrections]

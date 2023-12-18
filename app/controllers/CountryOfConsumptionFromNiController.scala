@@ -53,7 +53,7 @@ class CountryOfConsumptionFromNiController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period, index, request.registration.isOnlineMarketplace))
+      Ok(view(preparedForm, mode, request.userAnswers.period, index, request.registration.isOnlineMarketplace))
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetData(period).async {
@@ -73,7 +73,7 @@ class CountryOfConsumptionFromNiController @Inject()(
           Future.successful(BadRequest(view(
             formWithErrors,
             mode,
-            period,
+            request.userAnswers.period,
             index,
             request.registration.isOnlineMarketplace
           ))),

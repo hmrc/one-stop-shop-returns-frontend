@@ -21,7 +21,7 @@ import config.FrontendAppConfig
 import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import connectors.financialdata.FinancialDataConnector
 import generators.Generators
-import models.{Country, Period, SubmissionStatus}
+import models.{Country, StandardPeriod, SubmissionStatus}
 import models.Quarter._
 import models.SubmissionStatus.{Due, Next, Overdue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
@@ -57,11 +57,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   private val vatReturn = arbitrary[VatReturn].sample.value
   private val excludedTraderHMRC: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 1, Period.fromString("2022-Q2").get))
+    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, None))
   private val excludedTraderSelf: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 1, Period.fromString("2022-Q2").get))
+    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, None))
   private val excludedTraderQuarantined: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 4, Period.fromString("2022-Q2").get))
+    registration.vrn, 4, StandardPeriod.fromString("2022-Q2").get, None))
 
   private val amendRegistrationUrl = "http://localhost:10200/pay-vat-on-goods-sold-to-eu/northern-ireland-register/start-amend-journey"
 
@@ -74,7 +74,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = Period(2021, Q4)
+        val nextPeriod = StandardPeriod(2021, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -145,7 +145,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         "only" in {
           val instant = Instant.parse("2021-10-11T12:00:00Z")
           val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-          val period = Period(2021, Q3)
+          val period = StandardPeriod(2021, Q3)
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
@@ -206,7 +206,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val instant = Instant.parse("2021-10-11T12:00:00Z")
           val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-          val period = Period(2021, Q3)
+          val period = StandardPeriod(2021, Q3)
           val userAnswers = emptyUserAnswers.set(SavedProgressPage, "test").success.value
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
@@ -268,7 +268,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val instant = Instant.parse("2022-01-01T12:00:00Z")
           val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-          val secondPeriod = Period(2021, Q4)
+          val secondPeriod = StandardPeriod(2021, Q4)
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
@@ -330,8 +330,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val instant = Instant.parse("2022-01-01T12:00:00Z")
           val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-          val firstPeriod = Period(2021, Q3)
-          val secondPeriod = Period(2021, Q4)
+          val firstPeriod = StandardPeriod(2021, Q3)
+          val secondPeriod = StandardPeriod(2021, Q4)
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
@@ -397,7 +397,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-11-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val period = Period(2021, Q3)
+        val period = StandardPeriod(2021, Q3)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
@@ -437,7 +437,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(Seq(
-              Return.fromPeriod(Period(2021, Q3), Overdue, false, true)))(messages(application)),
+              Return.fromPeriod(StandardPeriod(2021, Q3), Overdue, false, true)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             None,
@@ -456,8 +456,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2022-02-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val firstPeriod = Period(2021, Q3)
-        val secondPeriod = Period(2021, Q4)
+        val firstPeriod = StandardPeriod(2021, Q3)
+        val secondPeriod = StandardPeriod(2021, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -522,7 +522,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val instant = Instant.parse("2021-10-25T12:00:00Z")
           val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-          val firstPeriod = Period(2021, Q3)
+          val firstPeriod = StandardPeriod(2021, Q3)
           val outstandingAmount = BigDecimal(1000)
           val payment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
@@ -587,7 +587,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val instant = Instant.parse("2021-10-25T12:00:00Z")
           val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-          val firstPeriod = Period(2021, Q3)
+          val firstPeriod = StandardPeriod(2021, Q3)
 
           val payment = Payment(firstPeriod, 0, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
@@ -654,7 +654,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val instant = Instant.parse("2022-01-01T12:00:00Z")
           val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-          val firstPeriod = Period(2021, Q1)
+          val firstPeriod = StandardPeriod(2021, Q1)
           val outstandingAmount = BigDecimal(1000)
           val overduePayment = Payment(firstPeriod, outstandingAmount, firstPeriod.paymentDeadline, PaymentStatus.Unpaid)
 
@@ -780,7 +780,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         "and charge is not in ETMP" in {
           val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
           val vatOwed = BigDecimal(1563.49)
-          val firstPeriod = Period(2021, Q3)
+          val firstPeriod = StandardPeriod(2021, Q3)
           val payment = Payment(firstPeriod, vatOwed, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
@@ -845,7 +845,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-25T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val firstPeriod = Period(2021, Q3)
+        val firstPeriod = StandardPeriod(2021, Q3)
         val payment = Payment(firstPeriod, 1000, firstPeriod.paymentDeadline, PaymentStatus.Unknown)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -908,7 +908,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-11-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val period = Period(2021, Q3)
+        val period = StandardPeriod(2021, Q3)
         val answers = arbitrarySavedUserAnswers.arbitrary.sample.value.copy(period = period)
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1017,7 +1017,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = Period(2021, Q4)
+        val nextPeriod = StandardPeriod(2021, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1090,7 +1090,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = Period(2021, Q4)
+        val nextPeriod = StandardPeriod(2021, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1165,7 +1165,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val instant = Instant.parse("2021-10-11T12:00:00Z")
       val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-      val nextPeriod = Period(2021, Q4)
+      val nextPeriod = StandardPeriod(2021, Q4)
 
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(
@@ -1243,7 +1243,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = Period(2021, Q4)
+        val nextPeriod = StandardPeriod(2021, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1315,7 +1315,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = Period(2021, Q4)
+        val nextPeriod = StandardPeriod(2021, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1392,7 +1392,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = Period(2021, Q4)
+        val nextPeriod = StandardPeriod(2021, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1465,7 +1465,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = Period(2021, Q4)
+        val nextPeriod = StandardPeriod(2021, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1549,6 +1549,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         contactDetails = ContactDetails("name", "0123 456789", "email@example.com"),
         commencementDate = LocalDate.now,
         isOnlineMarketplace = false,
+        None,
         None
       )
 

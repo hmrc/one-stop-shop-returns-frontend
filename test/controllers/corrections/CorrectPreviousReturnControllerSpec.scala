@@ -19,10 +19,10 @@ package controllers.corrections
 import base.SpecBase
 import connectors.ReturnStatusConnector
 import forms.corrections.CorrectPreviousReturnFormProvider
+import models.{NormalMode, PeriodWithStatus, StandardPeriod}
 import models.Quarter.{Q3, Q4}
 import models.SubmissionStatus.Complete
 import models.responses.UnexpectedResponseStatus
-import models.{NormalMode, Period, PeriodWithStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
@@ -100,8 +100,8 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar wit
           .build()
 
       val periods = Seq(
-                              PeriodWithStatus(Period(2021, Q3), Complete),
-                              PeriodWithStatus(Period(2021, Q4), Complete)
+                              PeriodWithStatus(StandardPeriod(2021, Q3), Complete),
+                              PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
                             )
 
       when(mockReturnStatusConnector.listStatuses(any())(any()))

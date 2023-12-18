@@ -16,7 +16,7 @@
 
 package models.financialdata
 
-import models.Period
+import models.StandardPeriod
 import play.api.i18n.Messages
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -24,7 +24,7 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
 import java.time.LocalDate
 
-case class Payment(period: Period,
+case class Payment(period: StandardPeriod,
                    amountOwed: BigDecimal,
                    dateDue: LocalDate,
                    paymentStatus: PaymentStatus

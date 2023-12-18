@@ -17,7 +17,7 @@
 package pages.corrections
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, Period}
+import models.{CheckMode, Index, NormalMode, Period, StandardPeriod}
 import pages.behaviours.PageBehaviours
 
 class CorrectionReturnPeriodPageSpec extends PageBehaviours {

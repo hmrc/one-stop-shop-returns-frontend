@@ -18,8 +18,8 @@ package models.audit
 
 import models.requests.VatReturnRequest
 import models.requests.corrections.CorrectionRequest
-import models.{PaymentReference, ReturnReference}
-import play.api.libs.json.{JsObject, JsValue, Json}
+import models.{PaymentReference, ReturnReference, StandardPeriod}
+import play.api.libs.json.{JsObject, Json, JsValue}
 
 case class ReturnForDataEntryAuditModel(
                                          vatReturnRequest: VatReturnRequest,
@@ -108,7 +108,7 @@ case class ReturnForDataEntryAuditModel(
 
   override val detail: JsValue = Json.obj(
     "vatRegistrationNumber" -> vatReturnRequest.vrn.vrn,
-    "period"                -> Json.toJson(vatReturnRequest.period),
+    "period"                -> Json.toJson(StandardPeriod.fromPeriod(vatReturnRequest.period)),
     "returnReference"       -> Json.toJson(reference),
     "paymentReference"      -> Json.toJson(paymentReference),
     "salesFromNi"           -> salesFromNi,
