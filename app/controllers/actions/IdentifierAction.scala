@@ -100,7 +100,8 @@ class IdentifierAction @Inject()(
     } recoverWith {
       case _: NoActiveSession =>
         Left(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))).toFuture
-      case _: AuthorisationException =>
+      case e: AuthorisationException =>
+        logger.info(s"Got authorisation exception ${e.getMessage}", e)
         Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture
     }
   }
