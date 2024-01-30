@@ -17,7 +17,7 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.StandardPeriod
+import models.Period
 import models.domain.VatReturn
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
@@ -56,17 +56,17 @@ class CachedVatReturnRepository @Inject()(
     )
   ) {
 
-  private def byId(id: String, period: StandardPeriod): Bson = Filters.and(
+  private def byId(id: String, period: Period): Bson = Filters.and(
     Filters.equal("userId", id),
     Filters.equal("period", period.toBson(legacyNumbers = false))
   )
 
-  def get(id: String, period: StandardPeriod): Future[Option[CachedVatReturnWrapper]] =
+  def get(id: String, period: Period): Future[Option[CachedVatReturnWrapper]] =
     collection
       .find(byId(id, period))
       .headOption()
 
-  def set(userId: String, period: StandardPeriod, vatReturn: Option[VatReturn]): Future[Boolean] = {
+  def set(userId: String, period: Period, vatReturn: Option[VatReturn]): Future[Boolean] = {
 
     val wrapper = CachedVatReturnWrapper(userId, period, vatReturn, Instant.now(clock))
 
@@ -80,7 +80,7 @@ class CachedVatReturnRepository @Inject()(
       .map(_ => true)
   }
 
-  def clear(userId: String, period: StandardPeriod): Future[Boolean] =
+  def clear(userId: String, period: Period): Future[Boolean] =
     collection
       .deleteOne(byId(userId, period))
       .toFuture()

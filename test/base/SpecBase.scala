@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package base
 
 import controllers.actions._
 import generators.Generators
+import models.{Country, Index, PaymentReference, Quarter, ReturnReference, StandardPeriod, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import models.Quarter.{Q1, Q2, Q3, Q4}
 import models.VatOnSalesChoice.Standard
 import models.corrections.CorrectionPayload
@@ -25,12 +26,11 @@ import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesF
 import models.registration._
 import models.requests.VatReturnRequest
 import models.requests.corrections.CorrectionRequest
-import models.{Country, Index, PaymentReference, Period, Quarter, ReturnReference, StandardPeriod, UserAnswers, VatOnSales, VatOnSalesChoice, VatRate, VatRateType}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalatest.{OptionValues, TryValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.{OptionValues, TryValues}
 import pages._
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
 import play.api.Application

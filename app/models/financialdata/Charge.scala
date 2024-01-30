@@ -16,11 +16,11 @@
 
 package models.financialdata
 
-import models.StandardPeriod
+import models.Period
 import play.api.libs.json.{Json, OFormat}
 
 case class Charge(
-                   period: StandardPeriod,
+                   period: Period,
                    originalAmount: BigDecimal,
                    outstandingAmount: BigDecimal,
                    clearedAmount: BigDecimal

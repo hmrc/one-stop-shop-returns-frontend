@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.mvc.{PathBindable, QueryStringBindable}
+import play.api.mvc.PathBindable
 
-import java.time.Month._
 import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.Month._
 
 class StandardPeriodSpec
   extends AnyFreeSpec

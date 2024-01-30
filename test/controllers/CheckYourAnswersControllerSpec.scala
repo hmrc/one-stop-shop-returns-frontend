@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,16 @@ package controllers
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
-import connectors.corrections.CorrectionConnector
 import connectors.{SavedUserAnswers, SaveForLaterConnector, VatReturnConnector}
+import connectors.corrections.CorrectionConnector
 import controllers.corrections.{routes => correctionsRoutes}
+import models.{CheckMode, Country, DataMissingError, Index, NormalMode, StandardPeriod, TotalVatToCountry, VatRate, VatRateType}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, ReceivedErrorFromCore, RegistrationNotFound, UnexpectedResponseStatus}
-import models.{CheckMode, Country, DataMissingError, Index, NormalMode, Period, StandardPeriod, TotalVatToCountry, VatRate, VatRateType}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -43,8 +43,8 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.EmailConfirmationQuery
 import repositories.{CachedVatReturnRepository, UserAnswersRepository}
-import services.corrections.CorrectionService
 import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
+import services.corrections.CorrectionService
 import viewmodels.govuk.SummaryListFluency
 
 import java.time.LocalDate
