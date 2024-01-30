@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package services
 
 import generators.Generators
+import models.{Country, StandardPeriod, VatRate}
 import models.VatRateType.{Reduced, Standard}
-import models.{Country, Period, StandardPeriod, VatRate}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
@@ -28,8 +28,8 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.libs.json.Json
 import play.api.{Configuration, Environment}
+import play.api.libs.json.Json
 
 import java.io.ByteArrayInputStream
 import java.time.LocalDate

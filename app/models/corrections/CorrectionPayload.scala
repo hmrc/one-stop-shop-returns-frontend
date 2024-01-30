@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package models.corrections
 
-import models.StandardPeriod
+import models.Period
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
@@ -24,7 +24,7 @@ import java.time.Instant
 
 case class CorrectionPayload(
                               vrn: Vrn,
-                              period: StandardPeriod,
+                              period: Period,
                               corrections: List[PeriodWithCorrections],
                               submissionReceived: Instant,
                               lastUpdated: Instant

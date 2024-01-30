@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,13 @@ package services
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
-import models.{PartialReturnPeriod, PeriodWithStatus, StandardPeriod, SubmissionStatus}
-import models.Quarter.Q4
+import models.{PartialReturnPeriod, PeriodWithStatus, SubmissionStatus}
 import models.exclusions.ExcludedTrader
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.{mock, when}
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 

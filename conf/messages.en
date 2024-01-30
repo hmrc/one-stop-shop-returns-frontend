@@ -517,7 +517,7 @@ whichVatPeriodToPay.error.required = Select a period to pay
 
 noPayments.title = You do not owe any One Stop Shop VAT
 noPayments.heading = You do not owe any One Stop Shop VAT
-noPayments.textWithLink = Return to <a class="govuk-link" href={0}>your account</a>.
+noPayments.textWithLink = <a class="govuk-link" href={0}>Return to your account</a>
 
 excludedNotPermitted.title = You cannot use this service
 excludedNotPermitted.heading = You cannot use this service

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
-import models.{Country, Period, StandardPeriod}
+import models.{Country, StandardPeriod}
 import models.Quarter.Q3
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
