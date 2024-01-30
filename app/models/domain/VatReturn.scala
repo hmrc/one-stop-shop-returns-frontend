@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,17 @@
 
 package models.domain
 
-import models.{PaymentReference, ReturnReference, StandardPeriod}
+import models.{PaymentReference, Period, ReturnReference}
+import play.api.i18n.Messages
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate}
+import java.time.format.DateTimeFormatter
 
 case class VatReturn(
                       vrn: Vrn,
-                      period: StandardPeriod,
+                      period: Period,
                       reference: ReturnReference,
                       paymentReference: PaymentReference,
                       startDate: Option[LocalDate],
@@ -33,7 +35,18 @@ case class VatReturn(
                       salesFromEu: List[SalesFromEuCountry],
                       submissionReceived: Instant,
                       lastUpdated: Instant
-                    )
+                    ) {
+
+  def displayStartEnd(implicit messages: Messages): String = {
+    (startDate, endDate) match {
+      case (Some(sd), Some(ed)) =>
+        val firstDayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM")
+        val lastDayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+        s"${sd.format(firstDayFormatter)} ${messages("site.to")} ${ed.format(lastDayFormatter)}"
+      case _ => period.displayText
+    }
+  }
+}
 
 object VatReturn {
 

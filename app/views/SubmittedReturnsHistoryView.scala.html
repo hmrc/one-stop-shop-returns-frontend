@@ -1,5 +1,5 @@
 @*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@
                         @for(vatReturnWithFinancialData <- vatReturnsWithFinancialData) {
                             <tr class="govuk-table__row">
                                 <th scope="row" class="govuk-table__header">
-                                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturnWithFinancialData.vatReturn.period)" id="period">@vatReturnWithFinancialData.vatReturn.period.displayText</a>
+                                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturnWithFinancialData.vatReturn.period)" id="period">@vatReturnWithFinancialData.vatReturn.displayStartEnd</a>
                                 </th>
                                 <td class="govuk-table__cell">
                                 @if(vatReturnWithFinancialData.showUpdating) {

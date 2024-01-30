@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,11 +166,13 @@ class CheckYourAnswersController @Inject()(
   def onSubmit(period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
-      val redirectToFirstError = redirectService.getRedirect(redirectService.validate(period), period).headOption
+      val preferredPeriod = request.userAnswers.period
+
+      val redirectToFirstError = redirectService.getRedirect(redirectService.validate(preferredPeriod), preferredPeriod).headOption
 
       (redirectToFirstError, incompletePromptShown) match {
         case (Some(redirect), true) => Future.successful(Redirect(redirect))
-        case (Some(_), false) => Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad(period)))
+        case (Some(_), false) => Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad(preferredPeriod)))
         case _ =>
           val validatedVatReturnRequest =
             vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, request.userAnswers.period, request.registration)
@@ -180,9 +182,9 @@ class CheckYourAnswersController @Inject()(
 
           (validatedVatReturnRequest, validatedCorrectionRequest) match {
             case (Valid(vatReturnRequest), Some(Valid(correctionRequest))) =>
-              submitReturn(vatReturnRequest, Option(correctionRequest), period)
+              submitReturn(vatReturnRequest, Option(correctionRequest), preferredPeriod)
             case (Valid(vatReturnRequest), None) =>
-              submitReturn(vatReturnRequest, None, period)
+              submitReturn(vatReturnRequest, None, preferredPeriod)
             case (Invalid(vatReturnErrors), Some(Invalid(correctionErrors))) =>
               val errors = vatReturnErrors ++ correctionErrors
               val errorList = errors.toChain.toList
