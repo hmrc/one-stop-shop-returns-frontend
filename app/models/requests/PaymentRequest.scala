@@ -20,7 +20,9 @@ import models.{Period, Quarter}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
-case class PaymentRequest(vrn: Vrn, period: PaymentPeriod, amountInPence: Long)
+import java.time.LocalDate
+
+case class PaymentRequest(vrn: Vrn, period: PaymentPeriod, amountInPence: Long, dueDate: Option[LocalDate])
 
 object PaymentRequest {
 

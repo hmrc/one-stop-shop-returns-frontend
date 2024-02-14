@@ -46,7 +46,8 @@ class PaymentController @Inject()(
           PaymentRequest(
             request.vrn,
             PaymentPeriod(period),
-            amountInPence
+            amountInPence,
+            Some(period.paymentDeadline)
           )
 
         paymentConnector.submit(paymentRequest)

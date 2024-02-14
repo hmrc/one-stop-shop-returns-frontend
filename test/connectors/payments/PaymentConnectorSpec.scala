@@ -44,7 +44,8 @@ class PaymentConnectorSpec extends SpecBase with WireMockHelper with EitherValue
     PaymentRequest(
       vrn,
       PaymentPeriod(period),
-      10000000
+      10000000,
+      Some(period.paymentDeadline)
     )
 
   ".submit" - {
