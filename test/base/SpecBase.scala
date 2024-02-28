@@ -63,10 +63,11 @@ trait SpecBase
   val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
 
   val address: UkAddress = UkAddress("line 1", None, "town", None, "AA11 1AA")
+  val vatDetails: VatDetails = VatDetails(LocalDate.of(2000, 1, 1), address, false, VatDetailSource.Mixed)
   val registration: Registration = Registration(
     vrn                   = vrn,
     registeredCompanyName = arbitrary[String].sample.value,
-    vatDetails            = VatDetails(LocalDate.of(2000, 1, 1), address, false, VatDetailSource.Mixed),
+    vatDetails            = vatDetails,
     euRegistrations       = Nil,
     contactDetails        = ContactDetails("name", "0123 456789", "email@example.com"),
     commencementDate      = LocalDate.now,
