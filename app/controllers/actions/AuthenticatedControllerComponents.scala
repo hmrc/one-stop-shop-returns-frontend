@@ -29,26 +29,39 @@ import scala.concurrent.ExecutionContext
 trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def actionBuilder: DefaultActionBuilder
+
   def sessionRepository: UserAnswersRepository
+
   def identify: IdentifierAction
+
   def getRegistration: GetRegistrationAction
+
   def checkCommencementDate: CheckCommencementDateFilterProvider
+
   def checkReturn: CheckReturnsFilterProvider
+
   def getData: DataRetrievalActionProvider
+
   def requireData: DataRequiredAction
-  def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
+
+  def requirePreviousReturns: CheckSubmittedReturnsFilterProvider
+
   def checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider
+
   def withSavedAnswers: SavedAnswersRetrievalActionProvider
+
   def checkExcludedTrader: CheckExcludedTraderFilterProvider
+
+  def checkVatGroupFixedEstablishment: CheckVatGroupFixedEstablishmentFilterProvider
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
   def authAndGetRegistration: ActionBuilder[RegistrationRequest, AnyContent] =
-    auth andThen getRegistration
+    auth andThen getRegistration andThen checkVatGroupFixedEstablishment()
 
   def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
-    auth andThen getRegistration andThen getData(period) andThen checkCommencementDate() andThen
+    authAndGetRegistration andThen getData(period) andThen checkCommencementDate() andThen
       checkReturn(period) andThen checkMostOverdueReturn(period) andThen checkExcludedTrader(period)
 
   def authAndGetData(period: Period): ActionBuilder[DataRequest, AnyContent] =
@@ -78,8 +91,9 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                checkReturn: CheckReturnsFilterProvider,
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,
-                                                               requirePreviousReturns:  CheckSubmittedReturnsFilterProvider,
+                                                               requirePreviousReturns: CheckSubmittedReturnsFilterProvider,
                                                                checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider,
                                                                withSavedAnswers: SavedAnswersRetrievalActionProvider,
-                                                               checkExcludedTrader: CheckExcludedTraderFilterProvider
+                                                               checkExcludedTrader: CheckExcludedTraderFilterProvider,
+                                                               checkVatGroupFixedEstablishment: CheckVatGroupFixedEstablishmentFilterProvider
                                                              ) extends AuthenticatedControllerComponents
