@@ -418,6 +418,11 @@
       "rateType": "STANDARD"
     },
     {
+      "validFrom": "2024-01-01",
+      "rate": 12.0,
+      "rateType": "REDUCED"
+    },
+    {
       "validFrom": "2021-07-01",
       "rate": 7.0,
       "rateType": "REDUCED"
@@ -425,11 +430,6 @@
     {
       "validFrom": "2021-07-01",
       "rate": 5.0,
-      "rateType": "REDUCED"
-    },
-    {
-      "validFrom": "2024-01-01",
-      "rate": 12.0,
       "rateType": "REDUCED"
     }
   ],
