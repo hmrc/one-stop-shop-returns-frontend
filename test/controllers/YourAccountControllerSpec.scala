@@ -137,6 +137,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
+
+          contentAsString(result).contains("leave-this-service") mustEqual true
         }
       }
 
@@ -449,7 +451,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )(request, messages(application)).toString
         }
       }
-
 
       "when there is 2 returns overdue" in {
 
@@ -1082,6 +1083,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
+
+          contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
 
@@ -1156,6 +1159,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
     }
@@ -1233,6 +1237,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           config.amendRegistrationEnabled,
           amendRegistrationUrl
         )(request, messages(application)).toString
+        contentAsString(result).contains("leave-this-service") mustEqual true
       }
     }
 
@@ -1309,6 +1314,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
       "has submitted final return" in {
@@ -1381,6 +1387,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
     }
@@ -1458,6 +1465,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
       "has submitted final return" in {
@@ -1531,6 +1539,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl
           )(request, messages(application)).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
     }

@@ -17,6 +17,7 @@
 package controllers.exclusions
 
 import controllers.actions._
+import controllers.routes
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -33,6 +34,10 @@ class LeaveThisServiceController @Inject()(
 
   def onPageLoad(): Action[AnyContent] = cc.authAndGetRegistration {
     implicit request =>
-      Ok(view(request.vrn.vrn, request.registration.registeredCompanyName))
+      if(request.registration.excludedTrader.isDefined) {
+        Redirect(routes.YourAccountController.onPageLoad())
+      } else {
+        Ok(view(request.vrn.vrn, request.registration.registeredCompanyName))
+      }
   }
 }
