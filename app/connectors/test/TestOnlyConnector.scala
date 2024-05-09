@@ -17,25 +17,21 @@
 package connectors.test
 
 import config.Service
-import connectors.test.TestOnlyExternalResponseHttpParser.ExternalResponseResponse
-import connectors.test.TestOnlyExternalResponseHttpParser.ExternalResponseReads
-import models.external.ExternalRequest
+import connectors.test.TestOnlyExternalResponseHttpParser.{ExternalResponseReads, ExternalResponseResponse}
 import models.Period
+import models.external.ExternalRequest
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestOnlyConnector @Inject()(
-                               config: Configuration,
-                               httpClient: HttpClient
-                             )(implicit ec: ExecutionContext) {
+                                   config: Configuration,
+                                   httpClient: HttpClient
+                                 )(implicit ec: ExecutionContext) {
 
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
-  lazy val url = s"${baseUrl}/test-only/delete-accounts"
-
-  def dropAccounts()(implicit hc: HeaderCarrier): Future[HttpResponse] = httpClient.DELETE[HttpResponse](url)
 
   def externalEntry(externalRequest: ExternalRequest, endpointName: String, maybePeriod: Option[Period], maybeLang: Option[String])
                    (implicit hc: HeaderCarrier): Future[ExternalResponseResponse] = {

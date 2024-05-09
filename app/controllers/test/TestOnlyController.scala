@@ -21,7 +21,6 @@ import controllers.actions.AuthenticatedControllerComponents
 import models.Period
 import models.external._
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
@@ -29,14 +28,6 @@ import scala.concurrent.ExecutionContext
 
 class TestOnlyController @Inject()(testConnector: TestOnlyConnector,
                                cc: AuthenticatedControllerComponents)(implicit ec: ExecutionContext) extends FrontendController(cc) {
-
-  def deleteAccounts(): Action[AnyContent] = Action.async { implicit request =>
-    testConnector.dropAccounts()
-      .map(_ => Ok("Perf Tests Accounts MongoDB deleted"))
-      .recover {
-        case _: NotFoundException => Ok("Perf Tests Accounts did not exist")
-      }
-  }
 
   private val externalRequest = ExternalRequest("BTA", "/business-account")
 
@@ -78,7 +69,5 @@ class TestOnlyController @Inject()(testConnector: TestOnlyConnector,
         case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
-
   }
-
 }

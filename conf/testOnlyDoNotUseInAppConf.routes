@@ -11,7 +11,6 @@
 
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
-GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-only/delete-accounts                           @controllers.test.TestOnlyController.deleteAccounts()
 GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-only/your-account-from-bta                     @controllers.test.TestOnlyController.yourAccountFromExternal(lang: Option[String] ?= None)
 GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-only/start-your-return-from-bta/:period        @controllers.test.TestOnlyController.startReturnFromExternal(period: Period, lang: Option[String] ?= None)
 GET      /pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments/test-only/continue-return-from-bta/:period          @controllers.test.TestOnlyController.continueReturnFromExternal(period: Period, lang: Option[String] ?= None)
