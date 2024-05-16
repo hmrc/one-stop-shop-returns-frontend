@@ -57,11 +57,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   private val vatReturn = arbitrary[VatReturn].sample.value
   private val excludedTraderHMRC: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, None))
+    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, LocalDate.now()))
+
   private val excludedTraderSelf: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, None))
+    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, LocalDate.now()))
+
   private val excludedTraderQuarantined: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 4, StandardPeriod.fromString("2022-Q2").get, None))
+    registration.vrn, 4, StandardPeriod.fromString("2022-Q2").get, LocalDate.now()))
+
+  private val excludedTraderSelfRequestedToLeave: Option[ExcludedTrader] = Some(ExcludedTrader(
+    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, LocalDate.now().plusMonths(1)))
 
   private val amendRegistrationUrl = "http://localhost:10200/pay-vat-on-goods-sold-to-eu/northern-ireland-register/start-amend-journey"
 
@@ -135,7 +140,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            false
           )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual true
@@ -199,7 +205,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
-              amendRegistrationUrl
+              amendRegistrationUrl,
+              false
             )(request, messages(application)).toString
           }
         }
@@ -260,7 +267,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
-              amendRegistrationUrl
+              amendRegistrationUrl,
+              hasRequestedToLeave = false
             )(request, messages(application)).toString
           }
         }
@@ -322,7 +330,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
-              amendRegistrationUrl
+              amendRegistrationUrl,
+              hasRequestedToLeave = false
             )(request, messages(application)).toString
           }
         }
@@ -388,7 +397,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
-              amendRegistrationUrl
+              amendRegistrationUrl,
+              hasRequestedToLeave = false
             )(request, messages(application)).toString
           }
         }
@@ -447,7 +457,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
         }
       }
@@ -511,7 +522,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
         }
       }
@@ -578,7 +590,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
-              amendRegistrationUrl
+              amendRegistrationUrl,
+              hasRequestedToLeave = false
             )(request, messages(application)).toString
           }
         }
@@ -644,7 +657,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
-              amendRegistrationUrl
+              amendRegistrationUrl,
+              hasRequestedToLeave = false
             )(request, messages(application)).toString
 
           }
@@ -714,7 +728,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
-              amendRegistrationUrl
+              amendRegistrationUrl,
+              hasRequestedToLeave = false
             )(request, messages(application)).toString
           }
         }
@@ -773,7 +788,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
-              amendRegistrationUrl
+              amendRegistrationUrl,
+              hasRequestedToLeave = false
             )(request, messages(application)).toString
           }
         }
@@ -835,7 +851,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               currentReturnIsFinal = false,
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
-              amendRegistrationUrl
+              amendRegistrationUrl,
+              hasRequestedToLeave = false
             )(request, messages(application)).toString
           }
         }
@@ -899,7 +916,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
         }
       }
@@ -956,7 +974,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
 
         }
@@ -1081,7 +1100,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual false
@@ -1157,7 +1177,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1235,7 +1256,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           currentReturnIsFinal = false,
           config.exclusionsEnabled,
           config.amendRegistrationEnabled,
-          amendRegistrationUrl
+          amendRegistrationUrl,
+          hasRequestedToLeave = false
         )(request, messages(application)).toString
         contentAsString(result).contains("leave-this-service") mustEqual true
       }
@@ -1312,7 +1334,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1385,9 +1408,163 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
+        }
+      }
+    }
+
+    "trader has requested to leave by self" - {
+
+      "has not submitted final return" in {
+
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = StandardPeriod(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                false,
+                false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeave)
+        )
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            paymentError = false,
+            excludedTraderSelfRequestedToLeave,
+            hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl,
+            hasRequestedToLeave = true
+          )(request, messages(application)).toString
+          contentAsString(result).contains("cancel-request-to-leave") mustEqual true
+        }
+      }
+      "has submitted final return" in {
+        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = StandardPeriod(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                false,
+                false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeave)
+        )
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              )
+            )(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            paymentError = false,
+            excludedTraderSelfRequestedToLeave,
+            hasSubmittedFinalReturn = true,
+            currentReturnIsFinal = false,
+            config.exclusionsEnabled,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl,
+            hasRequestedToLeave = true
+          )(request, messages(application)).toString
+          contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
       }
     }
@@ -1463,7 +1640,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1537,7 +1715,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             currentReturnIsFinal = false,
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
-            amendRegistrationUrl
+            amendRegistrationUrl,
+            hasRequestedToLeave = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }

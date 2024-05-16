@@ -36,14 +36,16 @@ class PartialReturnPeriodService @Inject()(
       case None =>
         getMaybeFirstPartialReturnPeriod(registration)
       case Some(excludedTrader) =>
+        val hmrcExclusionReason = 6
         excludedTrader.exclusionReason match {
-          case 6 =>
+          case hmrcExclusionReason =>
             exclusionService.currentReturnIsFinal(registration, period).map {
               case true =>
-                val maybeEndDate = excludedTrader.effectiveDate.map(_.minusDays(1))
+                val daysToSubtract = 1
+                val endDate = excludedTrader.effectiveDate.minusDays(daysToSubtract)
                 Some(PartialReturnPeriod(
                   period.firstDay,
-                  maybeEndDate.getOrElse(period.lastDay),
+                  endDate,
                   period.year,
                   period.quarter
                 ))

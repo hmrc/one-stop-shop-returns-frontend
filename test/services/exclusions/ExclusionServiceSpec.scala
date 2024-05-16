@@ -32,6 +32,7 @@ import play.api.mvc.AnyContent
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
@@ -58,7 +59,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-          Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
+          Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, LocalDate.now()))
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
 
@@ -69,7 +70,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, LocalDate.now()))
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
@@ -84,7 +85,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, LocalDate.now()))
 
       when(vatReturnConnector.get(eqTo(exclusionPeriod))(any())) thenReturn Future.successful(Left(NotFound))
 
@@ -96,7 +97,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, LocalDate.now()))
 
       when(vatReturnConnector.get(eqTo(exclusionPeriod))(any())) thenReturn Future.successful(Right(completeVatReturn))
 
