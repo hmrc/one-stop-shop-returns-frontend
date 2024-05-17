@@ -17,10 +17,8 @@
 package controllers.exclusions
 
 import base.SpecBase
-import controllers.exclusions.routes
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.exclusions.LeaveThisServiceView
 
 class LeaveThisServiceControllerSpec extends SpecBase {
 
@@ -35,10 +33,9 @@ class LeaveThisServiceControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[LeaveThisServiceView]
+        status(result) mustEqual SEE_OTHER
+        result.futureValue.header.headers.get("Location").get mustEqual "http://localhost:10196/pay-vat-on-goods-sold-to-eu/leave-one-stop-shop"
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(vrn.vrn, registration.registeredCompanyName)(request, messages(application)).toString
       }
     }
   }

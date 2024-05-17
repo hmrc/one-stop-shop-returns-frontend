@@ -17,31 +17,102 @@
 package models.exclusions
 
 import logging.Logging
-import models.StandardPeriod
+import models.{Enumerable, StandardPeriod, WithName}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.LocalDate
 
-
-case class ExcludedTrader(
+  case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionReason: Int,
                            effectivePeriod: StandardPeriod,
-                           effectiveDate: Option[LocalDate]
+                           effectiveDate: LocalDate
                          ) {
-  val exclusionSource: String = derriveExclusionSource(exclusionReason)
+  val exclusionSource: ExclusionSource = deriveExclusionSource(exclusionReason)
 
-  private def derriveExclusionSource(code: Int) = {
+  private def deriveExclusionSource(code: Int): ExclusionSource = {
     code match {
-      case x if x == 2 || x == 4 => "HMRC"
-      case _ => "TRADER"
+      case x if x == 2 || x == 4 => HMRC
+      case _ => TRADER
     }
   }
 }
+
+sealed trait ExclusionSource
+object HMRC extends ExclusionSource
+object TRADER extends ExclusionSource
 
 object ExcludedTrader extends Logging {
 
   implicit val format: OFormat[ExcludedTrader] = Json.format[ExcludedTrader]
 
+  implicit class ExcludedTraderHelper(excludedTrader: ExcludedTrader) {
+
+    def hasRequestedToLeave: Boolean = {
+      val exclusionSource = excludedTrader.exclusionSource
+
+      if (exclusionSource == TRADER) {
+        LocalDate.now().isBefore(excludedTrader.effectiveDate)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+sealed trait ExclusionReason {
+  val exclusionSource: ExclusionSource
+  val numberValue: Int
+}
+
+object ExclusionReason extends Enumerable.Implicits {
+
+  case object Reversal extends WithName("-1")  with ExclusionReason {
+    val exclusionSource: ExclusionSource = HMRC
+    val numberValue: Int = -1
+  }
+
+  case object NoLongerSupplies extends WithName("1") with ExclusionReason {
+    val exclusionSource: ExclusionSource = TRADER
+    val numberValue: Int = 1
+  }
+
+  case object CeasedTrade extends WithName("2") with ExclusionReason {
+    val exclusionSource: ExclusionSource = HMRC
+    val numberValue: Int = 2
+  }
+
+  case object NoLongerMeetsConditions extends WithName("3") with ExclusionReason {
+    val exclusionSource: ExclusionSource = TRADER
+    val numberValue: Int = 3
+  }
+
+  case object FailsToComply extends WithName("4") with ExclusionReason {
+    val exclusionSource: ExclusionSource = HMRC
+    val numberValue: Int = 4
+  }
+
+  case object VoluntarilyLeaves extends WithName("5") with ExclusionReason {
+    val exclusionSource: ExclusionSource = TRADER
+    val numberValue: Int = 5
+  }
+
+  case object TransferringMSID extends WithName("6") with ExclusionReason {
+    val exclusionSource: ExclusionSource = TRADER
+    val numberValue: Int = 6
+  }
+
+  val values: Seq[ExclusionReason] = Seq(
+    Reversal,
+    NoLongerSupplies,
+    CeasedTrade,
+    NoLongerMeetsConditions,
+    FailsToComply,
+    VoluntarilyLeaves,
+    TransferringMSID
+  )
+
+  implicit val enumerable: Enumerable[ExclusionReason] =
+    Enumerable(values.map(v => v.toString -> v): _*)
 }

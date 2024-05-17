@@ -81,6 +81,8 @@ index.details = Details
 index.details.previousReturns = View submitted returns
 index.details.changeYourRegistration = Change your registration
 index.details.leaveThisService = Leave this service
+index.details.cancelRequestToLeave = Cancel your request to leave
+index.details.rejoinService = Rejoin this service
 
 index.nextPeriod = You can complete your {0} return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
@@ -523,15 +525,17 @@ excludedNotPermitted.title = You cannot use this service
 excludedNotPermitted.heading = You cannot use this service
 excludedNotPermitted.link = Back to your account.
 
-yourAccount.warning.exclusion.trader = You have left this service, but you must complete your final return and pay any VAT you still owe.
-yourAccount.warning.exclusion.hmrc = We''ve removed you from this service, but you must complete your final return and pay any VAT you still owe.
-yourAccount.warning.exclusion.quarantineUser = We''ve removed you from the One Stop Shop scheme, but you must complete your final return and pay any VAT you still owe.
-yourAccount.warning.exclusion.quarantineUser.p = You cannot rejoin the scheme until {0}.
+yourAccount.warning.exclusion.trader = You have left this service. You must complete and pay any outstanding returns.
+yourAccount.warning.exclusion.hmrc = We''ve removed you from this service, but you must complete and pay your final return.
+yourAccount.warning.exclusion.quarantineUser = We''ve removed you from this service, but you must complete and pay your final return.
+yourAccount.warning.exclusion.quarantineUser.p = You cannot rejoin until {0}.
 yourAccount.warning.leftService = You have left this service.
+yourAccount.warning.requestedToLeave = You have requested to leave this service.
+yourAccount.warning.requestedToLeave.outstandingReturns = You have requested to leave this service. You must complete and pay any outstanding returns.
 yourAccount.warning.removedFromService = We''ve removed you from this service.
-yourAccount.warning.quarantineUser = We''ve removed you from the One Stop Shop scheme.
-yourAccount.warning.quarantineUser.p = You cannot rejoin the scheme until {0}.
-yourAccount.previous.return.correct = You can no longer use this service to correct previous returns. You must make any corrections directly with the country where you made the sales.
+yourAccount.warning.quarantineUser = We''ve removed you from this service.
+yourAccount.warning.quarantineUser.p = You cannot rejoin until {0}.
+yourAccount.previous.return.correct = You can no longer use this service to correct previous returns. You must make any VAT corrections directly with the country where you made the sales.
 yourAccount.finalReturn.completed = You''ve completed your final return.
 yourAccount.oss.account.message = If you have any questions about your OSS account, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 yourAccount.finalReturn.message = This is your final return on this service.

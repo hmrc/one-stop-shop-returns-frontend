@@ -36,6 +36,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 import services.PeriodService
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -85,7 +86,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
       val excludedPeriod = StandardPeriod(periodYear, Q2)
       val startReturnPeriod = StandardPeriod(periodYear, Q2)
 
-      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, exclusionReason, excludedPeriod, None)
+      val excludedTrader: ExcludedTrader = ExcludedTrader(vrn, exclusionReason, excludedPeriod, LocalDate.now())
 
       val excludedRegistration = registration.copy(excludedTrader = Some(excludedTrader))
 
@@ -113,7 +114,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
       val startReturnPeriod = StandardPeriod(periodYear, Q3)
 
       val excludedTrader: ExcludedTrader =
-        ExcludedTrader(vrn, exclusionReason, excludedPeriod, None)
+        ExcludedTrader(vrn, exclusionReason, excludedPeriod, LocalDate.now())
 
       val excludedRegistration = registration.copy(excludedTrader = Some(excludedTrader))
 
@@ -142,7 +143,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar with 
       val startReturnPeriod = StandardPeriod(periodYear, Q3)
 
       val excludedTrader: ExcludedTrader =
-        ExcludedTrader(vrn, exclusionReason, excludedPeriod, None)
+        ExcludedTrader(vrn, exclusionReason, excludedPeriod, LocalDate.now())
 
       val excludedRegistration = registration.copy(excludedTrader = Some(excludedTrader))
 

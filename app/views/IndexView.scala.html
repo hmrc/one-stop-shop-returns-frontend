@@ -20,12 +20,16 @@
 @import viewmodels._
 @import utils.CurrencyFormatter.currencyFormat
 @import models.exclusions.ExcludedTrader
-
+@import models.exclusions.ExclusionReason
+@import models.exclusions.ExclusionReason.FailsToComply
+@import models.exclusions.ExclusionReason.CeasedTrade
+@import models.exclusions.ExclusionReason.CeasedTrade
 @this(
     layout: templates.Layout,
     govukButton: GovukButton,
     govukWarningText: GovukWarningText
 )
+
 @(
     businessName: String,
     vrn: String,
@@ -37,7 +41,8 @@
     currentReturnIsFinal: Boolean,
     exclusionsEnabled: Boolean,
     amendRegistrationLinkEnabled: Boolean,
-    changeYourRegistrationUrl: String
+    changeYourRegistrationUrl: String,
+        hasRequestedToLeave: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -72,8 +77,8 @@
     @if(hasSubmittedFinalReturn) {
         @maybeExcludedTrader match {
             case Some(excludedTrader) => {
-                @(excludedTrader.exclusionReason) match {
-                    case (4) => {
+                @(ExclusionReason.values.find(_.numberValue == excludedTrader.exclusionReason), hasRequestedToLeave) match {
+                    case (Some(FailsToComply), _) => {
                         <div class="govuk-warning-text">
                             <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                             <strong class="govuk-warning-text__text">
@@ -83,16 +88,22 @@
                             </strong>
                         </div>
                     }
-                    case (2) => {
+                    case (Some(CeasedTrade), _) => {
                         @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.removedFromService"))
                         ))
                     }
-                    case (_) => {
+                    case (_, false) => {
                         @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.leftService"))
+                        ))
+                    }
+                    case (_, true) => {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(messages("yourAccount.warning.requestedToLeave"))
                         ))
                     }
                     case (_) => {}
@@ -104,8 +115,8 @@
     } else {
         @maybeExcludedTrader match {
             case Some(excludedTrader) => {
-                @(excludedTrader.exclusionReason) match {
-                case (4) => {
+                @(ExclusionReason.values.find(_.numberValue == excludedTrader.exclusionReason), hasRequestedToLeave) match {
+                case (Some(FailsToComply), _) => {
                     <div class="govuk-warning-text">
                         <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                         <strong class="govuk-warning-text__text">
@@ -115,16 +126,22 @@
                         </strong>
                     </div>
                 }
-                case (2) => {
+                case (Some(CeasedTrade), _) => {
                     @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.exclusion.hmrc"))
                     ))
                 }
-                case (_) => {
+                case (_, false) => {
                     @govukWarningText(WarningText(
                         iconFallbackText = Option(messages("site.warning")),
                         content = Text(messages("yourAccount.warning.exclusion.trader"))
+                    ))
+                }
+                case (_, true) => {
+                    @govukWarningText(WarningText(
+                        iconFallbackText = Option(messages("site.warning")),
+                        content = Text(messages("yourAccount.warning.requestedToLeave.outstandingReturns"))
                     ))
                 }
                 case (_) => {}
@@ -236,8 +253,30 @@
                 </p>
             }
 
-            @(maybeExcludedTrader, exclusionsEnabled) match {
-                case (Some(_), true) => {}
+            @(maybeExcludedTrader, exclusionsEnabled, hasRequestedToLeave) match {
+                case (Some(excludedTrader), true, false) => {
+                    @if(hasSubmittedFinalReturn){
+                        @(ExclusionReason.values.find(_.numberValue == excludedTrader.exclusionReason)) match {
+                            case Some(FailsToComply) => {}
+                            case _ => {
+                                <p class="govuk-body">
+                                    <a class="govuk-link" href=""
+                                    id="rejoin-this-service">
+                                    @messages("index.details.rejoinService")
+                                    </a>
+                                </p>
+                            }
+                        }
+                    }
+                }
+                case (Some(_), true, true) => {
+                    <p class="govuk-body">
+                        <a class="govuk-link" href=""
+                        id="cancel-request-to-leave">
+                        @messages("index.details.cancelRequestToLeave")
+                        </a>
+                    </p>
+                }
                 case _ => {
                     <p class="govuk-body">
                         <a class="govuk-link" href="@controllers.exclusions.routes.LeaveThisServiceController.onPageLoad().url"
@@ -247,7 +286,6 @@
                     </p>
                 }
             }
-
         </div>
     </div>
     @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
