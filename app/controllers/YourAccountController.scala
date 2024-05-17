@@ -19,6 +19,7 @@ package controllers
 import config.Constants.{exclusionCodeSixFollowingMonth, exclusionCodeSixTenthOfMonth}
 import config.FrontendAppConfig
 import connectors.financialdata.FinancialDataConnector
+import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
@@ -37,6 +38,7 @@ import services.exclusions.ExclusionService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
+import utils.ReturnsUtils
 import viewmodels.yourAccount._
 import views.html.IndexView
 
@@ -136,16 +138,16 @@ class YourAccountController @Inject()(
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
       canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
+      returns = returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+        currentReturn.copy(inProgress = true)
+      } else {
+        currentReturn
+      })
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
         request.vrn.vrn,
-        ReturnsViewModel(
-          returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
-            currentReturn.copy(inProgress = true)
-          } else {
-            currentReturn
-          })),
+        ReturnsViewModel(returns),
         PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
         (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
         request.registration.excludedTrader,
@@ -154,7 +156,9 @@ class YourAccountController @Inject()(
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave(clock)),
-        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn))
+        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn)),
+        ReturnsUtils.hasDueReturnThreeYearsOld(returns),
+        ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
       ))
     }
   }
@@ -168,28 +172,30 @@ class YourAccountController @Inject()(
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
       canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
+      returns = returnsViewModel.map { currentReturn =>
+          if (periodInProgress.contains(currentReturn.period)) {
+            currentReturn.copy(inProgress = true)
+          } else {
+            currentReturn
+          }
+        }
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
         request.vrn.vrn,
-        ReturnsViewModel(
-          returnsViewModel.map { currentReturn =>
-            if (periodInProgress.contains(currentReturn.period)) {
-              currentReturn.copy(inProgress = true)
-            } else {
-              currentReturn
-            }
-          }
-        ),
+        ReturnsViewModel(returns),
         PaymentsViewModel(Seq.empty, Seq.empty),
         paymentError = true,
         request.registration.excludedTrader,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
+        frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave(clock)),
-        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn))
+        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn)),
+        ReturnsUtils.hasDueReturnThreeYearsOld(returns),
+        ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
       ))
     }
   }
