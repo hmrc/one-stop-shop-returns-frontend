@@ -120,7 +120,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
         val summaryList = SummaryListViewModel(
-          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSalesAfterCorrection, Some(clearedAmount), Some(outstandingAmount)))
+          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSalesAfterCorrection, Some(outstandingAmount)))
         val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
         val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
         val totalVatSummaryList = SummaryListViewModel(
@@ -179,7 +179,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
         val summaryList = SummaryListViewModel(
-          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSales, None, None))
+          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSales, None))
         val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
         val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
         val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(None, vatReturn)
@@ -233,7 +233,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
         val summaryList = SummaryListViewModel(
-          rows = PreviousReturnSummary.mainListRows(vatReturn, zero, None, None))
+          rows = PreviousReturnSummary.mainListRows(vatReturn, zero, None))
         val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
         val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
         val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(None, vatReturn)
@@ -292,7 +292,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
         val summaryList = SummaryListViewModel(
-          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSales, None, None))
+          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSales, None))
         val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
         val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
         val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(None, vatReturn)
@@ -348,7 +348,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
         val summaryList = SummaryListViewModel(
-          rows = PreviousReturnSummary.mainListRows(vatReturn, correctionAmount, None, None))
+          rows = PreviousReturnSummary.mainListRows(vatReturn, correctionAmount, None))
         val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
         val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
         val correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(Some(correctionPayload))
@@ -503,7 +503,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val view = application.injector.instanceOf[PreviousReturnView]
         implicit val msgs: Messages = messages(application)
         val summaryList = SummaryListViewModel(
-          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSalesAfterCorrection, Some(clearedAmount), Some(outstandingAmount)))
+          rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSalesAfterCorrection, Some(outstandingAmount)))
         val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
         val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
         val totalVatSummaryList = SummaryListViewModel(

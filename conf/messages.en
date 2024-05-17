@@ -284,7 +284,6 @@ previousReturn.title = Submitted return for
 previousReturn.summary.title = Summary
 previousReturn.details.title = Details
 previousReturn.vatOwed.label = VAT declared
-previousReturn.clearedAmount.label = Amount paid
 previousReturn.amountOutstanding.label = Amount left to pay
 previousReturn.dateSubmitted.label = Return submitted
 previousReturn.dateDue.label = Payment due by
