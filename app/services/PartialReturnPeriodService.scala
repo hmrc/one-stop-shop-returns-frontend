@@ -17,6 +17,8 @@
 package services
 
 import connectors.ReturnStatusConnector
+import models.exclusions.ExclusionReason
+import models.exclusions.ExclusionReason.TransferringMSID
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, SubmissionStatus}
 import models.registration.Registration
 import services.exclusions.ExclusionService
@@ -36,9 +38,9 @@ class PartialReturnPeriodService @Inject()(
       case None =>
         getMaybeFirstPartialReturnPeriod(registration)
       case Some(excludedTrader) =>
-        val hmrcExclusionReason = 6
-        excludedTrader.exclusionReason match {
-          case hmrcExclusionReason =>
+
+        ExclusionReason.values.find(_.numberValue == excludedTrader.exclusionReason) match {
+          case Some(TransferringMSID) =>
             exclusionService.currentReturnIsFinal(registration, period).map {
               case true =>
                 val daysToSubtract = 1
@@ -49,7 +51,8 @@ class PartialReturnPeriodService @Inject()(
                   period.year,
                   period.quarter
                 ))
-              case _ => None
+              case _ =>
+                None
             }
           case _ => Future.successful(None)
         }

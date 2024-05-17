@@ -17,13 +17,13 @@
 package models.exclusions
 
 import logging.Logging
-import models.{Enumerable, StandardPeriod, WithName}
+import models.{Enumerable, StandardPeriod, WithName, WithNumber}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.LocalDate
 
-case class ExcludedTrader(
+  case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionReason: Int,
                            effectivePeriod: StandardPeriod,
@@ -63,36 +63,44 @@ object ExcludedTrader extends Logging {
 
 sealed trait ExclusionReason {
   val exclusionSource: ExclusionSource
+  val numberValue: Int
 }
 
 object ExclusionReason extends Enumerable.Implicits {
 
-  case object Reversal extends WithName("-1") with ExclusionReason {
+  case object Reversal extends WithName("-1")  with ExclusionReason {
     val exclusionSource: ExclusionSource = HMRC
+    val numberValue: Int = -1
   }
 
   case object NoLongerSupplies extends WithName("1") with ExclusionReason {
     val exclusionSource: ExclusionSource = TRADER
+    val numberValue: Int = 1
   }
 
   case object CeasedTrade extends WithName("2") with ExclusionReason {
     val exclusionSource: ExclusionSource = HMRC
+    val numberValue: Int = 2
   }
 
   case object NoLongerMeetsConditions extends WithName("3") with ExclusionReason {
     val exclusionSource: ExclusionSource = TRADER
+    val numberValue: Int = 3
   }
 
   case object FailsToComply extends WithName("4") with ExclusionReason {
     val exclusionSource: ExclusionSource = HMRC
+    val numberValue: Int = 4
   }
 
   case object VoluntarilyLeaves extends WithName("5") with ExclusionReason {
     val exclusionSource: ExclusionSource = TRADER
+    val numberValue: Int = 5
   }
 
   case object TransferringMSID extends WithName("6") with ExclusionReason {
     val exclusionSource: ExclusionSource = TRADER
+    val numberValue: Int = 6
   }
 
   val values: Seq[ExclusionReason] = Seq(

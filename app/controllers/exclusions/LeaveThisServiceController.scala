@@ -40,6 +40,7 @@ class LeaveThisServiceController @Inject()(
         Redirect(routes.YourAccountController.onPageLoad())
       } else {
         Ok(view(request.vrn.vrn, request.registration.registeredCompanyName))
+        Redirect(frontendAppConfig.leaveOneStopShopUrl)
       }
   }
 }
