@@ -17,7 +17,7 @@
 package models.exclusions
 
 import logging.Logging
-import models.{Enumerable, StandardPeriod, WithName, WithNumber}
+import models.{Enumerable, StandardPeriod, WithName}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 

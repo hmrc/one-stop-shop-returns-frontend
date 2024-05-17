@@ -172,7 +172,7 @@
                 @if(exclusionsEnabled) {
                     @maybeExcludedTrader match {
                         case Some(excludedTrader) if currentReturnIsFinal => {
-                            <p class="govuk-body">@messages("yourAccount.finalReturn.message")</p> //here
+                            <p class="govuk-body">@messages("yourAccount.finalReturn.message")</p>
                         }
                         case _ => {}
                     }

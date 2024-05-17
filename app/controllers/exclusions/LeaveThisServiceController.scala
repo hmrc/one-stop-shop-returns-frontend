@@ -19,18 +19,15 @@ package controllers.exclusions
 import config.FrontendAppConfig
 import controllers.actions._
 import controllers.routes
-import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.exclusions.LeaveThisServiceView
 
 import javax.inject.Inject
 
 class LeaveThisServiceController @Inject()(
                                        cc: AuthenticatedControllerComponents,
-                                       view: LeaveThisServiceView,
                                        frontendAppConfig: FrontendAppConfig
-                                     ) extends FrontendBaseController with I18nSupport {
+                                     ) extends FrontendBaseController {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -39,7 +36,6 @@ class LeaveThisServiceController @Inject()(
       if(request.registration.excludedTrader.isDefined && frontendAppConfig.exclusionsEnabled) {
         Redirect(routes.YourAccountController.onPageLoad())
       } else {
-        Ok(view(request.vrn.vrn, request.registration.registeredCompanyName))
         Redirect(frontendAppConfig.leaveOneStopShopUrl)
       }
   }
