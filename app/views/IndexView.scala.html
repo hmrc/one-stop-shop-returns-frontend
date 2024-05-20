@@ -83,8 +83,7 @@
                             <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                             <strong class="govuk-warning-text__text">
                                 <span class="govuk-warning-text__assistive">Warning:</span>
-                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser")</p>
-                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser.p", excludedTrader.effectivePeriod.displayRejoinDate)</p>
+                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser", excludedTrader.effectivePeriod.displayRejoinDate)</p>
                             </strong>
                         </div>
                     }
@@ -121,8 +120,7 @@
                         <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                         <strong class="govuk-warning-text__text">
                             <span class="govuk-warning-text__assistive">Warning:</span>
-                            <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser")</p>
-                            <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser.p", excludedTrader.effectivePeriod.displayRejoinDate)</p>
+                            <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.effectivePeriod.displayRejoinDate)</p>
                         </strong>
                     </div>
                 }
