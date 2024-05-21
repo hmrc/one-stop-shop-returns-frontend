@@ -39,8 +39,8 @@ class PartialReturnPeriodService @Inject()(
         getMaybeFirstPartialReturnPeriod(registration)
       case Some(excludedTrader) =>
 
-        ExclusionReason.values.find(_.numberValue == excludedTrader.exclusionReason) match {
-          case Some(TransferringMSID) =>
+        excludedTrader.exclusionReason match {
+          case TransferringMSID =>
             exclusionService.currentReturnIsFinal(registration, period).map {
               case true =>
                 val daysToSubtract = 1

@@ -17,7 +17,7 @@
 package connectors
 
 import logging.Logging
-import models.{Period, StandardPeriod}
+import models.StandardPeriod
 import models.responses._
 import play.api.http.Status._
 import play.api.libs.json._

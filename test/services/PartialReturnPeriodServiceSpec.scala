@@ -19,7 +19,7 @@ package services
 import base.SpecBase
 import connectors.ReturnStatusConnector
 import models.{PartialReturnPeriod, PeriodWithStatus, SubmissionStatus}
-import models.exclusions.ExcludedTrader
+import models.exclusions.{ExcludedTrader, ExclusionReason}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.{mock, when}
 import services.exclusions.ExclusionService
@@ -73,7 +73,10 @@ class PartialReturnPeriodServiceSpec extends SpecBase {
       val startDate = period.lastDay.plusDays(10)
       val commencementDate = startDate.plusDays(1)
 
-      val registrationWithTransferringMsidEffectiveFromDate = registration.copy(commencementDate = commencementDate, transferringMsidEffectiveFromDate = Some(startDate))
+      val registrationWithTransferringMsidEffectiveFromDate = registration.copy(
+        commencementDate = commencementDate,
+        transferringMsidEffectiveFromDate = Some(startDate)
+      )
 
       when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
         Future(Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))))
@@ -88,7 +91,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase {
       val excludedEffectiveDate = period.lastDay.minusDays(10)
       val endDate = excludedEffectiveDate.minusDays(1)
       val commencementDate = period.firstDay.plusDays(4)
-      val excludedTrader = ExcludedTrader(vrn, 6, period, excludedEffectiveDate)
+      val excludedTrader = ExcludedTrader(vrn, ExclusionReason.TransferringMSID, excludedEffectiveDate)
 
       val registrationWithExcludedTrader = registration
         .copy(commencementDate = commencementDate, excludedTrader = Some(excludedTrader))
@@ -104,7 +107,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase {
     "return none for a excluded trader's non final return" in {
       val endDate = period.lastDay.minusDays(10)
       val commencementDate = period.firstDay.plusDays(4)
-      val excludedTrader = ExcludedTrader(vrn, 6, period, endDate)
+      val excludedTrader = ExcludedTrader(vrn, ExclusionReason.TransferringMSID, endDate)
 
       val registrationWithExcludedTrader = registration
         .copy(commencementDate = commencementDate, excludedTrader = Some(excludedTrader))
@@ -120,7 +123,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase {
     "return none for a excluded trader that isn't code 6" in {
       val endDate = period.lastDay.minusDays(10)
       val commencementDate = period.firstDay.plusDays(4)
-      val excludedTrader = ExcludedTrader(vrn, 4, period, endDate)
+      val excludedTrader = ExcludedTrader(vrn, ExclusionReason.FailsToComply, endDate)
 
       val registrationWithExcludedTrader = registration
         .copy(commencementDate = commencementDate, excludedTrader = Option(excludedTrader))

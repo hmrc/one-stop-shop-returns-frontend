@@ -18,7 +18,6 @@ package services.exclusions
 
 import connectors.VatReturnConnector
 import logging.Logging
-import models.exclusions.ExcludedTrader
 import models.Period
 import models.registration.Registration
 import uk.gov.hmrc.http.HeaderCarrier
@@ -30,8 +29,8 @@ class ExclusionService @Inject()(connector: VatReturnConnector) extends Logging 
 
   def hasSubmittedFinalReturn(registration: Registration)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     registration.excludedTrader match {
-      case Some(ExcludedTrader(_, _, effectivePeriod, _)) =>
-        connector.get(effectivePeriod).map {
+      case Some(excludedTrader) =>
+        connector.get(excludedTrader.finalReturnPeriod).map {
           case Right(_) => true
           case _ => false
         }
@@ -46,8 +45,8 @@ class ExclusionService @Inject()(connector: VatReturnConnector) extends Logging 
         Future.successful(false)
       case _ =>
         registration.excludedTrader match {
-          case Some(ExcludedTrader(_, _, effectivePeriod, _))
-            if currentPeriod == effectivePeriod => Future.successful(true)
+          case Some(excludedTrader)
+            if currentPeriod == excludedTrader.finalReturnPeriod => Future.successful(true)
           case _ =>
             Future.successful(false)
         }
