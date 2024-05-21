@@ -252,8 +252,8 @@
             @(maybeExcludedTrader, exclusionsEnabled, hasRequestedToLeave) match {
                 case (Some(excludedTrader), true, false) => {
                     @if(hasSubmittedFinalReturn){
-                        @(ExclusionReason.values.find(_.numberValue == excludedTrader.exclusionReason)) match {
-                            case Some(FailsToComply) => {}
+                        @excludedTrader.exclusionReason match {
+                            case FailsToComply => {}
                             case _ => {
                                 <p class="govuk-body">
                                     <a class="govuk-link" href=""
