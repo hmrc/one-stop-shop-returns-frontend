@@ -16,7 +16,7 @@
 
 package controllers.actions
 
-import models.{Period, StandardPeriod}
+import models.Period
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import play.api.mvc.ActionTransformer
 import repositories.UserAnswersRepository

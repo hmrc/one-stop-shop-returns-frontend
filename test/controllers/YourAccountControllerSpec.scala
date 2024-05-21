@@ -25,7 +25,7 @@ import models.{Country, StandardPeriod, SubmissionStatus}
 import models.Quarter._
 import models.SubmissionStatus.{Due, Next, Overdue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
-import models.exclusions.ExcludedTrader
+import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration._
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
@@ -55,18 +55,21 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val save4LaterConnector = mock[SaveForLaterConnector]
   private val vatReturnConnector = mock[VatReturnConnector]
 
+
+  private val periodQ2 = StandardPeriod(2022, Q2)
+
   private val vatReturn = arbitrary[VatReturn].sample.value
   private val excludedTraderHMRC: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, LocalDate.now()))
+    registration.vrn, ExclusionReason.NoLongerSupplies, periodQ2.firstDay))
 
   private val excludedTraderSelf: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, LocalDate.now()))
+    registration.vrn, ExclusionReason.NoLongerSupplies, periodQ2.firstDay))
 
   private val excludedTraderQuarantined: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 4, StandardPeriod.fromString("2022-Q2").get, LocalDate.now()))
+    registration.vrn, ExclusionReason.FailsToComply, periodQ2.firstDay))
 
   private val excludedTraderSelfRequestedToLeave: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, 1, StandardPeriod.fromString("2022-Q2").get, LocalDate.now().plusMonths(1)))
+    registration.vrn, ExclusionReason.NoLongerSupplies, LocalDate.now().plusMonths(1)))
 
   private val amendRegistrationUrl = "http://localhost:10200/pay-vat-on-goods-sold-to-eu/northern-ireland-register/start-amend-journey"
 

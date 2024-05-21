@@ -17,30 +17,41 @@
 package models.exclusions
 
 import logging.Logging
-import models.{Enumerable, StandardPeriod, WithName}
+import models.{Enumerable, Period, Quarter, StandardPeriod, WithName}
+import models.exclusions.ExcludedTrader.getPeriod
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import scala.util.{Failure, Success}
 
-  case class ExcludedTrader(
+case class ExcludedTrader(
                            vrn: Vrn,
-                           exclusionReason: Int,
-                           effectivePeriod: StandardPeriod,
+                           exclusionReason: ExclusionReason,
                            effectiveDate: LocalDate
                          ) {
-  val exclusionSource: ExclusionSource = deriveExclusionSource(exclusionReason)
 
-  private def deriveExclusionSource(code: Int): ExclusionSource = {
-    code match {
-      case x if x == 2 || x == 4 => HMRC
-      case _ => TRADER
+  val finalReturnPeriod: Period = {
+    if (exclusionReason == ExclusionReason.TransferringMSID) {
+      getPeriod(effectiveDate)
+    } else {
+      getPeriod(effectiveDate).getPreviousPeriod
     }
   }
+
+  private val rejoinDate: LocalDate = effectiveDate.plusYears(2)
+
+  private val rejoinDateFormatter = DateTimeFormatter.ofPattern("d MMMM YYYY")
+
+  def displayRejoinDate: String =
+    s"${rejoinDate.format(rejoinDateFormatter)}"
 }
 
 sealed trait ExclusionSource
+
 object HMRC extends ExclusionSource
+
 object TRADER extends ExclusionSource
 
 object ExcludedTrader extends Logging {
@@ -50,13 +61,24 @@ object ExcludedTrader extends Logging {
   implicit class ExcludedTraderHelper(excludedTrader: ExcludedTrader) {
 
     def hasRequestedToLeave: Boolean = {
-      val exclusionSource = excludedTrader.exclusionSource
+      val exclusionSource = excludedTrader.exclusionReason.exclusionSource
 
       if (exclusionSource == TRADER) {
         LocalDate.now().isBefore(excludedTrader.effectiveDate)
       } else {
         false
       }
+    }
+  }
+
+  private def getPeriod(date: LocalDate): Period = {
+    val quarter = Quarter.fromString(date.format(DateTimeFormatter.ofPattern("QQQ")))
+
+    quarter match {
+      case Success(value) =>
+        StandardPeriod(date.getYear, value)
+      case Failure(exception) =>
+        throw exception
     }
   }
 }
@@ -68,7 +90,7 @@ sealed trait ExclusionReason {
 
 object ExclusionReason extends Enumerable.Implicits {
 
-  case object Reversal extends WithName("-1")  with ExclusionReason {
+  case object Reversal extends WithName("-1") with ExclusionReason {
     val exclusionSource: ExclusionSource = HMRC
     val numberValue: Int = -1
   }
