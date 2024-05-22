@@ -34,8 +34,8 @@ class ReturnsViewModelSpec extends SpecBase {
 
       "and there is no returns due, no returns overdue and none in progress" in {
 
-        val returns = Seq.empty
-        val resultModel = ReturnsViewModel(returns)(messages(app))
+        val returns = Seq.empty[Return]
+        val resultModel = ReturnsViewModel(returns, None)(messages(app))
         resultModel.contents mustBe Seq.empty
         resultModel.linkToStart mustBe None
       }
@@ -47,7 +47,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period1, Overdue, false, true),
         Return.fromPeriod(period2, Overdue, false, false)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
       resultModel.linkToStart mustBe (defined)
       resultModel.linkToStart.get.linkText mustBe "Start your July to September 2021 return"
@@ -59,7 +59,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period1, Overdue, true, true),
         Return.fromPeriod(period2, Overdue, false, false)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
       resultModel.linkToStart mustBe (defined)
       resultModel.linkToStart.get.linkText mustBe "Continue your July to September 2021 return"
@@ -70,7 +70,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val returns = Seq(
         Return.fromPeriod(period1, Overdue, false, true)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return."))
       resultModel.linkToStart mustBe (defined)
       resultModel.linkToStart.get.linkText mustBe "Start your July to September 2021 return"
@@ -81,7 +81,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val returns = Seq(
         Return.fromPeriod(period1, Overdue, true, true)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return in progress."))
       resultModel.linkToStart mustBe (defined)
       resultModel.linkToStart.get.linkText mustBe "Continue your July to September 2021 return"
@@ -94,7 +94,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period2, Overdue, false, false),
         Return.fromPeriod(period3, Due, false, false)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("January to March 2022 is due by 30 April 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You also have 2 overdue returns."))
       resultModel.linkToStart mustBe (defined)
@@ -108,7 +108,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period2, Overdue, false, false),
         Return.fromPeriod(period3, Due, false, false)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("January to March 2022 is due by 30 April 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You also have 2 overdue returns."))
       resultModel.linkToStart mustBe (defined)
@@ -121,7 +121,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period1, Overdue, true, true),
         Return.fromPeriod(period2, Due, false, false)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("October to December 2021 is due by 31 January 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You also have an overdue return in progress."))
       resultModel.linkToStart mustBe (defined)
@@ -134,7 +134,7 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(period1, Overdue, false, true),
         Return.fromPeriod(period2, Due, false, false)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("October to December 2021 is due by 31 January 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You also have an overdue return."))
       resultModel.linkToStart mustBe (defined)
@@ -146,7 +146,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val returns = Seq(
         Return.fromPeriod(period1, Due, true, true)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content)
         .contains(
           """Your return for 1 July to 30 September 2021 is in progress.
@@ -161,7 +161,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val returns = Seq(
         Return.fromPeriod(period1, Due, false, true)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content)
         .contains("July to September 2021 is due by 31 October 2021."))
       resultModel.linkToStart mustBe (defined)
@@ -173,7 +173,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val returns = Seq(
         Return.fromPeriod(period1, Next, true, true)
       )
-      val resultModel = ReturnsViewModel(returns)(messages(app))
+      val resultModel = ReturnsViewModel(returns, None)(messages(app))
       assert(resultModel.contents.map(p => p.content)
         .contains("""You can complete your July to September 2021 return from <span class="govuk-body govuk-!-font-weight-bold">1 October 2021</span>."""))
       resultModel.linkToStart must not be defined

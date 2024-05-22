@@ -18,30 +18,28 @@ package viewmodels.yourAccount
 
 import models.StandardPeriod
 import models.SubmissionStatus.{Due, Next, Overdue}
+import models.exclusions.ExcludedTrader
 import play.api.i18n.Messages
+import utils.ReturnsUtils.{isLessThanThreeYearsOld, isThreeYearsOld}
 import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
 
 import java.time.format.DateTimeFormatter
 
-case class ReturnsViewModel(
-                             contents: Seq[Paragraph],
-                             linkToStart: Option[LinkModel] = None
-                           )
+case class ReturnsViewModel(contents: Seq[Paragraph], linkToStart: Option[LinkModel])
 
 object ReturnsViewModel {
-  def apply(returns: Seq[Return])(implicit messages: Messages): ReturnsViewModel = {
+  def apply(returns: Seq[Return], excludedTraderOpt: Option[ExcludedTrader] = None)(implicit messages: Messages): ReturnsViewModel = {
     val inProgress = returns.find(_.inProgress)
     val returnDue = returns.find(_.submissionStatus == Due)
     val overdueReturns = returns.filter(_.submissionStatus == Overdue)
     val nextReturn = returns.find(_.submissionStatus == Next)
 
-    nextReturn.map(
+    nextReturn.fold(dueReturnsModel(overdueReturns, inProgress, returnDue, excludedTraderOpt))(
       nextReturn =>
         ReturnsViewModel(
-          contents = Seq(nextReturnParagraph(nextReturn.period))
+          contents = Seq(nextReturnParagraph(nextReturn.period)),
+          linkToStart = None
         )
-    ).getOrElse(
-      dueReturnsModel(overdueReturns, inProgress, returnDue)
     )
   }
 
@@ -77,6 +75,9 @@ object ReturnsViewModel {
   private def returnDueParagraph(period: StandardPeriod)(implicit messages: Messages) =
     ParagraphSimple(messages("index.yourReturns.returnDue", period.displayShortText, period.paymentDeadlineDisplay))
 
+  private def returnOutstandingThreeYearsOld(period: StandardPeriod)(implicit messages: Messages) =
+    ParagraphSimple(messages("index.yourReturns.outstandingReturnThreeYearsOld", period.displayShortText))
+
   private def returnDueInProgressParagraph(period: StandardPeriod)(implicit messages: Messages) =
     ParagraphSimple(s"""${messages("index.yourReturns.inProgress", period.displayText)}
        |<br>${messages("index.yourReturns.inProgress.due", period.paymentDeadlineDisplay)}
@@ -106,7 +107,38 @@ object ReturnsViewModel {
       "next-period"
     )
 
-  private def dueReturnsModel(overdueReturns: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages) = {
+  private def dueReturnsModel(overdueReturns: Seq[Return],
+                              currentReturn: Option[Return],
+                              dueReturn: Option[Return],
+                              excludedTraderOpt: Option[ExcludedTrader])(implicit messages: Messages): ReturnsViewModel = {
+
+    val allReturns = overdueReturns ++ Seq(currentReturn, dueReturn).flatten
+
+    val threeYearOldReturns = allReturns.filter(r => isThreeYearsOld(r.dueDate))
+    val lessThanThreeYearOldReturns = allReturns.filter(r => isLessThanThreeYearsOld(r.dueDate))
+
+    lazy val threeYearOldReturnsParagraphs = threeYearOldReturns.map( r => returnOutstandingThreeYearsOld(r.period))
+
+    (excludedTraderOpt, threeYearOldReturns.nonEmpty, lessThanThreeYearOldReturns.nonEmpty) match {
+      case (None, _, _) => otherScenariosReturnsViewModel(overdueReturns, currentReturn, dueReturn)
+      case (Some(_), true, false) =>
+        ReturnsViewModel(
+          contents = threeYearOldReturnsParagraphs,
+          linkToStart = None
+      )
+      case (Some(_), true, true) =>
+        val returnsViewModel = otherScenariosReturnsViewModel(overdueReturns, currentReturn, dueReturn)
+
+        returnsViewModel.copy(
+          contents = threeYearOldReturnsParagraphs ++ returnsViewModel.contents
+        )
+      case (Some(_), _, _) => otherScenariosReturnsViewModel(overdueReturns, currentReturn, dueReturn)
+    }
+  }
+
+  private def otherScenariosReturnsViewModel(overdueReturns: Seq[Return],
+                                             currentReturn: Option[Return],
+                                             dueReturn: Option[Return])(implicit messages: Messages) = {
     (overdueReturns.size, currentReturn, dueReturn) match {
       case (0, None, None) =>
         ReturnsViewModel(
@@ -115,24 +147,23 @@ object ReturnsViewModel {
         )
       case (0, None, Some(dueReturn)) =>
         ReturnsViewModel(
-          contents = Seq(returnDueParagraph(dueReturn.period)),
-          linkToStart = Some(startDueReturnLink(dueReturn.period))
+          contents = Seq(returnDueParagraph(dueReturn.period)), linkToStart = Some(startDueReturnLink(dueReturn.period))
         )
       case (0, Some(_), Some(dueReturn)) =>
         ReturnsViewModel(
-          contents = Seq(returnDueInProgressParagraph(dueReturn.period)),
-          linkToStart = Some(continueDueReturnLink(dueReturn.period))
+          contents = Seq(returnDueInProgressParagraph(dueReturn.period)), linkToStart = Some(continueDueReturnLink(dueReturn.period))
         )
       case (1, None, _) =>
-        val contents = dueReturn.map(dueReturn =>
-          Seq(returnDueParagraph(dueReturn.period),returnOverdueSingularParagraph())).getOrElse(Seq(returnOverdueParagraph()))
+        val contents = dueReturn
+          .map(dueReturn => Seq(returnDueParagraph(dueReturn.period), returnOverdueSingularParagraph()))
+          .getOrElse(Seq(returnOverdueParagraph()))
         ReturnsViewModel(
           contents = contents,
           linkToStart = Some(startOverdueReturnLink(overdueReturns.head.period))
         )
       case (1, Some(inProgress), _) =>
         val contents = dueReturn.map(dueReturn =>
-          Seq(returnDueParagraph(dueReturn.period), returnOverdueInProgressAdditionalParagraph()))
+            Seq(returnDueParagraph(dueReturn.period), returnOverdueInProgressAdditionalParagraph()))
           .getOrElse(Seq(returnOverdueInProgressParagraph()))
         ReturnsViewModel(
           contents = contents,
@@ -140,16 +171,16 @@ object ReturnsViewModel {
         )
       case (x, None, _) =>
         val contents = dueReturn.map(dueReturn =>
-          Seq(returnDueParagraph(dueReturn.period), returnsOverdueParagraph(x)))
-          .getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
+          Seq(returnDueParagraph(dueReturn.period), returnsOverdueParagraph(x))
+        ).getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
         ReturnsViewModel(
           contents = contents,
           linkToStart = Some(startOverdueReturnLink(overdueReturns.minBy(_.period.lastDay.toEpochDay).period))
         )
       case (x, Some(inProgress), _) =>
         val contents = dueReturn.map(dueReturn =>
-          Seq(returnDueParagraph(dueReturn.period), returnsOverdueParagraph(x)))
-          .getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
+          Seq(returnDueParagraph(dueReturn.period), returnsOverdueParagraph(x))
+        ).getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
         ReturnsViewModel(
           contents = contents,
           linkToStart = Some(continueOverdueReturnLink(inProgress.period))

@@ -34,14 +34,14 @@ class PaymentsViewModelSpec extends SpecBase {
     val app = applicationBuilder().build()
 
     "there is no payments due or overdue" in {
-      val result = PaymentsViewModel(Seq.empty, Seq.empty)(messages(app))
+      val result = PaymentsViewModel(Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app))
       result.sections mustBe Seq(PaymentsSection(Seq("You do not owe anything right now.")))
       result.link must not be defined
       result.warning must not be defined
     }
 
     "there is one due payment" in {
-      val result = PaymentsViewModel(Seq(paymentDue), Seq.empty)(messages(app))
+      val result = PaymentsViewModel(Seq(paymentDue), Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText(messages(app))}. You must pay this by ${period.paymentDeadlineDisplay}."""
@@ -53,7 +53,7 @@ class PaymentsViewModelSpec extends SpecBase {
     }
 
     "there is one due payment with unknown status" in {
-      val result = PaymentsViewModel(Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)), Seq.empty)(messages(app))
+      val result = PaymentsViewModel(Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)), Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You may still owe VAT for ${period.displayShortText(messages(app))}. You must pay this by ${period.paymentDeadlineDisplay}."""
@@ -65,7 +65,7 @@ class PaymentsViewModelSpec extends SpecBase {
     }
 
     "there is one overdue payment" in {
-      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue))(messages(app))
+      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue), hasDueReturnThreeYearsOld = false)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText(messages(app))}, which was due by ${period.paymentDeadlineDisplay}."""
@@ -77,7 +77,7 @@ class PaymentsViewModelSpec extends SpecBase {
     }
 
     "there is one overdue payment with unknown status" in {
-      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)))(messages(app))
+      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)), hasDueReturnThreeYearsOld = false)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You may still owe VAT for ${period.displayShortText(messages(app))}, which was due by ${period.paymentDeadlineDisplay}."""
@@ -89,7 +89,12 @@ class PaymentsViewModelSpec extends SpecBase {
     }
 
     "there is one due payment, and two overdue payments, one with unknown status" in {
-      val result = PaymentsViewModel(Seq(paymentDue.copy(period = period3)), Seq(paymentDue.copy(period = period1, paymentStatus = PaymentStatus.Unknown), paymentDue.copy(period = period2)))(messages(app))
+      val result = PaymentsViewModel(
+        Seq(paymentDue.copy(period = period3)),
+        Seq(paymentDue.copy(period = period1, paymentStatus = PaymentStatus.Unknown), paymentDue.copy(period = period2)),
+        hasDueReturnThreeYearsOld = false
+      )(messages(app))
+
       result.sections mustBe Seq(
         PaymentsSection(
           Seq(

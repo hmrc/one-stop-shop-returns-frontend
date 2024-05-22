@@ -113,21 +113,33 @@
                 case _ => {}
             }
 
-        } else {
-            @maybeExcludedTrader match {
-                case Some(excludedTrader) => {
-                    @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
-                        case (FailsToComply, _) => {
-                            <div class="govuk-warning-text">
-                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                <strong class="govuk-warning-text__text">
-                                    <span class="govuk-warning-text__assistive">Warning:</span>
-                                    <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate)</p>
-                                </strong>
-                            </div>
-                        }
-                        case (CeasedTrade, _) => {
-                            @govukWarningText(WarningText(
+    } else {
+        @maybeExcludedTrader match {
+            case Some(excludedTrader) => {
+                @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
+                    case (_, _) if hasDueReturnThreeYearsOld && hasDueReturnsLessThanThreeYearsOld => {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(messages("yourAccount.warning.exclusion.trader"))
+                        ))
+                    }
+                    case (_, _) if hasDueReturnThreeYearsOld => {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(messages("yourAccount.warning.leftService"))
+                        ))
+                    }
+                    case (FailsToComply, _) => {
+                        <div class="govuk-warning-text">
+                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                            <strong class="govuk-warning-text__text">
+                                <span class="govuk-warning-text__assistive">Warning:</span>
+                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate)</p>
+                            </strong>
+                        </div>
+                    }
+                    case (CeasedTrade, _) => {
+                        @govukWarningText(WarningText(
                                 iconFallbackText = Option(messages("site.warning")),
                                 content = Text(messages("yourAccount.warning.exclusion.hmrc"))
                         ))
@@ -165,7 +177,7 @@
             case _ => {}
         }
     }
-}
+    }
 
 @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
     @if(maybeExcludedTrader.get.exclusionReason != Reversal) {

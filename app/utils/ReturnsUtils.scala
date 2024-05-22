@@ -28,18 +28,26 @@ object ReturnsUtils {
       if(`return`.submissionStatus == Complete || `return`.submissionStatus == Excluded) {
         false
       } else {
-        val threeYearsAgo = LocalDate.now().minusYears(3)
-        `return`.dueDate.isBefore(threeYearsAgo) || `return`.dueDate.isEqual(threeYearsAgo)
+        isThreeYearsOld(`return`.dueDate)
       }
     }
+  }
+
+  def isThreeYearsOld(dueDate: LocalDate): Boolean = {
+    val threeYearsAgo = LocalDate.now().minusYears(3)
+    dueDate.isBefore(threeYearsAgo) || dueDate.isEqual(threeYearsAgo)
+  }
+
+  def isLessThanThreeYearsOld(dueDate: LocalDate): Boolean = {
+    val threeYearsAgo = LocalDate.now().minusYears(3)
+    dueDate.isAfter(threeYearsAgo)
   }
 
   def hasDueReturnsLessThanThreeYearsOld(returns: Seq[Return]): Boolean = returns.count { `return` =>
     if (`return`.submissionStatus == Complete || `return`.submissionStatus == Excluded) {
       false
     } else {
-      val threeYearsAgo = LocalDate.now().minusYears(3)
-      `return`.dueDate.isAfter(threeYearsAgo)
+      isLessThanThreeYearsOld(`return`.dueDate)
     }
   } >= 2
 }

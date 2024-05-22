@@ -134,6 +134,7 @@ class YourAccountController @Inject()(
                                            currentPayments: CurrentPayments,
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
+    val excludedTraderOpt = request.registration.excludedTrader
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
@@ -144,21 +145,27 @@ class YourAccountController @Inject()(
         currentReturn
       })
     } yield {
+      val hasDueReturnThreeYearsOld = ReturnsUtils.hasDueReturnThreeYearsOld(returns)
+      val hasDueReturnsLessThanThreeYearsOld = ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
+
       Ok(view(
         request.registration.registeredCompanyName,
         request.vrn.vrn,
-        ReturnsViewModel(returns),
-        PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
+        ReturnsViewModel(returns, excludedTraderOpt),
+        PaymentsViewModel(
+          currentPayments.duePayments, currentPayments.overduePayments, hasDueReturnThreeYearsOld
+        ),
         (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
-        request.registration.excludedTrader,
+        excludedTraderOpt,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
+        frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave(clock)),
         exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn)),
-        ReturnsUtils.hasDueReturnThreeYearsOld(returns),
-        ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
+        hasDueReturnThreeYearsOld,
+        hasDueReturnsLessThanThreeYearsOld
       ))
     }
   }
@@ -168,6 +175,7 @@ class YourAccountController @Inject()(
                                               periodInProgress: Option[Period]
                                             )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
+    val excludedTraderOpt = request.registration.excludedTrader
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
@@ -183,10 +191,10 @@ class YourAccountController @Inject()(
       Ok(view(
         request.registration.registeredCompanyName,
         request.vrn.vrn,
-        ReturnsViewModel(returns),
-        PaymentsViewModel(Seq.empty, Seq.empty),
+        ReturnsViewModel(returns, excludedTraderOpt),
+        PaymentsViewModel(Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = true),
         paymentError = true,
-        request.registration.excludedTrader,
+        excludedTraderOpt,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
         frontendAppConfig.exclusionsEnabled,

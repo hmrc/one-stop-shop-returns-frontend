@@ -19,13 +19,16 @@ package viewmodels.yourAccount
 import models.financialdata.{Payment, PaymentStatus}
 import play.api.i18n.Messages
 import utils.CurrencyFormatter.currencyFormat
+import utils.ReturnsUtils.isThreeYearsOld
 import viewmodels.LinkModel
 
 case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[String] = None, link: Option[LinkModel] = None)
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
 object PaymentsViewModel{
-  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment])(implicit messages: Messages): PaymentsViewModel = {
+  def apply(duePayments: Seq[Payment],
+            overduePayments: Seq[Payment],
+            hasDueReturnThreeYearsOld: Boolean)(implicit messages: Messages): PaymentsViewModel = {
     if(duePayments.isEmpty && overduePayments.isEmpty){
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
@@ -35,16 +38,23 @@ object PaymentsViewModel{
     } else {
       val duePaymentsSection = getPaymentsSection(duePayments, "due")
       val overduePaymentsSection = getPaymentsSection(overduePayments, "overdue")
-      PaymentsViewModel(
-        sections = Seq(duePaymentsSection, overduePaymentsSection).flatten,
-        warning = Some(messages("index.payment.pendingPayments")),
-        link = Some(
+
+      val link = if(hasDueReturnThreeYearsOld) {
+        None
+      } else {
+        Some(
           LinkModel(
             linkText = messages("index.payment.makeAPayment"),
             id = "make-a-payment",
             url = controllers.routes.WhichVatPeriodToPayController.onPageLoad().url
           )
         )
+      }
+
+      PaymentsViewModel(
+        sections = Seq(duePaymentsSection, overduePaymentsSection).flatten,
+        warning = Some(messages("index.payment.pendingPayments")),
+        link = link
       )
     }
   }
@@ -61,14 +71,21 @@ object PaymentsViewModel{
                   s"index.payment.${key}AmountMaybeOwed",
                   payment.period.displayShortText,
                   payment.period.paymentDeadlineDisplay
-                  )
-              case _ => messages(
+                )
+              case _ => if(isThreeYearsOld(payment.dateDue)){
+                messages(
+                  "index.payment.amountOwedThreeYearsOld",
+                  payment.period.displayShortText
+                )
+              } else {
+                messages(
                   s"index.payment.${key}AmountOwed",
                   currencyFormat(payment.amountOwed),
                   payment.period.displayShortText,
                   payment.period.paymentDeadlineDisplay
-                  )
+                )
               }
+            }
           )
         )
       )
