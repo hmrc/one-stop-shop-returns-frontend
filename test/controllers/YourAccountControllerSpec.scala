@@ -18,10 +18,9 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import connectors.financialdata.FinancialDataConnector
+import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import generators.Generators
-import models.{Country, StandardPeriod, SubmissionStatus}
 import models.Quarter._
 import models.SubmissionStatus.{Due, Next, Overdue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
@@ -29,7 +28,9 @@ import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration._
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
+import models.{Country, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
@@ -60,10 +61,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   private val vatReturn = arbitrary[VatReturn].sample.value
   private val excludedTraderHMRC: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, ExclusionReason.NoLongerSupplies, periodQ2.firstDay))
+    registration.vrn, ExclusionReason.CeasedTrade, periodQ2.firstDay))
 
   private val excludedTraderSelf: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, ExclusionReason.NoLongerSupplies, periodQ2.firstDay))
+    registration.vrn, ExclusionReason.NoLongerMeetsConditions, periodQ2.firstDay))
 
   private val excludedTraderQuarantined: Option[ExcludedTrader] = Some(ExcludedTrader(
     registration.vrn, ExclusionReason.FailsToComply, periodQ2.firstDay))
@@ -73,6 +74,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   private val amendRegistrationUrl = "http://localhost:10200/pay-vat-on-goods-sold-to-eu/northern-ireland-register/start-amend-journey"
 
+  override def beforeEach(): Unit = {
+    Mockito.reset(vatReturnConnector)
+  }
   "Your Account Controller" - {
 
     "must return OK and the correct view with no saved answers" - {
@@ -93,8 +97,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 nextPeriod.lastDay,
                 nextPeriod.paymentDeadline,
                 SubmissionStatus.Next,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))))
           )
 
@@ -133,7 +137,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -144,7 +148,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual true
@@ -160,7 +165,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
-                Seq(Return.fromPeriod(period, Due, false, true)))
+                Seq(Return.fromPeriod(period, Due, inProgress = false, isOldest = true)))
               )
             )
 
@@ -198,7 +203,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(period, Due, false, true)
+                  Return.fromPeriod(period, Due, inProgress = false, isOldest = true)
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -209,7 +214,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
-              false
+              hasRequestedToLeave = false,
+              None
             )(request, messages(application)).toString
           }
         }
@@ -223,7 +229,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
-                Seq(Return.fromPeriod(period, Due, true, true)))
+                Seq(Return.fromPeriod(period, Due, inProgress = true, isOldest = true)))
               )
             )
 
@@ -260,7 +266,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(period, Due, true, true)
+                  Return.fromPeriod(period, Due, inProgress = true, isOldest = true)
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -271,7 +277,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
-              hasRequestedToLeave = false
+              hasRequestedToLeave = false,
+              None
             )(request, messages(application)).toString
           }
         }
@@ -285,7 +292,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
-                Seq(Return.fromPeriod(secondPeriod, Due, false, true)))
+                Seq(Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = true)))
               )
             )
 
@@ -323,7 +330,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(secondPeriod, Due, false, true)
+                  Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = true)
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -334,7 +341,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
-              hasRequestedToLeave = false
+              hasRequestedToLeave = false,
+              None
             )(request, messages(application)).toString
           }
         }
@@ -350,8 +358,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Future.successful(
               Right(CurrentReturns(
                 Seq(
-                  Return.fromPeriod(secondPeriod, Due, false, false),
-                  Return.fromPeriod(firstPeriod, Overdue, false, true)))
+                  Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
+                  Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true)))
               )
             )
 
@@ -389,8 +397,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(secondPeriod, Due, false, false),
-                  Return.fromPeriod(firstPeriod, Overdue, false, true)
+                  Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
+                  Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true)
                 )
               )(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -401,7 +409,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
-              hasRequestedToLeave = false
+              hasRequestedToLeave = false,
+              None
             )(request, messages(application)).toString
           }
         }
@@ -416,7 +425,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
-              Seq(Return.fromPeriod(period, Overdue, false, true)))
+              Seq(Return.fromPeriod(period, Overdue, inProgress = false, isOldest = true)))
             )
           )
 
@@ -452,7 +461,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(Seq(
-              Return.fromPeriod(StandardPeriod(2021, Q3), Overdue, false, true)))(messages(application)),
+              Return.fromPeriod(StandardPeriod(2021, Q3), Overdue, inProgress = false, isOldest = true)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             None,
@@ -461,7 +470,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
         }
       }
@@ -478,8 +488,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentReturns(
               Seq(
-                Return.fromPeriod(firstPeriod, Overdue, false, true),
-                Return.fromPeriod(secondPeriod, Overdue, false, false)))
+                Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+                Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false)))
             )
           )
 
@@ -516,8 +526,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(Seq(
-              Return.fromPeriod(firstPeriod, Overdue, false, true),
-              Return.fromPeriod(secondPeriod, Overdue, false, false)))(messages(application)),
+              Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+              Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             None,
@@ -526,7 +536,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
         }
       }
@@ -545,7 +556,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
-                Seq(Return.fromPeriod(period, Next, false, false)))
+                Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))
               )
             )
 
@@ -583,7 +594,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
               PaymentsViewModel(
                 Seq(payment),
                 Seq.empty)(messages(application)),
@@ -594,7 +605,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
-              hasRequestedToLeave = false
+              hasRequestedToLeave = false,
+              None
             )(request, messages(application)).toString
           }
         }
@@ -611,7 +623,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
-                Seq(Return.fromPeriod(period, Next, false, false)))
+                Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))
               )
             )
 
@@ -651,7 +663,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
               PaymentsViewModel(Seq(payment),
                 Seq.empty)(messages(application)),
               paymentError = false,
@@ -661,7 +673,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
-              hasRequestedToLeave = false
+              hasRequestedToLeave = false,
+              None
             )(request, messages(application)).toString
 
           }
@@ -679,7 +692,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
-                Seq(Return.fromPeriod(period, Next, false, false)))
+                Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))
               )
             )
 
@@ -723,7 +736,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
               PaymentsViewModel(Seq.empty, Seq(overduePayment))(messages(application)),
               paymentError = false,
               None,
@@ -732,7 +745,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
-              hasRequestedToLeave = false
+              hasRequestedToLeave = false,
+              None
             )(request, messages(application)).toString
           }
         }
@@ -745,7 +759,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
-                Seq(Return.fromPeriod(period, Next, false, false)))
+                Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))
               )
             )
 
@@ -783,7 +797,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = true,
               None,
@@ -792,7 +806,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
-              hasRequestedToLeave = false
+              hasRequestedToLeave = false,
+              None
             )(request, messages(application)).toString
           }
         }
@@ -805,7 +820,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
             Future.successful(
               Right(CurrentReturns(
-                Seq(Return.fromPeriod(period, Next, false, false)))
+                Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))
               )
             )
 
@@ -843,7 +858,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
               PaymentsViewModel(
                 Seq(payment),
                 Seq.empty
@@ -855,7 +870,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
-              hasRequestedToLeave = false
+              hasRequestedToLeave = false,
+              None
             )(request, messages(application)).toString
           }
         }
@@ -871,7 +887,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
-              Seq(Return.fromPeriod(period, Next, false, false)))
+              Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))
             )
           )
 
@@ -909,7 +925,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)))(messages(application)),
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
             PaymentsViewModel(
               Seq(payment),
               Seq.empty)(messages(application)),
@@ -920,7 +936,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
         }
       }
@@ -935,7 +952,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
-              Seq(Return.fromPeriod(period, Overdue, true, true)))
+              Seq(Return.fromPeriod(period, Overdue, inProgress = true, isOldest = true)))
             )
           )
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
@@ -969,7 +986,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, true, true)))(messages(application)),
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, inProgress = true, isOldest = true)))(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             None,
@@ -978,7 +995,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
 
         }
@@ -1051,8 +1069,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 nextPeriod.lastDay,
                 nextPeriod.paymentDeadline,
                 SubmissionStatus.Next,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))))
           )
 
@@ -1093,7 +1111,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -1104,7 +1122,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual false
@@ -1127,8 +1146,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 nextPeriod.lastDay,
                 nextPeriod.paymentDeadline,
                 SubmissionStatus.Next,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))))
           )
 
@@ -1170,7 +1189,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -1181,7 +1200,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1204,8 +1224,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               nextPeriod.lastDay,
               nextPeriod.paymentDeadline,
               SubmissionStatus.Next,
-              false,
-              false
+              inProgress = false,
+              isOldest = false
             ))))
         )
 
@@ -1249,7 +1269,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registration.vrn.vrn,
           ReturnsViewModel(
             Seq(
-              Return.fromPeriod(nextPeriod, Next, false, false)
+              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             )
           )(messages(application)),
           PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -1260,7 +1280,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           config.exclusionsEnabled,
           config.amendRegistrationEnabled,
           amendRegistrationUrl,
-          hasRequestedToLeave = false
+          hasRequestedToLeave = false,
+          None
         )(request, messages(application)).toString
         contentAsString(result).contains("leave-this-service") mustEqual true
       }
@@ -1284,8 +1305,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 nextPeriod.lastDay,
                 nextPeriod.paymentDeadline,
                 SubmissionStatus.Next,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))))
           )
 
@@ -1327,7 +1348,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -1338,7 +1359,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1358,8 +1380,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 nextPeriod.lastDay,
                 nextPeriod.paymentDeadline,
                 SubmissionStatus.Next,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))))
           )
 
@@ -1401,7 +1423,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -1412,7 +1434,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1437,8 +1460,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 nextPeriod.lastDay,
                 nextPeriod.paymentDeadline,
                 SubmissionStatus.Next,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))))
           )
 
@@ -1480,7 +1503,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -1491,11 +1514,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = true
+            hasRequestedToLeave = true,
+            Some(s"${config.leaveOneStopShopUrl}/cancel-leave-scheme")
           )(request, messages(application)).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
       }
+
       "has submitted final return" in {
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
@@ -1511,8 +1536,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 nextPeriod.lastDay,
                 nextPeriod.paymentDeadline,
                 SubmissionStatus.Next,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))))
           )
 
@@ -1554,7 +1579,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -1565,7 +1590,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = true
+            hasRequestedToLeave = true,
+            Some(s"${config.leaveOneStopShopUrl}/cancel-leave-scheme")
           )(request, messages(application)).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -1590,8 +1616,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 nextPeriod.lastDay,
                 nextPeriod.paymentDeadline,
                 SubmissionStatus.Next,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))))
           )
 
@@ -1633,7 +1659,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -1644,7 +1670,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1665,8 +1692,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 nextPeriod.lastDay,
                 nextPeriod.paymentDeadline,
                 SubmissionStatus.Next,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))))
           )
 
@@ -1708,7 +1735,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
@@ -1719,7 +1746,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
-            hasRequestedToLeave = false
+            hasRequestedToLeave = false,
+            None
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1731,7 +1759,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val newRegistration: Registration = Registration(
         vrn = vrn,
         registeredCompanyName = arbitrary[String].sample.value,
-        vatDetails = VatDetails(LocalDate.of(2000, 1, 1), address, true, VatDetailSource.Mixed),
+        vatDetails = VatDetails(LocalDate.of(2000, 1, 1), address, partOfVatGroup = true, VatDetailSource.Mixed),
         euRegistrations = Seq(RegistrationWithFixedEstablishment(
           Country("ES", "Spain"),
           EuTaxIdentifier(EuTaxIdentifierType.Vat, "ES123456789"),

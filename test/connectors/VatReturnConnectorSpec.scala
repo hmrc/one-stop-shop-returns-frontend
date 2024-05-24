@@ -20,11 +20,11 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
+import models.external.ExternalEntryUrl
 import models.requests.corrections.CorrectionRequest
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses._
 import models.{PaymentReference, ReturnReference}
-import models.external.ExternalEntryUrl
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatest.EitherValues
@@ -40,7 +40,7 @@ import java.util.UUID
 class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
-  val url = "/one-stop-shop-returns/vat-returns"
+  val url: String = "/one-stop-shop-returns/vat-returns"
 
   private def application: Application =
     applicationBuilder()
@@ -283,9 +283,9 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
         server.stubFor(
           get(urlEqualTo(s"$url/period/${period.toString}"))
-          .willReturn(
-            aResponse().withStatus(OK).withBody(responseJson.toString())
-          ))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
 
         connector.get(period).futureValue mustBe Right(vatReturn)
       }
@@ -368,6 +368,30 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         val result = connector.getSavedExternalEntry().futureValue
 
         result mustBe Left(UnexpectedResponseStatus(status, s"Received unexpected response code $status with body "))
+      }
+    }
+  }
+
+  ".getSubmittedVatReturns" - {
+
+    "must return a Seq VatReturn when connector returns a successful payload" in {
+
+      val vatReturns: Seq[VatReturn] = Gen.listOfN(4, arbitraryVatReturn.arbitrary).sample.value
+
+      running(application) {
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        val responseBody = Json.toJson(vatReturns).toString()
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(
+          aResponse()
+            .withStatus(OK)
+            .withBody(responseBody)
+        ))
+
+        val result = connector.getSubmittedVatReturns.futureValue
+
+        result mustBe vatReturns
       }
     }
   }

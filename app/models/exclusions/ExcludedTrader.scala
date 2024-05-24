@@ -17,14 +17,13 @@
 package models.exclusions
 
 import logging.Logging
-import models.{Enumerable, Period, Quarter, StandardPeriod, WithName}
-import models.exclusions.ExcludedTrader.getPeriod
+import models.Period.getPeriod
+import models.{Enumerable, Period, WithName}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import scala.util.{Failure, Success}
 
 case class ExcludedTrader(
                            vrn: Vrn,
@@ -68,17 +67,6 @@ object ExcludedTrader extends Logging {
       } else {
         false
       }
-    }
-  }
-
-  private def getPeriod(date: LocalDate): Period = {
-    val quarter = Quarter.fromString(date.format(DateTimeFormatter.ofPattern("QQQ")))
-
-    quarter match {
-      case Success(value) =>
-        StandardPeriod(date.getYear, value)
-      case Failure(exception) =>
-        throw exception
     }
   }
 }

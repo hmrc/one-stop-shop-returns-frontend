@@ -16,25 +16,31 @@
 
 package controllers
 
+import config.Constants.{exclusionCodeSixFollowingMonth, exclusionCodeSixTenthOfMonth}
 import config.FrontendAppConfig
-import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import connectors.financialdata.FinancialDataConnector
+import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.Period.getPeriod
+import models.exclusions.ExcludedTrader
 import models.exclusions.ExcludedTrader._
-import models.{Period, UserAnswers}
+import models.exclusions.ExclusionReason.{NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
 import models.financialdata.{CurrentPayments, PaymentStatus}
 import models.registration.RegistrationWithFixedEstablishment
 import models.requests.RegistrationRequest
+import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.UserAnswersRepository
 import services.exclusions.ExclusionService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount._
 import views.html.IndexView
 
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,9 +50,11 @@ class YourAccountController @Inject()(
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
+                                       vatReturnConnector: VatReturnConnector,
                                        view: IndexView,
                                        sessionRepository: UserAnswersRepository,
-                                       frontendAppConfig: FrontendAppConfig
+                                       frontendAppConfig: FrontendAppConfig,
+                                       clock: Clock
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -145,13 +153,16 @@ class YourAccountController @Inject()(
         frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave)
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
+        cancelRequestToLeave(request.registration.excludedTrader, clock)
       ))
     }
   }
 
-  private def prepareViewWithNoFinancialData(returnsViewModel: Seq[Return], periodInProgress: Option[Period])
-                                            (implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+  private def prepareViewWithNoFinancialData(
+                                              returnsViewModel: Seq[Return],
+                                              periodInProgress: Option[Period]
+                                            )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
@@ -164,7 +175,7 @@ class YourAccountController @Inject()(
           returnsViewModel.map { currentReturn =>
             if (periodInProgress.contains(currentReturn.period)) {
               currentReturn.copy(inProgress = true)
-          } else {
+            } else {
               currentReturn
             }
           }
@@ -177,7 +188,8 @@ class YourAccountController @Inject()(
         frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave)
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
+        cancelRequestToLeave(request.registration.excludedTrader, clock)
       ))
     }
   }
@@ -187,6 +199,50 @@ class YourAccountController @Inject()(
       Future.successful(false)
     } else {
       exclusionService.currentReturnIsFinal(request.registration, returnsViewModel.minBy(_.period.firstDay.toEpochDay).period)
+    }
+  }
+
+  private def cancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader], clock: Clock)(implicit hc: HeaderCarrier): Option[String] = {
+    val now: LocalDate = LocalDate.now(clock)
+
+    maybeExcludedTrader match {
+      case Some(excludedTrader) if TransferringMSID == excludedTrader.exclusionReason &&
+        isEqualToOrBeforeTenthOfFollowingMonth(excludedTrader.effectiveDate, now) =>
+
+        val currentPeriod: Period = getPeriod(now)
+
+        if (excludedTrader.finalReturnPeriod == currentPeriod) {
+          Some(s"${frontendAppConfig.leaveOneStopShopUrl}/cancel-leave-scheme")
+        } else {
+          Some(checkVatReturnSubmissionStatus(excludedTrader).toString)
+        }
+
+      case Some(excludedTrader) if Seq(NoLongerSupplies, VoluntarilyLeaves).contains(excludedTrader.exclusionReason) &&
+        now.isBefore(excludedTrader.effectiveDate) =>
+        Some(s"${frontendAppConfig.leaveOneStopShopUrl}/cancel-leave-scheme")
+
+      case _ =>
+        None
+    }
+  }
+
+  private def isEqualToOrBeforeTenthOfFollowingMonth(effectiveDate: LocalDate, now: LocalDate): Boolean = {
+
+    val tenthOfFollowingMonth = effectiveDate
+      .plusMonths(exclusionCodeSixFollowingMonth)
+      .withDayOfMonth(exclusionCodeSixTenthOfMonth)
+    now.isBefore(tenthOfFollowingMonth) || now.isEqual(tenthOfFollowingMonth)
+  }
+
+  private def checkVatReturnSubmissionStatus(excludedTrader: ExcludedTrader)(implicit hc: HeaderCarrier): Future[Option[String]] = {
+    vatReturnConnector.getSubmittedVatReturns().map { submittedVatReturns =>
+      val periods = submittedVatReturns.map(_.period)
+
+      if (periods.contains(excludedTrader.finalReturnPeriod)) {
+        None
+      } else {
+        Some(s"${frontendAppConfig.leaveOneStopShopUrl}/cancel-leave-scheme")
+      }
     }
   }
 }

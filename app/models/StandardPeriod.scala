@@ -25,8 +25,8 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
 import java.time.format.DateTimeFormatter
 import java.time.{Clock, LocalDate}
-import scala.util.Try
 import scala.util.matching.Regex
+import scala.util.{Failure, Success, Try}
 
 trait Period {
   val year: Int
@@ -151,6 +151,17 @@ object Period {
   def writes: Writes[Period] = Writes {
     case s: StandardPeriod => Json.toJson(s)(StandardPeriod.format)
     case p: PartialReturnPeriod => Json.toJson(p)(PartialReturnPeriod.format)
+  }
+
+  def getPeriod(date: LocalDate): Period = {
+    val quarter = Quarter.fromString(date.format(DateTimeFormatter.ofPattern("QQQ")))
+
+    quarter match {
+      case Success(value) =>
+        StandardPeriod(date.getYear, value)
+      case Failure(exception) =>
+        throw exception
+    }
   }
 
   implicit def format: Format[Period] = Format(reads, writes)
