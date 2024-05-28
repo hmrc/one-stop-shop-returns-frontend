@@ -28,11 +28,12 @@ import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration._
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
-import models.{Country, StandardPeriod, SubmissionStatus}
+import models.{Country, Period, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.SavedProgressPage
@@ -41,6 +42,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import services.VatReturnSalesService
+import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount.{CurrentReturns, PaymentsViewModel, Return, ReturnsViewModel}
 import views.html.IndexView
 
@@ -77,6 +79,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
   }
+
   "Your Account Controller" - {
 
     "must return OK and the correct view with no saved answers" - {
@@ -1596,6 +1599,184 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
       }
+
+      "trader is transferring country" - {
+
+        "has not submitted final return" in {
+
+          val today: LocalDate = LocalDate.of(2024, 5, 28)
+
+          val finalReturnPeriod: Period = StandardPeriod(2024, Q2)
+
+          val newClock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant, ZoneId.systemDefault())
+
+          val submittedVatReturnsWithoutEffectivePeriod: Seq[VatReturn] =
+            Gen.listOfN(4, arbitraryVatReturn.arbitrary.suchThat(vr => vr.period != finalReturnPeriod)).sample.value
+
+          val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
+            registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 6, 9)))
+
+          val nextPeriod = StandardPeriod(2024, Q3)
+
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return(
+                  nextPeriod,
+                  nextPeriod.firstDay,
+                  nextPeriod.lastDay,
+                  nextPeriod.paymentDeadline,
+                  SubmissionStatus.Next,
+                  inProgress = false,
+                  isOldest = false
+                ))))
+            )
+
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+          when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
+
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+            clock = Some(newClock),
+            registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
+          )
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
+
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+                )
+              )(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              paymentError = false,
+              excludedTraderSelfRequestedToLeaveTransferringMSID,
+              hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl,
+              hasRequestedToLeave = true,
+              Some(s"${config.leaveOneStopShopUrl}/cancel-leave-scheme")
+            )(request, messages(application)).toString
+            contentAsString(result).contains("cancel-request-to-leave") mustEqual true
+          }
+        }
+
+        "has submitted final return" in {
+
+          val today: LocalDate = LocalDate.of(2024, 5, 28)
+
+          val finalReturnPeriod: Period = StandardPeriod(2024, Q2)
+
+          val newClock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant, ZoneId.systemDefault())
+
+          val finalVatReturn: VatReturn = arbitraryVatReturn.arbitrary.sample.value.copy(period = finalReturnPeriod)
+          val submittedVatReturnsWithoutEffectivePeriod: Seq[VatReturn] =
+            Gen.listOfN(4, arbitraryVatReturn.arbitrary).sample.value ++ Seq(finalVatReturn)
+
+          val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
+            registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 6, 9)))
+
+          val nextPeriod = StandardPeriod(2024, Q3)
+
+          when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentReturns(
+                Seq(Return(
+                  nextPeriod,
+                  nextPeriod.firstDay,
+                  nextPeriod.lastDay,
+                  nextPeriod.paymentDeadline,
+                  SubmissionStatus.Next,
+                  inProgress = false,
+                  isOldest = false
+                ))))
+            )
+
+          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+            Future.successful(
+              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(finalVatReturn))
+          when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
+
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+            clock = Some(newClock),
+            registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
+          )
+            .overrides(
+              bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+              bind[FinancialDataConnector].toInstance(financialDataConnector),
+              bind[UserAnswersRepository].toInstance(sessionRepository),
+              bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+              bind[VatReturnConnector].toInstance(vatReturnConnector)
+            )
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
+
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
+            status(result) mustEqual OK
+
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+                )
+              )(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              paymentError = false,
+              excludedTraderSelfRequestedToLeaveTransferringMSID,
+              hasSubmittedFinalReturn = true,
+              currentReturnIsFinal = true,
+              config.exclusionsEnabled,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl,
+              hasRequestedToLeave = true,
+              Some(s"${config.leaveOneStopShopUrl}/cancel-leave-scheme")
+            )(request, messages(application)).toString
+            contentAsString(result).contains("cancel-request-to-leave") mustEqual true
+          }
+        }
+      }
     }
 
     "trader is excluded and quarantined" - {
@@ -1772,7 +1953,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         None
       )
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock= None, registration=newRegistration)
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = None, registration = newRegistration)
         .build()
 
       running(application) {

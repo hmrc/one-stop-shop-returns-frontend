@@ -207,7 +207,7 @@ class YourAccountController @Inject()(
 
     maybeExcludedTrader match {
       case Some(excludedTrader) if TransferringMSID == excludedTrader.exclusionReason &&
-        isEqualToOrBeforeTenthOfFollowingMonth(excludedTrader.effectiveDate, now) =>
+        todayIsEqualToOrBeforeTenthOfFollowingMonth(excludedTrader.effectiveDate, now) =>
 
         val currentPeriod: Period = getPeriod(now)
 
@@ -226,7 +226,7 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def isEqualToOrBeforeTenthOfFollowingMonth(effectiveDate: LocalDate, now: LocalDate): Boolean = {
+  private def todayIsEqualToOrBeforeTenthOfFollowingMonth(effectiveDate: LocalDate, now: LocalDate): Boolean = {
 
     val tenthOfFollowingMonth = effectiveDate
       .plusMonths(exclusionCodeSixFollowingMonth)
@@ -236,6 +236,7 @@ class YourAccountController @Inject()(
 
   private def checkVatReturnSubmissionStatus(excludedTrader: ExcludedTrader)(implicit hc: HeaderCarrier): Future[Option[String]] = {
     vatReturnConnector.getSubmittedVatReturns().map { submittedVatReturns =>
+
       val periods = submittedVatReturns.map(_.period)
 
       if (periods.contains(excludedTrader.finalReturnPeriod)) {

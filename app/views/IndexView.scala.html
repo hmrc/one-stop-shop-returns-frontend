@@ -265,7 +265,7 @@
                                     }
                                 }
                             }
-                            case (Some(_), true, true, Some(cancelRequestToLeaveUrl)) => {
+                            case (Some(_), true, _, Some(cancelRequestToLeaveUrl)) => {
                                     <p class="govuk-body">
                                         <a class="govuk-link" href="@cancelRequestToLeaveUrl" id="cancel-request-to-leave">
                                         @messages("index.details.cancelRequestToLeave")
