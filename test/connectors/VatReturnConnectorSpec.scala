@@ -374,7 +374,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
   ".getSubmittedVatReturns" - {
 
-    "must return a Seq VatReturn when connector returns a successful payload" in {
+    "must return Seq(VatReturn) when connector returns a successful payload" in {
 
       val vatReturns: Seq[VatReturn] = Gen.listOfN(4, arbitraryVatReturn.arbitrary).sample.value
 
@@ -392,6 +392,60 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         val result = connector.getSubmittedVatReturns.futureValue
 
         result mustBe vatReturns
+      }
+    }
+
+    "must return Seq.empty when JSON cannot be parsed correctly" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        val responseBody: String = """{ "foo": "bar" }"""
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(
+          aResponse()
+            .withStatus(OK)
+            .withBody(responseBody)
+        ))
+
+        val result = connector.getSubmittedVatReturns().futureValue
+
+        result mustBe Seq.empty
+      }
+    }
+
+    "must return Seq.empty when connector returns a NotFound" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(
+          aResponse()
+            .withStatus(NOT_FOUND)
+        ))
+
+        val result = connector.getSubmittedVatReturns().futureValue
+
+        result mustBe Seq.empty
+      }
+    }
+
+    "must throw an Exception when connector returns an error" in {
+
+      val error: Int = INTERNAL_SERVER_ERROR
+
+      running(application) {
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(
+          aResponse()
+            .withStatus(error)
+        ))
+
+        whenReady(connector.getSubmittedVatReturns().failed) { exp =>
+          exp mustBe a[Exception]
+          exp.getMessage mustBe s"Received unexpected error from vat returns with status: $error"
+        }
       }
     }
   }

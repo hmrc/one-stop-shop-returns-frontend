@@ -15,7 +15,7 @@
  *@
 
 @import models.exclusions.ExcludedTrader
-@import models.exclusions.ExclusionReason.{CeasedTrade, FailsToComply}
+@import models.exclusions.ExclusionReason.{CeasedTrade, FailsToComply, Reversal}
 @import viewmodels._
 @import viewmodels.yourAccount._
 
@@ -41,250 +41,252 @@
         maybeCancelRequestToLeaveUrl: Option[String]
 )(implicit request: Request[_], messages: Messages)
 
-    @layout(
-        pageTitle = titleNoForm(messages("index.title")),
-        showBackLink = false,
-        fullWidth = true
-    ) {
+@layout(
+    pageTitle = titleNoForm(messages("index.title")),
+    showBackLink = false,
+    fullWidth = true
+) {
 
-        @if(paymentError) {
-            <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title"
-            data-module="govuk-notification-banner">
-                <div class="govuk-notification-banner__header">
-                    <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                    @messages("notificationBanner.title")
-                    </h2>
-                </div>
-                <div class="govuk-notification-banner__content">
-                    <p class="govuk-notification-banner__heading">
-                    @messages("notificationBanner.text")
-                    </p>
-                </div>
+    @if(paymentError) {
+        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title"
+        data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                @messages("notificationBanner.title")
+                </h2>
             </div>
-        }
+            <div class="govuk-notification-banner__content">
+                <p class="govuk-notification-banner__heading">
+                @messages("notificationBanner.text")
+                </p>
+            </div>
+        </div>
+    }
 
-        <h1 class="govuk-heading-l">
-            @messages("index.heading")
-            <span class="govuk-caption-m">@businessName</span>
-            <span class="govuk-caption-m">@messages("index.vrn", vrn)</span>
-        </h1>
+    <h1 class="govuk-heading-l">
+        @messages("index.heading")
+        <span class="govuk-caption-m">@businessName</span>
+        <span class="govuk-caption-m">@messages("index.vrn", vrn)</span>
+    </h1>
 
-        @if(exclusionsEnabled) {
-            @if(hasSubmittedFinalReturn) {
-                @maybeExcludedTrader match {
-                    case Some(excludedTrader) => {
-                        @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
-                            case (FailsToComply, _) => {
-                                <div class="govuk-warning-text">
-                                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                    <strong class="govuk-warning-text__text">
-                                        <span class="govuk-warning-text__assistive">Warning:</span>
-                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser", excludedTrader.displayRejoinDate)</p>
-                                    </strong>
-                                </div>
-                            }
-                            case (CeasedTrade, _) => {
-                                @govukWarningText(WarningText(
-                                    iconFallbackText = Option(messages("site.warning")),
-                                    content = Text(messages("yourAccount.warning.removedFromService"))
-                                ))
-                            }
-                            case (_, false) => {
-                                @govukWarningText(WarningText(
-                                    iconFallbackText = Option(messages("site.warning")),
-                                    content = Text(messages("yourAccount.warning.leftService"))
-                                ))
-                            }
-                            case (_, true) => {
-                                @govukWarningText(WarningText(
-                                    iconFallbackText = Option(messages("site.warning")),
-                                    content = Text(messages("yourAccount.warning.requestedToLeave"))
-                                ))
-                            }
+    @if(exclusionsEnabled) {
+        @if(hasSubmittedFinalReturn) {
+            @maybeExcludedTrader match {
+                case Some(excludedTrader) => {
+                    @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
+                        case (FailsToComply, _) => {
+                            <div class="govuk-warning-text">
+                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                <strong class="govuk-warning-text__text">
+                                    <span class="govuk-warning-text__assistive">Warning:</span>
+                                    <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser", excludedTrader.displayRejoinDate)</p>
+                                </strong>
+                            </div>
                         }
-                    }
-                    case _ => {}
-                }
-
-            } else {
-                @maybeExcludedTrader match {
-                    case Some(excludedTrader) => {
-                        @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
-                            case (FailsToComply, _) => {
-                                <div class="govuk-warning-text">
-                                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                    <strong class="govuk-warning-text__text">
-                                        <span class="govuk-warning-text__assistive">Warning:</span>
-                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate)</p>
-                                    </strong>
-                                </div>
-                            }
-                            case (CeasedTrade, _) => {
-                                @govukWarningText(WarningText(
-                                    iconFallbackText = Option(messages("site.warning")),
-                                    content = Text(messages("yourAccount.warning.exclusion.hmrc"))
-                                ))
-                            }
-                            case (_, false) => {
-                                @govukWarningText(WarningText(
-                                    iconFallbackText = Option(messages("site.warning")),
-                                    content = Text(messages("yourAccount.warning.exclusion.trader"))
-                                ))
-                            }
-                            case (_, true) => {
-                                @govukWarningText(WarningText(
-                                    iconFallbackText = Option(messages("site.warning")),
-                                    content = Text(messages("yourAccount.warning.requestedToLeave.outstandingReturns"))
-                                ))
-                            }
-                        }
-                    }
-                    case _ => {}
-                }
-            }
-            }
-
-            @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
-                @if(hasSubmittedFinalReturn) {
-                    <p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>
-                } else {
-                    <p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>
-                }
-            } else {
-                <p class="govuk-body">@messages("index.paragraph")</p>
-            }
-
-            <div class="flex-container govuk-grid-row">
-                <div class="tile tile-no-border">
-                    <div id="next-return" class="tile-body">
-                        <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
-                        @if(exclusionsEnabled && hasSubmittedFinalReturn) {
-                            <p class="govuk-body">@messages("yourAccount.finalReturn.completed")</p>
-                        } else {
-                            @if(exclusionsEnabled) {
-                                @maybeExcludedTrader match {
-                                    case Some(excludedTrader) if currentReturnIsFinal => {
-                                        <p class="govuk-body">@messages("yourAccount.finalReturn.message")</p>
-                                    }
-                                    case _ => {}
-                                }
-                            }
-                            @for(paragraph <- returnsViewModel.contents) {
-                                @paragraph match {
-                                    case simple: ParagraphSimple => {
-                                        <p class="govuk-body">
-                                        @Html(simple.content)
-                                        </p>
-                                    }
-                                    case pWithId: ParagraphWithId => {
-                                        <p class="govuk-body" id="@pWithId.id">
-                                        @Html(pWithId.content)
-                                        </p>
-                                    }
-                                }
-                            }
-                            @for(link <- returnsViewModel.linkToStart) {
-                                <p class="govuk-body">
-                                    <a class="govuk-link" href="@{
-                                        link.url
-                                    }" id="@{
-                                        link.id
-                                    }">
-                                    @link.linkText
-                                    </a>
-                                </p>
-                            }
-                        }
-                    </div>
-                </div>
-
-                <div class="tile tile-no-border">
-                    <div id="payments" class="tile-body">
-                        <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
-                        @for(warningText <- paymentsViewModel.warning) {
+                        case (CeasedTrade, _) => {
                             @govukWarningText(WarningText(
                                 iconFallbackText = Option(messages("site.warning")),
-                                content = Text(warningText)
+                                content = Text(messages("yourAccount.warning.removedFromService"))
                             ))
                         }
-                        @for(section <- paymentsViewModel.sections) {
-                            @for(sectionHeading <- section.heading) {
-                                <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
-                            }
+                        case (Reversal, _) => {}
+                        case (_, false) => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.leftService"))
+                            ))
+                        }
+                        case (_, true) => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.requestedToLeave"))
+                            ))
+                        }
+                    }
+                }
+                case _ => {}
+            }
 
-                            @for(paragraph <- section.contents) {
-                                <p class="govuk-body">
-                                @Html(paragraph)
-                                </p>
+        } else {
+            @maybeExcludedTrader match {
+                case Some(excludedTrader) => {
+                    @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
+                        case (FailsToComply, _) => {
+                            <div class="govuk-warning-text">
+                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                <strong class="govuk-warning-text__text">
+                                    <span class="govuk-warning-text__assistive">Warning:</span>
+                                    <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate)</p>
+                                </strong>
+                            </div>
+                        }
+                        case (CeasedTrade, _) => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.exclusion.hmrc"))
+                            ))
+                        }
+                        case (Reversal, _) => {}
+                        case (_, false) => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.exclusion.trader"))
+                            ))
+                        }
+                        case (_, true) => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.requestedToLeave.outstandingReturns"))
+                            ))
+                        }
+                    }
+                }
+                case _ => {}
+            }
+        }
+        }
+
+        @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
+            @if(hasSubmittedFinalReturn) {
+                <p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>
+            } else {
+                <p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>
+            }
+        } else {
+            <p class="govuk-body">@messages("index.paragraph")</p>
+        }
+
+        <div class="flex-container govuk-grid-row">
+            <div class="tile tile-no-border">
+                <div id="next-return" class="tile-body">
+                    <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
+                    @if(exclusionsEnabled && hasSubmittedFinalReturn) {
+                        <p class="govuk-body">@messages("yourAccount.finalReturn.completed")</p>
+                    } else {
+                        @if(exclusionsEnabled) {
+                            @maybeExcludedTrader match {
+                                case Some(excludedTrader) if currentReturnIsFinal => {
+                                    <p class="govuk-body">@messages("yourAccount.finalReturn.message")</p>
+                                }
+                                case _ => {}
                             }
                         }
-                        @for(link <- paymentsViewModel.link) {
+                        @for(paragraph <- returnsViewModel.contents) {
+                            @paragraph match {
+                                case simple: ParagraphSimple => {
+                                    <p class="govuk-body">
+                                    @Html(simple.content)
+                                    </p>
+                                }
+                                case pWithId: ParagraphWithId => {
+                                    <p class="govuk-body" id="@pWithId.id">
+                                    @Html(pWithId.content)
+                                    </p>
+                                }
+                            }
+                        }
+                        @for(link <- returnsViewModel.linkToStart) {
                             <p class="govuk-body">
-                                <a class="govuk-link"
-                                href="@link.url" id="@link.id">
+                                <a class="govuk-link" href="@{
+                                    link.url
+                                }" id="@{
+                                    link.id
+                                }">
                                 @link.linkText
                                 </a>
                             </p>
                         }
-                    </div>
+                    }
                 </div>
+            </div>
 
-                <div class="tile tile-no-border">
-                    <div id="details" class="tile-body">
-                        <h2 class="govuk-heading-m">@messages("index.details")</h2>
-
-                        <p class="govuk-body">
-                            <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url"
-                            id="view-past-returns">
-                            @messages("index.details.previousReturns")
-                            </a>
-                        </p>
-
-                        @if(amendRegistrationLinkEnabled) {
-                            <p class="govuk-body">
-                                <a class="govuk-link" href="@changeYourRegistrationUrl"
-                                id="change-your-registration">
-                                @messages("index.details.changeYourRegistration")
-                                </a>
-                            </p>
+            <div class="tile tile-no-border">
+                <div id="payments" class="tile-body">
+                    <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
+                    @for(warningText <- paymentsViewModel.warning) {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(warningText)
+                        ))
+                    }
+                    @for(section <- paymentsViewModel.sections) {
+                        @for(sectionHeading <- section.heading) {
+                            <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
                         }
 
-                        @(maybeExcludedTrader, exclusionsEnabled, hasRequestedToLeave, maybeCancelRequestToLeaveUrl) match {
-                            case (Some(excludedTrader), true, false, None) => {
-                                @if(hasSubmittedFinalReturn) {
-                                    @excludedTrader.exclusionReason match {
-                                        case FailsToComply => {}
-                                        case _ => {
-                                            <p class="govuk-body">
-                                                <a class="govuk-link" href=""
-                                                id="rejoin-this-service">
-                                                @messages("index.details.rejoinService")
-                                                </a>
-                                            </p>
-                                        }
+                        @for(paragraph <- section.contents) {
+                            <p class="govuk-body">
+                            @Html(paragraph)
+                            </p>
+                        }
+                    }
+                    @for(link <- paymentsViewModel.link) {
+                        <p class="govuk-body">
+                            <a class="govuk-link"
+                            href="@link.url" id="@link.id">
+                            @link.linkText
+                            </a>
+                        </p>
+                    }
+                </div>
+            </div>
+
+            <div class="tile tile-no-border">
+                <div id="details" class="tile-body">
+                    <h2 class="govuk-heading-m">@messages("index.details")</h2>
+
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url"
+                        id="view-past-returns">
+                        @messages("index.details.previousReturns")
+                        </a>
+                    </p>
+
+                    @if(amendRegistrationLinkEnabled) {
+                        <p class="govuk-body">
+                            <a class="govuk-link" href="@changeYourRegistrationUrl"
+                            id="change-your-registration">
+                            @messages("index.details.changeYourRegistration")
+                            </a>
+                        </p>
+                    }
+
+                    @(maybeExcludedTrader, exclusionsEnabled, hasRequestedToLeave, maybeCancelRequestToLeaveUrl) match {
+                        case (Some(excludedTrader), true, false, None) => {
+                            @if(hasSubmittedFinalReturn) {
+                                @excludedTrader.exclusionReason match {
+                                    case FailsToComply => {}
+                                    case _ => {
+                                        <p class="govuk-body">
+                                            <a class="govuk-link" href=""
+                                            id="rejoin-this-service">
+                                            @messages("index.details.rejoinService")
+                                            </a>
+                                        </p>
                                     }
                                 }
                             }
-                            case (Some(_), true, _, Some(cancelRequestToLeaveUrl)) => {
-                                    <p class="govuk-body">
-                                        <a class="govuk-link" href="@cancelRequestToLeaveUrl" id="cancel-request-to-leave">
-                                        @messages("index.details.cancelRequestToLeave")
-                                        </a>
-                                    </p>
-                            }
-                            case _ => {
-                                <p class="govuk-body">
-                                    <a class="govuk-link" href="@controllers.exclusions.routes.LeaveThisServiceController.onPageLoad().url"
-                                    id="leave-this-service">
-                                    @messages("index.details.leaveThisService")
-                                    </a>
-                                </p>
-                            }
                         }
-                    </div>
+                        case (Some(_), true, _, Some(cancelRequestToLeaveUrl)) => {
+                            <p class="govuk-body">
+                                <a class="govuk-link" href="@cancelRequestToLeaveUrl" id="cancel-request-to-leave">
+                                @messages("index.details.cancelRequestToLeave")
+                                </a>
+                            </p>
+                        }
+                        case _ => {
+                            <p class="govuk-body">
+                                <a class="govuk-link" href="@controllers.exclusions.routes.LeaveThisServiceController.onPageLoad().url"
+                                id="leave-this-service">
+                                @messages("index.details.leaveThisService")
+                                </a>
+                            </p>
+                        }
+                    }
                 </div>
-                @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
-                    <p class="govuk-body">@Html(messages("yourAccount.oss.account.message"))</p>
-                }
+            </div>
+            @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
+                <p class="govuk-body">@Html(messages("yourAccount.oss.account.message"))</p>
+            }
 </div>
     }

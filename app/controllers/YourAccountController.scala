@@ -234,15 +234,14 @@ class YourAccountController @Inject()(
     now.isBefore(tenthOfFollowingMonth) || now.isEqual(tenthOfFollowingMonth)
   }
 
-  private def checkVatReturnSubmissionStatus(excludedTrader: ExcludedTrader)(implicit hc: HeaderCarrier): Future[Option[String]] = {
-    vatReturnConnector.getSubmittedVatReturns().map { submittedVatReturns =>
-
-      val periods = submittedVatReturns.map(_.period)
+  private def checkVatReturnSubmissionStatus(excludedTrader: ExcludedTrader)(implicit hc: HeaderCarrier): Future[Option[Result]] = {
+    vatReturnConnector.getSubmittedVatReturns().map { submittedVatReturnsResponse =>
+      val periods = submittedVatReturnsResponse.map(_.period)
 
       if (periods.contains(excludedTrader.finalReturnPeriod)) {
         None
       } else {
-        Some(s"${frontendAppConfig.leaveOneStopShopUrl}/cancel-leave-scheme")
+        Some(Redirect(s"${frontendAppConfig.leaveOneStopShopUrl}/cancel-leave-scheme"))
       }
     }
   }

@@ -21,7 +21,6 @@ import connectors.ExternalEntryUrlHttpParser.{ExternalEntryUrlResponse, _}
 import connectors.VatReturnHttpParser._
 import connectors.VatReturnWithCorrectionHttpParser._
 import models.Period
-import models.domain.VatReturn
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import play.api.Configuration
 import play.api.libs.json.Json
@@ -48,7 +47,7 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
   def getSavedExternalEntry()(implicit hc: HeaderCarrier): Future[ExternalEntryUrlResponse] =
     httpClientV2.get(url"$baseUrl/external-entry").execute[ExternalEntryUrlResponse]
 
-  def getSubmittedVatReturns()(implicit hc: HeaderCarrier): Future[Seq[VatReturn]] = {
-    httpClient.GET[Seq[VatReturn]](s"$baseUrl/vat-returns")
+  def getSubmittedVatReturns()(implicit hc: HeaderCarrier): Future[VatReturnMultipleResponse] = {
+    httpClient.GET[VatReturnMultipleResponse](s"$baseUrl/vat-returns")
   }
 }

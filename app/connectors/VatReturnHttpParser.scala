@@ -27,6 +27,7 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 object VatReturnHttpParser extends Logging {
 
   type VatReturnResponse = Either[ErrorResponse, VatReturn]
+  type VatReturnMultipleResponse = Seq[VatReturn]
 
   implicit object VatReturnReads extends HttpReads[VatReturnResponse] {
     override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {
@@ -55,6 +56,29 @@ object VatReturnHttpParser extends Logging {
         case status   =>
           logger.warn("Received unexpected error from vat return")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
+      }
+    }
+  }
+
+  implicit object VatReturnMultipleReads extends HttpReads[VatReturnMultipleResponse] {
+    override def read(method: String, url: String, response: HttpResponse): VatReturnMultipleResponse = {
+      response.status match {
+        case OK =>
+          response.json.validate[Seq[VatReturn]] match {
+            case JsSuccess(vatReturns, _) => vatReturns
+            case JsError(errors) =>
+              logger.warn(s"Failed trying to parse JSON $errors. JSON was ${response.json}", errors)
+              Seq.empty
+          }
+
+        case NOT_FOUND =>
+          logger.warn(s"Received NotFound from vat returns")
+          Seq.empty
+
+        case status =>
+          val message: String = s"Received unexpected error from vat returns with status: $status"
+          logger.warn(message)
+          throw new Exception(message)
       }
     }
   }
