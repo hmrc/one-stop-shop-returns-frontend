@@ -17,7 +17,7 @@
 package connectors
 
 import config.Service
-import connectors.SaveForLaterHttpParser.{DeleteSaveForLaterResponse, SaveForLaterReads, SaveForLaterResponse}
+import connectors.SaveForLaterHttpParser.{DeleteSaveForLaterReads, DeleteSaveForLaterResponse, SaveForLaterReads, SaveForLaterResponse}
 import models.Period
 import models.requests.SaveForLaterRequest
 import play.api.Configuration
@@ -40,5 +40,5 @@ class SaveForLaterConnector @Inject()(config: Configuration, httpClientV2: HttpC
     httpClientV2.get(url"$baseUrl/save-for-later").execute[SaveForLaterResponse]
 
   def delete(period: Period)(implicit hc: HeaderCarrier): Future[DeleteSaveForLaterResponse] =
-    httpClientV2.get(url"$baseUrl/save-for-later/delete/$period")[DeleteSaveForLaterResponse]
+    httpClientV2.get(url"$baseUrl/save-for-later/delete/$period").execute[DeleteSaveForLaterResponse]
 }

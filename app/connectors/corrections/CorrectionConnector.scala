@@ -32,7 +32,7 @@ class CorrectionConnector @Inject()(config: Configuration, httpClientV2: HttpCli
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
 
   def get(period: Period)(implicit hc: HeaderCarrier): Future[CorrectionResponse] =
-    httpClientV2.get(url"$baseUrl/corrections/${period.toString}").execute[CorrectionResponse]
+    httpClientV2.get(url"$baseUrl/corrections/$period").execute[CorrectionResponse]
 
   def getForCorrectionPeriod(period: Period)(implicit hc: HeaderCarrier): Future[CorrectionsForPeriodResponse] =
     httpClientV2.get(url"$baseUrl/corrections-for-period/$period").execute[CorrectionsForPeriodResponse]
