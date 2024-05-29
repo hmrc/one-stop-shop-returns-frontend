@@ -17,39 +17,40 @@
 package connectors.test
 
 import config.Service
-import connectors.test.TestOnlyExternalResponseHttpParser.ExternalResponseResponse
-import connectors.test.TestOnlyExternalResponseHttpParser.ExternalResponseReads
-import models.external.ExternalRequest
+import connectors.test.TestOnlyExternalResponseHttpParser.{ExternalResponseReads, ExternalResponseResponse}
 import models.Period
+import models.external.ExternalRequest
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
+import java.net.URL
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestOnlyConnector @Inject()(
-                               config: Configuration,
-                               httpClient: HttpClient
-                             )(implicit ec: ExecutionContext) {
+                                   config: Configuration,
+                                   httpClientV2: HttpClientV2
+                                 )(implicit ec: ExecutionContext) {
 
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
-  lazy val url = s"${baseUrl}/test-only/delete-accounts"
+  lazy val url: URL = url"$baseUrl/test-only/delete-accounts"
 
-  def dropAccounts()(implicit hc: HeaderCarrier): Future[HttpResponse] = httpClient.DELETE[HttpResponse](url)
+  def dropAccounts()(implicit hc: HeaderCarrier): Future[HttpResponse] = httpClientV2.delete(url).execute[HttpResponse]
 
   def externalEntry(externalRequest: ExternalRequest, endpointName: String, maybePeriod: Option[Period], maybeLang: Option[String])
                    (implicit hc: HeaderCarrier): Future[ExternalResponseResponse] = {
-    val url =
-      (maybePeriod, maybeLang) match {
-        case (Some(period), Some(lang)) =>
-          s"$baseUrl/external-entry/$endpointName?period=$period&lang=$lang"
-        case (Some(period), None) =>
-          s"$baseUrl/external-entry/$endpointName?period=$period"
-        case (None, Some(lang)) =>
-          s"$baseUrl/external-entry/$endpointName?lang=$lang"
-        case _ =>
-          s"$baseUrl/external-entry/$endpointName"
-      }
-    httpClient.POST[ExternalRequest, ExternalResponseResponse](url, externalRequest)
+    val url: URL = (maybePeriod, maybeLang) match {
+      case (Some(period), Some(lang)) =>
+        url"$baseUrl/external-entry/$endpointName?period=$period&lang=$lang"
+      case (Some(period), None) =>
+        url"$baseUrl/external-entry/$endpointName?period=$period"
+      case (None, Some(lang)) =>
+        url"$baseUrl/external-entry/$endpointName?lang=$lang"
+      case _ =>
+        url"$baseUrl/external-entry/$endpointName"
+    }
+    httpClientV2.post(url).withBody(Json.toJson(externalRequest)).execute[ExternalResponseResponse]
   }
 }
