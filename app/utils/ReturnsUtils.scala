@@ -19,11 +19,11 @@ package utils
 import models.SubmissionStatus.{Complete, Excluded}
 import viewmodels.yourAccount.Return
 
-import java.time.LocalDate
+import java.time.{Clock, LocalDate}
 
 object ReturnsUtils {
 
-  def hasDueReturnThreeYearsOld(returns: Seq[Return]): Boolean = {
+  def hasDueReturnThreeYearsOld(returns: Seq[Return])(implicit clock: Clock): Boolean = {
     returns.exists { `return` =>
       if(`return`.submissionStatus == Complete || `return`.submissionStatus == Excluded) {
         false
@@ -33,21 +33,21 @@ object ReturnsUtils {
     }
   }
 
-  def isThreeYearsOld(dueDate: LocalDate): Boolean = {
-    val threeYearsAgo = LocalDate.now().minusYears(3)
+  def isThreeYearsOld(dueDate: LocalDate)(implicit clock: Clock): Boolean = {
+    val threeYearsAgo = LocalDate.now(clock).minusYears(3)
     dueDate.isBefore(threeYearsAgo) || dueDate.isEqual(threeYearsAgo)
   }
 
-  def isLessThanThreeYearsOld(dueDate: LocalDate): Boolean = {
-    val threeYearsAgo = LocalDate.now().minusYears(3)
+  private def isLessThanThreeYearsOld(dueDate: LocalDate, clock: Clock): Boolean = {
+    val threeYearsAgo = LocalDate.now(clock).minusYears(3)
     dueDate.isAfter(threeYearsAgo)
   }
 
-  def hasDueReturnsLessThanThreeYearsOld(returns: Seq[Return]): Boolean = returns.count { `return` =>
+  def hasDueReturnsLessThanThreeYearsOld(returns: Seq[Return])(implicit clock: Clock): Boolean = returns.count { `return` =>
     if (`return`.submissionStatus == Complete || `return`.submissionStatus == Excluded) {
       false
     } else {
-      isLessThanThreeYearsOld(`return`.dueDate)
+      isLessThanThreeYearsOld(`return`.dueDate, clock: Clock)
     }
   } >= 2
 }

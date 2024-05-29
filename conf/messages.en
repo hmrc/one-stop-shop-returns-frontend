@@ -69,6 +69,7 @@ index.yourReturns.outstandingReturnThreeYearsOld = You have an outstanding retur
 index.payment.heading = Payments
 index.payment.dueHeading = Due Payments
 index.payment.overdueHeading = Overdue Payments
+index.payment.excludedHeading = Overdue Payments
 index.payment.pendingPayments = There may be a delay in showing your payments
 index.payment.nothingOwed = You do not owe anything right now.
 index.payment.makeAPayment = Make a payment

@@ -18,23 +18,27 @@ package viewmodels.yourAccount
 
 import models.StandardPeriod
 import models.SubmissionStatus.{Due, Next, Overdue}
-import models.exclusions.ExcludedTrader
 import play.api.i18n.Messages
-import utils.ReturnsUtils.{isLessThanThreeYearsOld, isThreeYearsOld}
+import utils.ReturnsUtils.isThreeYearsOld
 import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
 
+import java.time.Clock
 import java.time.format.DateTimeFormatter
 
 case class ReturnsViewModel(contents: Seq[Paragraph], linkToStart: Option[LinkModel])
 
 object ReturnsViewModel {
-  def apply(returns: Seq[Return], excludedTraderOpt: Option[ExcludedTrader] = None)(implicit messages: Messages): ReturnsViewModel = {
+  def apply(returns: Seq[Return], excludedReturns: Seq[Return])(implicit messages: Messages, clock: Clock): ReturnsViewModel = {
     val inProgress = returns.find(_.inProgress)
     val returnDue = returns.find(_.submissionStatus == Due)
     val overdueReturns = returns.filter(_.submissionStatus == Overdue)
     val nextReturn = returns.find(_.submissionStatus == Next)
 
-    nextReturn.fold(dueReturnsModel(overdueReturns, inProgress, returnDue, excludedTraderOpt))(
+    val excludedReturnsOlderThanThreeYears = excludedReturns.filter { excludedReturn =>
+      isThreeYearsOld(excludedReturn.dueDate)
+    }.sortBy(_.dueDate)
+
+    nextReturn.fold(dueReturnsModel(overdueReturns, excludedReturnsOlderThanThreeYears, inProgress, returnDue))(
       nextReturn =>
         ReturnsViewModel(
           contents = Seq(nextReturnParagraph(nextReturn.period)),
@@ -108,32 +112,17 @@ object ReturnsViewModel {
     )
 
   private def dueReturnsModel(overdueReturns: Seq[Return],
+                              excludedReturnsThreeYearsOld: Seq[Return],
                               currentReturn: Option[Return],
-                              dueReturn: Option[Return],
-                              excludedTraderOpt: Option[ExcludedTrader])(implicit messages: Messages): ReturnsViewModel = {
+                              dueReturn: Option[Return])(implicit messages: Messages): ReturnsViewModel = {
 
-    val allReturns = overdueReturns ++ Seq(currentReturn, dueReturn).flatten
+    val threeYearOldReturnsParagraphs = excludedReturnsThreeYearsOld.map( r => returnOutstandingThreeYearsOld(r.period))
 
-    val threeYearOldReturns = allReturns.filter(r => isThreeYearsOld(r.dueDate))
-    val lessThanThreeYearOldReturns = allReturns.filter(r => isLessThanThreeYearsOld(r.dueDate))
+    val returnsViewModel = otherScenariosReturnsViewModel(overdueReturns, currentReturn, dueReturn)
 
-    lazy val threeYearOldReturnsParagraphs = threeYearOldReturns.map( r => returnOutstandingThreeYearsOld(r.period))
-
-    (excludedTraderOpt, threeYearOldReturns.nonEmpty, lessThanThreeYearOldReturns.nonEmpty) match {
-      case (None, _, _) => otherScenariosReturnsViewModel(overdueReturns, currentReturn, dueReturn)
-      case (Some(_), true, false) =>
-        ReturnsViewModel(
-          contents = threeYearOldReturnsParagraphs,
-          linkToStart = None
-      )
-      case (Some(_), true, true) =>
-        val returnsViewModel = otherScenariosReturnsViewModel(overdueReturns, currentReturn, dueReturn)
-
-        returnsViewModel.copy(
-          contents = threeYearOldReturnsParagraphs ++ returnsViewModel.contents
-        )
-      case (Some(_), _, _) => otherScenariosReturnsViewModel(overdueReturns, currentReturn, dueReturn)
-    }
+    returnsViewModel.copy(
+      contents = threeYearOldReturnsParagraphs ++ returnsViewModel.contents
+    )
   }
 
   private def otherScenariosReturnsViewModel(overdueReturns: Seq[Return],

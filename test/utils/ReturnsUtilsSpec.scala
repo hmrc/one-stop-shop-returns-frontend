@@ -21,11 +21,15 @@ import models.Quarter.Q1
 import models.{StandardPeriod, SubmissionStatus}
 import viewmodels.yourAccount.Return
 
-import java.time.LocalDate
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 
-class ReturnsUtilsSpec extends SpecBase with CurrencyFormatter {
+class ReturnsUtilsSpec extends SpecBase {
 
   val year: Int = 2024
+
+  val instant: Instant = Instant.now()
+
+  implicit val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
   "hasDueReturnThreeYearsOld" - {
     "should return true" - {

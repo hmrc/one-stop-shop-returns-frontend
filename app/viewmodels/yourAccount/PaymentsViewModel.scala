@@ -22,13 +22,16 @@ import utils.CurrencyFormatter.currencyFormat
 import utils.ReturnsUtils.isThreeYearsOld
 import viewmodels.LinkModel
 
+import java.time.Clock
+
 case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[String] = None, link: Option[LinkModel] = None)
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
-object PaymentsViewModel{
+object PaymentsViewModel {
   def apply(duePayments: Seq[Payment],
             overduePayments: Seq[Payment],
-            hasDueReturnThreeYearsOld: Boolean)(implicit messages: Messages): PaymentsViewModel = {
+            excludedPayments: Seq[Payment],
+            hasDueReturnThreeYearsOld: Boolean)(implicit messages: Messages, clock: Clock): PaymentsViewModel = {
     if(duePayments.isEmpty && overduePayments.isEmpty){
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
@@ -36,8 +39,15 @@ object PaymentsViewModel{
         ))
       )
     } else {
-      val duePaymentsSection = getPaymentsSection(duePayments, "due")
-      val overduePaymentsSection = getPaymentsSection(overduePayments, "overdue")
+      val duePaymentsSection = getPaymentsSection(
+        Some(messages(s"index.payment.dueHeading")), duePayments, "due"
+      )
+
+      val overduePaymentsSection = getPaymentsSection(
+        Some(messages(s"index.payment.overdueHeading")), overduePayments, "overdue")
+
+      val excludedPaymentsSection =
+        getPaymentsSection(None, excludedPayments, "excluded")
 
       val link = if(hasDueReturnThreeYearsOld) {
         None
@@ -52,18 +62,18 @@ object PaymentsViewModel{
       }
 
       PaymentsViewModel(
-        sections = Seq(duePaymentsSection, overduePaymentsSection).flatten,
+        sections = Seq(excludedPaymentsSection, duePaymentsSection, overduePaymentsSection).flatten,
         warning = Some(messages("index.payment.pendingPayments")),
         link = link
       )
     }
   }
 
-  private def getPaymentsSection(payments: Seq[Payment], key: String)(implicit messages: Messages) = {
+  private def getPaymentsSection(heading: Option[String], payments: Seq[Payment], key: String)(implicit messages: Messages, clock: Clock) = {
     if(payments.nonEmpty){
       Some(
         PaymentsSection(
-          heading = Some(messages(s"index.payment.${key}Heading")),
+          heading = heading,
           contents = payments.map(
             payment => payment.paymentStatus match {
               case PaymentStatus.Unknown =>
