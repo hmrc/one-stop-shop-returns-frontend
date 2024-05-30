@@ -150,9 +150,9 @@ class YourAccountController @Inject()(
         request.registration.excludedTrader,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
-        frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
+        frontendAppConfig.leaveOneStopShopUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
         cancelRequestToLeave(request.registration.excludedTrader, clock)
       ))
@@ -185,9 +185,9 @@ class YourAccountController @Inject()(
         request.registration.excludedTrader,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
-        frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
+        frontendAppConfig.leaveOneStopShopUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
         cancelRequestToLeave(request.registration.excludedTrader, clock)
       ))

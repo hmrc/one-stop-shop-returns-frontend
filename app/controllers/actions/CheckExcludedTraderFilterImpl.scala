@@ -16,40 +16,34 @@
 
 package controllers.actions
 
-import config.FrontendAppConfig
 import controllers.exclusions.routes
 import models.Period
 import models.requests.OptionalDataRequest
-import play.api.mvc.{ActionFilter, Result}
 import play.api.mvc.Results.Redirect
+import play.api.mvc.{ActionFilter, Result}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckExcludedTraderFilterImpl(
-                                     startReturnPeriod: Period,
-                                     frontendAppConfig: FrontendAppConfig
+                                     startReturnPeriod: Period
                                    )(implicit val executionContext: ExecutionContext)
   extends ActionFilter[OptionalDataRequest] {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
-    if (frontendAppConfig.exclusionsEnabled) {
-      request.registration.excludedTrader match {
-        case Some(excludedTrader) if startReturnPeriod.lastDay.isAfter(excludedTrader.finalReturnPeriod.getNextPeriod.firstDay) =>
-          Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
-        case _ =>
-          Future.successful(None)
-      }
-    } else {
-      Future.successful(None)
+    request.registration.excludedTrader match {
+      case Some(excludedTrader) if startReturnPeriod.lastDay.isAfter(excludedTrader.finalReturnPeriod.getNextPeriod.firstDay) =>
+        Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
+      case _ =>
+        Future.successful(None)
     }
   }
 }
 
-class CheckExcludedTraderFilterProvider @Inject()(frontendAppConfig: FrontendAppConfig)
+class CheckExcludedTraderFilterProvider @Inject()()
                                                  (implicit ec: ExecutionContext) {
 
   def apply(startReturnPeriod: Period): CheckExcludedTraderFilterImpl =
-    new CheckExcludedTraderFilterImpl(startReturnPeriod, frontendAppConfig)
+    new CheckExcludedTraderFilterImpl(startReturnPeriod)
 
 }

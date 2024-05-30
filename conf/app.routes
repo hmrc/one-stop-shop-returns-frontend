@@ -318,5 +318,3 @@ POST        /:period/ni-to-ni-intercept                                         
 
 GET         /:period/country-to-same-country                                                                        controllers.CountryToSameCountryController.onPageLoad(period: Period)
 POST        /:period/country-to-same-country                                                                        controllers.CountryToSameCountryController.onSubmit(period: Period)
-
-GET         /leave-this-service                                                                                     controllers.exclusions.LeaveThisServiceController.onPageLoad()
