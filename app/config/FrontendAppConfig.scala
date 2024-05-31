@@ -69,6 +69,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val changeYourRegistrationUrl: String = configuration.get[String]("urls.changeYourRegistration")
 
   val deleteAllFixedEstablishmentUrl: String = configuration.get[String]("urls.deleteAllFixedEstablishment")
+  val leaveOneStopShopUrl: String = configuration.get[String]("urls.leaveOneStopShop")
 
   val cacheRegistrations: Boolean = configuration.get[Boolean]("features.cacheRegistrations")
 

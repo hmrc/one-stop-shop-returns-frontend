@@ -21,27 +21,31 @@ import models.Quarter._
 import models.StandardPeriod
 import uk.gov.hmrc.domain.Vrn
 
-
 class ExcludedTraderSpec extends SpecBase {
 
   private val exclusionPeriod = StandardPeriod(2022, Q3)
 
   ".derriveExclusionSource" - {
     "must return 'HMRC' for exclusion reason 2 and 4" in {
-      val exclusionReasons = Seq(2, 4)
+      val exclusionReasons = Seq(ExclusionReason.CeasedTrade, ExclusionReason.FailsToComply)
 
       exclusionReasons.foreach { reason =>
-        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod, None)
-        excludedTrader.exclusionSource mustBe "HMRC"
+        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod.firstDay)
+        excludedTrader.exclusionReason.exclusionSource mustBe HMRC
       }
     }
 
     "must return 'Trader' for other exclusion reasons" in {
-      val exclusionReasons = Seq(1, 3, 5, 6)
+      val exclusionReasons = Seq(
+        ExclusionReason.NoLongerSupplies,
+        ExclusionReason.NoLongerMeetsConditions,
+        ExclusionReason.VoluntarilyLeaves,
+        ExclusionReason.TransferringMSID
+      )
 
       exclusionReasons.foreach { reason =>
-        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod, None)
-        excludedTrader.exclusionSource mustBe "TRADER"
+        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod.firstDay)
+        excludedTrader.exclusionReason.exclusionSource mustBe TRADER
       }
     }
 

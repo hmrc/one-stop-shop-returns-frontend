@@ -43,10 +43,9 @@ object PreviousReturnSummary extends CurrencyFormatter {
     ))
   }
 
-  def mainListRows(vatReturn: VatReturn, vatOwed: BigDecimal, clearedAmount: Option[BigDecimal], amountOutstanding: Option[BigDecimal])(implicit messages: Messages): Seq[SummaryListRow] = {
+  def mainListRows(vatReturn: VatReturn, vatOwed: BigDecimal, amountOutstanding: Option[BigDecimal])(implicit messages: Messages): Seq[SummaryListRow] = {
     Seq(
       vatOwedRow(vatOwed),
-      clearedAmountRow(clearedAmount),
       amountOutstandingRow(amountOutstanding),
       dateSubmittedRow(vatReturn),
       dateDueRow(vatReturn),
@@ -62,16 +61,6 @@ object PreviousReturnSummary extends CurrencyFormatter {
         value = ValueViewModel(HtmlContent(currencyFormat(vatOwed)))
           .withCssClass("govuk-!-width-one-half")
       ))
-  }
-
-  private[this] def clearedAmountRow(clearedAmount: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
-    clearedAmount.map(amount =>
-    SummaryListRowViewModel(
-      key = Key("previousReturn.clearedAmount.label")
-        .withCssClass("govuk-!-width-two-thirds"),
-      value = ValueViewModel(HtmlContent(currencyFormat(amount)))
-        .withCssClass("govuk-!-width-one-third")
-    ))
   }
 
   private[this] def amountOutstandingRow(amountOutstanding: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {

@@ -20,12 +20,12 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import models.Quarter.{Q2, Q3}
 import models.StandardPeriod
-import models.exclusions.ExcludedTrader
+import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.registration.Registration
 import models.requests.RegistrationRequest
 import models.responses.NotFound
-import org.mockito.{Mockito, MockitoSugar}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.{Mockito, MockitoSugar}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import play.api.mvc.AnyContent
@@ -44,8 +44,9 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   private val vatReturnConnector = mock[VatReturnConnector]
   private val exclusionService = new ExclusionService(vatReturnConnector)
 
-  private val exclusionReason = Gen.oneOf("01", "02", "03", "04", "05", "06", "-01").sample.value.toInt
-  private val exclusionPeriod = StandardPeriod(2022, Q3)
+  private val exclusionReason = Gen.oneOf(ExclusionReason.values.filterNot(x => Seq(ExclusionReason.TransferringMSID, ExclusionReason.Reversal).contains(x))).sample.value
+  private val finalReturnPeriod = StandardPeriod(2022, Q2)
+  private val effectiveDate = StandardPeriod(2022, Q3).firstDay
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockRegistrationRequest)
@@ -58,7 +59,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-          Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate))
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
 
@@ -69,7 +70,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate))
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
@@ -84,11 +85,14 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate))
 
-      when(vatReturnConnector.get(eqTo(exclusionPeriod))(any())) thenReturn Future.successful(Left(NotFound))
+      when(vatReturnConnector.get(eqTo(finalReturnPeriod))(any())) thenReturn Future.successful(Left(NotFound))
 
-      exclusionService.currentReturnIsFinal(mockRegistrationRequest.registration, StandardPeriod(2022, Q3))(hc, ec).futureValue mustBe true
+      exclusionService.currentReturnIsFinal(
+        mockRegistrationRequest.registration,
+        finalReturnPeriod
+      )(hc, ec).futureValue mustBe true
     }
 
     "must return false if the current return is not final for excluded trader" in {
@@ -96,11 +100,14 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, exclusionPeriod, None))
+        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate))
 
-      when(vatReturnConnector.get(eqTo(exclusionPeriod))(any())) thenReturn Future.successful(Right(completeVatReturn))
+      when(vatReturnConnector.get(eqTo(finalReturnPeriod))(any())) thenReturn Future.successful(Right(completeVatReturn))
 
-      exclusionService.currentReturnIsFinal(mockRegistrationRequest.registration, StandardPeriod(2022, Q2))(hc, ec).futureValue mustBe false
+      exclusionService.currentReturnIsFinal(
+        mockRegistrationRequest.registration,
+        finalReturnPeriod
+      )(hc, ec).futureValue mustBe false
     }
   }
 

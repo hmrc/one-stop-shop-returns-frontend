@@ -21,6 +21,7 @@ import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.exclusions.ExcludedTrader._
 import models.{Period, UserAnswers}
 import models.financialdata.{CurrentPayments, PaymentStatus}
 import models.registration.RegistrationWithFixedEstablishment
@@ -123,7 +124,6 @@ class YourAccountController @Inject()(
                                            currentPayments: CurrentPayments,
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
-
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
@@ -144,7 +144,8 @@ class YourAccountController @Inject()(
         currentReturnIsFinal,
         frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
-        frontendAppConfig.changeYourRegistrationUrl
+        frontendAppConfig.changeYourRegistrationUrl,
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave)
       ))
     }
   }
@@ -160,11 +161,14 @@ class YourAccountController @Inject()(
         request.registration.registeredCompanyName,
         request.vrn.vrn,
         ReturnsViewModel(
-          returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
-            currentReturn.copy(inProgress = true)
+          returnsViewModel.map { currentReturn =>
+            if (periodInProgress.contains(currentReturn.period)) {
+              currentReturn.copy(inProgress = true)
           } else {
-            currentReturn
-          })),
+              currentReturn
+            }
+          }
+        ),
         PaymentsViewModel(Seq.empty, Seq.empty),
         paymentError = true,
         request.registration.excludedTrader,
@@ -172,7 +176,8 @@ class YourAccountController @Inject()(
         currentReturnIsFinal,
         frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
-        frontendAppConfig.changeYourRegistrationUrl
+        frontendAppConfig.changeYourRegistrationUrl,
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave)
       ))
     }
   }
@@ -184,5 +189,4 @@ class YourAccountController @Inject()(
       exclusionService.currentReturnIsFinal(request.registration, returnsViewModel.minBy(_.period.firstDay.toEpochDay).period)
     }
   }
-
 }

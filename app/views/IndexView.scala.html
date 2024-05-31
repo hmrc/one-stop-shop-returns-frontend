@@ -20,12 +20,16 @@
 @import viewmodels._
 @import utils.CurrencyFormatter.currencyFormat
 @import models.exclusions.ExcludedTrader
-
+@import models.exclusions.ExclusionReason
+@import models.exclusions.ExclusionReason.FailsToComply
+@import models.exclusions.ExclusionReason.CeasedTrade
+@import models.exclusions.ExclusionReason.CeasedTrade
 @this(
     layout: templates.Layout,
     govukButton: GovukButton,
     govukWarningText: GovukWarningText
 )
+
 @(
     businessName: String,
     vrn: String,
@@ -37,7 +41,8 @@
     currentReturnIsFinal: Boolean,
     exclusionsEnabled: Boolean,
     amendRegistrationLinkEnabled: Boolean,
-    changeYourRegistrationUrl: String
+    changeYourRegistrationUrl: String,
+        hasRequestedToLeave: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -72,30 +77,34 @@
     @if(hasSubmittedFinalReturn) {
         @maybeExcludedTrader match {
             case Some(excludedTrader) => {
-                @(excludedTrader.exclusionReason) match {
-                    case (4) => {
+                @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
+                    case (FailsToComply, _) => {
                         <div class="govuk-warning-text">
                             <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                             <strong class="govuk-warning-text__text">
                                 <span class="govuk-warning-text__assistive">Warning:</span>
-                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser")</p>
-                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser.p", excludedTrader.effectivePeriod.displayRejoinDate)</p>
+                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser", excludedTrader.displayRejoinDate)</p>
                             </strong>
                         </div>
                     }
-                    case (2) => {
+                    case (CeasedTrade, _) => {
                         @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.removedFromService"))
                         ))
                     }
-                    case (_) => {
+                    case (_, false) => {
                         @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
                             content = Text(messages("yourAccount.warning.leftService"))
                         ))
                     }
-                    case (_) => {}
+                    case (_, true) => {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(messages("yourAccount.warning.requestedToLeave"))
+                        ))
+                    }
                 }
             }
             case _ => {}
@@ -104,32 +113,36 @@
     } else {
         @maybeExcludedTrader match {
             case Some(excludedTrader) => {
-                @(excludedTrader.exclusionReason) match {
-                case (4) => {
-                    <div class="govuk-warning-text">
-                        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                        <strong class="govuk-warning-text__text">
-                            <span class="govuk-warning-text__assistive">Warning:</span>
-                            <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser")</p>
-                            <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser.p", excludedTrader.effectivePeriod.displayRejoinDate)</p>
-                        </strong>
-                    </div>
-                }
-                case (2) => {
-                    @govukWarningText(WarningText(
+                @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
+                    case (FailsToComply, _) => {
+                        <div class="govuk-warning-text">
+                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                            <strong class="govuk-warning-text__text">
+                                <span class="govuk-warning-text__assistive">Warning:</span>
+                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate)</p>
+                            </strong>
+                        </div>
+                    }
+                    case (CeasedTrade, _) => {
+                        @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.exclusion.hmrc"))
+                        ))
+                    }
+                    case (_, false) => {
+                        @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
-                            content = Text(messages("yourAccount.warning.exclusion.hmrc"))
-                    ))
+                            content = Text(messages("yourAccount.warning.exclusion.trader"))
+                        ))
+                    }
+                    case (_, true) => {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(messages("yourAccount.warning.requestedToLeave.outstandingReturns"))
+                        ))
+                    }
                 }
-                case (_) => {
-                    @govukWarningText(WarningText(
-                        iconFallbackText = Option(messages("site.warning")),
-                        content = Text(messages("yourAccount.warning.exclusion.trader"))
-                    ))
-                }
-                case (_) => {}
             }
-        }
             case _ => {}
         }
     }
@@ -235,12 +248,40 @@
                     </a>
                 </p>
             }
-            <p class="govuk-body">
-                <a class="govuk-link" href="@controllers.exclusions.routes.LeaveThisServiceController.onPageLoad().url"
-                id="leave-this-service">
-                @messages("index.details.leaveThisService")
-                </a>
-            </p>
+
+            @(maybeExcludedTrader, exclusionsEnabled, hasRequestedToLeave) match {
+                case (Some(excludedTrader), true, false) => {
+                    @if(hasSubmittedFinalReturn){
+                        @excludedTrader.exclusionReason match {
+                            case FailsToComply => {}
+                            case _ => {
+                                <p class="govuk-body">
+                                    <a class="govuk-link" href=""
+                                    id="rejoin-this-service">
+                                    @messages("index.details.rejoinService")
+                                    </a>
+                                </p>
+                            }
+                        }
+                    }
+                }
+                case (Some(_), true, true) => {
+                    <p class="govuk-body">
+                        <a class="govuk-link" href=""
+                        id="cancel-request-to-leave">
+                        @messages("index.details.cancelRequestToLeave")
+                        </a>
+                    </p>
+                }
+                case _ => {
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="@controllers.exclusions.routes.LeaveThisServiceController.onPageLoad().url"
+                        id="leave-this-service">
+                        @messages("index.details.leaveThisService")
+                        </a>
+                    </p>
+                }
+            }
         </div>
     </div>
     @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {

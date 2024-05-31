@@ -16,6 +16,7 @@
 
 package models
 
+import models.Quarter.{Q1, Q2, Q3, Q4}
 import play.api.i18n.Messages
 import play.api.libs.json._
 import play.api.mvc.PathBindable
@@ -48,6 +49,32 @@ trait Period {
   def displayText(implicit messages: Messages): String =
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
 
+  def getNextPeriod: Period = {
+    quarter match {
+      case Q4 =>
+        StandardPeriod(year + 1, Q1)
+      case Q3 =>
+        StandardPeriod(year, Q4)
+      case Q2 =>
+        StandardPeriod(year, Q3)
+      case Q1 =>
+        StandardPeriod(year, Q2)
+    }
+  }
+
+  def getPreviousPeriod: Period = {
+    quarter match {
+      case Q4 =>
+        StandardPeriod(year, Q3)
+      case Q3 =>
+        StandardPeriod(year, Q2)
+      case Q2 =>
+        StandardPeriod(year, Q1)
+      case Q1 =>
+        StandardPeriod(year - 1, Q4)
+    }
+  }
+
   override def toString: String = s"$year-${quarter.toString}"
 
 }
@@ -56,19 +83,13 @@ case class StandardPeriod(year: Int, quarter: Quarter) extends Period {
 
   override val firstDay: LocalDate = LocalDate.of(year, quarter.startMonth, 1)
   override val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
-  val rejoinDate: LocalDate = firstDay.plusYears(2)
   override val isPartial: Boolean = false
 
   private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
-  private val rejoinDateFormatter = DateTimeFormatter.ofPattern("d MMMM YYYY")
-
 
   def displayShortText(implicit messages: Messages): String =
     s"${firstDay.format(firstMonthFormatter)} ${messages("site.to")} ${lastDay.format(lastMonthYearFormatter)}"
-
-  def displayRejoinDate(implicit messages: Messages): String =
-    s"${rejoinDate.format(rejoinDateFormatter)}"
 
 }
 
@@ -122,22 +143,6 @@ object Period {
     override def unbind(key: String, value: Period): String =
       value.toString
   }
-
-  /*  implicit val queryBindable: QueryStringBindable[Period] = new QueryStringBindable[Period] {
-      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Period]] = {
-        params.get(key).flatMap(_.headOption).map {
-          periodString =>
-            fromString(periodString) match {
-              case Some(period) => Right(period)
-              case _ => Left("Invalid period")
-            }
-        }
-      }
-
-      override def unbind(key: String, value: Period): String = {
-        s"$key=${value.toString}"
-      }
-    }*/
 
   def reads: Reads[Period] =
     PartialReturnPeriod.format.widen[Period] orElse
