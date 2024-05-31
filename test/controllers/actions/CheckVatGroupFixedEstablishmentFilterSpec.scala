@@ -18,20 +18,12 @@ package controllers.actions
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.ReturnStatusConnector
-import controllers.routes
-import models.{Country, PeriodWithStatus, StandardPeriod, SubmissionStatus}
-import models.Quarter.Q3
+import models.Country
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType}
-import models.registration.{EuTaxRegistration, InternationalAddress, RegistrationWithFixedEstablishment, TradeDetails}
-import models.requests.{DataRequest, RegistrationRequest}
-import models.responses.UnexpectedResponseStatus
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
-import org.mockito.Mockito.when
+import models.registration.{InternationalAddress, RegistrationWithFixedEstablishment, TradeDetails}
+import models.requests.RegistrationRequest
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject.bind
 import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest

@@ -21,8 +21,8 @@ import controllers._
 import controllers.actions.AuthenticatedControllerComponents
 import controllers.corrections.{routes => correctionsRoutes}
 import logging.Logging
-import models.{CheckMode, DataMissingError, Index, Period, ValidationError}
 import models.requests.DataRequest
+import models.{CheckMode, DataMissingError, Index, Period, ValidationError}
 import pages.corrections.CorrectPreviousReturnPage
 import pages.{VatRatesFromEuPage, VatRatesFromNiPage}
 import play.api.i18n.I18nSupport
@@ -33,13 +33,12 @@ import services.corrections.CorrectionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class RedirectService @Inject()(
                                  cc: AuthenticatedControllerComponents,
                                  vatReturnService: VatReturnService,
                                  correctionService: CorrectionService
-                            )(implicit ec: ExecutionContext)extends FrontendBaseController with I18nSupport with Logging {
+                               ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 

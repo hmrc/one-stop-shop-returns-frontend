@@ -17,7 +17,7 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.{Period, StandardPeriod, UserAnswers}
+import models.{Period, UserAnswers}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import play.api.libs.json.Format

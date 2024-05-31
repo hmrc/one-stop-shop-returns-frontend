@@ -16,15 +16,14 @@
 
 package models
 
-import models.requests.DataRequest
 import play.api.i18n.Messages
 import play.api.libs.json._
 import play.api.mvc.PathBindable
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
-import java.time.{Clock, LocalDate}
 import java.time.format.DateTimeFormatter
+import java.time.{Clock, LocalDate}
 import scala.util.Try
 import scala.util.matching.Regex
 

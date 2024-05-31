@@ -168,7 +168,6 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
     "must return the Intercept page if user has changed OMP to NO and has a saved return with same Eu to EU country sales" in {
 
       val reg = registration.copy(isOnlineMarketplace = false)
-      val hasSameEuToEu = true
       val application =
         applicationBuilder(
           userAnswers = Some(sameEuCountryAnswers),
