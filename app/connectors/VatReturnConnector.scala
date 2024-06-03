@@ -48,6 +48,6 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
     httpClientV2.get(url"$baseUrl/external-entry").execute[ExternalEntryUrlResponse]
 
   def getSubmittedVatReturns()(implicit hc: HeaderCarrier): Future[VatReturnMultipleResponse] = {
-    httpClient.GET[VatReturnMultipleResponse](s"$baseUrl/vat-returns")
+    httpClientV2.get(url"$baseUrl/vat-returns").execute[VatReturnMultipleResponse]
   }
 }
