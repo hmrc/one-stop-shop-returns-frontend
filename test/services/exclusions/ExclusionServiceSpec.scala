@@ -24,15 +24,14 @@ import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.registration.Registration
 import models.requests.RegistrationRequest
 import models.responses.NotFound
-import org.mockito.{Mockito, MockitoSugar}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.{Mockito, MockitoSugar}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import play.api.mvc.AnyContent
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {

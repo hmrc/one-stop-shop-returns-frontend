@@ -1752,8 +1752,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val result = route(application, request).value
 
-        val config = application.injector.instanceOf[FrontendAppConfig]
-
         status(result) mustEqual SEE_OTHER
 
       }

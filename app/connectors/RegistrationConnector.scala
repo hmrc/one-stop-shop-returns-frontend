@@ -19,21 +19,21 @@ package connectors
 import config.Service
 import models.registration.Registration
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, StringContextOps}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegistrationConnector @Inject()(config: Configuration, httpClient: HttpClient)
+class RegistrationConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
                                      (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-registration")
 
   def get()(implicit hc: HeaderCarrier): Future[Option[Registration]] =
-    httpClient.GET[Option[Registration]](s"$baseUrl/registration")
+    httpClientV2.get(url"$baseUrl/registration").execute[Option[Registration]]
 
   def enrolUser()(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    httpClient.POSTEmpty[HttpResponse](s"$baseUrl/confirm-enrolment")
-
+    httpClientV2.post(url"$baseUrl/confirm-enrolment").execute[HttpResponse]
 }

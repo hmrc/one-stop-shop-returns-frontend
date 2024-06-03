@@ -24,34 +24,28 @@ import formats.Format
 import models.Period
 import play.api.Configuration
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 
 import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FinancialDataConnector @Inject()(config: Configuration, httpClient: HttpClient)
+class FinancialDataConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
                                       (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
 
-  def getCharge(period: Period)(implicit hc: HeaderCarrier): Future[ChargeResponse] = {
-    val url = s"$baseUrl/financial-data/charge/$period"
-    httpClient.GET[ChargeResponse](url)
-  }
+  def getCharge(period: Period)(implicit hc: HeaderCarrier): Future[ChargeResponse] =
+    httpClientV2.get(url"$baseUrl/financial-data/charge/$period").execute[ChargeResponse]
 
-  def getPeriodsAndOutstandingAmounts()(implicit hc: HeaderCarrier): Future[OutstandingPaymentsResponse] = {
-    val url = s"$baseUrl/financial-data/outstanding-payments"
-    httpClient.GET[OutstandingPaymentsResponse](url)
-  }
+  def getPeriodsAndOutstandingAmounts()(implicit hc: HeaderCarrier): Future[OutstandingPaymentsResponse] =
+    httpClientV2.get(url"$baseUrl/financial-data/outstanding-payments").execute[OutstandingPaymentsResponse]
 
-  def getVatReturnWithFinancialData(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[VatReturnWithFinancialDataResponse] = {
-    val url = s"$baseUrl/financial-data/charge-history/${Format.dateTimeFormatter.format(commencementDate)}"
-    httpClient.GET[VatReturnWithFinancialDataResponse](url)
-  }
+  def getVatReturnWithFinancialData(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[VatReturnWithFinancialDataResponse] =
+    httpClientV2.get(url"$baseUrl/financial-data/charge-history/${Format.dateTimeFormatter.format(commencementDate)}")
+      .execute[VatReturnWithFinancialDataResponse]
 
-  def getCurrentPayments(vrn: Vrn)(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] = {
-    val url = s"$baseUrl/financial-data/prepare/${vrn.vrn}"
-    httpClient.GET[CurrentPaymentsResponse](url)
-  }
+  def getCurrentPayments(vrn: Vrn)(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] =
+    httpClientV2.get(url"$baseUrl/financial-data/prepare/${vrn.vrn}").execute[CurrentPaymentsResponse]
 }

@@ -23,8 +23,8 @@ import play.api.mvc.PathBindable
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
-import java.time.{Clock, LocalDate}
 import java.time.format.DateTimeFormatter
+import java.time.{Clock, LocalDate}
 import scala.util.Try
 import scala.util.matching.Regex
 
@@ -143,22 +143,6 @@ object Period {
     override def unbind(key: String, value: Period): String =
       value.toString
   }
-
-  /*  implicit val queryBindable: QueryStringBindable[Period] = new QueryStringBindable[Period] {
-      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Period]] = {
-        params.get(key).flatMap(_.headOption).map {
-          periodString =>
-            fromString(periodString) match {
-              case Some(period) => Right(period)
-              case _ => Left("Invalid period")
-            }
-        }
-      }
-
-      override def unbind(key: String, value: Period): String = {
-        s"$key=${value.toString}"
-      }
-    }*/
 
   def reads: Reads[Period] =
     PartialReturnPeriod.format.widen[Period] orElse

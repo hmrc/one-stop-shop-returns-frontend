@@ -17,42 +17,33 @@
 package connectors
 
 import config.Service
-import connectors.ExternalEntryUrlHttpParser.ExternalEntryUrlResponse
-import connectors.ExternalEntryUrlHttpParser._
+import connectors.ExternalEntryUrlHttpParser.{ExternalEntryUrlResponse, _}
 import connectors.VatReturnHttpParser._
 import connectors.VatReturnWithCorrectionHttpParser._
 import models.Period
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient)
+class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
                                   (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
 
-  def submit(vatReturnRequest: VatReturnRequest)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
-    val url = s"$baseUrl/vat-returns"
+  def submit(vatReturnRequest: VatReturnRequest)(implicit hc: HeaderCarrier): Future[VatReturnResponse] =
+    httpClientV2.post(url"$baseUrl/vat-returns").withBody(Json.toJson(vatReturnRequest)).execute[VatReturnResponse]
 
-    httpClient.POST[VatReturnRequest, VatReturnResponse](url, vatReturnRequest)
-  }
+  def submitWithCorrections(vatReturnRequest: VatReturnWithCorrectionRequest)(implicit hc: HeaderCarrier): Future[VatReturnWithCorrectionResponse] =
+    httpClientV2.post(url"$baseUrl/vat-return-with-corrections").withBody(Json.toJson( vatReturnRequest)).execute[VatReturnWithCorrectionResponse]
 
-  def submitWithCorrections(vatReturnRequest: VatReturnWithCorrectionRequest)(implicit hc: HeaderCarrier): Future[VatReturnWithCorrectionResponse] = {
-    val url = s"$baseUrl/vat-return-with-corrections"
+  def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] =
+    httpClientV2.get(url"$baseUrl/vat-returns/period/$period").execute[VatReturnResponse]
 
-    httpClient.POST[VatReturnWithCorrectionRequest, VatReturnWithCorrectionResponse](url, vatReturnRequest)
-  }
-
-  def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
-    val url = s"$baseUrl/vat-returns/period/${period.toString}"
-
-    httpClient.GET[VatReturnResponse](url)
-  }
-
-  def getSavedExternalEntry()(implicit hc: HeaderCarrier): Future[ExternalEntryUrlResponse] = {
-    httpClient.GET[ExternalEntryUrlResponse](s"$baseUrl/external-entry")
-  }
+  def getSavedExternalEntry()(implicit hc: HeaderCarrier): Future[ExternalEntryUrlResponse] =
+    httpClientV2.get(url"$baseUrl/external-entry").execute[ExternalEntryUrlResponse]
 }

@@ -17,10 +17,9 @@
 package services
 
 import connectors.ReturnStatusConnector
-import models.exclusions.ExclusionReason
 import models.exclusions.ExclusionReason.TransferringMSID
-import models.{PartialReturnPeriod, Period, PeriodWithStatus, SubmissionStatus}
 import models.registration.Registration
+import models.{PartialReturnPeriod, Period, PeriodWithStatus, SubmissionStatus}
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.http.HeaderCarrier
 
