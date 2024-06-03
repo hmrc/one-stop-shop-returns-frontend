@@ -117,7 +117,7 @@ class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with B
     "must redirect to CannotStartReturn if the return period is Excluded" in {
 
       when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
-        PeriodWithStatus(StandardPeriod("2021", "Q2").success.value, SubmissionStatus.Excluded)
+        PeriodWithStatus(StandardPeriod("2021", "Q3").success.value, SubmissionStatus.Excluded)
       )))
 
       val app = applicationBuilder(None)
@@ -130,7 +130,7 @@ class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with B
 
         val result = controller.callFilter(request).futureValue
 
-        result.value mustEqual Redirect(routes.CannotStartReturnController.onPageLoad())
+        result.value mustEqual Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())
       }
     }
 
