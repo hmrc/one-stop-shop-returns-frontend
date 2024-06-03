@@ -32,7 +32,7 @@ object PaymentsViewModel {
             overduePayments: Seq[Payment],
             excludedPayments: Seq[Payment],
             hasDueReturnThreeYearsOld: Boolean)(implicit messages: Messages, clock: Clock): PaymentsViewModel = {
-    if(duePayments.isEmpty && overduePayments.isEmpty){
+    if(duePayments.isEmpty && overduePayments.isEmpty && excludedPayments.isEmpty){
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
           contents = Seq(messages("index.payment.nothingOwed"))
