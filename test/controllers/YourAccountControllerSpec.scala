@@ -2207,10 +2207,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "has submitted final return and eligible to rejoin" in {
 
-        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val instant = Instant.parse("2024-04-01T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = StandardPeriod(2021, Q4)
+        val nextPeriod = StandardPeriod(2021, Q3)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -2289,87 +2289,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         }
       }
 
-      "has submitted final return and not eligible to rejoin when today is equal to rejoin date" in {
+      "has submitted final return and not eligible to rejoin when today is before rejoin date" in {
 
-        val instant = Instant.parse("2024-04-01T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-        val nextPeriod = StandardPeriod(2021, Q4)
-
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentReturns(
-              Seq(Return(
-                nextPeriod,
-                nextPeriod.firstDay,
-                nextPeriod.lastDay,
-                nextPeriod.paymentDeadline,
-                SubmissionStatus.Next,
-                inProgress = false,
-                isOldest = false
-              ))))
-          )
-
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
-
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
-          clock = Some(clock),
-          registration = registration.copy(excludedTrader = excludedTraderQuarantined)
-        )
-          .overrides(
-            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector),
-            bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
-          )
-          .build()
-
-        running(application) {
-          implicit val msgs: Messages = messages(application)
-
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
-          val config = application.injector.instanceOf[FrontendAppConfig]
-
-          status(result) mustEqual OK
-
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            ReturnsViewModel(
-              Seq(
-                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty),
-            paymentError = false,
-            excludedTraderQuarantined,
-            hasSubmittedFinalReturn = true,
-            currentReturnIsFinal = false,
-            config.amendRegistrationEnabled,
-            amendRegistrationUrl,
-            hasRequestedToLeave = false,
-            None
-          )(request, msgs).toString
-          contentAsString(result).contains("leave-this-service") mustEqual false
-        }
-      }
-
-      "has submitted final return and not eligible to rejoin when today is after rejoin date" in {
-
-        val instant = Instant.parse("2024-04-02T12:00:00Z")
+        val instant = Instant.parse("2024-03-31T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val nextPeriod = StandardPeriod(2021, Q4)

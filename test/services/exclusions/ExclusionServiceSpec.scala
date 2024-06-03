@@ -159,7 +159,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       ) mustBe ExclusionViewType.ReversalEligible
     }
 
-    "must return ExcludedFinalReturnPending if if excluded trader can't cancel and haven't submitted final return" in {
+    "must return ExcludedFinalReturnPending if excluded trader can't cancel and hasn't submitted final return" in {
 
       val excludedTrader = ExcludedTrader(
         vrn = vrn,
@@ -177,7 +177,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
     "must return Quarantined if trader is quarantined" in {
 
-      val instant = Instant.parse("2024-04-03T12:00:00Z")
+      val instant = Instant.parse("2024-03-31T12:00:00Z")
       val newClock: Clock = Clock.fixed(instant, ZoneId.systemDefault())
 
       val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, newClock)
@@ -204,6 +204,38 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
           canCancel = false,
           hasSubmittedFinalReturn = false
         ) mustBe ExclusionViewType.Quarantined
+      }
+    }
+
+    "must return ExcludedFinalReturnPending if trader is no longer quarantined" in {
+
+      val instant = Instant.parse("2024-04-01T12:00:00Z")
+      val newClock: Clock = Clock.fixed(instant, ZoneId.systemDefault())
+
+      val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, newClock)
+
+      val effectiveDate = StandardPeriod(2022, Q2).firstDay
+
+      val excludedTrader = ExcludedTrader(
+        vrn = vrn,
+        exclusionReason = ExclusionReason.FailsToComply,
+        effectiveDate = effectiveDate,
+        quarantined = true
+      )
+
+      val application = applicationBuilder(
+        userAnswers = Some(emptyUserAnswers),
+        clock = Some(newClock),
+        registration = registration.copy(excludedTrader = Some(excludedTrader))
+      ).build()
+
+      running(application) {
+
+        exclusionService.calculateExclusionViewType(
+          excludedTrader = Some(excludedTrader),
+          canCancel = false,
+          hasSubmittedFinalReturn = false
+        ) mustBe ExclusionViewType.ExcludedFinalReturnPending
       }
     }
   }
