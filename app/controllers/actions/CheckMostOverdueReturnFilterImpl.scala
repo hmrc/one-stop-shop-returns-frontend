@@ -19,17 +19,17 @@ package controllers.actions
 import connectors.ReturnStatusConnector
 import controllers.routes
 import models.requests.OptionalDataRequest
-import models.{Period, SubmissionStatus}
+import models.{Period, StandardPeriod, SubmissionStatus}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
-import java.time.LocalDate
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusConnector)
+class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusConnector, clock: Clock)
                             (implicit val executionContext: ExecutionContext)
   extends ActionFilter[OptionalDataRequest] {
   
@@ -41,7 +41,7 @@ class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusCo
       case Right(previousPeriods) =>
          val dueReturns = previousPeriods.filter(
            p => p.status != SubmissionStatus.Complete &&
-             p.status != SubmissionStatus.Next).sortBy(_.period.firstDay)
+             p.status != SubmissionStatus.Next && p.status != SubmissionStatus.Excluded).sortBy(_.period.firstDay)
         if(dueReturns.nonEmpty){
           if(dueReturns.head.period == period) {
           Future.successful(None)
@@ -51,14 +51,14 @@ class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusCo
         } else {
             Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())))
         }
-      case _    => Future.successful(Some(Redirect(routes.JourneyRecoveryController.onPageLoad())))
+      case _ => Future.successful(Some(Redirect(routes.JourneyRecoveryController.onPageLoad())))
     }
   }
 }
 
-class CheckMostOverdueReturnFilterProvider @Inject()(connector: ReturnStatusConnector)
+class CheckMostOverdueReturnFilterProvider @Inject()(connector: ReturnStatusConnector, clock: Clock)
                                           (implicit ec: ExecutionContext) {
 
  def apply(period: Period): CheckMostOverdueReturnFilterImpl =
-   new CheckMostOverdueReturnFilterImpl(period, connector)
+   new CheckMostOverdueReturnFilterImpl(period, connector, clock)
 }
