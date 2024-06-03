@@ -15,6 +15,7 @@
  *@
 
 @import models.exclusions.ExcludedTrader
+@import models.exclusions.ExclusionLinkView
 @import models.exclusions.ExclusionReason.{CeasedTrade, FailsToComply, Reversal}
 @import viewmodels._
 @import viewmodels.yourAccount._
@@ -36,9 +37,8 @@
         currentReturnIsFinal: Boolean,
         amendRegistrationLinkEnabled: Boolean,
         changeYourRegistrationUrl: String,
-        leaveOneStopShopUrl: String,
         hasRequestedToLeave: Boolean,
-        maybeCancelRequestToLeaveUrl: Option[String]
+        maybeExclusionLinkView: Option[ExclusionLinkView]
 )(implicit request: Request[_], messages: Messages)
 
     @layout(
@@ -251,51 +251,14 @@
                             </p>
                         }
 
-                        @maybeExcludedTrader match {
-                            case Some(excludedTrader) => {
-                                @if(!hasRequestedToLeave) {
-                                    @if(hasSubmittedFinalReturn) {
-                                        @if(excludedTrader.exclusionReason == FailsToComply) {
-                                            @*Quarantine*@
-                                        } else {
-                                            @*Rejoin*@
-                                            <p class="govuk-body">
-                                                <a class="govuk-link" href=""
-                                                id="rejoin-this-service">
-                                                @messages("index.details.rejoinService")
-                                                </a>
-                                            </p>
-                                        }
-                                    } else {
-                                    }
-                                } else {
-                                    @if(maybeCancelRequestToLeaveUrl.isDefined) {
-                                        @maybeCancelRequestToLeaveUrl.map { cancelRequestToLeaveUrl =>
-                                            @*Reversal*@
-                                            <p class="govuk-body">
-                                                <a class="govuk-link" href="@cancelRequestToLeaveUrl" id="cancel-request-to-leave">
-                                                @messages("index.details.cancelRequestToLeave")
-                                                </a>
-                                            </p>
-                                        }
-                                    } else {
-                                        @*Leave*@
-                                        <p class="govuk-body">
-                                            <a class="govuk-link" href="@leaveOneStopShopUrl" id="leave-this-service">
-                                            @messages("index.details.leaveThisService")
-                                            </a>
-                                        </p>
-                                    }
-                                }
-                            }
-                            case _ => {
-                                @*Leave*@
-                                <p class="govuk-body">
-                                    <a class="govuk-link" href="@leaveOneStopShopUrl" id="leave-this-service">
-                                    @messages("index.details.leaveThisService")
-                                    </a>
-                                </p>
-                            }
+                        @maybeExclusionLinkView.map { exclusionLinkView =>
+                            <p class="govuk-body">
+                                <a class="govuk-link"
+                                href="@exclusionLinkView.href"
+                                id="@exclusionLinkView.id">
+                                @exclusionLinkView.displayText
+                                </a>
+                            </p>
                         }
 
                     </div>

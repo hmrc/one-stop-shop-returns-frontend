@@ -18,8 +18,8 @@ package services
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
-import models.{PartialReturnPeriod, PeriodWithStatus, SubmissionStatus}
 import models.exclusions.{ExcludedTrader, ExclusionReason}
+import models.{PartialReturnPeriod, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.{mock, when}
 import services.exclusions.ExclusionService
@@ -91,7 +91,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase {
       val excludedEffectiveDate = period.lastDay.minusDays(10)
       val endDate = excludedEffectiveDate.minusDays(1)
       val commencementDate = period.firstDay.plusDays(4)
-      val excludedTrader = ExcludedTrader(vrn, ExclusionReason.TransferringMSID, excludedEffectiveDate)
+      val excludedTrader = ExcludedTrader(vrn, ExclusionReason.TransferringMSID, excludedEffectiveDate, quarantined = false)
 
       val registrationWithExcludedTrader = registration
         .copy(commencementDate = commencementDate, excludedTrader = Some(excludedTrader))
@@ -107,7 +107,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase {
     "return none for a excluded trader's non final return" in {
       val endDate = period.lastDay.minusDays(10)
       val commencementDate = period.firstDay.plusDays(4)
-      val excludedTrader = ExcludedTrader(vrn, ExclusionReason.TransferringMSID, endDate)
+      val excludedTrader = ExcludedTrader(vrn, ExclusionReason.TransferringMSID, endDate, quarantined = false)
 
       val registrationWithExcludedTrader = registration
         .copy(commencementDate = commencementDate, excludedTrader = Some(excludedTrader))
@@ -123,7 +123,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase {
     "return none for a excluded trader that isn't code 6" in {
       val endDate = period.lastDay.minusDays(10)
       val commencementDate = period.firstDay.plusDays(4)
-      val excludedTrader = ExcludedTrader(vrn, ExclusionReason.FailsToComply, endDate)
+      val excludedTrader = ExcludedTrader(vrn, ExclusionReason.FailsToComply, endDate, quarantined = false)
 
       val registrationWithExcludedTrader = registration
         .copy(commencementDate = commencementDate, excludedTrader = Option(excludedTrader))

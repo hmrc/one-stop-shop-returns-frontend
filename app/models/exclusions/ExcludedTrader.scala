@@ -28,7 +28,8 @@ import java.time.format.DateTimeFormatter
 case class ExcludedTrader(
                            vrn: Vrn,
                            exclusionReason: ExclusionReason,
-                           effectiveDate: LocalDate
+                           effectiveDate: LocalDate,
+                           quarantined: Boolean
                          ) {
 
   val finalReturnPeriod: Period = {
@@ -39,7 +40,7 @@ case class ExcludedTrader(
     }
   }
 
-  private val rejoinDate: LocalDate = effectiveDate.plusYears(2)
+  val rejoinDate: LocalDate = effectiveDate.plusYears(2)
 
   private val rejoinDateFormatter = DateTimeFormatter.ofPattern("d MMMM YYYY")
 

@@ -24,7 +24,7 @@ import generators.Generators
 import models.Quarter._
 import models.SubmissionStatus.{Due, Next, Overdue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
-import models.exclusions.{ExcludedTrader, ExclusionReason}
+import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration._
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
@@ -37,6 +37,7 @@ import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.SavedProgressPage
+import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -58,21 +59,20 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val save4LaterConnector = mock[SaveForLaterConnector]
   private val vatReturnConnector = mock[VatReturnConnector]
 
-
   private val periodQ2 = StandardPeriod(2022, Q2)
 
   private val vatReturn = arbitrary[VatReturn].sample.value
   private val excludedTraderHMRC: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, ExclusionReason.CeasedTrade, periodQ2.firstDay))
+    registration.vrn, ExclusionReason.CeasedTrade, periodQ2.firstDay, quarantined = false))
 
   private val excludedTraderSelf: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, ExclusionReason.NoLongerMeetsConditions, periodQ2.firstDay))
+    registration.vrn, ExclusionReason.NoLongerMeetsConditions, periodQ2.firstDay, quarantined = false))
 
   private val excludedTraderQuarantined: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, ExclusionReason.FailsToComply, periodQ2.firstDay))
+    registration.vrn, ExclusionReason.FailsToComply, periodQ2.firstDay, quarantined = true))
 
   private val excludedTraderSelfRequestedToLeave: Option[ExcludedTrader] = Some(ExcludedTrader(
-    registration.vrn, ExclusionReason.NoLongerSupplies, LocalDate.now().plusMonths(1)))
+    registration.vrn, ExclusionReason.NoLongerSupplies, LocalDate.now().plusMonths(1), quarantined = false))
 
   private val amendRegistrationUrl = "http://localhost:10200/pay-vat-on-goods-sold-to-eu/northern-ireland-register/start-amend-journey"
 
@@ -125,6 +125,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -132,6 +134,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[IndexView]
 
           val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.leaveThisService"),
+            id = "leave-this-service",
+            href = config.leaveOneStopShopUrl
+          )
 
           status(result) mustEqual OK
 
@@ -143,17 +151,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
             )(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
-          )(request, messages(application)).toString
+            Some(exclusionLinkView)
+          )(request, msgs).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual true
         }
@@ -191,6 +198,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ).build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -198,6 +207,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val view = application.injector.instanceOf[IndexView]
 
             val config = application.injector.instanceOf[FrontendAppConfig]
+
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.leaveThisService"),
+              id = "leave-this-service",
+              href = config.leaveOneStopShopUrl
+            )
 
             status(result) mustEqual OK
 
@@ -209,17 +224,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(period, Due, inProgress = false, isOldest = true)
                 )
               )(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              None
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
           }
         }
 
@@ -254,6 +268,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ).build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -261,6 +277,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val view = application.injector.instanceOf[IndexView]
 
             val config = application.injector.instanceOf[FrontendAppConfig]
+
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.leaveThisService"),
+              id = "leave-this-service",
+              href = config.leaveOneStopShopUrl
+            )
 
             status(result) mustEqual OK
 
@@ -272,17 +294,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(period, Due, inProgress = true, isOldest = true)
                 )
               )(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              None
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
           }
         }
 
@@ -318,6 +339,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ).build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -325,6 +348,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val view = application.injector.instanceOf[IndexView]
 
             val config = application.injector.instanceOf[FrontendAppConfig]
+
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.leaveThisService"),
+              id = "leave-this-service",
+              href = config.leaveOneStopShopUrl
+            )
 
             status(result) mustEqual OK
 
@@ -336,17 +365,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = true)
                 )
               )(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              None
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
           }
         }
 
@@ -385,6 +413,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ).build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -392,6 +422,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val view = application.injector.instanceOf[IndexView]
 
             val config = application.injector.instanceOf[FrontendAppConfig]
+
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.leaveThisService"),
+              id = "leave-this-service",
+              href = config.leaveOneStopShopUrl
+            )
 
             status(result) mustEqual OK
 
@@ -404,17 +440,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true)
                 )
               )(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              None
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
           }
         }
       }
@@ -450,6 +485,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ).build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -458,6 +495,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val config = application.injector.instanceOf[FrontendAppConfig]
 
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.leaveThisService"),
+            id = "leave-this-service",
+            href = config.leaveOneStopShopUrl
+          )
+
           status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
@@ -465,17 +508,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(Seq(
               Return.fromPeriod(StandardPeriod(2021, Q3), Overdue, inProgress = false, isOldest = true)))(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
-          )(request, messages(application)).toString
+            Some(exclusionLinkView)
+          )(request, msgs).toString
         }
       }
 
@@ -515,6 +557,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ).build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -522,6 +566,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[IndexView]
 
           val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.leaveThisService"),
+            id = "leave-this-service",
+            href = config.leaveOneStopShopUrl
+          )
 
           status(result) mustEqual OK
 
@@ -531,17 +581,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(Seq(
               Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
               Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false)))(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
-          )(request, messages(application)).toString
+            Some(exclusionLinkView)
+          )(request, msgs).toString
         }
       }
 
@@ -584,6 +633,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -591,6 +642,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val view = application.injector.instanceOf[IndexView]
 
             val config = application.injector.instanceOf[FrontendAppConfig]
+
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.leaveThisService"),
+              id = "leave-this-service",
+              href = config.leaveOneStopShopUrl
+            )
 
             status(result) mustEqual OK
 
@@ -600,17 +657,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
               PaymentsViewModel(
                 Seq(payment),
-                Seq.empty)(messages(application)),
+                Seq.empty),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              None
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
           }
         }
 
@@ -653,6 +709,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ).build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -661,6 +719,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val config = application.injector.instanceOf[FrontendAppConfig]
 
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.leaveThisService"),
+              id = "leave-this-service",
+              href = config.leaveOneStopShopUrl
+            )
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
@@ -668,17 +732,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
               PaymentsViewModel(Seq(payment),
-                Seq.empty)(messages(application)),
+                Seq.empty),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              None
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
 
           }
         }
@@ -726,6 +789,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ).build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -734,23 +799,28 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val config = application.injector.instanceOf[FrontendAppConfig]
 
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.leaveThisService"),
+              id = "leave-this-service",
+              href = config.leaveOneStopShopUrl
+            )
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq(overduePayment))(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq(overduePayment)),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              None
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
           }
         }
 
@@ -787,6 +857,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ).build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -795,27 +867,33 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val config = application.injector.instanceOf[FrontendAppConfig]
 
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.leaveThisService"),
+              id = "leave-this-service",
+              href = config.leaveOneStopShopUrl
+            )
+
             status(result) mustEqual OK
 
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              PaymentsViewModel(Seq.empty, Seq.empty),
               paymentError = true,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              None
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
           }
         }
 
         "and charge is not in ETMP" in {
+
           val clock: Clock = Clock.fixed(Instant.parse("2021-10-25T12:00:00Z"), ZoneId.systemDefault)
           val vatOwed = BigDecimal(1563.49)
           val firstPeriod = StandardPeriod(2021, Q3)
@@ -848,6 +926,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ).build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -855,6 +935,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val view = application.injector.instanceOf[IndexView]
 
             val config = application.injector.instanceOf[FrontendAppConfig]
+
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.leaveThisService"),
+              id = "leave-this-service",
+              href = config.leaveOneStopShopUrl
+            )
 
             status(result) mustEqual OK
 
@@ -865,17 +951,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               PaymentsViewModel(
                 Seq(payment),
                 Seq.empty
-              )(messages(application)),
+              ),
               paymentError = true,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              None
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
           }
         }
       }
@@ -915,6 +1000,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ).build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -922,6 +1009,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[IndexView]
 
           val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.leaveThisService"),
+            id = "leave-this-service",
+            href = config.leaveOneStopShopUrl
+          )
 
           status(result) mustEqual OK
 
@@ -931,17 +1024,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
             PaymentsViewModel(
               Seq(payment),
-              Seq.empty)(messages(application)),
+              Seq.empty),
             paymentError = true,
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
-          )(request, messages(application)).toString
+            Some(exclusionLinkView)
+          )(request, msgs).toString
         }
       }
 
@@ -976,6 +1068,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ).build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -984,29 +1078,33 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val config = application.injector.instanceOf[FrontendAppConfig]
 
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.leaveThisService"),
+            id = "leave-this-service",
+            href = config.leaveOneStopShopUrl
+          )
+
           status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, inProgress = true, isOldest = true)))(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            PaymentsViewModel(Seq.empty, Seq.empty),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
-          )(request, messages(application)).toString
-
+            Some(exclusionLinkView)
+          )(request, msgs).toString
         }
       }
     }
 
-    "must throw and exception when an error is returned from both connectors" in {
+    "must throw an exception when an error is returned from both connectors" in {
 
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(Left(UnexpectedResponseStatus(1, "error")))
@@ -1030,7 +1128,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       }
     }
 
-    "must throw and exception when an error is returned from the Return Status connector" in {
+    "must throw an exception when an error is returned from the Return Status connector" in {
 
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(Left(UnexpectedResponseStatus(1, "error")))
@@ -1100,6 +1198,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -1116,18 +1216,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
-            )(messages(application)),
+            ),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTraderHMRC,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
             None
-          )(request, messages(application)).toString
+          )(request, msgs).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1177,6 +1276,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -1184,6 +1285,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[IndexView]
 
           val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.rejoinService"),
+            id = "rejoin-this-service",
+            href = s"#"
+          )
 
           status(result) mustEqual OK
 
@@ -1194,99 +1301,19 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
-            )(messages(application)),
+            ),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTraderHMRC,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
-          )(request, messages(application)).toString
+            Some(exclusionLinkView)
+          )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
-      }
-    }
-
-    "trader is excluded but exclusions is disabled" in {
-
-      val instant = Instant.parse("2021-10-11T12:00:00Z")
-      val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
-      val nextPeriod = StandardPeriod(2021, Q4)
-
-      when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-        Future.successful(
-          Right(CurrentReturns(
-            Seq(Return(
-              nextPeriod,
-              nextPeriod.firstDay,
-              nextPeriod.lastDay,
-              nextPeriod.paymentDeadline,
-              SubmissionStatus.Next,
-              inProgress = false,
-              isOldest = false
-            ))))
-        )
-
-      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(
-          Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
-
-      when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-      when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-      when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
-      when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
-        clock = Some(clock),
-        registration = registration.copy(excludedTrader = excludedTraderHMRC)
-      )
-        .overrides(
-          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[UserAnswersRepository].toInstance(sessionRepository),
-          bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
-        )
-        .configure("features.exclusions.excluded-traders.1.vrn" -> registration.vrn.vrn)
-        .configure("features.exclusions.enabled" -> false)
-        .build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[IndexView]
-
-        val config = application.injector.instanceOf[FrontendAppConfig]
-
-        status(result) mustEqual OK
-
-        contentAsString(result) mustEqual view(
-          registration.registeredCompanyName,
-          registration.vrn.vrn,
-          ReturnsViewModel(
-            Seq(
-              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-            )
-          )(messages(application)),
-          PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
-          paymentError = false,
-          None,
-          hasSubmittedFinalReturn = true,
-          currentReturnIsFinal = false,
-          config.exclusionsEnabled,
-          config.amendRegistrationEnabled,
-          amendRegistrationUrl,
-          hasRequestedToLeave = false,
-          None
-        )(request, messages(application)).toString
-        contentAsString(result).contains("leave-this-service") mustEqual true
       }
     }
 
@@ -1336,6 +1363,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -1353,22 +1382,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
-            )(messages(application)),
+            ),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
             None
-          )(request, messages(application)).toString
+          )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
+
       "has submitted final return" in {
+
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
@@ -1411,6 +1441,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -1418,6 +1450,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[IndexView]
 
           val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.rejoinService"),
+            id = "rejoin-this-service",
+            href = s"#"
+          )
 
           status(result) mustEqual OK
 
@@ -1428,18 +1466,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
-            )(messages(application)),
+            ),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
-          )(request, messages(application)).toString
+            Some(exclusionLinkView)
+          )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
@@ -1491,6 +1528,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -1498,6 +1537,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[IndexView]
 
           val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.cancelRequestToLeave"),
+            id = "cancel-request-to-leave",
+            href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
+          )
 
           status(result) mustEqual OK
 
@@ -1508,23 +1553,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
-            )(messages(application)),
+            ),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTraderSelfRequestedToLeave,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = true,
-            Some(s"${config.leaveOneStopShopUrl}/cancel-leave-scheme")
-          )(request, messages(application)).toString
+            Some(exclusionLinkView)
+          )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
       }
 
       "has submitted final return" in {
+
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
@@ -1567,6 +1612,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -1574,6 +1621,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[IndexView]
 
           val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.cancelRequestToLeave"),
+            id = "cancel-request-to-leave",
+            href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
+          )
 
           status(result) mustEqual OK
 
@@ -1584,23 +1637,24 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
-            )(messages(application)),
+            ),
             PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
             paymentError = false,
             excludedTraderSelfRequestedToLeave,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = true,
-            Some(s"${config.leaveOneStopShopUrl}/cancel-leave-scheme")
-          )(request, messages(application)).toString
+            Some(exclusionLinkView)
+          )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
       }
 
       "trader is transferring country" - {
+
+        // TODO 10th of month etc
 
         "has not submitted final return" in {
 
@@ -1614,7 +1668,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Gen.listOfN(4, arbitraryVatReturn.arbitrary.suchThat(vr => vr.period != finalReturnPeriod)).sample.value
 
           val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
-            registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 6, 9)))
+            registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 6, 9), quarantined = false))
 
           val nextPeriod = StandardPeriod(2024, Q3)
 
@@ -1656,6 +1710,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             .build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -1663,6 +1719,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val view = application.injector.instanceOf[IndexView]
 
             val config = application.injector.instanceOf[FrontendAppConfig]
+
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.cancelRequestToLeave"),
+              id = "cancel-request-to-leave",
+              href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
+            )
 
             status(result) mustEqual OK
 
@@ -1673,18 +1735,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Seq(
                   Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
                 )
-              )(messages(application)),
+              ),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false,
               excludedTraderSelfRequestedToLeaveTransferringMSID,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = true,
-              Some(s"${config.leaveOneStopShopUrl}/cancel-leave-scheme")
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
         }
@@ -1702,7 +1763,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Gen.listOfN(4, arbitraryVatReturn.arbitrary).sample.value ++ Seq(finalVatReturn)
 
           val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
-            registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 6, 9)))
+            registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 6, 9), quarantined = false))
 
           val nextPeriod = StandardPeriod(2024, Q3)
 
@@ -1744,6 +1805,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             .build()
 
           running(application) {
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
             val result = route(application, request).value
@@ -1751,6 +1814,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             val view = application.injector.instanceOf[IndexView]
 
             val config = application.injector.instanceOf[FrontendAppConfig]
+
+            val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+              displayText = msgs("index.details.cancelRequestToLeave"),
+              id = "cancel-request-to-leave",
+              href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
+            )
 
             status(result) mustEqual OK
 
@@ -1761,18 +1830,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Seq(
                   Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
                 )
-              )(messages(application)),
+              ),
               PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
               paymentError = false,
               excludedTraderSelfRequestedToLeaveTransferringMSID,
               hasSubmittedFinalReturn = true,
               currentReturnIsFinal = true,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = true,
-              Some(s"${config.leaveOneStopShopUrl}/cancel-leave-scheme")
-            )(request, messages(application)).toString
+              Some(exclusionLinkView)
+            )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
         }
@@ -1848,7 +1916,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
@@ -1857,7 +1924,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
-      "has submitted final return" in {
+
+      "has submitted final return and eligible to rejoin" in {
 
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
@@ -1901,6 +1969,92 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
+          implicit val msgs: Messages = messages(application)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.rejoinService"),
+            id = "rejoin-this-service",
+            href = s"#"
+          )
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+              )
+            ),
+            PaymentsViewModel(Seq.empty, Seq.empty),
+            paymentError = false,
+            excludedTraderQuarantined,
+            hasSubmittedFinalReturn = true,
+            currentReturnIsFinal = false,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl,
+            hasRequestedToLeave = false,
+            Some(exclusionLinkView)
+          )(request, msgs).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
+        }
+      }
+
+      "has submitted final return and not eligible to rejoin when today is equal to rejoin date" in {
+
+        val instant = Instant.parse("2024-04-01T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = StandardPeriod(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                inProgress = false,
+                isOldest = false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderQuarantined)
+        )
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .build()
+
+        running(application) {
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -1918,18 +2072,95 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               )
-            )(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+            ),
+            PaymentsViewModel(Seq.empty, Seq.empty),
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
             None
-          )(request, messages(application)).toString
+          )(request, msgs).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
+        }
+      }
+
+      "has submitted final return and not eligible to rejoin when today is after rejoin date" in {
+
+        val instant = Instant.parse("2024-04-02T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = StandardPeriod(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                inProgress = false,
+                isOldest = false
+              ))))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderQuarantined)
+        )
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .build()
+
+        running(application) {
+          implicit val msgs: Messages = messages(application)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+              )
+            ),
+            PaymentsViewModel(Seq.empty, Seq.empty),
+            paymentError = false,
+            excludedTraderQuarantined,
+            hasSubmittedFinalReturn = true,
+            currentReturnIsFinal = false,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl,
+            hasRequestedToLeave = false,
+            None
+          )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
@@ -1965,6 +2196,5 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       }
     }
-
   }
 }

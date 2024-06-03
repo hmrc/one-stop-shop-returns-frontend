@@ -135,6 +135,7 @@ class YourAccountController @Inject()(
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -152,9 +153,8 @@ class YourAccountController @Inject()(
         currentReturnIsFinal,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        frontendAppConfig.leaveOneStopShopUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
-        cancelRequestToLeave(request.registration.excludedTrader, clock)
+        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn))
       ))
     }
   }
@@ -167,6 +167,7 @@ class YourAccountController @Inject()(
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -187,9 +188,8 @@ class YourAccountController @Inject()(
         currentReturnIsFinal,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        frontendAppConfig.leaveOneStopShopUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
-        cancelRequestToLeave(request.registration.excludedTrader, clock)
+        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn))
       ))
     }
   }
@@ -202,7 +202,7 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def cancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader], clock: Clock)(implicit hc: HeaderCarrier): Option[String] = {
+  private def canCancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader], clock: Clock)(implicit hc: HeaderCarrier): Future[Boolean] = {
     val now: LocalDate = LocalDate.now(clock)
 
     maybeExcludedTrader match {
@@ -212,17 +212,17 @@ class YourAccountController @Inject()(
         val currentPeriod: Period = getPeriod(now)
 
         if (excludedTrader.finalReturnPeriod == currentPeriod) {
-          Some(s"${frontendAppConfig.leaveOneStopShopUrl}/cancel-leave-scheme")
+          true.toFuture
         } else {
-          Some(checkVatReturnSubmissionStatus(excludedTrader).toString)
+          checkVatReturnSubmissionStatus(excludedTrader)
         }
 
       case Some(excludedTrader) if Seq(NoLongerSupplies, VoluntarilyLeaves).contains(excludedTrader.exclusionReason) &&
         now.isBefore(excludedTrader.effectiveDate) =>
-        Some(s"${frontendAppConfig.leaveOneStopShopUrl}/cancel-leave-scheme")
+        true.toFuture
 
       case _ =>
-        None
+        false.toFuture
     }
   }
 
@@ -234,15 +234,11 @@ class YourAccountController @Inject()(
     now.isBefore(tenthOfFollowingMonth) || now.isEqual(tenthOfFollowingMonth)
   }
 
-  private def checkVatReturnSubmissionStatus(excludedTrader: ExcludedTrader)(implicit hc: HeaderCarrier): Future[Option[Result]] = {
+  private def checkVatReturnSubmissionStatus(excludedTrader: ExcludedTrader)(implicit hc: HeaderCarrier): Future[Boolean] = {
     vatReturnConnector.getSubmittedVatReturns().map { submittedVatReturnsResponse =>
       val periods = submittedVatReturnsResponse.map(_.period)
 
-      if (periods.contains(excludedTrader.finalReturnPeriod)) {
-        None
-      } else {
-        Some(Redirect(s"${frontendAppConfig.leaveOneStopShopUrl}/cancel-leave-scheme"))
-      }
+      !periods.contains(excludedTrader.finalReturnPeriod)
     }
   }
 }

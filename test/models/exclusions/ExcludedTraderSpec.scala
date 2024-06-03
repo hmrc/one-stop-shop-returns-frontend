@@ -30,7 +30,7 @@ class ExcludedTraderSpec extends SpecBase {
       val exclusionReasons = Seq(ExclusionReason.CeasedTrade, ExclusionReason.FailsToComply)
 
       exclusionReasons.foreach { reason =>
-        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod.firstDay)
+        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod.firstDay, quarantined = false)
         excludedTrader.exclusionReason.exclusionSource mustBe HMRC
       }
     }
@@ -44,7 +44,7 @@ class ExcludedTraderSpec extends SpecBase {
       )
 
       exclusionReasons.foreach { reason =>
-        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod.firstDay)
+        val excludedTrader = ExcludedTrader(Vrn("123456789"), reason, exclusionPeriod.firstDay, quarantined = false)
         excludedTrader.exclusionReason.exclusionSource mustBe TRADER
       }
     }
