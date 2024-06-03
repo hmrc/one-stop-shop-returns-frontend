@@ -21,7 +21,7 @@ import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import models.Quarter.{Q2, Q3}
 import models.StandardPeriod
-import models.exclusions.{ExcludedTrader, ExclusionReason, ExclusionViewType}
+import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason, ExclusionViewType}
 import models.registration.Registration
 import models.requests.RegistrationRequest
 import models.responses.NotFound
@@ -29,12 +29,13 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.{Mockito, MockitoSugar}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
+import play.api.i18n.Messages
 import play.api.mvc.AnyContent
 import play.api.test.Helpers.running
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.{ExecutionContext, Future}
 
 class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
@@ -178,6 +179,9 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       val instant = Instant.parse("2024-04-03T12:00:00Z")
       val newClock: Clock = Clock.fixed(instant, ZoneId.systemDefault())
+
+      val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, newClock)
+
       val effectiveDate = StandardPeriod(2022, Q2).firstDay
 
       val excludedTrader = ExcludedTrader(
@@ -186,13 +190,6 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         effectiveDate = effectiveDate,
         quarantined = true
       )
-
-      val today = LocalDate.now(newClock)
-      println(s"effective date: ${excludedTrader.effectiveDate}")
-      println(s"rejoin date: ${excludedTrader.rejoinDate}")
-      println(s"isQuarantined: ${excludedTrader.quarantined}")
-      println(s"today: $today")
-      println(excludedTrader.quarantined && today.isAfter(excludedTrader.rejoinDate) || today.isEqual(excludedTrader.rejoinDate))
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
@@ -211,27 +208,112 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     }
   }
 
-  // TODO
   ".getLink" - {
 
     "must not return an exclusion view type when trader is Quarantined" in {
 
+      val exclusionViewType: ExclusionViewType = ExclusionViewType.Quarantined
+
+      val application = applicationBuilder().build()
+
+      running(application) {
+        implicit val msgs: Messages = messages(application)
+
+        val expectedResult = None
+
+        val result = exclusionService.getLink(exclusionViewType)
+
+        result mustBe expectedResult
+      }
     }
 
     "must not return an exclusion view type when trader is ExcludedFinalReturnPending" in {
 
+      val exclusionViewType: ExclusionViewType = ExclusionViewType.ExcludedFinalReturnPending
+
+      val application = applicationBuilder().build()
+
+      running(application) {
+        implicit val msgs: Messages = messages(application)
+
+        val expectedResult = None
+
+        val result = exclusionService.getLink(exclusionViewType)
+
+        result mustBe expectedResult
+      }
     }
 
     "must return a rejoin this service exclusion view type when trader is eligible to rejoin the service" in {
 
+      when(mockFrontendAppConfig.leaveOneStopShopUrl) thenReturn "/leave-one-stop-shop"
+
+      val exclusionViewType: ExclusionViewType = ExclusionViewType.RejoinEligible
+
+      val application = applicationBuilder().build()
+
+      running(application) {
+        implicit val msgs: Messages = messages(application)
+
+        val expectedResult: Option[ExclusionLinkView] =
+          Some(ExclusionLinkView(
+            displayText = msgs("index.details.rejoinService"),
+            id = "rejoin-this-service",
+            href = "#" // TODO add rejoin link
+          ))
+
+        val result = exclusionService.getLink(exclusionViewType)
+
+        result mustBe expectedResult
+      }
     }
 
     "must return a cancel your request to leave this service exclusion view type when trader is eligible to cancel their request to leave the service" in {
 
+      when(mockFrontendAppConfig.leaveOneStopShopUrl) thenReturn "/leave-one-stop-shop"
+
+      val exclusionViewType: ExclusionViewType = ExclusionViewType.ReversalEligible
+
+      val application = applicationBuilder().build()
+
+      running(application) {
+        implicit val msgs: Messages = messages(application)
+
+        val expectedResult: Option[ExclusionLinkView] =
+          Some(ExclusionLinkView(
+            displayText = msgs("index.details.cancelRequestToLeave"),
+            id = "cancel-request-to-leave",
+            href = "/leave-one-stop-shop/cancel-leave-scheme"
+          ))
+
+        val result = exclusionService.getLink(exclusionViewType)
+
+        result mustBe expectedResult
+      }
     }
 
     "must return a leave this service exclusion view type when trader is eligible to leave the service" in {
 
+      when(mockFrontendAppConfig.leaveOneStopShopUrl) thenReturn "/leave-one-stop-shop"
+
+      val exclusionViewType: ExclusionViewType = ExclusionViewType.Default
+
+      val application = applicationBuilder().build()
+
+      running(application) {
+        implicit val msgs: Messages = messages(application)
+
+        val expectedResult: Option[ExclusionLinkView] =
+          Some(ExclusionLinkView(
+            displayText = msgs("index.details.leaveThisService"),
+            id = "leave-this-service",
+            href = "/leave-one-stop-shop"
+          ))
+
+        val result = exclusionService.getLink(exclusionViewType)
+
+        result mustBe expectedResult
+      }
     }
   }
 }
