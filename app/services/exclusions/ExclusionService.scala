@@ -72,8 +72,12 @@ class ExclusionService @Inject()(
     val isQuarantined: Boolean = excludedTrader.exists(_.quarantined)
 
     val today: LocalDate = LocalDate.now(clock)
-    val isQuarantinedStillActive = isQuarantined && excludedTrader.exists(et => today.isAfter(et.rejoinDate) || today.isEqual(et.rejoinDate))
+    val isQuarantinedStillActive = isQuarantined && excludedTrader.exists(et => today.isBefore(et.rejoinDate))
 
+//    println(s"today: $today")
+//    println(s"rejoin date: ${excludedTrader.get.rejoinDate}")
+//    println(s"effective date: ${excludedTrader.get.effectiveDate}")
+//    println(s"today.isBefore(et.rejoinDate): ${today.isBefore(excludedTrader.get.rejoinDate)}")
     (isExcluded, isQuarantinedStillActive, canCancel, hasSubmittedFinalReturn) match {
       case (true, true, _, _) => ExclusionViewType.Quarantined
       case (true, false, true, _) => ExclusionViewType.ReversalEligible
