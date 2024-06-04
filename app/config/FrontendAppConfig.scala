@@ -62,8 +62,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val cachedVatReturnTtl: Int = configuration.get[Int]("mongodb.cachedTimeToLiveInSeconds")
   val saveForLaterTtl: Int = configuration.get[Int]("mongodb.saveForLaterTTLInDays")
 
-  val exclusionsEnabled: Boolean = configuration.get[Boolean]("features.exclusions.enabled")
-
   val auditLogins: Boolean = configuration.get[Boolean]("features.auditLogins")
 
   val changeYourRegistrationUrl: String = configuration.get[String]("urls.changeYourRegistration")

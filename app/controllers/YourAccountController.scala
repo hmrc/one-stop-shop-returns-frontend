@@ -16,25 +16,31 @@
 
 package controllers
 
+import config.Constants.{exclusionCodeSixFollowingMonth, exclusionCodeSixTenthOfMonth}
 import config.FrontendAppConfig
-import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import connectors.financialdata.FinancialDataConnector
+import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.Period.getPeriod
+import models.exclusions.ExcludedTrader
 import models.exclusions.ExcludedTrader._
-import models.{Period, UserAnswers}
+import models.exclusions.ExclusionReason.{NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
 import models.financialdata.{CurrentPayments, PaymentStatus}
 import models.registration.RegistrationWithFixedEstablishment
 import models.requests.RegistrationRequest
+import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.UserAnswersRepository
 import services.exclusions.ExclusionService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount._
 import views.html.IndexView
 
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,9 +50,11 @@ class YourAccountController @Inject()(
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
+                                       vatReturnConnector: VatReturnConnector,
                                        view: IndexView,
                                        sessionRepository: UserAnswersRepository,
-                                       frontendAppConfig: FrontendAppConfig
+                                       frontendAppConfig: FrontendAppConfig,
+                                       clock: Clock
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -127,6 +135,7 @@ class YourAccountController @Inject()(
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -142,20 +151,23 @@ class YourAccountController @Inject()(
         request.registration.excludedTrader,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
-        frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave)
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
+        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn))
       ))
     }
   }
 
-  private def prepareViewWithNoFinancialData(returnsViewModel: Seq[Return], periodInProgress: Option[Period])
-                                            (implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+  private def prepareViewWithNoFinancialData(
+                                              returnsViewModel: Seq[Return],
+                                              periodInProgress: Option[Period]
+                                            )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
     } yield {
       Ok(view(
         request.registration.registeredCompanyName,
@@ -164,7 +176,7 @@ class YourAccountController @Inject()(
           returnsViewModel.map { currentReturn =>
             if (periodInProgress.contains(currentReturn.period)) {
               currentReturn.copy(inProgress = true)
-          } else {
+            } else {
               currentReturn
             }
           }
@@ -174,10 +186,10 @@ class YourAccountController @Inject()(
         request.registration.excludedTrader,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
-        frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave)
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
+        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn))
       ))
     }
   }
@@ -187,6 +199,46 @@ class YourAccountController @Inject()(
       Future.successful(false)
     } else {
       exclusionService.currentReturnIsFinal(request.registration, returnsViewModel.minBy(_.period.firstDay.toEpochDay).period)
+    }
+  }
+
+  private def canCancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader], clock: Clock)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    val now: LocalDate = LocalDate.now(clock)
+
+    maybeExcludedTrader match {
+      case Some(excludedTrader) if TransferringMSID == excludedTrader.exclusionReason &&
+        todayIsEqualToOrBeforeTenthOfFollowingMonth(excludedTrader.effectiveDate, now) =>
+
+        val currentPeriod: Period = getPeriod(now)
+
+        if (excludedTrader.finalReturnPeriod == currentPeriod) {
+          true.toFuture
+        } else {
+          checkVatReturnSubmissionStatus(excludedTrader)
+        }
+
+      case Some(excludedTrader) if Seq(NoLongerSupplies, VoluntarilyLeaves).contains(excludedTrader.exclusionReason) &&
+        now.isBefore(excludedTrader.effectiveDate) =>
+        true.toFuture
+
+      case _ =>
+        false.toFuture
+    }
+  }
+
+  private def todayIsEqualToOrBeforeTenthOfFollowingMonth(effectiveDate: LocalDate, now: LocalDate): Boolean = {
+
+    val tenthOfFollowingMonth = effectiveDate
+      .plusMonths(exclusionCodeSixFollowingMonth)
+      .withDayOfMonth(exclusionCodeSixTenthOfMonth)
+    now.isBefore(tenthOfFollowingMonth) || now.isEqual(tenthOfFollowingMonth)
+  }
+
+  private def checkVatReturnSubmissionStatus(excludedTrader: ExcludedTrader)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    vatReturnConnector.getSubmittedVatReturns().map { submittedVatReturnsResponse =>
+      val periods = submittedVatReturnsResponse.map(_.period)
+
+      !periods.contains(excludedTrader.finalReturnPeriod)
     }
   }
 }

@@ -14,9 +14,9 @@
  * limitations under the License.
  *@
 
-@import utils.CurrencyFormatter.currencyFormat
 @import components.ButtonGroup
 @import models.exclusions.ExcludedTrader
+@import utils.CurrencyFormatter.currencyFormat
 
 @this(
         layout: templates.Layout,
@@ -44,7 +44,7 @@
 
     <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
 
-    @if(!missingData.isEmpty) {
+    @if(missingData.nonEmpty) {
         @govukWarningText(WarningText(
             iconFallbackText = Option(messages("site.warning")),
             content = Text(messages("error.missing_answers"))

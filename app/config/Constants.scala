@@ -23,5 +23,7 @@ object Constants {
   val returnsConfirmationTemplateId = "oss_returns_email_confirmation"
   val overdueReturnsConfirmationTemplateId = "oss_overdue_returns_email_confirmation"
   val returnsConfirmationNoVatOwedTemplateId = "oss_returns_email_confirmation_no_vat_owed"
+  val exclusionCodeSixFollowingMonth: Int = 1
+  val exclusionCodeSixTenthOfMonth: Int = 10
 
 }

@@ -46,4 +46,8 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
 
   def getSavedExternalEntry()(implicit hc: HeaderCarrier): Future[ExternalEntryUrlResponse] =
     httpClientV2.get(url"$baseUrl/external-entry").execute[ExternalEntryUrlResponse]
+
+  def getSubmittedVatReturns()(implicit hc: HeaderCarrier): Future[VatReturnMultipleResponse] = {
+    httpClientV2.get(url"$baseUrl/vat-returns").execute[VatReturnMultipleResponse]
+  }
 }
