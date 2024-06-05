@@ -56,17 +56,14 @@ class YourAccountController @Inject()(
                                        vatReturnConnector: VatReturnConnector,
                                        view: IndexView,
                                        sessionRepository: UserAnswersRepository,
-                                       frontendAppConfig: FrontendAppConfig,
-                                       clock: Clock
-                                     )(implicit ec: ExecutionContext)
+                                       frontendAppConfig: FrontendAppConfig
+                                     )(implicit ec: ExecutionContext, c: Clock)
   extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-
-      implicit val c: Clock = clock
 
       if (frontendAppConfig.amendRegistrationEnabled) {
         if (request.registration.vatDetails.partOfVatGroup && hasFixedEstablishment()) {
@@ -79,7 +76,7 @@ class YourAccountController @Inject()(
       }
   }
 
-  private def normalView()(implicit request: RegistrationRequest[AnyContent], clock: Clock): Future[Result] = {
+  private def normalView()(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
 
     results.flatMap {
@@ -140,7 +137,7 @@ class YourAccountController @Inject()(
   private def prepareViewWithFinancialData(nonExcludedReturns: Seq[Return],
                                            excludedReturns: Seq[Return],
                                            currentPayments: CurrentPayments,
-                                           periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent], clock: Clock): Future[Result] = {
+                                           periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
     val excludedTraderOpt = request.registration.excludedTrader
     for {
@@ -181,7 +178,7 @@ class YourAccountController @Inject()(
   private def prepareViewWithNoFinancialData(returnsViewModel: Seq[Return],
                                              excludedReturns: Seq[Return],
                                              periodInProgress: Option[Period])
-                                            (implicit request: RegistrationRequest[AnyContent], clock: Clock): Future[Result] = {
+                                            (implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
     val excludedTraderOpt = request.registration.excludedTrader
     for {
