@@ -19,11 +19,6 @@
 @import viewmodels._
 @import viewmodels.yourAccount._
 
-@import utils.CurrencyFormatter.currencyFormat
-@import models.exclusions.ExcludedTrader
-@import models.exclusions.ExclusionReason
-@import models.exclusions.ExclusionReason.FailsToComply
-@import models.exclusions.ExclusionReason.CeasedTrade
 @this(
         layout: templates.Layout,
         govukButton: GovukButton,
@@ -39,7 +34,6 @@
         maybeExcludedTrader: Option[ExcludedTrader],
         hasSubmittedFinalReturn: Boolean,
         currentReturnIsFinal: Boolean,
-        exclusionsEnabled: Boolean,
         amendRegistrationLinkEnabled: Boolean,
         changeYourRegistrationUrl: String,
         hasRequestedToLeave: Boolean,
@@ -113,86 +107,85 @@
                 case _ => {}
             }
 
-    } else {
-        @maybeExcludedTrader match {
-            case Some(excludedTrader) => {
-                @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
-                    case (_, _) if hasDueReturnThreeYearsOld && hasDueReturnsLessThanThreeYearsOld => {
-                        @govukWarningText(WarningText(
-                            iconFallbackText = Option(messages("site.warning")),
-                            content = Text(messages("yourAccount.warning.exclusion.trader"))
-                        ))
-                    }
-                    case (_, _) if hasDueReturnThreeYearsOld => {
-                        @govukWarningText(WarningText(
-                            iconFallbackText = Option(messages("site.warning")),
-                            content = Text(messages("yourAccount.warning.leftService"))
-                        ))
-                    }
-                    case (FailsToComply, _) => {
-                        <div class="govuk-warning-text">
-                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                            <strong class="govuk-warning-text__text">
-                                <span class="govuk-warning-text__assistive">Warning:</span>
-                                <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate)</p>
-                            </strong>
-                        </div>
-                    }
-                    case (CeasedTrade, _) => {
-                        @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(messages("yourAccount.warning.exclusion.hmrc"))
-                        ))
-                    }
-                        case (Reversal, _) => {}
-                        case (_, false) => {
-                        @if(hasDueReturnThreeYearsOld) {
-                            @if(hasDueReturnsLessThanThreeYearsOld) {
-                                @govukWarningText(WarningText(
-                                    iconFallbackText = Option(messages("site.warning")),
-                                    content = Text(messages("yourAccount.warning.exclusion.trader"))
-                                ))
-                            } else {
-                                @govukWarningText(WarningText(
-                                    iconFallbackText = Option(messages("site.warning")),
-                                    content = Text(messages("yourAccount.warning.leftService"))
-                                ))
-                            }
-                        } else {
+        } else {
+            @maybeExcludedTrader match {
+                case Some(excludedTrader) => {
+                    @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
+                        case (_, _) if hasDueReturnThreeYearsOld && hasDueReturnsLessThanThreeYearsOld => {
                             @govukWarningText(WarningText(
                                 iconFallbackText = Option(messages("site.warning")),
                                 content = Text(messages("yourAccount.warning.exclusion.trader"))
                             ))
                         }
+                        case (_, _) if hasDueReturnThreeYearsOld => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.leftService"))
+                            ))
+                        }
+                        case (FailsToComply, _) => {
+                            <div class="govuk-warning-text">
+                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                <strong class="govuk-warning-text__text">
+                                    <span class="govuk-warning-text__assistive">Warning:</span>
+                                    <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate)</p>
+                                </strong>
+                            </div>
+                        }
+                        case (CeasedTrade, _) => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.exclusion.hmrc"))
+                            ))
+                        }
+                        case (Reversal, _) => {}
+                        case (_, false) => {
+                            @if(hasDueReturnThreeYearsOld) {
+                                @if(hasDueReturnsLessThanThreeYearsOld) {
+                                    @govukWarningText(WarningText(
+                                        iconFallbackText = Option(messages("site.warning")),
+                                        content = Text(messages("yourAccount.warning.exclusion.trader"))
+                                    ))
+                                } else {
+                                    @govukWarningText(WarningText(
+                                        iconFallbackText = Option(messages("site.warning")),
+                                        content = Text(messages("yourAccount.warning.leftService"))
+                                    ))
+                                }
+                            } else {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.warning.exclusion.trader"))
+                                ))
+                            }
+                        }
+                        case (_, true) => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.requestedToLeave.outstandingReturns"))
+                            ))
+                        }
+                        case (_) => {}
                     }
-                    case (_, true) => {
-                        @govukWarningText(WarningText(
-                            iconFallbackText = Option(messages("site.warning")),
-                            content = Text(messages("yourAccount.warning.requestedToLeave.outstandingReturns"))
-                        ))
+                }
+                case _ => {}
+            }
+            }
+
+            @maybeExcludedTrader match {
+                case Some(excludedTrader) if excludedTrader.exclusionReason != Reversal => {
+                    @((hasSubmittedFinalReturn, hasDueReturnThreeYearsOld, hasDueReturnsLessThanThreeYearsOld)) match {
+                        case (true, _, _) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
+                        case (false, true, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
+                        case (false, false, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
+                        case (false, _, true) => {<p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>}
                     }
-                    case (_) => {}
+                }
+                case Some(_) => {}
+                case _ => {
+                    <p class="govuk-body">@messages("index.paragraph")</p>
                 }
             }
-            case _ => {}
-        }
-    }
-    }
-
-@if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
-    @if(maybeExcludedTrader.get.exclusionReason != Reversal) {
-        @((hasSubmittedFinalReturn, hasDueReturnThreeYearsOld, hasDueReturnsLessThanThreeYearsOld)) match {
-            case (true, _, _) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
-            case (false, true, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
-            case (false, false, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
-            case (false, _, true) => {<p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>}
-        }
-    } else {
-        {}
-    }
-} else {
-    <p class="govuk-body">@messages("index.paragraph")</p>
-}
 
             <div class="flex-container govuk-grid-row">
                 <div class="tile tile-no-border">
@@ -278,14 +271,14 @@
                             </a>
                         </p>
 
-            @if(amendRegistrationLinkEnabled) {
-                <p class="govuk-body">
-                    <a class="govuk-link" href="@changeYourRegistrationUrl"
-                    id="change-your-registration">
-                    @messages("index.details.changeYourRegistration")
-                    </a>
-                </p>
-            }
+                        @if(amendRegistrationLinkEnabled) {
+                            <p class="govuk-body">
+                                <a class="govuk-link" href="@changeYourRegistrationUrl"
+                                id="change-your-registration">
+                                @messages("index.details.changeYourRegistration")
+                                </a>
+                            </p>
+                        }
 
                         @maybeExclusionLinkView.map { exclusionLinkView =>
                             <p class="govuk-body">
@@ -297,60 +290,10 @@
                             </p>
                         }
 
-            @(maybeExcludedTrader, exclusionsEnabled, hasRequestedToLeave) match {
-                case (Some(excludedTrader), true, false) => {
-                    @if(hasSubmittedFinalReturn){
-                        @excludedTrader.exclusionReason match {
-                            case FailsToComply => {}
-                            case _ => {
-                                <p class="govuk-body">
-                                    <a class="govuk-link" href=""
-                                    id="rejoin-this-service">
-                                    @messages("index.details.rejoinService")
-                                    </a>
-                                </p>
-                            }
-                        }
-                    }
-                    @if(hasDueReturnThreeYearsOld){
-                        @(ExclusionReason.values.find(_.numberValue == excludedTrader.exclusionReason)) match {
-                            case Some(FailsToComply) => {}
-                            case _ => {
-                                @if(hasDueReturnsLessThanThreeYearsOld){
-
-                                } else {
-                                    <p class="govuk-body">
-                                        <a class="govuk-link" href=""
-                                        id="rejoin-this-service">
-                                        @messages("index.details.rejoinService")
-                                        </a>
-                                    </p>
-                                }
-                            }
-                        }
-                    }
+                    </div>
+                </div>
+                @if(maybeExcludedTrader.isDefined) {
+                    <p class="govuk-body">@Html(messages("yourAccount.oss.account.message"))</p>
                 }
-                case (Some(_), true, true) => {
-                    <p class="govuk-body">
-                        <a class="govuk-link" href=""
-                        id="cancel-request-to-leave">
-                        @messages("index.details.cancelRequestToLeave")
-                        </a>
-                    </p>
-                }
-                case _ => {
-                    <p class="govuk-body">
-                        <a class="govuk-link" href="@controllers.exclusions.routes.LeaveThisServiceController.onPageLoad().url"
-                        id="leave-this-service">
-                        @messages("index.details.leaveThisService")
-                        </a>
-                    </p>
-                }
-            }
-        </div>
-    </div>
-    @if(exclusionsEnabled && maybeExcludedTrader.isDefined) {
-        <p class="govuk-body">@Html(messages("yourAccount.oss.account.message"))</p>
-    }
 </div>
     }

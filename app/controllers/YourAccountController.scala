@@ -143,7 +143,7 @@ class YourAccountController @Inject()(
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(nonExcludedReturns)
-      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader)
       returns = nonExcludedReturns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
         currentReturn.copy(inProgress = true)
       } else {
@@ -164,11 +164,13 @@ class YourAccountController @Inject()(
         excludedTraderOpt,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
-        frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave(clock)),
-        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn)),
+        exclusionService.getLink(
+          exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn),
+          hasDueReturnsLessThanThreeYearsOld
+        ),
         hasDueReturnThreeYearsOld,
         hasDueReturnsLessThanThreeYearsOld
       ))
@@ -184,7 +186,7 @@ class YourAccountController @Inject()(
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
-      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader)
       returns = returnsViewModel.map { currentReturn =>
           if (periodInProgress.contains(currentReturn.period)) {
             currentReturn.copy(inProgress = true)
@@ -202,11 +204,14 @@ class YourAccountController @Inject()(
         excludedTraderOpt,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
-        frontendAppConfig.exclusionsEnabled,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave(clock)),
-        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn)),
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
+        exclusionService.getLink(exclusionService.calculateExclusionViewType(
+          request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn
+        ),
+          ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
+        ),
         ReturnsUtils.hasDueReturnThreeYearsOld(returns),
         ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
       ))
@@ -221,8 +226,8 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def canCancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader], clock: Clock)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    val now: LocalDate = LocalDate.now(clock)
+  private def canCancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader])(implicit hc: HeaderCarrier): Future[Boolean] = {
+    val now: LocalDate = LocalDate.now(c)
 
     maybeExcludedTrader match {
       case Some(excludedTrader) if TransferringMSID == excludedTrader.exclusionReason &&

@@ -83,8 +83,9 @@ class ExclusionService @Inject()(
     }
   }
 
-  def getLink(exclusionViewType: ExclusionViewType)(implicit messages: Messages): Option[ExclusionLinkView] = {
+  def getLink(exclusionViewType: ExclusionViewType, hasDueReturnsLessThanThreeYearsOld: Boolean)(implicit messages: Messages): Option[ExclusionLinkView] = {
     exclusionViewType match {
+      case _ if hasDueReturnsLessThanThreeYearsOld => None
       case Quarantined | ExcludedFinalReturnPending => None
       case RejoinEligible => Some(
         ExclusionLinkView(

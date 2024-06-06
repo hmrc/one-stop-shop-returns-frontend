@@ -18,11 +18,9 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import generators.Generators
-import models.{Country, StandardPeriod, SubmissionStatus}
 import models.Quarter._
 import models.SubmissionStatus.{Due, Excluded, Next, Overdue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
@@ -61,7 +59,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val save4LaterConnector = mock[SaveForLaterConnector]
   private val vatReturnConnector = mock[VatReturnConnector]
 
-
   private val periodQ2 = StandardPeriod(2022, Q2)
 
   private val vatReturn = arbitrary[VatReturn].sample.value
@@ -82,6 +79,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
   }
+
+  private val instant: Instant = Instant.parse("2021-10-11T12:00:00Z")
+  private val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
   "Your Account Controller" - {
 
@@ -159,14 +159,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false
-          )(request, messages(application)).toString
+          )(request, msgs).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual true
         }
@@ -235,14 +234,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false
-            )(request, messages(application)).toString
+            )(request, msgs).toString
           }
         }
 
@@ -308,14 +306,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false
-            )(request, messages(application)).toString
+            )(request, msgs).toString
           }
         }
 
@@ -382,14 +379,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false
-            )(request, messages(application)).toString
+            )(request, msgs).toString
           }
         }
 
@@ -460,14 +456,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false
-            )(request, messages(application)).toString
+            )(request, msgs).toString
           }
         }
       }
@@ -533,14 +528,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false
-          )(request, messages(application)).toString
+          )(request, msgs).toString
         }
       }
 
@@ -612,14 +606,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false
-          )(request, messages(application)).toString
+          )(request, msgs).toString
         }
       }
 
@@ -694,14 +687,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false
-            )(request, messages(application)).toString
+            )(request, msgs).toString
           }
         }
 
@@ -776,14 +768,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false
-            )(request, messages(application)).toString
+            )(request, msgs).toString
 
           }
         }
@@ -859,14 +850,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
+
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false
-            )(request, messages(application)).toString
+            )(request, msgs).toString
           }
         }
 
@@ -930,14 +921,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false
-            )(request, messages(application)).toString
+            )(request, msgs).toString
           }
         }
 
@@ -1007,14 +997,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
-              config.exclusionsEnabled,
+
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false
-            )(request, messages(application)).toString
+            )(request, msgs).toString
           }
         }
       }
@@ -1086,14 +1076,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
+
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false
-          )(request, messages(application)).toString
+          )(request, msgs).toString
         }
       }
 
@@ -1156,7 +1146,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
+
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
@@ -1287,7 +1277,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedTraderHMRC,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
@@ -1375,12 +1364,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedTraderHMRC,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
- config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
-hasDueReturnThreeYearsOld = false,
+            hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
@@ -1413,7 +1401,7 @@ hasDueReturnThreeYearsOld = false,
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1452,9 +1440,9 @@ hasDueReturnThreeYearsOld = false,
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
@@ -1462,7 +1450,9 @@ hasDueReturnThreeYearsOld = false,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
+            None,
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1530,28 +1520,28 @@ hasDueReturnThreeYearsOld = false,
 
           status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view(
-          registration.registeredCompanyName,
-          registration.vrn.vrn,
-          ReturnsViewModel(
-            Seq(
-              Return.fromPeriod(nextPeriod, Next, false, false)
-            ),Seq.empty
-          )(messages(application), clock),
-          PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
-          paymentError = false,
-          None,
-          hasSubmittedFinalReturn = true,
-          currentReturnIsFinal = false,
-          config.exclusionsEnabled,
-          config.amendRegistrationEnabled,
-          amendRegistrationUrl,
-          hasRequestedToLeave = false,
-Some(exclusionLinkView),
-          hasDueReturnThreeYearsOld = false,
-          hasDueReturnsLessThanThreeYearsOld = false
-        )(request, msgs).toString
-        contentAsString(result).contains("leave-this-service") mustEqual true
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            paymentError = false,
+            excludedTraderSelf,
+            hasSubmittedFinalReturn = true,
+            currentReturnIsFinal = false,
+            amendRegistrationLinkEnabled = config.amendRegistrationEnabled,
+            amendRegistrationUrl,
+            hasRequestedToLeave = false,
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
+          )(request, msgs).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
+        }
       }
     }
 
@@ -1632,15 +1622,14 @@ Some(exclusionLinkView),
             excludedTraderSelfRequestedToLeave,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = true,
             Some(exclusionLinkView),
-            hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
-          )(request, messages(application)).toString
-          contentAsString(result).contains("leave-this-service") mustEqual false
+            false,
+            false
+          )(request, msgs).toString
+          contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
       }
 
@@ -1701,6 +1690,9 @@ Some(exclusionLinkView),
           .build()
 
         running(application) {
+
+          implicit val msgs: Messages = messages(application)
+
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
 
           val result = route(application, request).value
@@ -1710,6 +1702,12 @@ Some(exclusionLinkView),
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.cancelRequestToLeave"),
+            id = "cancel-request-to-leave",
+            href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
+          )
 
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
@@ -1725,10 +1723,10 @@ Some(exclusionLinkView),
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
+            Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false
           )(request, messages(application)).toString
@@ -1811,15 +1809,14 @@ Some(exclusionLinkView),
             excludedTraderSelfRequestedToLeave,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = true,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false
-          )(request, messages(application)).toString
-          contentAsString(result).contains("leave-this-service") mustEqual false
+          )(request, msgs).toString
+          contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
       }
 
@@ -1859,7 +1856,7 @@ Some(exclusionLinkView),
 
             when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
               Future.successful(
-                Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+                Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
             when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
             when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1904,10 +1901,10 @@ Some(exclusionLinkView),
                 registration.vrn.vrn,
                 ReturnsViewModel(
                   Seq(
-                    Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-                  )
-                ),
-                PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+                    Return.fromPeriod(nextPeriod, Next, false, false)
+                  ), Seq.empty
+                )(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
                 paymentError = false,
                 excludedTraderSelfRequestedToLeaveTransferringMSID,
                 hasSubmittedFinalReturn = false,
@@ -1915,7 +1912,9 @@ Some(exclusionLinkView),
                 config.amendRegistrationEnabled,
                 amendRegistrationUrl,
                 hasRequestedToLeave = false,
-                Some(exclusionLinkView)
+                Some(exclusionLinkView),
+                hasDueReturnThreeYearsOld = false,
+                hasDueReturnsLessThanThreeYearsOld = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -1953,7 +1952,7 @@ Some(exclusionLinkView),
 
             when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
               Future.successful(
-                Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+                Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
             when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
             when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1998,10 +1997,10 @@ Some(exclusionLinkView),
                 registration.vrn.vrn,
                 ReturnsViewModel(
                   Seq(
-                    Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-                  )
-                ),
-                PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+                    Return.fromPeriod(nextPeriod, Next, false, false)
+                  ), Seq.empty
+                )(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
                 paymentError = false,
                 excludedTraderSelfRequestedToLeaveTransferringMSID,
                 hasSubmittedFinalReturn = false,
@@ -2009,7 +2008,9 @@ Some(exclusionLinkView),
                 config.amendRegistrationEnabled,
                 amendRegistrationUrl,
                 hasRequestedToLeave = false,
-                Some(exclusionLinkView)
+                Some(exclusionLinkView),
+                hasDueReturnThreeYearsOld = false,
+                hasDueReturnsLessThanThreeYearsOld = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2050,7 +2051,7 @@ Some(exclusionLinkView),
 
             when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
               Future.successful(
-                Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+                Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
             when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
             when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -2089,18 +2090,20 @@ Some(exclusionLinkView),
                 registration.vrn.vrn,
                 ReturnsViewModel(
                   Seq(
-                    Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-                  )
-                ),
-                PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+                    Return.fromPeriod(nextPeriod, Next, false, false)
+                  ), Seq.empty
+                )(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
                 paymentError = false,
                 excludedTraderSelfRequestedToLeaveTransferringMSID,
                 hasSubmittedFinalReturn = false,
                 currentReturnIsFinal = false,
-                config.amendRegistrationEnabled,
+                amendRegistrationLinkEnabled = config.amendRegistrationEnabled,
                 amendRegistrationUrl,
                 hasRequestedToLeave = false,
-                None
+                None,
+                hasDueReturnThreeYearsOld = false,
+                hasDueReturnsLessThanThreeYearsOld = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual false
             }
@@ -2179,33 +2182,33 @@ Some(exclusionLinkView),
 
             status(result) mustEqual OK
 
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            ReturnsViewModel(
-              Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
-              ), Seq.empty
-            )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
-            paymentError = false,
-            excludedTraderSelfRequestedToLeave,
-            hasSubmittedFinalReturn = false,
-            currentReturnIsFinal = false,
-            config.exclusionsEnabled,
-            config.amendRegistrationEnabled,
-            amendRegistrationUrl,
-            hasRequestedToLeave = true,
-            Some(exclusionLinkView),
-            hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
-          )(request, msgs).toString
-          contentAsString(result).contains("cancel-request-to-leave") mustEqual true
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(nextPeriod, Next, false, false)
+                ), Seq.empty
+              )(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+              paymentError = false,
+              excludedTraderSelfRequestedToLeaveTransferringMSID,
+              hasSubmittedFinalReturn = false,
+              currentReturnIsFinal = false,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl,
+              hasRequestedToLeave = true,
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
+            )(request, msgs).toString
+            contentAsString(result).contains("cancel-request-to-leave") mustEqual true
+          }
         }
-      }
-      "has submitted final return" in {
-        val instant = Instant.parse("2021-10-11T12:00:00Z")
-        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        "has submitted final return" in {
+
+          val today: LocalDate = LocalDate.of(2024, 5, 28)
 
           val finalReturnPeriod: Period = StandardPeriod(2024, Q2)
 
@@ -2276,28 +2279,28 @@ Some(exclusionLinkView),
 
             status(result) mustEqual OK
 
-          contentAsString(result) mustEqual view(
-            registration.registeredCompanyName,
-            registration.vrn.vrn,
-            ReturnsViewModel(
-              Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
-              ), Seq.empty
-            )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
-            paymentError = false,
-            excludedTraderSelfRequestedToLeave,
-            hasSubmittedFinalReturn = true,
-            currentReturnIsFinal = false,
-            config.exclusionsEnabled,
-            config.amendRegistrationEnabled,
-            amendRegistrationUrl,
-            hasRequestedToLeave = true,
-            Some(exclusionLinkView),
-            hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
-          )(request, msgs).toString
-          contentAsString(result).contains("cancel-request-to-leave") mustEqual true
+            contentAsString(result) mustEqual view(
+              registration.registeredCompanyName,
+              registration.vrn.vrn,
+              ReturnsViewModel(
+                Seq(
+                  Return.fromPeriod(nextPeriod, Next, false, false)
+                ), Seq.empty
+              )(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+              paymentError = false,
+              excludedTraderSelfRequestedToLeaveTransferringMSID,
+              hasSubmittedFinalReturn = true,
+              currentReturnIsFinal = true,
+              config.amendRegistrationEnabled,
+              amendRegistrationUrl,
+              hasRequestedToLeave = true,
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
+            )(request, msgs).toString
+            contentAsString(result).contains("cancel-request-to-leave") mustEqual true
+          }
         }
       }
     }
@@ -2371,7 +2374,6 @@ Some(exclusionLinkView),
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
@@ -2406,7 +2408,7 @@ Some(exclusionLinkView),
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -2450,10 +2452,10 @@ Some(exclusionLinkView),
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty),
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = true,
@@ -2461,7 +2463,9 @@ Some(exclusionLinkView),
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2536,14 +2540,13 @@ Some(exclusionLinkView),
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.exclusionsEnabled,
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false
-          )(request, messages(application)).toString
+          )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
