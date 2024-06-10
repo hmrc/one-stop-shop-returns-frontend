@@ -48,7 +48,7 @@ class ReturnsUtilsSpec extends SpecBase {
           isOldest = false
         ))
 
-        ReturnsUtils.hasDueReturnThreeYearsOld(returns) mustBe true
+        ReturnsUtils.hasReturnThreeYearsOld(returns) mustBe true
       }
 
       "when there a return Due more than three years old" in {
@@ -65,7 +65,7 @@ class ReturnsUtilsSpec extends SpecBase {
           isOldest = false
         ))
 
-        ReturnsUtils.hasDueReturnThreeYearsOld(returns) mustBe true
+        ReturnsUtils.hasReturnThreeYearsOld(returns) mustBe true
       }
     }
 
@@ -84,7 +84,7 @@ class ReturnsUtilsSpec extends SpecBase {
           isOldest = false
         ))
 
-        ReturnsUtils.hasDueReturnThreeYearsOld(returns) mustBe false
+        ReturnsUtils.hasReturnThreeYearsOld(returns) mustBe false
       }
 
       "when there is a Completed return more than three years old" in {
@@ -101,7 +101,7 @@ class ReturnsUtilsSpec extends SpecBase {
           isOldest = false
         ))
 
-        ReturnsUtils.hasDueReturnThreeYearsOld(returns) mustBe false
+        ReturnsUtils.hasReturnThreeYearsOld(returns) mustBe false
       }
     }
   }

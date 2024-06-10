@@ -65,7 +65,9 @@ class ExclusionService @Inject()(
   def calculateExclusionViewType(
                                   excludedTrader: Option[ExcludedTrader],
                                   canCancel: Boolean,
-                                  hasSubmittedFinalReturn: Boolean
+                                  hasSubmittedFinalReturn: Boolean,
+                                  hasDueReturnsLessThanThreeYearsOld: Boolean,
+                                  hasDueReturnThreeYearsOld: Boolean
                                 ): ExclusionViewType = {
 
     val isExcluded: Boolean = excludedTrader.exists(_.exclusionReason != ExclusionReason.Reversal)
@@ -74,18 +76,25 @@ class ExclusionService @Inject()(
     val today: LocalDate = LocalDate.now(clock)
     val isQuarantinedStillActive = isQuarantined && excludedTrader.exists(et => today.isBefore(et.rejoinDate))
 
+    lazy val threeYearsCheck = {
+      (hasDueReturnThreeYearsOld, hasDueReturnsLessThanThreeYearsOld)  match {
+        case (true, false) => ExclusionViewType.RejoinEligible
+        case _ => ExclusionViewType.ExcludedFinalReturnPending
+      }
+    }
+
     (isExcluded, isQuarantinedStillActive, canCancel, hasSubmittedFinalReturn) match {
       case (true, true, _, _) => ExclusionViewType.Quarantined
       case (true, false, true, _) => ExclusionViewType.ReversalEligible
       case (true, false, false, true) => ExclusionViewType.RejoinEligible
-      case (true, false, false, false) => ExclusionViewType.ExcludedFinalReturnPending
+      case (true, false, false, false) => //going here because no final return submitted
+        threeYearsCheck
       case _ => ExclusionViewType.Default
     }
   }
 
-  def getLink(exclusionViewType: ExclusionViewType, hasDueReturnsLessThanThreeYearsOld: Boolean)(implicit messages: Messages): Option[ExclusionLinkView] = {
+  def getLink(exclusionViewType: ExclusionViewType)(implicit messages: Messages): Option[ExclusionLinkView] = {
     exclusionViewType match {
-      case _ if hasDueReturnsLessThanThreeYearsOld => None
       case Quarantined | ExcludedFinalReturnPending => None
       case RejoinEligible => Some(
         ExclusionLinkView(

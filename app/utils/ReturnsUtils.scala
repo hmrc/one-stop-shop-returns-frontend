@@ -23,9 +23,9 @@ import java.time.{Clock, LocalDate}
 
 object ReturnsUtils {
 
-  def hasDueReturnThreeYearsOld(returns: Seq[Return])(implicit clock: Clock): Boolean = {
+  def hasReturnThreeYearsOld(returns: Seq[Return])(implicit clock: Clock): Boolean = {
     returns.exists { `return` =>
-      if(`return`.submissionStatus == Complete || `return`.submissionStatus == Excluded) {
+      if(`return`.submissionStatus == Complete) {
         false
       } else {
         isThreeYearsOld(`return`.dueDate)

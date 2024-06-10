@@ -56,9 +56,12 @@ class YourAccountController @Inject()(
                                        vatReturnConnector: VatReturnConnector,
                                        view: IndexView,
                                        sessionRepository: UserAnswersRepository,
-                                       frontendAppConfig: FrontendAppConfig
-                                     )(implicit ec: ExecutionContext, c: Clock)
+                                       frontendAppConfig: FrontendAppConfig,
+                                       clock: Clock
+                                     )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
+
+  implicit val c: Clock = clock
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -150,7 +153,7 @@ class YourAccountController @Inject()(
         currentReturn
       })
     } yield {
-      val hasDueReturnThreeYearsOld = ReturnsUtils.hasDueReturnThreeYearsOld(excludedReturns)
+      val hasDueReturnThreeYearsOld = ReturnsUtils.hasReturnThreeYearsOld(excludedReturns)
       val hasDueReturnsLessThanThreeYearsOld = ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
 
       Ok(view(
@@ -168,8 +171,11 @@ class YourAccountController @Inject()(
         frontendAppConfig.changeYourRegistrationUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave(clock)),
         exclusionService.getLink(
-          exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn),
-          hasDueReturnsLessThanThreeYearsOld
+          exclusionService.calculateExclusionViewType(
+            request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn,
+            hasDueReturnsLessThanThreeYearsOld = hasDueReturnsLessThanThreeYearsOld,
+            hasDueReturnThreeYearsOld = hasDueReturnThreeYearsOld
+          ),
         ),
         hasDueReturnThreeYearsOld,
         hasDueReturnsLessThanThreeYearsOld
@@ -195,6 +201,9 @@ class YourAccountController @Inject()(
           }
         }
     } yield {
+      val hasDueReturnThreeYearsOld = ReturnsUtils.hasReturnThreeYearsOld(excludedReturns)
+      val hasDueReturnsLessThanThreeYearsOld = ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
+
       Ok(view(
         request.registration.registeredCompanyName,
         request.vrn.vrn,
@@ -207,13 +216,15 @@ class YourAccountController @Inject()(
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
         request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
-        exclusionService.getLink(exclusionService.calculateExclusionViewType(
-          request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn
+        exclusionService.getLink(
+          exclusionService.calculateExclusionViewType(
+            request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn,
+            hasDueReturnsLessThanThreeYearsOld = hasDueReturnsLessThanThreeYearsOld,
+            hasDueReturnThreeYearsOld = hasDueReturnThreeYearsOld
+          ),
         ),
-          ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
-        ),
-        ReturnsUtils.hasDueReturnThreeYearsOld(returns),
-        ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
+        hasDueReturnThreeYearsOld,
+        hasDueReturnsLessThanThreeYearsOld
       ))
     }
   }
