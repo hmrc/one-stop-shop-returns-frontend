@@ -57,14 +57,14 @@ class IdentifierAction @Inject()(
       AuthProviders(AuthProvider.GovernmentGateway) and
         (AffinityGroup.Individual or AffinityGroup.Organisation) and
         CredentialStrength(CredentialStrength.strong)
-    ).retrieve( Retrievals.credentials and
-                Retrievals.allEnrolments and
-                Retrievals.affinityGroup and
-                Retrievals.groupIdentifier and
-                Retrievals.confidenceLevel and
-                Retrievals.credentialRole ) {
+    ).retrieve(Retrievals.credentials and
+      Retrievals.allEnrolments and
+      Retrievals.affinityGroup and
+      Retrievals.groupIdentifier and
+      Retrievals.confidenceLevel
+    ) {
 
-      case Some(credentials) ~ enrolments ~ Some(Organisation) ~ Some(groupId) ~ _ ~ Some(credentialRole) if credentialRole == User =>
+      case Some(credentials) ~ enrolments ~ Some(Organisation) ~ Some(groupId) ~ _ =>
         (findVrnFromEnrolments(enrolments), ossEnrolmentEnabled(), hasOssEnrolment(enrolments)) match {
           case (Some(vrn), true, true) =>
             getSuccessfulResponse(request, credentials, vrn, groupId)
@@ -75,10 +75,7 @@ class IdentifierAction @Inject()(
           case _ => throw InsufficientEnrolments()
         }
 
-      case _ ~ _ ~ Some(Organisation) ~ _ ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
-        throw UnsupportedCredentialRole()
-
-      case Some(credentials) ~ enrolments ~ Some(Individual) ~ Some(groupId) ~ confidence ~ _ =>
+      case Some(credentials) ~ enrolments ~ Some(Individual) ~ Some(groupId) ~ confidence =>
         (findVrnFromEnrolments(enrolments), ossEnrolmentEnabled(), hasOssEnrolment(enrolments)) match {
           case (Some(vrn), true, true) =>
             checkConfidenceAndGetResponse(request, credentials, vrn, groupId, confidence)
@@ -148,7 +145,7 @@ class IdentifierAction @Inject()(
   }
 
   private def hasOssEnrolment(enrolments: Enrolments): Boolean = {
-     enrolments.enrolments.exists(_.key == config.ossEnrolment)
+    enrolments.enrolments.exists(_.key == config.ossEnrolment)
   }
 
   private def findVrnFromEnrolments(enrolments: Enrolments): Option[Vrn] =
@@ -158,10 +155,9 @@ class IdentifierAction @Inject()(
       .flatMap { enrolment => enrolment.identifiers.find(_.key == "VATRegNo").map(e => Vrn(e.value)) }
 
   private def auditLogin(groupId: String, request: IdentifierRequest[_])(implicit hc: HeaderCarrier): Unit = {
-    if(config.auditLogins) {
+    if (config.auditLogins) {
       val loginAuditModel = LoginAuditModel.build(groupId, request)
       auditService.audit(loginAuditModel)(hc, request)
     }
-
   }
 }
