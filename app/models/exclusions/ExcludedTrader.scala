@@ -22,7 +22,7 @@ import models.{Enumerable, Period, WithName}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.LocalDate
+import java.time.{Clock, LocalDate}
 import java.time.format.DateTimeFormatter
 
 case class ExcludedTrader(
@@ -60,11 +60,11 @@ object ExcludedTrader extends Logging {
 
   implicit class ExcludedTraderHelper(excludedTrader: ExcludedTrader) {
 
-    def hasRequestedToLeave: Boolean = {
+    def hasRequestedToLeave(clock: Clock): Boolean = {
       val exclusionSource = excludedTrader.exclusionReason.exclusionSource
 
       if (exclusionSource == TRADER) {
-        LocalDate.now().isBefore(excludedTrader.effectiveDate)
+        LocalDate.now(clock).isBefore(excludedTrader.effectiveDate)
       } else {
         false
       }
