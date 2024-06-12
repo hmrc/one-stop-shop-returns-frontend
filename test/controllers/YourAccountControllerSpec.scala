@@ -1321,7 +1321,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "has not submitted final return" in {
 
-        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val instant = Instant.parse("2022-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val nextPeriod = StandardPeriod(2021, Q4)
@@ -1399,7 +1399,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "has submitted final return" in {
 
-        val instant = Instant.parse("2021-10-11T12:00:00Z")
+        val instant = Instant.parse("2022-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val nextPeriod = StandardPeriod(2021, Q4)
