@@ -1282,7 +1282,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = true
           )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual false
@@ -1452,7 +1452,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = true
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1528,6 +1528,91 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           status(result) mustEqual OK
 
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              returns = Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false),
+              ), excludedReturns =  Seq(
+                Return.fromPeriod(excludedPeriod, Excluded, false, false)
+              )
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock),
+            paymentError = false,
+            excludedTraderSelf,
+            hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl,
+            hasRequestedToLeave = false,
+            None,
+            hasDueReturnThreeYearsOld = true,
+            hasDueReturnsLessThanThreeYearsOld = true
+          )(request, messages(application)).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
+        }
+      }
+
+      "has not submitted final return and has only 3 year old returns" in {
+
+        val instant = Instant.parse("2024-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val excludedPeriod = StandardPeriod(2019, Q2)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              returns = Seq.empty,
+              excludedReturns = Seq(Return(
+                excludedPeriod,
+                excludedPeriod.firstDay,
+                excludedPeriod.lastDay,
+                excludedPeriod.paymentDeadline,
+                SubmissionStatus.Excluded,
+                false,
+                false
+              ))
+            ))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderSelf)
+        )
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .build()
+
+        running(application) {
+
+          implicit val msgs: Messages = messages(application)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
             displayText = msgs("index.details.rejoinService"),
             id = "rejoin-this-service",
@@ -1538,10 +1623,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(
-              Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false),
+              returns = Seq.empty,
+              excludedReturns = Seq(
                 Return.fromPeriod(excludedPeriod, Excluded, false, false)
-              ), Seq.empty
+              )
             )(messages(application), clock),
             PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock),
             paymentError = false,
@@ -1727,8 +1812,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             amendRegistrationUrl,
             hasRequestedToLeave = true,
             Some(exclusionLinkView),
-            false,
-            false
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = true
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -1914,7 +1999,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 Some(exclusionLinkView),
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = false
+                hasDueReturnsLessThanThreeYearsOld = true
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2010,7 +2095,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 Some(exclusionLinkView),
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = false
+                hasDueReturnsLessThanThreeYearsOld = true
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2103,7 +2188,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 None,
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = false
+                hasDueReturnsLessThanThreeYearsOld = true
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual false
             }
@@ -2200,7 +2285,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = true,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = true
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2379,7 +2464,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = true
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }

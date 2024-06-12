@@ -43,11 +43,11 @@ object ReturnsUtils {
     dueDate.isAfter(threeYearsAgo)
   }
 
-  def hasDueReturnsLessThanThreeYearsOld(returns: Seq[Return])(implicit clock: Clock): Boolean = returns.count { `return` =>
+  def hasDueReturnsLessThanThreeYearsOld(returns: Seq[Return])(implicit clock: Clock): Boolean = returns.exists { `return` =>
     if (`return`.submissionStatus == Complete || `return`.submissionStatus == Excluded) {
       false
     } else {
       isLessThanThreeYearsOld(`return`.dueDate, clock: Clock)
     }
-  } >= 2
+  }
 }

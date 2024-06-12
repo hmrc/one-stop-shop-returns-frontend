@@ -108,7 +108,7 @@ class ReturnsUtilsSpec extends SpecBase {
 
   "hasDueReturnsLessThanThreeYearsOld" - {
     "should return true" - {
-      "when there are 2 or more returns Due less than three years old" in {
+      "when there are 1 or more returns Due less than three years old" in {
         val nextPeriod = StandardPeriod(year, Q1)
         val today = LocalDate.now().minusYears(2)
 
@@ -122,13 +122,13 @@ class ReturnsUtilsSpec extends SpecBase {
           isOldest = false
         )
 
-        val returns = Seq(taxReturn, taxReturn)
+        val returns = Seq(taxReturn)
 
         ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns) mustBe true
       }
     }
     "should return false" - {
-      "when there are 2 or more returns Due exactly three years old" in {
+      "when there are 1 or more returns Due exactly three years old" in {
         val nextPeriod = StandardPeriod(year, Q1)
         val today = LocalDate.now().minusYears(3)
         val taxReturn = Return(
@@ -141,12 +141,12 @@ class ReturnsUtilsSpec extends SpecBase {
           isOldest = false
         )
 
-        val returns = Seq(taxReturn, taxReturn)
+        val returns = Seq(taxReturn)
 
         ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns) mustBe false
       }
 
-      "when there are 2 or more returns Completed less than three years old" in {
+      "when there are 1 or more returns Completed less than three years old" in {
         val nextPeriod = StandardPeriod(year, Q1)
         val today = LocalDate.now().minusYears(2)
         val taxReturn = Return(
@@ -159,26 +159,14 @@ class ReturnsUtilsSpec extends SpecBase {
           isOldest = false
         )
 
-        val returns = Seq(taxReturn, taxReturn)
+        val returns = Seq(taxReturn)
 
         ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns) mustBe false
       }
 
-      "when there is one return Due less than three years old" in {
-        val nextPeriod = StandardPeriod(year, Q1)
-        val today = LocalDate.now().minusYears(2)
+      "when there are no returns" in {
 
-        val returns = Seq(
-          Return(
-            nextPeriod,
-            nextPeriod.firstDay,
-            nextPeriod.lastDay,
-            dueDate = today,
-            SubmissionStatus.Due,
-            inProgress = false,
-            isOldest = false
-          )
-        )
+        val returns = Seq.empty
 
         ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns) mustBe false
       }

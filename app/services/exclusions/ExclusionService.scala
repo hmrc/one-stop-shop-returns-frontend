@@ -87,8 +87,7 @@ class ExclusionService @Inject()(
       case (true, true, _, _) => ExclusionViewType.Quarantined
       case (true, false, true, _) => ExclusionViewType.ReversalEligible
       case (true, false, false, true) => ExclusionViewType.RejoinEligible
-      case (true, false, false, false) => //going here because no final return submitted
-        threeYearsCheck
+      case (true, false, false, false) => threeYearsCheck
       case _ => ExclusionViewType.Default
     }
   }

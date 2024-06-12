@@ -174,11 +174,10 @@
 
             @maybeExcludedTrader match {
                 case Some(excludedTrader) if excludedTrader.exclusionReason != Reversal => {
-                    @((hasSubmittedFinalReturn, hasDueReturnThreeYearsOld, hasDueReturnsLessThanThreeYearsOld)) match {
-                        case (true, _, _) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
-                        case (false, true, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
-                        case (false, false, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
-                        case (false, _, true) => {<p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>}
+                    @((hasSubmittedFinalReturn, hasDueReturnsLessThanThreeYearsOld)) match {
+                        case (true, _) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
+                        case (false, true) => {<p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>}
+                        case (false, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
                     }
                 }
                 case Some(_) => {}

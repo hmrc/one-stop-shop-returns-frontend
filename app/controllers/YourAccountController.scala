@@ -19,7 +19,6 @@ package controllers
 import config.Constants.{exclusionCodeSixFollowingMonth, exclusionCodeSixTenthOfMonth}
 import config.FrontendAppConfig
 import connectors.financialdata.FinancialDataConnector
-import connectors.{ReturnStatusConnector, SaveForLaterConnector}
 import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
@@ -27,7 +26,6 @@ import models.Period.getPeriod
 import models.exclusions.ExcludedTrader
 import models.exclusions.ExcludedTrader._
 import models.exclusions.ExclusionReason.{NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
-import models.financialdata.{CurrentPayments, PaymentStatus}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration.RegistrationWithFixedEstablishment
 import models.requests.RegistrationRequest
@@ -169,7 +167,7 @@ class YourAccountController @Inject()(
         currentReturnIsFinal,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave(clock)),
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
         exclusionService.getLink(
           exclusionService.calculateExclusionViewType(
             request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn,
