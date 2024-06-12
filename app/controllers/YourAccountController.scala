@@ -26,7 +26,7 @@ import models.Period.getPeriod
 import models.exclusions.ExcludedTrader
 import models.exclusions.ExcludedTrader._
 import models.exclusions.ExclusionReason.{NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
-import models.financialdata.{CurrentPayments, PaymentStatus}
+import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration.RegistrationWithFixedEstablishment
 import models.requests.RegistrationRequest
 import models.{Period, UserAnswers}
@@ -37,6 +37,7 @@ import services.exclusions.ExclusionService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
+import utils.ReturnsUtils
 import viewmodels.yourAccount._
 import views.html.IndexView
 
@@ -57,6 +58,8 @@ class YourAccountController @Inject()(
                                        clock: Clock
                                      )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
+
+  implicit val c: Clock = clock
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -79,10 +82,14 @@ class YourAccountController @Inject()(
 
     results.flatMap {
       case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
-        prepareViewWithFinancialData(availablePeriodsWithStatus.returns, vatReturnsWithFinancialData, answers.map(_.period))
+        prepareViewWithFinancialData(
+          availablePeriodsWithStatus.returns, availablePeriodsWithStatus.excludedReturns,
+          vatReturnsWithFinancialData, answers.map(_.period)
+        )
       case (Right(availablePeriodsWithStatus), Left(error), answers) =>
         logger.warn(s"There was an error with getting payment information $error")
-        prepareViewWithNoFinancialData(availablePeriodsWithStatus.returns, answers.map(_.period))
+        prepareViewWithNoFinancialData(availablePeriodsWithStatus.returns, availablePeriodsWithStatus.excludedReturns,
+          answers.map(_.period))
       case (Left(error), Left(error2), _) =>
         logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
         throw new Exception(error.toString)
@@ -128,68 +135,94 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def prepareViewWithFinancialData(returnsViewModel: Seq[Return],
+  private def prepareViewWithFinancialData(nonExcludedReturns: Seq[Return],
+                                           excludedReturns: Seq[Return],
                                            currentPayments: CurrentPayments,
                                            periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
+    val excludedTraderOpt = request.registration.excludedTrader
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
-      currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
-      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
+      currentReturnIsFinal <- checkCurrentReturn(nonExcludedReturns)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader)
+      returns = nonExcludedReturns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+        currentReturn.copy(inProgress = true)
+      } else {
+        currentReturn
+      })
     } yield {
+      val hasDueReturnThreeYearsOld = ReturnsUtils.hasReturnThreeYearsOld(excludedReturns)
+      val hasDueReturnsLessThanThreeYearsOld = ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
+
       Ok(view(
         request.registration.registeredCompanyName,
         request.vrn.vrn,
-        ReturnsViewModel(
-          returnsViewModel.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
-            currentReturn.copy(inProgress = true)
-          } else {
-            currentReturn
-          })),
-        PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
+        ReturnsViewModel(returns, excludedReturns),
+        PaymentsViewModel(
+          currentPayments.duePayments, currentPayments.overduePayments, currentPayments.excludedPayments, hasDueReturnThreeYearsOld
+        ),
         (currentPayments.overduePayments ++ currentPayments.duePayments).exists(_.paymentStatus == PaymentStatus.Unknown),
-        request.registration.excludedTrader,
+        excludedTraderOpt,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave(clock)),
-        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn))
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
+        exclusionService.getLink(
+          exclusionService.calculateExclusionViewType(
+            request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn,
+            hasDueReturnsLessThanThreeYearsOld = hasDueReturnsLessThanThreeYearsOld,
+            hasDueReturnThreeYearsOld = hasDueReturnThreeYearsOld
+          ),
+        ),
+        hasDueReturnThreeYearsOld,
+        hasDueReturnsLessThanThreeYearsOld
       ))
     }
   }
 
-  private def prepareViewWithNoFinancialData(
-                                              returnsViewModel: Seq[Return],
-                                              periodInProgress: Option[Period]
-                                            )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+  private def prepareViewWithNoFinancialData(returnsViewModel: Seq[Return],
+                                             excludedReturns: Seq[Return],
+                                             periodInProgress: Option[Period])
+                                            (implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
+    val excludedTraderOpt = request.registration.excludedTrader
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
-      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, clock)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader)
+      returns = returnsViewModel.map { currentReturn =>
+          if (periodInProgress.contains(currentReturn.period)) {
+            currentReturn.copy(inProgress = true)
+          } else {
+            currentReturn
+          }
+        }
     } yield {
+      val hasDueReturnThreeYearsOld = ReturnsUtils.hasReturnThreeYearsOld(excludedReturns)
+      val hasDueReturnsLessThanThreeYearsOld = ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
+
       Ok(view(
         request.registration.registeredCompanyName,
         request.vrn.vrn,
-        ReturnsViewModel(
-          returnsViewModel.map { currentReturn =>
-            if (periodInProgress.contains(currentReturn.period)) {
-              currentReturn.copy(inProgress = true)
-            } else {
-              currentReturn
-            }
-          }
-        ),
-        PaymentsViewModel(Seq.empty, Seq.empty),
+        ReturnsViewModel(returns, excludedReturns),
+        PaymentsViewModel(Seq.empty[Payment], Seq.empty[Payment], Seq.empty[Payment], hasDueReturnThreeYearsOld = true), //true = no effect
         paymentError = true,
-        request.registration.excludedTrader,
+        excludedTraderOpt,
         hasSubmittedFinalReturn,
         currentReturnIsFinal,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave(clock)),
-        exclusionService.getLink(exclusionService.calculateExclusionViewType(request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn))
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
+        exclusionService.getLink(
+          exclusionService.calculateExclusionViewType(
+            request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn,
+            hasDueReturnsLessThanThreeYearsOld = hasDueReturnsLessThanThreeYearsOld,
+            hasDueReturnThreeYearsOld = hasDueReturnThreeYearsOld
+          ),
+        ),
+        hasDueReturnThreeYearsOld,
+        hasDueReturnsLessThanThreeYearsOld
       ))
     }
   }
@@ -202,8 +235,8 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def canCancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader], clock: Clock)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    val now: LocalDate = LocalDate.now(clock)
+  private def canCancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader])(implicit hc: HeaderCarrier): Future[Boolean] = {
+    val now: LocalDate = LocalDate.now(c)
 
     maybeExcludedTrader match {
       case Some(excludedTrader) if TransferringMSID == excludedTrader.exclusionReason &&

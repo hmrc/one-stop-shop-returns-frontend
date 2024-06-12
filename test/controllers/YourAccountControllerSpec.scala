@@ -22,7 +22,7 @@ import connectors.financialdata.FinancialDataConnector
 import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import generators.Generators
 import models.Quarter._
-import models.SubmissionStatus.{Due, Next, Overdue}
+import models.SubmissionStatus.{Due, Excluded, Next, Overdue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
 import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
@@ -80,6 +80,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     Mockito.reset(vatReturnConnector)
   }
 
+  private val instant: Instant = Instant.parse("2021-10-11T12:00:00Z")
+  private val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
   "Your Account Controller" - {
 
     "must return OK and the correct view with no saved answers" - {
@@ -107,11 +110,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
@@ -149,9 +152,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            )(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty),
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
@@ -159,7 +162,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual true
@@ -181,11 +186,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+              Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(sessionRepository.set(any())) thenReturn Future.successful(true)
 
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
@@ -222,9 +227,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               ReturnsViewModel(
                 Seq(
                   Return.fromPeriod(period, Due, inProgress = false, isOldest = true)
-                )
-              )(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty),
+                ), Seq.empty
+              )(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -232,7 +237,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
           }
         }
@@ -252,10 +259,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq(userAnswers)))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
-          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+              Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq(userAnswers))
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+          when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
@@ -292,9 +299,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               ReturnsViewModel(
                 Seq(
                   Return.fromPeriod(period, Due, inProgress = true, isOldest = true)
-                )
-              )(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty),
+                ), Seq.empty
+              )(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -302,7 +309,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
           }
         }
@@ -322,11 +331,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+              Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(sessionRepository.set(any())) thenReturn Future.successful(true)
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
@@ -363,9 +372,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               ReturnsViewModel(
                 Seq(
                   Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = true)
-                )
-              )(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty),
+                ), Seq.empty
+              )(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -373,7 +382,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
           }
         }
@@ -396,11 +407,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+              Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(sessionRepository.set(any())) thenReturn Future.successful(true)
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
@@ -436,11 +447,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
-                  Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true)
-                )
-              )(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty),
+                  Return.fromPeriod(secondPeriod, Due, false, false),
+                  Return.fromPeriod(firstPeriod, Overdue, false, true)
+                ), Seq.empty
+              )(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -448,7 +459,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
           }
         }
@@ -469,10 +482,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
@@ -507,8 +520,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(Seq(
-              Return.fromPeriod(StandardPeriod(2021, Q3), Overdue, inProgress = false, isOldest = true)))(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty),
+              Return.fromPeriod(StandardPeriod(2021, Q3), Overdue, inProgress = false, isOldest = true)
+            ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
@@ -516,7 +531,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
         }
       }
@@ -540,7 +557,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -578,10 +595,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            ReturnsViewModel(Seq(
-              Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
-              Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false)))(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty),
+            ReturnsViewModel(
+              Seq(
+              Return.fromPeriod(firstPeriod, Overdue, false, true),
+              Return.fromPeriod(secondPeriod, Overdue, false, false)
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
@@ -589,7 +609,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
         }
       }
@@ -614,12 +636,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq(payment), Seq.empty, payment.amountOwed, BigDecimal(0)))
+              Right(CurrentPayments(Seq(payment), Seq.empty, Seq.empty, payment.amountOwed, BigDecimal(0)))
             )
 
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(sessionRepository.set(any())) thenReturn Future.successful(true)
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
@@ -654,10 +676,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
               PaymentsViewModel(
                 Seq(payment),
-                Seq.empty),
+                Seq.empty,
+                Seq.empty,
+                hasDueReturnThreeYearsOld = false
+              )(messages(application), clock),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -665,7 +690,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
           }
         }
@@ -688,7 +715,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq(payment), Seq.empty, payment.amountOwed, BigDecimal(0)))
+              Right(CurrentPayments(Seq(payment), Seq.empty, Seq.empty, payment.amountOwed, BigDecimal(0)))
             )
 
           when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
@@ -730,9 +757,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
-              PaymentsViewModel(Seq(payment),
-                Seq.empty),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
+              PaymentsViewModel(
+                Seq(payment),
+                Seq.empty,
+                Seq.empty,
+                hasDueReturnThreeYearsOld = false
+              )(messages(application), clock),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -740,7 +771,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
 
           }
@@ -768,6 +801,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 CurrentPayments(
                   Seq.empty,
                   Seq(overduePayment),
+                  Seq.empty,
                   overduePayment.amountOwed,
                   overduePayment.amountOwed
                 )
@@ -810,16 +844,19 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq(overduePayment)),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq(overduePayment), Seq.empty, hasDueReturnThreeYearsOld = false )(messages(application), clock),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
+
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
           }
         }
@@ -878,8 +915,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
-              PaymentsViewModel(Seq.empty, Seq.empty),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
               paymentError = true,
               None,
               hasSubmittedFinalReturn = false,
@@ -887,7 +924,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
           }
         }
@@ -906,7 +945,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-            Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
           when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
             vatOwed
@@ -947,19 +986,24 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
               PaymentsViewModel(
                 Seq(payment),
-                Seq.empty
-              ),
+                Seq.empty,
+                Seq.empty,
+                hasDueReturnThreeYearsOld = false
+              )(messages(application), clock),
               paymentError = true,
               None,
               hasSubmittedFinalReturn = false,
               currentReturnIsFinal = false,
+
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = false,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
           }
         }
@@ -980,13 +1024,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )
 
         when(financialDataConnector.getCurrentPayments(any())(any()))
-          .thenReturn(Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, BigDecimal(0), BigDecimal(0)))))
+          .thenReturn(Future.successful(Right(CurrentPayments(Seq(payment), Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0)))))
 
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
@@ -1021,18 +1065,24 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)))(messages(application)),
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
             PaymentsViewModel(
               Seq(payment),
-              Seq.empty),
+              Seq.empty,
+              Seq.empty,
+              hasDueReturnThreeYearsOld = false
+            )(messages(application), clock),
             paymentError = true,
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
+
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
         }
       }
@@ -1052,7 +1102,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0)))
+          )
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(Some(answers)))
@@ -1089,17 +1140,21 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, inProgress = true, isOldest = true)))(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty),
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, true, true)), Seq.empty)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
             currentReturnIsFinal = false,
+
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            Some(exclusionLinkView)
-          )(request, msgs).toString
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
+          )(request, messages(application)).toString
+
         }
       }
     }
@@ -1135,7 +1190,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
         Future.successful(
-          Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+          Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
@@ -1177,7 +1232,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
@@ -1215,9 +1270,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderHMRC,
             hasSubmittedFinalReturn = false,
@@ -1225,8 +1280,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
-          )(request, msgs).toString
+            None,
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = true
+          )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1255,7 +1312,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1300,9 +1357,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderHMRC,
             hasSubmittedFinalReturn = true,
@@ -1310,7 +1367,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1321,10 +1380,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "has not submitted final return" in {
 
-        val instant = Instant.parse("2022-10-11T12:00:00Z")
+        val instant = Instant.parse("2024-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = StandardPeriod(2021, Q4)
+        val nextPeriod = StandardPeriod(2024, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1342,7 +1401,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1379,11 +1438,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(
-              Seq(
+              Seq(//
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
@@ -1391,18 +1450,206 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
+            None,
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = true
           )(request, msgs).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
+        }
+      }
+
+      "has not submitted final return and has 3 year old returns" in {
+
+        val instant = Instant.parse("2024-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = StandardPeriod(2024, Q4)
+        val excludedPeriod = StandardPeriod(2019, Q2)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(
+                Return(
+                  nextPeriod,
+                  nextPeriod.firstDay,
+                  nextPeriod.lastDay,
+                  nextPeriod.paymentDeadline,
+                  SubmissionStatus.Next,
+                  false,
+                  false
+                )
+              ),
+              excludedReturns = Seq(Return(
+                excludedPeriod,
+                excludedPeriod.firstDay,
+                excludedPeriod.lastDay,
+                excludedPeriod.paymentDeadline,
+                SubmissionStatus.Excluded,
+                false,
+                false
+              ))
+            ))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderSelf)
+        )
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .build()
+
+        running(application) {
+
+          implicit val msgs: Messages = messages(application)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              returns = Seq(
+                Return.fromPeriod(nextPeriod, Next, false, false),
+              ), excludedReturns =  Seq(
+                Return.fromPeriod(excludedPeriod, Excluded, false, false)
+              )
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock),
+            paymentError = false,
+            excludedTraderSelf,
+            hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl,
+            hasRequestedToLeave = false,
+            None,
+            hasDueReturnThreeYearsOld = true,
+            hasDueReturnsLessThanThreeYearsOld = true
+          )(request, messages(application)).toString
+          contentAsString(result).contains("leave-this-service") mustEqual false
+        }
+      }
+
+      "has not submitted final return and has only 3 year old returns" in {
+
+        val instant = Instant.parse("2024-10-11T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val excludedPeriod = StandardPeriod(2019, Q2)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              returns = Seq.empty,
+              excludedReturns = Seq(Return(
+                excludedPeriod,
+                excludedPeriod.firstDay,
+                excludedPeriod.lastDay,
+                excludedPeriod.paymentDeadline,
+                SubmissionStatus.Excluded,
+                false,
+                false
+              ))
+            ))
+          )
+
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderSelf)
+        )
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector)
+          )
+          .build()
+
+        running(application) {
+
+          implicit val msgs: Messages = messages(application)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
+            displayText = msgs("index.details.rejoinService"),
+            id = "rejoin-this-service",
+            href = s"#"
+          )
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              returns = Seq.empty,
+              excludedReturns = Seq(
+                Return.fromPeriod(excludedPeriod, Excluded, false, false)
+              )
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock),
+            paymentError = false,
+            excludedTraderSelf,
+            hasSubmittedFinalReturn = false,
+            currentReturnIsFinal = false,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl,
+            hasRequestedToLeave = false,
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = true,
+            hasDueReturnsLessThanThreeYearsOld = false
+          )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
       }
 
       "has submitted final return" in {
 
-        val instant = Instant.parse("2022-10-11T12:00:00Z")
+        val instant = Instant.parse("2024-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = StandardPeriod(2021, Q4)
+        val nextPeriod = StandardPeriod(2024, Q4)
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1420,7 +1667,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1465,17 +1712,19 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = true,
             currentReturnIsFinal = false,
-            config.amendRegistrationEnabled,
+            amendRegistrationLinkEnabled = config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1507,7 +1756,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1552,9 +1801,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderSelfRequestedToLeave,
             hasSubmittedFinalReturn = false,
@@ -1562,7 +1811,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = true,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = true
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -1591,7 +1842,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1635,10 +1886,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderSelfRequestedToLeave,
             hasSubmittedFinalReturn = true,
@@ -1646,7 +1897,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = true,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -1688,7 +1941,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
               Future.successful(
-                Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+                Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
             when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
             when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1733,10 +1986,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 registration.vrn.vrn,
                 ReturnsViewModel(
                   Seq(
-                    Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-                  )
-                ),
-                PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+                    Return.fromPeriod(nextPeriod, Next, false, false)
+                  ), Seq.empty
+                )(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
                 paymentError = false,
                 excludedTraderSelfRequestedToLeaveTransferringMSID,
                 hasSubmittedFinalReturn = false,
@@ -1744,7 +1997,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 config.amendRegistrationEnabled,
                 amendRegistrationUrl,
                 hasRequestedToLeave = false,
-                Some(exclusionLinkView)
+                Some(exclusionLinkView),
+                hasDueReturnThreeYearsOld = false,
+                hasDueReturnsLessThanThreeYearsOld = true
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -1782,7 +2037,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
               Future.successful(
-                Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+                Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
             when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
             when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1827,10 +2082,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 registration.vrn.vrn,
                 ReturnsViewModel(
                   Seq(
-                    Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-                  )
-                ),
-                PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+                    Return.fromPeriod(nextPeriod, Next, false, false)
+                  ), Seq.empty
+                )(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
                 paymentError = false,
                 excludedTraderSelfRequestedToLeaveTransferringMSID,
                 hasSubmittedFinalReturn = false,
@@ -1838,7 +2093,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 config.amendRegistrationEnabled,
                 amendRegistrationUrl,
                 hasRequestedToLeave = false,
-                Some(exclusionLinkView)
+                Some(exclusionLinkView),
+                hasDueReturnThreeYearsOld = false,
+                hasDueReturnsLessThanThreeYearsOld = true
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -1879,7 +2136,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
               Future.successful(
-                Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+                Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
             when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
             when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -1918,18 +2175,20 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 registration.vrn.vrn,
                 ReturnsViewModel(
                   Seq(
-                    Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-                  )
-                ),
-                PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+                    Return.fromPeriod(nextPeriod, Next, false, false)
+                  ), Seq.empty
+                )(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
                 paymentError = false,
                 excludedTraderSelfRequestedToLeaveTransferringMSID,
                 hasSubmittedFinalReturn = false,
                 currentReturnIsFinal = false,
-                config.amendRegistrationEnabled,
+                amendRegistrationLinkEnabled = config.amendRegistrationEnabled,
                 amendRegistrationUrl,
                 hasRequestedToLeave = false,
-                None
+                None,
+                hasDueReturnThreeYearsOld = false,
+                hasDueReturnsLessThanThreeYearsOld = true
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual false
             }
@@ -1966,9 +2225,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 ))))
             )
 
-          when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-            Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -2013,10 +2272,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-                )
-              ),
-              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+                  Return.fromPeriod(nextPeriod, Next, false, false)
+                ), Seq.empty
+              )(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
               paymentError = false,
               excludedTraderSelfRequestedToLeaveTransferringMSID,
               hasSubmittedFinalReturn = false,
@@ -2024,7 +2283,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = true,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = true
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2063,7 +2324,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
             Future.successful(
-              Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+              Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -2108,10 +2369,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-                )
-              ),
-              PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+                  Return.fromPeriod(nextPeriod, Next, false, false)
+                ), Seq.empty
+              )(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
               paymentError = false,
               excludedTraderSelfRequestedToLeaveTransferringMSID,
               hasSubmittedFinalReturn = true,
@@ -2119,7 +2380,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               config.amendRegistrationEnabled,
               amendRegistrationUrl,
               hasRequestedToLeave = true,
-              Some(exclusionLinkView)
+              Some(exclusionLinkView),
+              hasDueReturnThreeYearsOld = false,
+              hasDueReturnsLessThanThreeYearsOld = false
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2152,7 +2415,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -2189,9 +2452,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            )(messages(application)),
-            PaymentsViewModel(Seq.empty, Seq.empty)(messages(application)),
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = false,
@@ -2199,7 +2462,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
+            None,
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = true
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2228,7 +2493,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -2272,10 +2537,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty),
+                Return.fromPeriod(nextPeriod, Next, false, false)
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = true,
@@ -2283,7 +2548,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            Some(exclusionLinkView)
+            Some(exclusionLinkView),
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2312,7 +2579,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
           Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
@@ -2351,9 +2618,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
-            ),
-            PaymentsViewModel(Seq.empty, Seq.empty),
+              ), Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = true,
@@ -2361,7 +2628,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             config.amendRegistrationEnabled,
             amendRegistrationUrl,
             hasRequestedToLeave = false,
-            None
+            None,
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }

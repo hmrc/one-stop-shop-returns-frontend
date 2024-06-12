@@ -22,11 +22,13 @@ import models.requests.OptionalDataRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 
+import java.time.Clock
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeCheckMostOverdueReturnFilter() extends CheckMostOverdueReturnFilterImpl(
   mock[StandardPeriod],
-  mock[ReturnStatusConnector]
+  mock[ReturnStatusConnector],
+  mock[Clock]
 )(ExecutionContext.Implicits.global) {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
@@ -36,7 +38,7 @@ class FakeCheckMostOverdueReturnFilter() extends CheckMostOverdueReturnFilterImp
 }
 
 class FakeCheckMostOverdueReturnFilterProvider()
-  extends CheckMostOverdueReturnFilterProvider(mock[ReturnStatusConnector])(ExecutionContext.Implicits.global) {
+  extends CheckMostOverdueReturnFilterProvider(mock[ReturnStatusConnector], mock[Clock])(ExecutionContext.Implicits.global) {
 
   override def apply(period: Period): CheckMostOverdueReturnFilterImpl = new FakeCheckMostOverdueReturnFilter()
 

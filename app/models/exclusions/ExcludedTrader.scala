@@ -60,7 +60,7 @@ object ExcludedTrader extends Logging {
 
   implicit class ExcludedTraderHelper(excludedTrader: ExcludedTrader) {
 
-    def hasRequestedToLeave(clock: Clock): Boolean = {
+    def hasRequestedToLeave()(implicit clock: Clock): Boolean = {
       val exclusionSource = excludedTrader.exclusionReason.exclusionSource
 
       if (exclusionSource == TRADER) {

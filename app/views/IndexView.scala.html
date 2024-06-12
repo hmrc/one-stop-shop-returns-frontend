@@ -37,7 +37,9 @@
         amendRegistrationLinkEnabled: Boolean,
         changeYourRegistrationUrl: String,
         hasRequestedToLeave: Boolean,
-        maybeExclusionLinkView: Option[ExclusionLinkView]
+        maybeExclusionLinkView: Option[ExclusionLinkView],
+        hasDueReturnThreeYearsOld: Boolean,
+        hasDueReturnsLessThanThreeYearsOld: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(
@@ -109,6 +111,18 @@
             @maybeExcludedTrader match {
                 case Some(excludedTrader) => {
                     @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
+                        case (_, _) if hasDueReturnThreeYearsOld && hasDueReturnsLessThanThreeYearsOld => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.exclusion.trader"))
+                            ))
+                        }
+                        case (_, _) if hasDueReturnThreeYearsOld => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.leftService"))
+                            ))
+                        }
                         case (FailsToComply, _) => {
                             <div class="govuk-warning-text">
                                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
@@ -126,10 +140,24 @@
                         }
                         case (Reversal, _) => {}
                         case (_, false) => {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(messages("yourAccount.warning.exclusion.trader"))
-                            ))
+                            @if(hasDueReturnThreeYearsOld) {
+                                @if(hasDueReturnsLessThanThreeYearsOld) {
+                                    @govukWarningText(WarningText(
+                                        iconFallbackText = Option(messages("site.warning")),
+                                        content = Text(messages("yourAccount.warning.exclusion.trader"))
+                                    ))
+                                } else {
+                                    @govukWarningText(WarningText(
+                                        iconFallbackText = Option(messages("site.warning")),
+                                        content = Text(messages("yourAccount.warning.leftService"))
+                                    ))
+                                }
+                            } else {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.warning.exclusion.trader"))
+                                ))
+                            }
                         }
                         case (_, true) => {
                             @govukWarningText(WarningText(
@@ -137,6 +165,7 @@
                                 content = Text(messages("yourAccount.warning.requestedToLeave.outstandingReturns"))
                             ))
                         }
+                        case (_) => {}
                     }
                 }
                 case _ => {}
@@ -145,10 +174,10 @@
 
             @maybeExcludedTrader match {
                 case Some(excludedTrader) if excludedTrader.exclusionReason != Reversal => {
-                    @if(hasSubmittedFinalReturn) {
-                        <p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>
-                    } else {
-                        <p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>
+                    @((hasSubmittedFinalReturn, hasDueReturnsLessThanThreeYearsOld)) match {
+                        case (true, _) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
+                        case (false, true) => {<p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>}
+                        case (false, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
                     }
                 }
                 case Some(_) => {}

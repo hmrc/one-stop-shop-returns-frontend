@@ -19,41 +19,61 @@ package viewmodels.yourAccount
 import models.financialdata.{Payment, PaymentStatus}
 import play.api.i18n.Messages
 import utils.CurrencyFormatter.currencyFormat
+import utils.ReturnsUtils.isThreeYearsOld
 import viewmodels.LinkModel
+
+import java.time.Clock
 
 case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[String] = None, link: Option[LinkModel] = None)
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
-object PaymentsViewModel{
-  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment])(implicit messages: Messages): PaymentsViewModel = {
-    if(duePayments.isEmpty && overduePayments.isEmpty){
+object PaymentsViewModel {
+  def apply(duePayments: Seq[Payment],
+            overduePayments: Seq[Payment],
+            excludedPayments: Seq[Payment],
+            hasDueReturnThreeYearsOld: Boolean)(implicit messages: Messages, clock: Clock): PaymentsViewModel = {
+    if(duePayments.isEmpty && overduePayments.isEmpty && excludedPayments.isEmpty){
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
           contents = Seq(messages("index.payment.nothingOwed"))
         ))
       )
     } else {
-      val duePaymentsSection = getPaymentsSection(duePayments, "due")
-      val overduePaymentsSection = getPaymentsSection(overduePayments, "overdue")
-      PaymentsViewModel(
-        sections = Seq(duePaymentsSection, overduePaymentsSection).flatten,
-        warning = Some(messages("index.payment.pendingPayments")),
-        link = Some(
+      val duePaymentsSection = getPaymentsSection(
+        Some(messages(s"index.payment.dueHeading")), duePayments, "due"
+      )
+
+      val overduePaymentsSection = getPaymentsSection(
+        Some(messages(s"index.payment.overdueHeading")), overduePayments, "overdue")
+
+      val excludedPaymentsSection =
+        getPaymentsSection(None, excludedPayments, "excluded")
+
+      val link = if(hasDueReturnThreeYearsOld) {
+        None
+      } else {
+        Some(
           LinkModel(
             linkText = messages("index.payment.makeAPayment"),
             id = "make-a-payment",
             url = controllers.routes.WhichVatPeriodToPayController.onPageLoad().url
           )
         )
+      }
+
+      PaymentsViewModel(
+        sections = Seq(excludedPaymentsSection, duePaymentsSection, overduePaymentsSection).flatten,
+        warning = Some(messages("index.payment.pendingPayments")),
+        link = link
       )
     }
   }
 
-  private def getPaymentsSection(payments: Seq[Payment], key: String)(implicit messages: Messages) = {
+  private def getPaymentsSection(heading: Option[String], payments: Seq[Payment], key: String)(implicit messages: Messages, clock: Clock) = {
     if(payments.nonEmpty){
       Some(
         PaymentsSection(
-          heading = Some(messages(s"index.payment.${key}Heading")),
+          heading = heading,
           contents = payments.map(
             payment => payment.paymentStatus match {
               case PaymentStatus.Unknown =>
@@ -61,14 +81,21 @@ object PaymentsViewModel{
                   s"index.payment.${key}AmountMaybeOwed",
                   payment.period.displayShortText,
                   payment.period.paymentDeadlineDisplay
-                  )
-              case _ => messages(
+                )
+              case _ => if(isThreeYearsOld(payment.dateDue)){
+                messages(
+                  "index.payment.amountOwedThreeYearsOld",
+                  payment.period.displayShortText
+                )
+              } else {
+                messages(
                   s"index.payment.${key}AmountOwed",
                   currencyFormat(payment.amountOwed),
                   payment.period.displayShortText,
                   payment.period.paymentDeadlineDisplay
-                  )
+                )
               }
+            }
           )
         )
       )

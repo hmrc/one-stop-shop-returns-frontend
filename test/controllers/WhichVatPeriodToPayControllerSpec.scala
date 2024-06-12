@@ -55,7 +55,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
           ).build()
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
@@ -84,7 +84,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
           ).build()
 
         when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+          Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some(externalUrl))))
 
@@ -123,7 +123,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
@@ -167,7 +167,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
@@ -229,7 +229,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
@@ -337,7 +337,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
@@ -386,7 +386,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       )
 
       when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
-        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
+        Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       running(application) {
         val request = FakeRequest(POST, whichVatPeriodToPayRoute)

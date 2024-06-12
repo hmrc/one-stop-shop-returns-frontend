@@ -271,8 +271,11 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
     val url = s"$baseUrl/prepare/${vrn.vrn}"
 
     val payment = Payment(period, 1000L, period.paymentDeadline, PaymentStatus.Unpaid)
+    val excludedPayment = Payment(period, 1000L, period.paymentDeadline.plusYears(3), PaymentStatus.Excluded)
 
-    val currentPayments = CurrentPayments(Seq(payment), Seq(payment), payment.amountOwed, payment.amountOwed + payment.amountOwed)
+    val currentPayments = CurrentPayments(
+      Seq(payment), Seq(payment), Seq(excludedPayment), payment.amountOwed, payment.amountOwed + payment.amountOwed
+    )
     val responseJson = Json.toJson(currentPayments)
 
     "must return Current Payments when successful" in {
