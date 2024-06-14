@@ -303,7 +303,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
           Some(ExclusionLinkView(
             displayText = msgs("index.details.rejoinService"),
             id = "rejoin-this-service",
-            href = "#" // TODO add rejoin link
+            href = "/start-rejoin-journey"
           ))
 
         val result = exclusionService.getLink(exclusionViewType)
