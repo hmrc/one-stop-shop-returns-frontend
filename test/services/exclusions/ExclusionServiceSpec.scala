@@ -290,7 +290,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
     "must return a rejoin this service exclusion view type when trader is eligible to rejoin the service" in {
 
-      when(mockFrontendAppConfig.leaveOneStopShopUrl) thenReturn "/leave-one-stop-shop"
+      when(mockFrontendAppConfig.rejoinThisService) thenReturn "/start-rejoin-journey"
 
       val exclusionViewType: ExclusionViewType = ExclusionViewType.RejoinEligible
 

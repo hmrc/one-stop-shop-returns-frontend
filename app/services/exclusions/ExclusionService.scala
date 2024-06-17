@@ -99,7 +99,7 @@ class ExclusionService @Inject()(
         ExclusionLinkView(
           displayText = messages("index.details.rejoinService"),
           id = "rejoin-this-service",
-          href = s"${frontendAppConfig.rejoinThisService}/start-rejoin-journey"
+          href = s"${frontendAppConfig.rejoinThisService}"
         )
       )
       case ReversalEligible => Some(
