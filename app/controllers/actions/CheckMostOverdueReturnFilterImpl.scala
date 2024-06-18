@@ -19,11 +19,12 @@ package controllers.actions
 import connectors.ReturnStatusConnector
 import controllers.routes
 import models.requests.OptionalDataRequest
-import models.{Period, StandardPeriod, SubmissionStatus}
+import models.{Period, SubmissionStatus}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import utils.ReturnsUtils.isThreeYearsOld
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
@@ -39,9 +40,11 @@ class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusCo
 
     connector.listStatuses(request.registration.commencementDate) flatMap {
       case Right(previousPeriods) =>
-         val dueReturns = previousPeriods.filter(
-           p => p.status != SubmissionStatus.Complete &&
-             p.status != SubmissionStatus.Next && p.status != SubmissionStatus.Excluded).sortBy(_.period.firstDay)
+         val dueReturns = previousPeriods.filter( p =>
+           p.status != SubmissionStatus.Complete &&
+             p.status != SubmissionStatus.Next &&
+             !(p.status == SubmissionStatus.Excluded && isThreeYearsOld(p.period.paymentDeadline)(clock))
+           ).sortBy(_.period.firstDay)
         if(dueReturns.nonEmpty){
           if(dueReturns.head.period == period) {
           Future.successful(None)
@@ -49,7 +52,7 @@ class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusCo
             Future(Some(Redirect(routes.CannotStartReturnController.onPageLoad())))
           }
         } else {
-            Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())))
+            Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad()))) //if empty
         }
       case _ => Future.successful(Some(Redirect(routes.JourneyRecoveryController.onPageLoad())))
     }

@@ -33,12 +33,16 @@ import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
 
+import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  class Harness(connector: ReturnStatusConnector) extends CheckMostOverdueReturnFilterImpl(period, connector, stubClockAtArbitraryDate) {
+  private val instant = Instant.parse("2022-12-31T00:00:00.00Z")
+  private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+  class Harness(connector: ReturnStatusConnector) extends CheckMostOverdueReturnFilterImpl(period, connector, stubClock) {
     def callFilter(request: OptionalDataRequest[_]): Future[Option[Result]] = filter(request)
   }
 
@@ -114,7 +118,27 @@ class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with B
       }
     }
 
-    "must redirect to CannotStartReturn if the return period is Excluded" in {
+    "must redirect to NoOtherPeriodsAvailableController if the return period is Excluded and 3 years old" in {
+
+      when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
+        PeriodWithStatus(StandardPeriod("2019", "Q3").success.value, SubmissionStatus.Excluded)
+      )))
+
+      val app = applicationBuilder(None)
+        .overrides(bind[ReturnStatusConnector].toInstance(mockConnector))
+        .build()
+
+      running(app) {
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(emptyUserAnswers))
+        val controller = new Harness(mockConnector)
+
+        val result = controller.callFilter(request).futureValue
+
+        result.value mustEqual Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())
+      }
+    }
+
+    "must redirect to CannotStartReturn if the return period is Excluded and not three years old" in {
 
       when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
         PeriodWithStatus(StandardPeriod("2021", "Q3").success.value, SubmissionStatus.Excluded)
@@ -130,7 +154,7 @@ class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with B
 
         val result = controller.callFilter(request).futureValue
 
-        result.value mustEqual Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())
+        result must not be defined
       }
     }
 
