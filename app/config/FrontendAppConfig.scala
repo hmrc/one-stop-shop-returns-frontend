@@ -73,4 +73,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val amendRegistrationEnabled: Boolean = configuration.get[Boolean]("features.amendRegistrationEnabled")
 
+  val rejoinThisService: String = configuration.get[String]("urls.rejoinThisService")
+
 }

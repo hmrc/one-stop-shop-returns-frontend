@@ -1346,7 +1346,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
             displayText = msgs("index.details.rejoinService"),
             id = "rejoin-this-service",
-            href = s"#"
+            href = s"${config.rejoinThisService}"
           )
 
           status(result) mustEqual OK
@@ -1616,7 +1616,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
             displayText = msgs("index.details.rejoinService"),
             id = "rejoin-this-service",
-            href = s"#"
+            href = s"${config.rejoinThisService}"
           )
 
           contentAsString(result) mustEqual view(
@@ -1701,7 +1701,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
             displayText = msgs("index.details.rejoinService"),
             id = "rejoin-this-service",
-            href = s"#"
+            href = s"${config.rejoinThisService}"
           )
 
           status(result) mustEqual OK
@@ -2527,7 +2527,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
             displayText = msgs("index.details.rejoinService"),
             id = "rejoin-this-service",
-            href = s"#"
+            href = s"${config.rejoinThisService}"
           )
 
           status(result) mustEqual OK
