@@ -12,6 +12,7 @@ site.signIn = Sign in
 site.govuk = GOV.UK
 site.to = to
 site.submit = Submit
+site.warning = Warning
 
 date.day = Day
 date.month = Month
