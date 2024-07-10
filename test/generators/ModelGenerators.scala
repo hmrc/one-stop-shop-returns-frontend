@@ -320,12 +320,12 @@ trait ModelGenerators {
     Arbitrary {
       for {
         address <- arbitrary[Address]
-        registrationDate <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
+        registrationDate <- arbitrary[LocalDate]
         partOfVatGroup <- arbitrary[Boolean]
-        organisationName <- arbitrary[Option[String]]
-        individualName <- arbitrary[Option[String]]
-        singleMarketIndicator <- arbitrary[Option[Boolean]]
-        deregistrationDecisionDate <- arbitrary[Option[LocalDate]]
+        organisationName <- Gen.option(arbitrary[String])
+        individualName <- Gen.option(arbitrary[String])
+        singleMarketIndicator <- Gen.option(arbitrary[Boolean])
+        deregistrationDecisionDate <- Gen.option(arbitrary[LocalDate])
 
       } yield VatCustomerInfo(address,registrationDate,partOfVatGroup, organisationName, individualName, singleMarketIndicator, deregistrationDecisionDate)
     }
