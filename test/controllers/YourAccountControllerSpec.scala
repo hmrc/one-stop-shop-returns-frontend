@@ -164,7 +164,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual true
@@ -239,7 +240,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -311,7 +313,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -384,7 +387,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -461,7 +465,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -533,7 +538,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
         }
       }
@@ -611,7 +617,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
         }
       }
@@ -692,7 +699,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -773,7 +781,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
 
           }
@@ -856,7 +865,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -926,7 +936,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -1003,7 +1014,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -1082,7 +1094,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
         }
       }
@@ -1152,7 +1165,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
 
         }
@@ -1282,7 +1296,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual false
@@ -1369,7 +1384,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1452,7 +1468,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1548,7 +1565,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = true,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1638,7 +1656,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = true,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1724,7 +1743,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1813,7 +1833,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = true,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -1899,7 +1920,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = true,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -1999,7 +2021,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 Some(exclusionLinkView),
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = true
+                hasDueReturnsLessThanThreeYearsOld = true,
+                hasDeregisteredFromVat = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2095,7 +2118,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 Some(exclusionLinkView),
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = true
+                hasDueReturnsLessThanThreeYearsOld = true,
+                hasDeregisteredFromVat = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2188,7 +2212,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 None,
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = true
+                hasDueReturnsLessThanThreeYearsOld = true,
+                hasDeregisteredFromVat = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual false
             }
@@ -2285,7 +2310,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = true,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = true
+              hasDueReturnsLessThanThreeYearsOld = true,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2382,7 +2408,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = true,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2464,7 +2491,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2550,7 +2578,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2630,7 +2659,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }

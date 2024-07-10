@@ -19,7 +19,7 @@ package controllers
 import config.Constants.{exclusionCodeSixFollowingMonth, exclusionCodeSixTenthOfMonth}
 import config.FrontendAppConfig
 import connectors.financialdata.FinancialDataConnector
-import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
+import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.Period.getPeriod
@@ -52,6 +52,7 @@ class YourAccountController @Inject()(
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
                                        vatReturnConnector: VatReturnConnector,
+                                       registrationConnector: RegistrationConnector,
                                        view: IndexView,
                                        sessionRepository: UserAnswersRepository,
                                        frontendAppConfig: FrontendAppConfig,
@@ -145,6 +146,7 @@ class YourAccountController @Inject()(
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(nonExcludedReturns)
       canCancel <- canCancelRequestToLeave(request.registration.excludedTrader)
+      hasDeregisteredFromVat <- checkDeregisteredTrader(registrationConnector)
       returns = nonExcludedReturns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
         currentReturn.copy(inProgress = true)
       } else {
@@ -172,11 +174,13 @@ class YourAccountController @Inject()(
           exclusionService.calculateExclusionViewType(
             request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn,
             hasDueReturnsLessThanThreeYearsOld = hasDueReturnsLessThanThreeYearsOld,
-            hasDueReturnThreeYearsOld = hasDueReturnThreeYearsOld
+            hasDueReturnThreeYearsOld = hasDueReturnThreeYearsOld,
+            hasDeregisteredFromVat
           ),
         ),
         hasDueReturnThreeYearsOld,
-        hasDueReturnsLessThanThreeYearsOld
+        hasDueReturnsLessThanThreeYearsOld,
+        hasDeregisteredFromVat
       ))
     }
   }
@@ -191,6 +195,7 @@ class YourAccountController @Inject()(
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
       canCancel <- canCancelRequestToLeave(request.registration.excludedTrader)
+      hasDeregisteredFromVat <- checkDeregisteredTrader(registrationConnector)
       returns = returnsViewModel.map { currentReturn =>
           if (periodInProgress.contains(currentReturn.period)) {
             currentReturn.copy(inProgress = true)
@@ -218,11 +223,13 @@ class YourAccountController @Inject()(
           exclusionService.calculateExclusionViewType(
             request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn,
             hasDueReturnsLessThanThreeYearsOld = hasDueReturnsLessThanThreeYearsOld,
-            hasDueReturnThreeYearsOld = hasDueReturnThreeYearsOld
+            hasDueReturnThreeYearsOld = hasDueReturnThreeYearsOld,
+            hasDeregisteredFromVat
           ),
         ),
         hasDueReturnThreeYearsOld,
-        hasDueReturnsLessThanThreeYearsOld
+        hasDueReturnsLessThanThreeYearsOld,
+        hasDeregisteredFromVat
       ))
     }
   }
@@ -272,6 +279,15 @@ class YourAccountController @Inject()(
       val periods = submittedVatReturnsResponse.map(_.period)
 
       !periods.contains(excludedTrader.finalReturnPeriod)
+    }
+  }
+
+  private def checkDeregisteredTrader(connector: RegistrationConnector)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    connector.getVatCustomerInfo().map {
+      case Right(vatInfo) if vatInfo.deregistrationDecisionDate.exists(!_.isAfter(LocalDate.now(clock))) =>
+        true
+      case _ =>
+        false
     }
   }
 }

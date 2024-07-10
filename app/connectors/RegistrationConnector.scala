@@ -17,6 +17,7 @@
 package connectors
 
 import config.Service
+import connectors.VatCustomerInfoHttpParser.{VatCustomerInfoResponse, VatCustomerInfoResponseReads}
 import models.registration.Registration
 import play.api.Configuration
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -33,6 +34,9 @@ class RegistrationConnector @Inject()(config: Configuration, httpClientV2: HttpC
 
   def get()(implicit hc: HeaderCarrier): Future[Option[Registration]] =
     httpClientV2.get(url"$baseUrl/registration").execute[Option[Registration]]
+
+  def getVatCustomerInfo()(implicit hc: HeaderCarrier): Future[VatCustomerInfoResponse] =
+    httpClientV2.get(url"$baseUrl/vat-information").execute[VatCustomerInfoResponse]
 
   def enrolUser()(implicit hc: HeaderCarrier): Future[HttpResponse] =
     httpClientV2.post(url"$baseUrl/confirm-enrolment").execute[HttpResponse]

@@ -19,7 +19,8 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import generators.Generators
-import models.registration.Registration
+import models.registration.{Registration, VatCustomerInfo}
+import models.responses.UnexpectedResponseStatus
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
@@ -78,6 +79,45 @@ class RegistrationConnectorSpec
         result must not be defined
       }
     }
+  }
+
+  ".getVatCustomerInfo" - {
+
+    "must return VAT customer information when the server provides it" in {
+
+      val url = s"/one-stop-shop-registration/vat-information"
+      val app = application
+
+      running(app) {
+        val connector    = app.injector.instanceOf[RegistrationConnector]
+        val vatCustomerInfo = arbitrary[VatCustomerInfo].sample.value
+
+        val responseBody = Json.toJson(vatCustomerInfo).toString
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(ok().withBody(responseBody)))
+
+        val result = connector.getVatCustomerInfo().futureValue
+
+        result mustBe Right(vatCustomerInfo)
+      }
+    }
+
+    "must fail when the server responds with an error" in {
+
+      val url = s"/one-stop-shop-registration/vat-information"
+      val app = application
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(serverError()))
+
+        val result = connector.getVatCustomerInfo().futureValue
+
+        result.swap.getOrElse(fail("Expected Left with UnexpectedResponseStatus")) mustBe an[UnexpectedResponseStatus]
+      }
+    }
+
   }
 
   ".enrolUser" - {

@@ -39,7 +39,8 @@
         hasRequestedToLeave: Boolean,
         maybeExclusionLinkView: Option[ExclusionLinkView],
         hasDueReturnThreeYearsOld: Boolean,
-        hasDueReturnsLessThanThreeYearsOld: Boolean
+        hasDueReturnsLessThanThreeYearsOld: Boolean,
+        hasDeregisteredFromVat: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(
@@ -79,7 +80,14 @@
                                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                                 <strong class="govuk-warning-text__text">
                                     <span class="govuk-warning-text__assistive">Warning:</span>
-                                    <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser", excludedTrader.displayRejoinDate)</p>
+                                    @if(hasDeregisteredFromVat) {
+                                        <p class="govuk-body govuk-!-font-weight-bold">
+                                            @messages("yourAccount.warning.removedFromService") <br>
+                                            @messages("yourAccount.warning.deregisteredTrader")
+                                        </p>
+                                    } else {
+                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser", excludedTrader.displayRejoinDate)</p>
+                                    }
                                 </strong>
                             </div>
                         }
@@ -91,10 +99,20 @@
                         }
                         case (Reversal, _) => {}
                         case (_, false) => {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(messages("yourAccount.warning.leftService"))
-                            ))
+                            <div class="govuk-warning-text">
+                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                <strong class="govuk-warning-text__text">
+                                    <span class="govuk-warning-text__assistive">Warning:</span>
+                                    @if(hasDeregisteredFromVat) {
+                                        <p class="govuk-body govuk-!-font-weight-bold">
+                                            @messages("yourAccount.warning.leftService") <br>
+                                            @messages("yourAccount.warning.deregisteredTrader")
+                                        </p>
+                                    } else {
+                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.leftService")</p>
+                                    }
+                                </strong>
+                            </div>
                         }
                         case (_, true) => {
                             @govukWarningText(WarningText(
@@ -112,23 +130,50 @@
                 case Some(excludedTrader) => {
                     @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
                         case (_, _) if hasDueReturnThreeYearsOld && hasDueReturnsLessThanThreeYearsOld => {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(messages("yourAccount.warning.exclusion.trader"))
-                            ))
+                            <div class="govuk-warning-text">
+                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                <strong class="govuk-warning-text__text">
+                                    <span class="govuk-warning-text__assistive">Warning:</span>
+                                    @if(hasDeregisteredFromVat) {
+                                        <p class="govuk-body govuk-!-font-weight-bold">
+                                            @messages("yourAccount.warning.exclusion.trader") <br>
+                                            @messages("yourAccount.warning.deregisteredTrader")
+                                        </p>
+                                    } else {
+                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.trader")</p>
+                                    }
+                                </strong>
+                            </div>
                         }
                         case (_, _) if hasDueReturnThreeYearsOld => {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(messages("yourAccount.warning.leftService"))
-                            ))
+                            <div class="govuk-warning-text">
+                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                <strong class="govuk-warning-text__text">
+                                    <span class="govuk-warning-text__assistive">Warning:</span>
+                                    @if(hasDeregisteredFromVat) {
+                                        <p class="govuk-body govuk-!-font-weight-bold">
+                                            @messages("yourAccount.warning.leftService") <br>
+                                            @messages("yourAccount.warning.deregisteredTrader")
+                                        </p>
+                                    } else {
+                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.leftService")</p>
+                                    }
+                                </strong>
+                            </div>
                         }
                         case (FailsToComply, _) => {
                             <div class="govuk-warning-text">
                                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                                 <strong class="govuk-warning-text__text">
                                     <span class="govuk-warning-text__assistive">Warning:</span>
-                                    <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate)</p>
+                                    @if(hasDeregisteredFromVat) {
+                                        <p class="govuk-body govuk-!-font-weight-bold">
+                                            @messages("yourAccount.warning.exclusion.deregisteredTrader") <br>
+                                            @messages("yourAccount.warning.deregisteredTrader")
+                                        </p>
+                                    } else {
+                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate)</p>
+                                    }
                                 </strong>
                             </div>
                         }
@@ -153,10 +198,20 @@
                                     ))
                                 }
                             } else {
-                                @govukWarningText(WarningText(
-                                    iconFallbackText = Option(messages("site.warning")),
-                                    content = Text(messages("yourAccount.warning.exclusion.trader"))
-                                ))
+                                <div class="govuk-warning-text">
+                                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                    <strong class="govuk-warning-text__text">
+                                        <span class="govuk-warning-text__assistive">Warning:</span>
+                                        @if(hasDeregisteredFromVat) {
+                                            <p class="govuk-body govuk-!-font-weight-bold">
+                                                @messages("yourAccount.warning.exclusion.trader") <br>
+                                                @messages("yourAccount.warning.deregisteredTrader")
+                                            </p>
+                                        } else {
+                                            <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.trader")</p>
+                                        }
+                                    </strong>
+                                </div>
                             }
                         }
                         case (_, true) => {
