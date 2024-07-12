@@ -66,7 +66,7 @@ index.yourReturns.startReturn = Start your {0} return
 index.yourReturns.dueReturn.startReturn = Start your return
 index.yourReturns.continueReturn = Continue your {0} return
 index.yourReturns.dueReturn.continueReturn = Continue your return
-index.yourReturns.outstandingReturnThreeYearsOld = You have an outstanding return for {0}. You must contact the countries where you made your sales to report any VAT due.
+index.yourReturns.outstandingReturnThreeYearsOld = You must complete your {0} return with the countries where you made your sales.
 index.payment.heading = Payments
 index.payment.dueHeading = Due Payments
 index.payment.overdueHeading = Overdue Payments
@@ -76,7 +76,7 @@ index.payment.nothingOwed = You do not owe anything right now.
 index.payment.makeAPayment = Make a payment
 
 index.payment.dueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}. You must pay this by {2}.
-index.payment.amountOwedThreeYearsOld = You have an outstanding IOSS VAT payment for {0}.  You must contact the countries where you made your sales to pay the VAT due.
+index.payment.amountOwedThreeYearsOld = You have an outstanding OSS VAT payment for {0}.  You must contact the countries where you made your sales to pay the VAT due.
 index.payment.dueAmountMaybeOwed = You may still owe VAT for {0}. You must pay this by {1}.
 index.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}, which was due by {2}.
 index.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, which was due by {1}.
@@ -531,11 +531,13 @@ excludedNotPermitted.link = Back to your account.
 yourAccount.warning.exclusion.trader = You have left this service. You must complete and pay any outstanding returns.
 yourAccount.warning.exclusion.hmrc = We''ve removed you from this service, but you must complete and pay your final return.
 yourAccount.warning.exclusion.quarantineUser = We''ve removed you from this service, but you must complete and pay your final return. You cannot rejoin until {0}
+yourAccount.warning.exclusion.deregisteredTrader = We''ve removed you from this service, but you must complete and pay your final return.
 yourAccount.warning.leftService = You have left this service.
 yourAccount.warning.requestedToLeave = You have requested to leave this service.
 yourAccount.warning.requestedToLeave.outstandingReturns = You have requested to leave this service. You must complete and pay any outstanding returns.
 yourAccount.warning.removedFromService = We''ve removed you from this service.
 yourAccount.warning.quarantineUser = We''ve removed you from this service. You cannot rejoin until {0}.
+yourAccount.warning.deregisteredTrader = You are no longer VAT registered. You must re-register for VAT to use the One Stop Shop service.
 yourAccount.previous.return.correct = You can no longer use this service to correct previous returns. You must make any VAT corrections directly with the country where you made the sales.
 yourAccount.finalReturn.completed = You''ve completed your final return.
 yourAccount.oss.account.message = If you have any questions about your OSS account, contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>

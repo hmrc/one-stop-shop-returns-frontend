@@ -315,4 +315,18 @@ trait ModelGenerators {
         now         = Instant.now
       } yield SavedUserAnswers(vrn, period, data, now)
     }
+
+  implicit val arbitraryVatCustomerInfo: Arbitrary[VatCustomerInfo] =
+    Arbitrary {
+      for {
+        address <- arbitrary[Address]
+        registrationDate <- arbitrary[LocalDate]
+        partOfVatGroup <- arbitrary[Boolean]
+        organisationName <- Gen.option(arbitrary[String])
+        individualName <- Gen.option(arbitrary[String])
+        singleMarketIndicator <- Gen.option(arbitrary[Boolean])
+        deregistrationDecisionDate <- Gen.option(arbitrary[LocalDate])
+
+      } yield VatCustomerInfo(address,registrationDate,partOfVatGroup, organisationName, individualName, singleMarketIndicator, deregistrationDecisionDate)
+    }
 }

@@ -125,7 +125,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         canCancel = false,
         hasSubmittedFinalReturn = false,
         hasDueReturnsLessThanThreeYearsOld = false,
-        hasDueReturnThreeYearsOld = false
+        hasDueReturnThreeYearsOld = false,
+        hasDeregisteredFromVat = false
       ) mustBe ExclusionViewType.Default
     }
 
@@ -143,7 +144,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         canCancel = false,
         hasSubmittedFinalReturn = true,
         hasDueReturnsLessThanThreeYearsOld = false,
-        hasDueReturnThreeYearsOld = false
+        hasDueReturnThreeYearsOld = false,
+        hasDeregisteredFromVat = false
       ) mustBe ExclusionViewType.RejoinEligible
     }
 
@@ -161,7 +163,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         canCancel = true,
         hasSubmittedFinalReturn = false,
         hasDueReturnsLessThanThreeYearsOld = false,
-        hasDueReturnThreeYearsOld = false
+        hasDueReturnThreeYearsOld = false,
+        hasDeregisteredFromVat = false
       ) mustBe ExclusionViewType.ReversalEligible
     }
 
@@ -179,7 +182,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         canCancel = false,
         hasSubmittedFinalReturn = false,
         hasDueReturnsLessThanThreeYearsOld = false,
-        hasDueReturnThreeYearsOld = false
+        hasDueReturnThreeYearsOld = false,
+        hasDeregisteredFromVat = false
       ) mustBe ExclusionViewType.ExcludedFinalReturnPending
     }
 
@@ -212,7 +216,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
           canCancel = false,
           hasSubmittedFinalReturn = false,
           hasDueReturnsLessThanThreeYearsOld = false,
-          hasDueReturnThreeYearsOld = false
+          hasDueReturnThreeYearsOld = false,
+          hasDeregisteredFromVat = false
         ) mustBe ExclusionViewType.Quarantined
       }
     }
@@ -246,7 +251,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
           canCancel = false,
           hasSubmittedFinalReturn = false,
           hasDueReturnsLessThanThreeYearsOld = false,
-          hasDueReturnThreeYearsOld = false
+          hasDueReturnThreeYearsOld = false,
+          hasDeregisteredFromVat = false
         ) mustBe ExclusionViewType.ExcludedFinalReturnPending
       }
     }
@@ -274,6 +280,23 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     "must not return an exclusion view type when trader is ExcludedFinalReturnPending" in {
 
       val exclusionViewType: ExclusionViewType = ExclusionViewType.ExcludedFinalReturnPending
+
+      val application = applicationBuilder().build()
+
+      running(application) {
+        implicit val msgs: Messages = messages(application)
+
+        val expectedResult = None
+
+        val result = exclusionService.getLink(exclusionViewType)
+
+        result mustBe expectedResult
+      }
+    }
+
+    "must not return an exclusion view type when trader is DeregisteredTrader" in {
+
+      val exclusionViewType: ExclusionViewType = ExclusionViewType.DeregisteredTrader
 
       val application = applicationBuilder().build()
 

@@ -27,5 +27,6 @@ object ExclusionViewType extends Enumerable.Implicits {
   case object RejoinEligible extends WithName("Rejoin") with ExclusionViewType
   case object ReversalEligible extends WithName("Reversal") with ExclusionViewType
   case object ExcludedFinalReturnPending extends WithName("ExcludedFinalReturnPending") with ExclusionViewType
+  case object DeregisteredTrader extends WithName("DeregisteredTrader") with ExclusionViewType
   case object Default extends WithName("Default") with ExclusionViewType
 }

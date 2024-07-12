@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.financialdata.FinancialDataConnector
-import connectors.{ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
+import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import generators.Generators
 import models.Quarter._
 import models.SubmissionStatus.{Due, Excluded, Next, Overdue}
@@ -58,6 +58,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val sessionRepository = mock[UserAnswersRepository]
   private val save4LaterConnector = mock[SaveForLaterConnector]
   private val vatReturnConnector = mock[VatReturnConnector]
+  private val registrationConnector = mock[RegistrationConnector]
 
   private val periodQ2 = StandardPeriod(2022, Q2)
 
@@ -78,6 +79,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
+    Mockito.reset(registrationConnector)
   }
 
   private val instant: Instant = Instant.parse("2021-10-11T12:00:00Z")
@@ -116,6 +118,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -123,7 +127,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -164,7 +169,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual true
@@ -192,6 +198,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -199,7 +207,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
           running(application) {
@@ -239,7 +248,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -264,6 +274,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
             .overrides(
@@ -271,7 +283,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
           running(application) {
@@ -311,7 +324,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -337,6 +351,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -344,7 +360,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
           running(application) {
@@ -384,7 +401,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -413,6 +431,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -420,7 +440,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
           running(application) {
@@ -461,7 +482,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -487,6 +509,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -494,7 +518,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         running(application) {
@@ -533,7 +558,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
         }
       }
@@ -563,6 +589,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -570,7 +598,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         running(application) {
@@ -611,7 +640,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
         }
       }
@@ -643,6 +673,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -650,7 +682,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
 
@@ -692,7 +725,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -724,6 +758,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -732,7 +768,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
           running(application) {
@@ -773,7 +810,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
 
           }
@@ -812,6 +850,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.set(any())) thenReturn (Future.successful(true))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -819,7 +859,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
           running(application) {
@@ -856,7 +897,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -883,6 +925,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -890,7 +934,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
           running(application) {
@@ -926,7 +971,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -953,6 +999,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
             .overrides(
@@ -961,7 +1009,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
           running(application) {
@@ -1003,7 +1052,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = false,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
           }
         }
@@ -1032,6 +1082,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -1040,7 +1092,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         running(application) {
@@ -1082,7 +1135,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
         }
       }
@@ -1108,6 +1162,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(Some(answers)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -1115,7 +1171,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         running(application) {
@@ -1152,7 +1209,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
 
         }
@@ -1238,6 +1296,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1248,7 +1308,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -1282,7 +1343,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual false
@@ -1318,6 +1380,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1328,7 +1392,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -1369,7 +1434,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1407,6 +1473,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1417,7 +1485,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -1452,7 +1521,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = true
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1500,6 +1570,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1510,7 +1582,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -1548,7 +1621,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = true,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = true
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1585,6 +1659,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1595,7 +1671,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -1638,7 +1715,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = true,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1673,6 +1751,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1683,7 +1763,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -1724,7 +1805,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1762,6 +1844,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1772,7 +1856,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -1813,7 +1898,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = true,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -1848,6 +1934,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1858,7 +1946,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -1899,7 +1988,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = true,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -1948,6 +2038,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
             when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
+            when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+            when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
             val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
               clock = Some(newClock),
@@ -1958,7 +2050,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-                bind[VatReturnConnector].toInstance(vatReturnConnector)
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[RegistrationConnector].toInstance(registrationConnector)
               )
               .build()
 
@@ -1999,7 +2092,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 Some(exclusionLinkView),
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = true
+                hasDueReturnsLessThanThreeYearsOld = true,
+                hasDeregisteredFromVat = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2044,6 +2138,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
             when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
+            when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+            when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
             val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
               clock = Some(newClock),
@@ -2054,7 +2150,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-                bind[VatReturnConnector].toInstance(vatReturnConnector)
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[RegistrationConnector].toInstance(registrationConnector)
               )
               .build()
 
@@ -2095,7 +2192,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 Some(exclusionLinkView),
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = true
+                hasDueReturnsLessThanThreeYearsOld = true,
+                hasDeregisteredFromVat = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2143,6 +2241,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
             when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
+            when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+            when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
             val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
               clock = Some(newClock),
@@ -2153,7 +2253,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-                bind[VatReturnConnector].toInstance(vatReturnConnector)
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[RegistrationConnector].toInstance(registrationConnector)
               )
               .build()
 
@@ -2188,7 +2289,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 None,
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = true
+                hasDueReturnsLessThanThreeYearsOld = true,
+                hasDeregisteredFromVat = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual false
             }
@@ -2234,6 +2336,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
           when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
             clock = Some(newClock),
@@ -2244,7 +2348,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             )
             .build()
 
@@ -2285,7 +2390,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = true,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = true
+              hasDueReturnsLessThanThreeYearsOld = true,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2331,6 +2437,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(finalVatReturn))
           when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
+          when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+          when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
             clock = Some(newClock),
@@ -2341,7 +2449,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector)
+              bind[VatReturnConnector].toInstance(vatReturnConnector),
+              bind[RegistrationConnector].toInstance(registrationConnector)
             )
             .build()
 
@@ -2382,7 +2491,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasRequestedToLeave = true,
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
-              hasDueReturnsLessThanThreeYearsOld = false
+              hasDueReturnsLessThanThreeYearsOld = false,
+              hasDeregisteredFromVat = false
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2421,6 +2531,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -2431,7 +2543,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -2464,7 +2577,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = true
+            hasDueReturnsLessThanThreeYearsOld = true,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2499,6 +2613,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -2509,7 +2625,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -2550,7 +2667,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2585,6 +2703,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.set(any())) thenReturn (Future.successful(true))
         when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -2595,7 +2715,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector)
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
 
@@ -2630,7 +2751,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasRequestedToLeave = false,
             None,
             hasDueReturnThreeYearsOld = false,
-            hasDueReturnsLessThanThreeYearsOld = false
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }

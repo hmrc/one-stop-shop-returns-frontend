@@ -240,6 +240,17 @@ trait SpecBase
 
   val testPeriodsList = Seq(StandardPeriod(2021, Q1), StandardPeriod(2021, Q2), StandardPeriod(2021, Q3), StandardPeriod(2021, Q4), StandardPeriod(2022, Q1), StandardPeriod(2022, Q2))
 
+  val vatCustomerInfo: VatCustomerInfo =
+    VatCustomerInfo(
+      registrationDate = LocalDate.now(stubClockAtArbitraryDate),
+      address = DesAddress("Line 1", None, None, None, None, Some("AA11 1AA"), "GB"),
+      partOfVatGroup = false,
+      organisationName = Some("Company name"),
+      singleMarketIndicator = Some(true),
+      individualName = None,
+      deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate))
+    )
+
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   protected def applicationBuilder(

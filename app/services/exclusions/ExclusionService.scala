@@ -67,7 +67,8 @@ class ExclusionService @Inject()(
                                   canCancel: Boolean,
                                   hasSubmittedFinalReturn: Boolean,
                                   hasDueReturnsLessThanThreeYearsOld: Boolean,
-                                  hasDueReturnThreeYearsOld: Boolean
+                                  hasDueReturnThreeYearsOld: Boolean,
+                                  hasDeregisteredFromVat: Boolean
                                 ): ExclusionViewType = {
 
     val isExcluded: Boolean = excludedTrader.exists(_.exclusionReason != ExclusionReason.Reversal)
@@ -83,18 +84,19 @@ class ExclusionService @Inject()(
       }
     }
 
-    (isExcluded, isQuarantinedStillActive, canCancel, hasSubmittedFinalReturn) match {
-      case (true, true, _, _) => ExclusionViewType.Quarantined
-      case (true, false, true, _) => ExclusionViewType.ReversalEligible
-      case (true, false, false, true) => ExclusionViewType.RejoinEligible
-      case (true, false, false, false) => threeYearsCheck
+    (isExcluded, isQuarantinedStillActive, canCancel, hasSubmittedFinalReturn, hasDeregisteredFromVat) match {
+      case (true, true, _, _, false) => ExclusionViewType.Quarantined
+      case (true, false, true, _, false) => ExclusionViewType.ReversalEligible
+      case (true, false, false, true, false) => ExclusionViewType.RejoinEligible
+      case (true, false, false, false, false) => threeYearsCheck
+      case (true, _, _, _, true) => ExclusionViewType.DeregisteredTrader
       case _ => ExclusionViewType.Default
     }
   }
 
   def getLink(exclusionViewType: ExclusionViewType)(implicit messages: Messages): Option[ExclusionLinkView] = {
     exclusionViewType match {
-      case Quarantined | ExcludedFinalReturnPending => None
+      case Quarantined | ExcludedFinalReturnPending | DeregisteredTrader => None
       case RejoinEligible => Some(
         ExclusionLinkView(
           displayText = messages("index.details.rejoinService"),
