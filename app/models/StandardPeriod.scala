@@ -25,7 +25,6 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
 import java.time.format.DateTimeFormatter
 import java.time.{Clock, LocalDate}
-import scala.util.Try
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
