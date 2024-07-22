@@ -145,7 +145,7 @@ class YourAccountController @Inject()(
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(nonExcludedReturns)
-      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, request.registration.dateOfFirstSale)
       hasDeregisteredFromVat <- checkDeregisteredTrader(registrationConnector)
       returns = nonExcludedReturns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
         currentReturn.copy(inProgress = true)
@@ -194,7 +194,7 @@ class YourAccountController @Inject()(
     for {
       hasSubmittedFinalReturn <- exclusionService.hasSubmittedFinalReturn(request.registration)
       currentReturnIsFinal <- checkCurrentReturn(returnsViewModel)
-      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader)
+      canCancel <- canCancelRequestToLeave(request.registration.excludedTrader, request.registration.dateOfFirstSale)
       hasDeregisteredFromVat <- checkDeregisteredTrader(registrationConnector)
       returns = returnsViewModel.map { currentReturn =>
           if (periodInProgress.contains(currentReturn.period)) {
@@ -242,12 +242,18 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def canCancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader])(implicit hc: HeaderCarrier): Future[Boolean] = {
+  private def canCancelRequestToLeave(maybeExcludedTrader: Option[ExcludedTrader],
+                                      dateOfFirstSaleOpt: Option[LocalDate])(implicit hc: HeaderCarrier): Future[Boolean] = {
+    import cats.implicits._
+
     val now: LocalDate = LocalDate.now(c)
+    lazy val validFirstDateOfSale = (maybeExcludedTrader, dateOfFirstSaleOpt).mapN{
+        (excludedTrader, dateOfFirstSale) => dateOfFirstSale.isBefore(excludedTrader.effectiveDate)
+      }.getOrElse(false)
 
     maybeExcludedTrader match {
       case Some(excludedTrader) if TransferringMSID == excludedTrader.exclusionReason &&
-        todayIsEqualToOrBeforeTenthOfFollowingMonth(excludedTrader.effectiveDate, now) =>
+        todayIsEqualToOrBeforeTenthOfFollowingMonth(excludedTrader.effectiveDate, now) && validFirstDateOfSale=>
 
         val currentPeriod: Period = getPeriod(now)
 
@@ -258,7 +264,7 @@ class YourAccountController @Inject()(
         }
 
       case Some(excludedTrader) if Seq(NoLongerSupplies, VoluntarilyLeaves).contains(excludedTrader.exclusionReason) &&
-        now.isBefore(excludedTrader.effectiveDate) =>
+        now.isBefore(excludedTrader.effectiveDate) && validFirstDateOfSale =>
         true.toFuture
 
       case _ =>

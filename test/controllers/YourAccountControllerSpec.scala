@@ -1847,9 +1847,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+        val application = applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
-          registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeave)
+          registration = registration.copy(
+            excludedTrader = excludedTraderSelfRequestedToLeave,
+            dateOfFirstSale = Some(LocalDate.now())
+          )
         )
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
@@ -1939,7 +1943,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
-          registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeave)
+          registration = registration.copy(
+            excludedTrader = excludedTraderSelfRequestedToLeave,
+            dateOfFirstSale = Some(LocalDate.now())
+          )
         )
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
@@ -2043,7 +2050,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
               clock = Some(newClock),
-              registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
+              registration = registration.copy(
+                excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID,
+                dateOfFirstSale = Some(LocalDate.of(2024, 4, 9))
+              )
             )
               .overrides(
                 bind[ReturnStatusConnector].toInstance(returnStatusConnector),
@@ -2099,7 +2109,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             }
           }
 
-          "when the 9th day of the following month of the effective date is today" in {
+          "when the 9th day of the following month of the effective date is today and the date of first sale is after the effective date" in {
 
             val today: LocalDate = LocalDate.of(2024, 5, 9)
 
@@ -2141,9 +2151,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
             when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
-            val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+            val application = applicationBuilder(
+              userAnswers = Some(emptyUserAnswers),
               clock = Some(newClock),
-              registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
+              registration = registration.copy(
+                excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID,
+                dateOfFirstSale = Some(LocalDate.of(2024, 4, 9))
+              )
             )
               .overrides(
                 bind[ReturnStatusConnector].toInstance(returnStatusConnector),
@@ -2295,6 +2309,100 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               contentAsString(result).contains("cancel-request-to-leave") mustEqual false
             }
           }
+
+          "when the date of first sale is after the effective date" in {
+
+            val today: LocalDate = LocalDate.of(2024, 5, 9)
+
+            val finalReturnPeriod: Period = StandardPeriod(2024, Q2)
+
+            val newClock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant, ZoneId.systemDefault())
+
+            val submittedVatReturnsWithoutEffectivePeriod: Seq[VatReturn] =
+              Gen.listOfN(4, arbitraryVatReturn.arbitrary.suchThat(vr => vr.period != finalReturnPeriod)).sample.value
+
+            val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
+              registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 4, 10), quarantined = false))
+
+            val nextPeriod = StandardPeriod(2024, Q3)
+
+            when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+              Future.successful(
+                Right(CurrentReturns(
+                  Seq(Return(
+                    nextPeriod,
+                    nextPeriod.firstDay,
+                    nextPeriod.lastDay,
+                    nextPeriod.paymentDeadline,
+                    SubmissionStatus.Next,
+                    inProgress = false,
+                    isOldest = false
+                  ))))
+              )
+
+            when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+              Future.successful(
+                Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+            when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
+            when(sessionRepository.set(any())) thenReturn (Future.successful(true))
+            when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+            when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+            when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
+
+            val application = applicationBuilder(
+              userAnswers = Some(emptyUserAnswers),
+              clock = Some(newClock),
+              registration = registration.copy(
+                excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID,
+                dateOfFirstSale = Some(LocalDate.of(2024, 4, 10))
+              )
+            )
+              .overrides(
+                bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+                bind[FinancialDataConnector].toInstance(financialDataConnector),
+                bind[UserAnswersRepository].toInstance(sessionRepository),
+                bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+                bind[VatReturnConnector].toInstance(vatReturnConnector)
+              )
+              .build()
+
+            running(application) {
+              implicit val msgs: Messages = messages(application)
+
+              val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+              val result = route(application, request).value
+
+              val view = application.injector.instanceOf[IndexView]
+
+              val config = application.injector.instanceOf[FrontendAppConfig]
+
+              status(result) mustEqual OK
+
+              contentAsString(result) mustEqual view(
+                registration.registeredCompanyName,
+                registration.vrn.vrn,
+                ReturnsViewModel(
+                  Seq(
+                    Return.fromPeriod(nextPeriod, Next, false, false)
+                  ), Seq.empty
+                )(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+                paymentError = false,
+                excludedTraderSelfRequestedToLeaveTransferringMSID,
+                hasSubmittedFinalReturn = false,
+                currentReturnIsFinal = false,
+                config.amendRegistrationEnabled,
+                amendRegistrationUrl,
+                hasRequestedToLeave = false,
+                None,
+                hasDueReturnThreeYearsOld = false,
+                hasDueReturnsLessThanThreeYearsOld = true
+              )(request, msgs).toString
+              contentAsString(result).contains("cancel-request-to-leave") mustEqual false
+            }
+          }
         }
 
         "has not submitted final return" in {
@@ -2341,7 +2449,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
             clock = Some(newClock),
-            registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
+            registration = registration.copy(
+              excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID,
+              dateOfFirstSale = Some(LocalDate.of(2024, 6, 8))
+            )
           )
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
@@ -2440,9 +2551,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
+          val application = applicationBuilder(
+            userAnswers = Some(emptyUserAnswers),
             clock = Some(newClock),
-            registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
+            registration = registration.copy(
+              excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID,
+              dateOfFirstSale = Some(LocalDate.of(2024, 6, 8))
+            )
           )
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
@@ -2773,6 +2888,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         contactDetails = ContactDetails("name", "0123 456789", "email@example.com"),
         commencementDate = LocalDate.now,
         isOnlineMarketplace = false,
+        None,
         None,
         None
       )

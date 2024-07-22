@@ -31,7 +31,8 @@ case class Registration(
                          commencementDate: LocalDate,
                          isOnlineMarketplace: Boolean,
                          excludedTrader: Option[ExcludedTrader],
-                         transferringMsidEffectiveFromDate: Option[LocalDate]
+                         transferringMsidEffectiveFromDate: Option[LocalDate],
+                         dateOfFirstSale: Option[LocalDate]
                        )
 
 object Registration {

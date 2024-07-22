@@ -73,6 +73,7 @@ trait SpecBase
     commencementDate      = LocalDate.now,
     isOnlineMarketplace   = false,
     None,
+    None,
     None // TODO
   )
 
