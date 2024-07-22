@@ -253,7 +253,7 @@ class YourAccountController @Inject()(
 
     maybeExcludedTrader match {
       case Some(excludedTrader) if TransferringMSID == excludedTrader.exclusionReason &&
-        todayIsEqualToOrBeforeTenthOfFollowingMonth(excludedTrader.effectiveDate, now) && validFirstDateOfSale=>
+        todayIsEqualToOrBeforeTenthOfFollowingMonth(excludedTrader.effectiveDate, now) && validFirstDateOfSale =>
 
         val currentPeriod: Period = getPeriod(now)
 

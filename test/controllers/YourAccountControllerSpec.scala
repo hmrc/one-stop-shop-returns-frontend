@@ -2350,6 +2350,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
 
+            //when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+            when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+
             val application = applicationBuilder(
               userAnswers = Some(emptyUserAnswers),
               clock = Some(newClock),
@@ -2363,7 +2366,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-                bind[VatReturnConnector].toInstance(vatReturnConnector)
+                bind[VatReturnConnector].toInstance(vatReturnConnector),
+                bind[RegistrationConnector].toInstance(registrationConnector)
               )
               .build()
 
@@ -2398,7 +2402,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasRequestedToLeave = false,
                 None,
                 hasDueReturnThreeYearsOld = false,
-                hasDueReturnsLessThanThreeYearsOld = true
+                hasDueReturnsLessThanThreeYearsOld = true,
+                hasDeregisteredFromVat = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual false
             }
