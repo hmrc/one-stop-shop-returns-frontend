@@ -16,24 +16,14 @@
 
 package services
 
-import generators.Generators
+import base.SpecBase
 import models.Quarter._
 import models.StandardPeriod
-import org.scalatest.OptionValues
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import java.time.{Clock, Instant, LocalDate, ZoneId}
 
 class PeriodServiceSpec
-  extends AnyFreeSpec
-    with Matchers
-    with MockitoSugar
-    with ScalaCheckPropertyChecks
-    with Generators
-    with OptionValues {
+  extends SpecBase {
 
   ".getAvailablePeriods" - {
 
