@@ -17,22 +17,23 @@
 package services
 
 import models.Quarter._
-import models.StandardPeriod
+import models.{Period, StandardPeriod}
+import models.Period.getPeriod
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 
 class PeriodService @Inject()(clock: Clock) {
 
-  def getReturnPeriods(commencementDate: LocalDate): Seq[StandardPeriod] =
-    getAllPeriods.filterNot(_.lastDay.isBefore(commencementDate))
+  def getReturnPeriods(commencementDate: LocalDate): Seq[Period] =
+    getAllPeriods(commencementDate).filterNot(_.lastDay.isBefore(commencementDate))
 
-  def getAllPeriods: Seq[StandardPeriod] = {
-    val firstPeriod = StandardPeriod(2021, Q3)
+  def getAllPeriods(commencementDate: LocalDate): Seq[Period] = {
+    val firstPeriod = getPeriod(commencementDate)
     getPeriodsUntilDate(firstPeriod, LocalDate.now(clock))
   }
 
-  private def getPeriodsUntilDate(currentPeriod: StandardPeriod, endDate: LocalDate): Seq[StandardPeriod] = {
+  private def getPeriodsUntilDate(currentPeriod: Period, endDate: LocalDate): Seq[Period] = {
     if(currentPeriod.lastDay.isBefore(endDate)) {
       Seq(currentPeriod) ++ getPeriodsUntilDate(getNextPeriod(currentPeriod), endDate)
     } else {
@@ -40,7 +41,7 @@ class PeriodService @Inject()(clock: Clock) {
     }
   }
 
-  def getNextPeriod(currentPeriod: StandardPeriod): StandardPeriod = {
+  def getNextPeriod(currentPeriod: Period): Period = {
     currentPeriod.quarter match {
       case Q4 =>
         StandardPeriod(currentPeriod.year + 1, Q1)
@@ -53,7 +54,7 @@ class PeriodService @Inject()(clock: Clock) {
     }
   }
 
-  def getPreviousPeriod(currentPeriod: StandardPeriod): StandardPeriod = {
+  def getPreviousPeriod(currentPeriod: Period): Period = {
     currentPeriod.quarter match {
       case Q1 =>
         StandardPeriod(currentPeriod.year - 1, Q4)
