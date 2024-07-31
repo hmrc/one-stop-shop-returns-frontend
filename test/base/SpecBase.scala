@@ -58,6 +58,8 @@ trait SpecBase
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn                     = Vrn("123456789")
 
+  val commencementDate: LocalDate = LocalDate.of(2021, 7, 1)
+
   val arbitraryDate: LocalDate        = datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2022, 12, 31)).sample.value
   val arbitraryInstant: Instant       = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
   val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)

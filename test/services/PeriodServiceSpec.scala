@@ -73,7 +73,7 @@ class PeriodServiceSpec
 
       val expectedPeriods = Seq(StandardPeriod(2021, Q3))
 
-      service.getAllPeriods must contain theSameElementsAs expectedPeriods
+      service.getAllPeriods(commencementDate) must contain theSameElementsAs expectedPeriods
     }
 
     "when today is 11th January" in {
@@ -85,7 +85,7 @@ class PeriodServiceSpec
 
       val expectedPeriods = Seq(StandardPeriod(2021, Q3), StandardPeriod(2021, Q4))
 
-      service.getAllPeriods must contain theSameElementsAs expectedPeriods
+      service.getAllPeriods(commencementDate) must contain theSameElementsAs expectedPeriods
     }
   }
   ".getNextPeriod" - {
