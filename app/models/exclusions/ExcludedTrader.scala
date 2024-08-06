@@ -32,6 +32,9 @@ case class ExcludedTrader(
                            quarantined: Boolean
                          ) {
 
+  val isExcludedNotReversed: Boolean =
+    exclusionReason != ExclusionReason.Reversal
+
   val finalReturnPeriod: Period = {
     if (exclusionReason == ExclusionReason.TransferringMSID) {
       getPeriod(effectiveDate)

@@ -249,7 +249,7 @@
                             <p class="govuk-body">@messages("yourAccount.finalReturn.completed")</p>
                         } else {
                             @maybeExcludedTrader match {
-                                case Some(excludedTrader) if currentReturnIsFinal => {
+                                case Some(excludedTrader) if excludedTrader.isExcludedNotReversed && currentReturnIsFinal => {
                                     <p class="govuk-body">@messages("yourAccount.finalReturn.message")</p>
                                 }
                                 case _ => {}
