@@ -17,7 +17,7 @@
 package viewmodels.yourAccount
 
 import models.StandardPeriod
-import models.SubmissionStatus.{Due, Next, Overdue}
+import models.SubmissionStatus.{Due, Expired, Next, Overdue}
 import play.api.i18n.Messages
 import utils.ReturnsUtils.isThreeYearsOld
 import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
@@ -35,7 +35,8 @@ object ReturnsViewModel {
     val nextReturn = returns.find(_.submissionStatus == Next)
 
     val excludedReturnsOlderThanThreeYears = excludedReturns.filter { excludedReturn =>
-      isThreeYearsOld(excludedReturn.dueDate)
+      excludedReturn.submissionStatus == Expired &&
+        isThreeYearsOld(excludedReturn.dueDate)
     }.sortBy(_.dueDate)
 
     nextReturn.fold(dueReturnsModel(overdueReturns, excludedReturnsOlderThanThreeYears, inProgress, returnDue))(
@@ -83,9 +84,10 @@ object ReturnsViewModel {
     ParagraphSimple(messages("index.yourReturns.outstandingReturnThreeYearsOld", period.displayShortText))
 
   private def returnDueInProgressParagraph(period: StandardPeriod)(implicit messages: Messages) =
-    ParagraphSimple(s"""${messages("index.yourReturns.inProgress", period.displayText)}
-       |<br>${messages("index.yourReturns.inProgress.due", period.paymentDeadlineDisplay)}
-       |<br>""".stripMargin)
+    ParagraphSimple(
+      s"""${messages("index.yourReturns.inProgress", period.displayText)}
+         |<br>${messages("index.yourReturns.inProgress.due", period.paymentDeadlineDisplay)}
+         |<br>""".stripMargin)
 
   private def returnOverdueSingularParagraph()(implicit messages: Messages) =
     ParagraphSimple(messages("index.yourReturns.returnsOverdue.singular"))
@@ -116,7 +118,7 @@ object ReturnsViewModel {
                               currentReturn: Option[Return],
                               dueReturn: Option[Return])(implicit messages: Messages): ReturnsViewModel = {
 
-    val threeYearOldReturnsParagraphs = excludedReturnsThreeYearsOld.map( r => returnOutstandingThreeYearsOld(r.period))
+    val threeYearOldReturnsParagraphs = excludedReturnsThreeYearsOld.map(r => returnOutstandingThreeYearsOld(r.period))
 
     val returnsViewModel = otherScenariosReturnsViewModel(overdueReturns, currentReturn, dueReturn)
 

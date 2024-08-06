@@ -31,28 +31,29 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusConnector, clock: Clock)
-                            (implicit val executionContext: ExecutionContext)
+                                      (implicit val executionContext: ExecutionContext)
   extends ActionFilter[OptionalDataRequest] {
-  
+
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
     implicit val localDateOrdering: Ordering[LocalDate] = Ordering.by(_.toEpochDay)
 
     connector.listStatuses(request.registration.commencementDate) flatMap {
       case Right(previousPeriods) =>
-         val dueReturns = previousPeriods.filter( p =>
-           p.status != SubmissionStatus.Complete &&
-             p.status != SubmissionStatus.Next &&
-             !(p.status == SubmissionStatus.Excluded && isThreeYearsOld(p.period.paymentDeadline)(clock))
-           ).sortBy(_.period.firstDay)
-        if(dueReturns.nonEmpty){
-          if(dueReturns.head.period == period) {
-          Future.successful(None)
+        val dueReturns = previousPeriods.filter(p =>
+          p.status != SubmissionStatus.Complete &&
+            p.status != SubmissionStatus.Next &&
+            p.status != SubmissionStatus.Excluded &&
+            !(p.status == SubmissionStatus.Expired && isThreeYearsOld(p.period.paymentDeadline)(clock))
+        ).sortBy(_.period.firstDay)
+        if (dueReturns.nonEmpty) {
+          if (dueReturns.head.period == period) {
+            Future.successful(None)
           } else {
             Future(Some(Redirect(routes.CannotStartReturnController.onPageLoad())))
           }
         } else {
-            Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad()))) //if empty
+          Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad()))) //if empty
         }
       case _ => Future.successful(Some(Redirect(routes.JourneyRecoveryController.onPageLoad())))
     }
@@ -60,8 +61,8 @@ class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusCo
 }
 
 class CheckMostOverdueReturnFilterProvider @Inject()(connector: ReturnStatusConnector, clock: Clock)
-                                          (implicit ec: ExecutionContext) {
+                                                    (implicit ec: ExecutionContext) {
 
- def apply(period: Period): CheckMostOverdueReturnFilterImpl =
-   new CheckMostOverdueReturnFilterImpl(period, connector, clock)
+  def apply(period: Period): CheckMostOverdueReturnFilterImpl =
+    new CheckMostOverdueReturnFilterImpl(period, connector, clock)
 }

@@ -141,7 +141,7 @@ class CheckMostOverdueReturnFilterSpec extends SpecBase with MockitoSugar with B
     "must redirect to CannotStartReturn if the return period is Excluded and not three years old" in {
 
       when(mockConnector.listStatuses(any())(any())) thenReturn Future.successful(Right(Seq(
-        PeriodWithStatus(StandardPeriod("2021", "Q3").success.value, SubmissionStatus.Excluded)
+        PeriodWithStatus(StandardPeriod("2021", "Q3").success.value, SubmissionStatus.Expired)
       )))
 
       val app = applicationBuilder(None)

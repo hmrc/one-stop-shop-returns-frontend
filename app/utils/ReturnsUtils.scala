@@ -16,7 +16,7 @@
 
 package utils
 
-import models.SubmissionStatus.{Complete, Excluded}
+import models.SubmissionStatus.{Complete, Expired}
 import viewmodels.yourAccount.Return
 
 import java.time.{Clock, LocalDate}
@@ -44,7 +44,7 @@ object ReturnsUtils {
   }
 
   def hasDueReturnsLessThanThreeYearsOld(returns: Seq[Return])(implicit clock: Clock): Boolean = returns.exists { `return` =>
-    if (`return`.submissionStatus == Complete || `return`.submissionStatus == Excluded) {
+    if (`return`.submissionStatus == Complete || `return`.submissionStatus == Expired) {
       false
     } else {
       isLessThanThreeYearsOld(`return`.dueDate, clock: Clock)
