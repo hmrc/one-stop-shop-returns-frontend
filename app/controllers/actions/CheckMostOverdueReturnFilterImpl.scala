@@ -43,7 +43,6 @@ class CheckMostOverdueReturnFilterImpl(period: Period, connector: ReturnStatusCo
         val dueReturns = previousPeriods.filter(p =>
           p.status != SubmissionStatus.Complete &&
             p.status != SubmissionStatus.Next &&
-            p.status != SubmissionStatus.Excluded &&
             !(p.status == SubmissionStatus.Expired && isThreeYearsOld(p.period.paymentDeadline)(clock))
         ).sortBy(_.period.firstDay)
         if (dueReturns.nonEmpty) {
