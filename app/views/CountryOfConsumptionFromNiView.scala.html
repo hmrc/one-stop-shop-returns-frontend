@@ -15,42 +15,50 @@
  *@
 
 @import components.ButtonGroup
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
 @import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLabel
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 @import viewmodels.InputWidth
 
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukInput: GovukInput,
-    button: ButtonGroup,
-    govukSelect: GovukSelect
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukInput: GovukInput,
+        button: ButtonGroup,
+        govukSelect: GovukSelect
 )
 
 @(form: Form[_], mode: Mode, period: Period, index: Index, isOnlineMarketPlace: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("countryOfConsumptionFromNi.title"), Some(period.displayText))) {
 
-    @formHelper(action = routes.CountryOfConsumptionFromNiController.onSubmit(mode, period, index)) {
+  @formHelper(action = routes.CountryOfConsumptionFromNiController.onSubmit(mode, period, index)) {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
-
-        @govukSelect(
-            SelectViewModel(
-                field = form("value"),
-                items = if(isOnlineMarketPlace) Country.euCountryWithNISelectItems else Country.euCountrySelectItems,
-                label = HmrcPageHeadingLabel(
-                    content = messages(if(isOnlineMarketPlace) { "countryOfConsumptionFromNi.heading.not.eu" } else { "countryOfConsumptionFromNi.heading"}),
-                    caption = period.displayText
-                )
-            )
-            .withCssClass(InputWidth.Fixed20.toString)
-            .withCssClass("autocomplete")
-        )
-
-
-        @button("site.continue",  period, routes.CountryOfConsumptionFromNiController.onPageLoad(mode, period, index).url)
+    @if(form.errors.nonEmpty) {
+      @govukErrorSummary(ErrorSummaryViewModel(form))
     }
+
+    @govukSelect(
+      SelectViewModel(
+        field = form("value"),
+        items = if(isOnlineMarketPlace) Country.euCountryWithNISelectItems else Country.euCountrySelectItems,
+        label = HmrcPageHeadingLabel(
+          content = messages(if(isOnlineMarketPlace) {
+            "countryOfConsumptionFromNi.heading.not.eu"
+          } else {
+            "countryOfConsumptionFromNi.heading"
+          }),
+          caption = period.displayText
+        )
+      ).asAccessibleAutocomplete(Some(
+        AccessibleAutocomplete(
+          showAllValues = true,
+          defaultValue = Some("")
+        )
+      ))
+    )
+
+    @button("site.continue", period, routes.CountryOfConsumptionFromNiController.onPageLoad(mode, period, index).url)
+  }
 }

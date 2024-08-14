@@ -15,41 +15,46 @@
  *@
 
 @import components.ButtonGroup
-
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 @import viewmodels.InputWidth._
 
+
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukSelect: GovukSelect,
-    button: ButtonGroup
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukSelect: GovukSelect,
+        button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period, periodIndex: Index, correctionPeriod: Period, countryIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionCountry.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(mode, period, periodIndex, countryIndex)) {
+  @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(mode, period, periodIndex, countryIndex)) {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
-
-        @govukSelect(
-            SelectViewModel(
-                field = form("value"),
-                items = Country.euCountryWithNISelectItems,
-                label = HmrcPageHeadingLabel(
-                    content = messages("correctionCountry.heading"),
-                    caption = messages("correctionCountry.caption", correctionPeriod.displayText)
-                )
-            )
-            .withCssClass(Fixed20.toString)
-            .withCssClass("autocomplete")
-            .withHint(HintViewModel(messages("correctionCountry.hint")))
-        )
-
-        @button("site.continue",  period, controllers.corrections.routes.CorrectionCountryController.onPageLoad(mode, period, periodIndex, countryIndex).url)
+    @if(form.errors.nonEmpty) {
+      @govukErrorSummary(ErrorSummaryViewModel(form))
     }
+
+    @govukSelect(
+      SelectViewModel(
+        field = form("value"),
+        items = Country.euCountryWithNISelectItems,
+        label = HmrcPageHeadingLabel(
+          content = messages("correctionCountry.heading"),
+          caption = messages("correctionCountry.caption", correctionPeriod.displayText)
+        )
+      ).asAccessibleAutocomplete(Some(
+        AccessibleAutocomplete(
+          showAllValues = true,
+          defaultValue = Some("")
+        )
+      ))
+      .withHint(HintViewModel(messages("correctionCountry.hint")))
+    )
+
+    @button("site.continue", period, controllers.corrections.routes.CorrectionCountryController.onPageLoad(mode, period, periodIndex, countryIndex).url)
+  }
 }
