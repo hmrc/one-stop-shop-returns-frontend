@@ -14,40 +14,44 @@
  * limitations under the License.
  *@
 
-@import viewmodels.InputWidth._
 @import components.ButtonGroup
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukSelect: GovukSelect,
-    button: ButtonGroup
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukSelect: GovukSelect,
+        button: ButtonGroup
 )
 
 @(form: Form[_], mode: Mode, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("countryOfSaleFromEu.title"), Some(period.displayText))) {
 
-    @formHelper(action = routes.CountryOfSaleFromEuController.onSubmit(mode, period, index)) {
+  @formHelper(action = routes.CountryOfSaleFromEuController.onSubmit(mode, period, index)) {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
-
-        @govukSelect(
-            SelectViewModel(
-                field = form("value"),
-                items = Country.euCountrySelectItems,
-                label = HmrcPageHeadingLabel(
-                    content = messages("countryOfSaleFromEu.heading"),
-                    caption = period.displayText
-                )
-            )
-            .withCssClass(Fixed20.toString)
-            .withCssClass("autocomplete")
-        )
-
-        @button("site.continue",  period, routes.CountryOfSaleFromEuController.onPageLoad(mode, period, index).url)
+    @if(form.errors.nonEmpty) {
+      @govukErrorSummary(ErrorSummaryViewModel(form))
     }
+
+    @govukSelect(
+      SelectViewModel(
+        field = form("value"),
+        items = Country.euCountrySelectItems,
+        label = HmrcPageHeadingLabel(
+          content = messages("countryOfSaleFromEu.heading"),
+          caption = period.displayText
+        )
+      ).asAccessibleAutocomplete(Some(
+        AccessibleAutocomplete(
+          showAllValues = true,
+          defaultValue = Some("")
+        )
+      ))
+    )
+
+    @button("site.continue", period, routes.CountryOfSaleFromEuController.onPageLoad(mode, period, index).url)
+  }
 }

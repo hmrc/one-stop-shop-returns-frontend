@@ -33,7 +33,10 @@
     hmrcScripts: HmrcScripts,
     betaBanner: StandardBetaBanner,
     defaultMainContentLayout: TwoThirdsMainContent,
-    fullWidthLayout: FullWidthLayout
+    fullWidthLayout: FullWidthLayout,
+    autocompleteCss: HmrcAccessibleAutocompleteCss,
+    autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
+    hmrcStandardPage: HmrcStandardPage
 )
 
 @(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true, fullWidth: Boolean = false)(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
@@ -55,11 +58,14 @@
         } else None
     )
 
+    @autocompleteCss()
     <link href="@routes.Assets.versioned("stylesheets/accessible-autocomplete.min.css").url" media="screen" rel="stylesheet" type="text/css" />
     <link href="@routes.Assets.versioned("stylesheets/one-stop-shop.css").url" media="screen" rel="stylesheet" type="text/css" />
 }
 
 @additionalScripts = {
+
+    @autocompleteJavascript()
     <script @CSPNonce.attr src='@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.js")'></script>
     <script @CSPNonce.attr src='@controllers.routes.Assets.versioned("javascripts/application.min.js")'></script>
 }
