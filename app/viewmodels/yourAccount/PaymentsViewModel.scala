@@ -17,6 +17,7 @@
 package viewmodels.yourAccount
 
 import models.financialdata.{Payment, PaymentStatus}
+import models.requests.RegistrationRequest
 import play.api.i18n.Messages
 import utils.CurrencyFormatter.currencyFormat
 import utils.ReturnsUtils.isThreeYearsOld
@@ -31,7 +32,7 @@ object PaymentsViewModel {
   def apply(duePayments: Seq[Payment],
             overduePayments: Seq[Payment],
             excludedPayments: Seq[Payment],
-            hasDueReturnThreeYearsOld: Boolean)(implicit messages: Messages, clock: Clock): PaymentsViewModel = {
+            hasDueReturnThreeYearsOld: Boolean)(implicit messages: Messages, clock: Clock, request: RegistrationRequest[_]): PaymentsViewModel = {
     if(duePayments.isEmpty && overduePayments.isEmpty && excludedPayments.isEmpty){
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
@@ -69,7 +70,11 @@ object PaymentsViewModel {
     }
   }
 
-  private def getPaymentsSection(heading: Option[String], payments: Seq[Payment], key: String)(implicit messages: Messages, clock: Clock) = {
+  private def getPaymentsSection(
+                                  heading: Option[String],
+                                  payments: Seq[Payment],
+                                  key: String
+                                )(implicit messages: Messages, clock: Clock, request: RegistrationRequest[_]) = {
     if(payments.nonEmpty){
       Some(
         PaymentsSection(
@@ -82,7 +87,7 @@ object PaymentsViewModel {
                   payment.period.displayShortText,
                   payment.period.paymentDeadlineDisplay
                 )
-              case _ => if(isThreeYearsOld(payment.dateDue)){
+              case _ => if(request.registration.excludedTrader.exists(_.isExcludedNotReversed) && isThreeYearsOld(payment.dateDue)){
                 messages(
                   "index.payment.amountOwedThreeYearsOld",
                   payment.period.displayShortText
