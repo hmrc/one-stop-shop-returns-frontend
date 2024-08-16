@@ -18,17 +18,18 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.financialdata.FinancialDataConnector
 import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
+import connectors.financialdata.FinancialDataConnector
 import generators.Generators
+import models.{Country, Period, StandardPeriod, SubmissionStatus}
 import models.Quarter._
 import models.SubmissionStatus.{Due, Excluded, Next, Overdue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
 import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration._
+import models.requests.RegistrationRequest
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
-import models.{Country, Period, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -136,6 +137,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -159,7 +162,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
@@ -215,6 +218,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -238,7 +242,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(period, Due, inProgress = false, isOldest = true)
                 ), Seq.empty
               )(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -291,6 +295,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -314,7 +319,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(period, Due, inProgress = true, isOldest = true)
                 ), Seq.empty
               )(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -368,6 +373,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -391,7 +397,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = true)
                 ), Seq.empty
               )(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -448,6 +454,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -472,7 +479,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(firstPeriod, Overdue, false, true)
                 ), Seq.empty
               )(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -526,6 +533,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -548,7 +556,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Return.fromPeriod(StandardPeriod(2021, Q3), Overdue, inProgress = false, isOldest = true)
             ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
@@ -606,6 +614,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -630,7 +639,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Return.fromPeriod(secondPeriod, Overdue, false, false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
@@ -691,6 +700,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -715,7 +725,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Seq.empty,
                 Seq.empty,
                 hasDueReturnThreeYearsOld = false
-              )(messages(application), clock),
+              )(messages(application), clock, registrationRequest),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -776,6 +786,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -800,7 +811,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Seq.empty,
                 Seq.empty,
                 hasDueReturnThreeYearsOld = false
-              )(messages(application), clock),
+              )(messages(application), clock, registrationRequest),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -867,6 +878,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -886,7 +898,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq(overduePayment), Seq.empty, hasDueReturnThreeYearsOld = false )(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq(overduePayment), Seq.empty, hasDueReturnThreeYearsOld = false )(messages(application), clock, registrationRequest),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -942,6 +954,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -961,7 +974,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
               paymentError = true,
               None,
               hasSubmittedFinalReturn = false,
@@ -1017,6 +1030,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -1041,7 +1055,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Seq.empty,
                 Seq.empty,
                 hasDueReturnThreeYearsOld = false
-              )(messages(application), clock),
+              )(messages(application), clock, registrationRequest),
               paymentError = true,
               None,
               hasSubmittedFinalReturn = false,
@@ -1100,6 +1114,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1124,7 +1139,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq.empty,
               Seq.empty,
               hasDueReturnThreeYearsOld = false
-            )(messages(application), clock),
+            )(messages(application), clock, registrationRequest),
             paymentError = true,
             None,
             hasSubmittedFinalReturn = false,
@@ -1179,6 +1194,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1198,7 +1214,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, true, true)), Seq.empty)(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             None,
             hasSubmittedFinalReturn = false,
@@ -1317,6 +1333,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1333,7 +1350,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderHMRC,
             hasSubmittedFinalReturn = false,
@@ -1401,6 +1418,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1424,7 +1442,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderHMRC,
             hasSubmittedFinalReturn = true,
@@ -1494,6 +1512,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1511,7 +1530,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
@@ -1592,6 +1611,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1611,7 +1631,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(excludedPeriod, Excluded, false, false)
               )
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
@@ -1681,6 +1701,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1705,7 +1726,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(excludedPeriod, Excluded, false, false)
               )
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
@@ -1772,6 +1793,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1795,7 +1817,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = true,
@@ -1865,6 +1887,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1888,7 +1911,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelfRequestedToLeave,
             hasSubmittedFinalReturn = false,
@@ -1955,6 +1978,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -1978,7 +2002,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, false, false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelfRequestedToLeave,
             hasSubmittedFinalReturn = true,
@@ -2059,6 +2083,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               implicit val msgs: Messages = messages(application)
 
               val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+              val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
               val result = route(application, request).value
 
@@ -2082,7 +2107,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                     Return.fromPeriod(nextPeriod, Next, false, false)
                   ), Seq.empty
                 )(messages(application), clock),
-                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
                 paymentError = false,
                 excludedTraderSelfRequestedToLeaveTransferringMSID,
                 hasSubmittedFinalReturn = false,
@@ -2159,6 +2184,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               implicit val msgs: Messages = messages(application)
 
               val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+              val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
               val result = route(application, request).value
 
@@ -2182,7 +2208,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                     Return.fromPeriod(nextPeriod, Next, false, false)
                   ), Seq.empty
                 )(messages(application), clock),
-                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
                 paymentError = false,
                 excludedTraderSelfRequestedToLeaveTransferringMSID,
                 hasSubmittedFinalReturn = false,
@@ -2262,6 +2288,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               implicit val msgs: Messages = messages(application)
 
               val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+              val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
               val result = route(application, request).value
 
@@ -2279,7 +2306,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                     Return.fromPeriod(nextPeriod, Next, false, false)
                   ), Seq.empty
                 )(messages(application), clock),
-                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+                PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
                 paymentError = false,
                 excludedTraderSelfRequestedToLeaveTransferringMSID,
                 hasSubmittedFinalReturn = false,
@@ -2357,6 +2384,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -2380,7 +2408,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(nextPeriod, Next, false, false)
                 ), Seq.empty
               )(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
               paymentError = false,
               excludedTraderSelfRequestedToLeaveTransferringMSID,
               hasSubmittedFinalReturn = false,
@@ -2458,6 +2486,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             implicit val msgs: Messages = messages(application)
 
             val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
             val result = route(application, request).value
 
@@ -2481,7 +2510,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   Return.fromPeriod(nextPeriod, Next, false, false)
                 ), Seq.empty
               )(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
               paymentError = false,
               excludedTraderSelfRequestedToLeaveTransferringMSID,
               hasSubmittedFinalReturn = true,
@@ -2550,6 +2579,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         running(application) {
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -2567,7 +2597,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = false,
@@ -2634,6 +2664,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -2657,7 +2688,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, false, false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = true,
@@ -2724,6 +2755,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
 
@@ -2741,7 +2773,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderQuarantined,
             hasSubmittedFinalReturn = true,

@@ -17,33 +17,40 @@
 package viewmodels.yourAccount
 
 import base.SpecBase
+import controllers.routes
 import models.Quarter.{Q1, Q3, Q4}
 import models.StandardPeriod
 import models.financialdata.{Payment, PaymentStatus}
+import models.requests.RegistrationRequest
+import play.api.test.FakeRequest
+import play.api.test.Helpers.GET
 
 import java.time.{Clock, Instant, LocalDate, ZoneId}
 
 class PaymentsViewModelSpec extends SpecBase {
 
   private val paymentDue = Payment(period, BigDecimal(1000), LocalDate.now, PaymentStatus.Unpaid)
-  val period1 = StandardPeriod(2021, Q3)
-  val period2 = StandardPeriod(2021, Q4)
-  val period3 = StandardPeriod(2022, Q1)
+  private val period1 = StandardPeriod(2021, Q3)
+  private val period2 = StandardPeriod(2021, Q4)
+  private val period3 = StandardPeriod(2022, Q1)
 
   val stubClock: Clock = Clock.fixed(Instant.now(), ZoneId.systemDefault)
+
+  private val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+  private val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
   "must return correct view model when" - {
     val app = applicationBuilder().build()
 
     "there is no payments due or overdue" in {
-      val result = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app), stubClock)
+      val result = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app), stubClock, registrationRequest)
       result.sections mustBe Seq(PaymentsSection(Seq("You do not owe anything right now.")))
       result.link must not be defined
       result.warning must not be defined
     }
 
     "there is one due payment" in {
-      val result = PaymentsViewModel(Seq(paymentDue), Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app), stubClock)
+      val result = PaymentsViewModel(Seq(paymentDue), Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app), stubClock, registrationRequest)
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText(messages(app))}. You must pay this by ${period.paymentDeadlineDisplay}."""
@@ -55,7 +62,7 @@ class PaymentsViewModelSpec extends SpecBase {
     }
 
     "there is one due payment with unknown status" in {
-      val result = PaymentsViewModel(Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)), Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app), stubClock)
+      val result = PaymentsViewModel(Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)), Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app), stubClock, registrationRequest)
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You may still owe VAT for ${period.displayShortText(messages(app))}. You must pay this by ${period.paymentDeadlineDisplay}."""
@@ -67,7 +74,7 @@ class PaymentsViewModelSpec extends SpecBase {
     }
 
     "there is one overdue payment" in {
-      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue), Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app), stubClock)
+      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue), Seq.empty, hasDueReturnThreeYearsOld = false)(messages(app), stubClock, registrationRequest)
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText(messages(app))}, which was due by ${period.paymentDeadlineDisplay}."""
@@ -82,7 +89,7 @@ class PaymentsViewModelSpec extends SpecBase {
       val result = PaymentsViewModel(
         Seq.empty, Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)), Seq.empty,
         hasDueReturnThreeYearsOld = false
-      )(messages(app), stubClock)
+      )(messages(app), stubClock, registrationRequest)
 
       result.sections mustBe Seq(PaymentsSection(
         Seq(
@@ -100,7 +107,7 @@ class PaymentsViewModelSpec extends SpecBase {
         Seq(paymentDue.copy(period = period1, paymentStatus = PaymentStatus.Unknown), paymentDue.copy(period = period2)),
         Seq.empty,
         hasDueReturnThreeYearsOld = false
-      )(messages(app), stubClock)
+      )(messages(app), stubClock, registrationRequest)
 
       result.sections mustBe Seq(
         PaymentsSection(

@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
-import models.Quarter.{Q1, Q2}
+import models.Quarter.{Q1, Q2, Q3}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.UnexpectedResponseStatus
@@ -50,15 +50,25 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
   private val period1 = StandardPeriod(2021, Q1)
   private val period2 = StandardPeriod(2021, Q2)
+  private val period3 = StandardPeriod(2021, Q3)
 
   private val payment1 = Payment(period1, BigDecimal(1000), LocalDate.now(), PaymentStatus.Unpaid)
   private val payment2 = Payment(period2, BigDecimal(500), LocalDate.now(), PaymentStatus.Partial)
+  private val payment3 = Payment(period3, BigDecimal(500), LocalDate.now(), PaymentStatus.Unpaid)
   private val currentPayments = CurrentPayments(
-    duePayments = Seq(payment2),
+    duePayments = Seq(payment2, payment3),
     overduePayments = Seq(payment1),
     excludedPayments = Seq.empty,
     totalAmountOwed = BigDecimal(1000),
     totalAmountOverdue = BigDecimal(500)
+  )
+  private val unknownPaymentAmount = Payment(period3, BigDecimal(100), LocalDate.now(), PaymentStatus.Unknown)
+  private val unknownPayment = CurrentPayments(
+    duePayments = Seq(unknownPaymentAmount),
+    overduePayments = Seq.empty,
+    excludedPayments = Seq.empty,
+    totalAmountOwed = BigDecimal(0),
+    totalAmountOverdue = BigDecimal(0)
   )
   private val emptyPayments = CurrentPayments(
     duePayments = Seq.empty,
@@ -70,6 +80,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
+    Mockito.reset(financialDataConnector)
+    Mockito.reset(correctionConnector)
     super.beforeEach()
   }
 
@@ -97,7 +109,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Map(period1 -> payment1),
+          Map(period3 -> payment3),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -181,7 +193,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         ).build()
 
       when(financialDataConnector.getFinancialData(any())(any()))
-        .thenReturn(Future.successful(Right(emptyPayments)))
+        .thenReturn(Future.successful(Right(unknownPayment)))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
       when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
       when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
@@ -194,7 +206,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Map(period1 -> payment1.copy(paymentStatus = PaymentStatus.Unknown)),
+          Map(period3 -> unknownPaymentAmount),
           displayBanner = true
         )(request, messages(application)).toString
       }
@@ -223,8 +235,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Map(period1 -> Payment(
-            period = period1,
+          Map(period3 -> Payment(
+            period = period3,
             amountOwed = 0,
             dateDue = period.paymentDeadline,
             paymentStatus = PaymentStatus.NilReturn
@@ -267,7 +279,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Map(period1 -> payment1, period2 -> payment2),
+          Map(period3 -> payment3),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -306,7 +318,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Map(period1 -> payment1, period2 -> payment2),
+          Map(period3 -> payment3),
           displayBanner = false,
           Some("example")
         )(request, messages(application)).toString
