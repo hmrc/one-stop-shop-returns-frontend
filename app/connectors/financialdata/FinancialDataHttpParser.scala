@@ -17,47 +17,28 @@
 package connectors.financialdata
 
 import logging.Logging
-import models.financialdata.{Charge, PeriodWithOutstandingAmount}
-import models.responses._
+import models.financialdata.CurrentPayments
+import models.responses.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object FinancialDataHttpParser extends Logging {
 
-  type ChargeResponse = Either[ErrorResponse, Option[Charge]]
+  type FinancialDataResponse = Either[ErrorResponse, CurrentPayments]
 
-  implicit object ChargeReads extends HttpReads[ChargeResponse] {
-    override def read(method: String, url: String, response: HttpResponse): ChargeResponse = {
+  implicit object CurrentPaymentsReads extends HttpReads[FinancialDataResponse] {
+    override def read(method: String, url: String, response: HttpResponse): FinancialDataResponse = {
       response.status match {
         case OK =>
-          response.json.validateOpt[Charge] match {
-            case JsSuccess(chargeOption, _) => Right(chargeOption)
+          response.json.validate[CurrentPayments] match {
+            case JsSuccess(currentPayments, _) => Right(currentPayments)
             case JsError(errors) =>
-              logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
+              logger.warn(s"Failed trying to parse JSON $errors on financial data. Json was ${response.json}")
               Left(InvalidJson)
           }
         case _ =>
-          logger.warn("Failed to retrieve charge data")
-          Left(UnexpectedResponseStatus(response.status, response.body))
-      }
-    }
-  }
-
-  type OutstandingPaymentsResponse = Either[ErrorResponse, Seq[PeriodWithOutstandingAmount]]
-
-  implicit object PeriodWithOutstandingAmountReads extends HttpReads[OutstandingPaymentsResponse] {
-    override def read(method: String, url: String, response: HttpResponse): OutstandingPaymentsResponse = {
-      response.status match {
-        case OK =>
-          response.json.validate[Seq[PeriodWithOutstandingAmount]] match {
-            case JsSuccess(periodsWithOutstandingAmounts, _) => Right(periodsWithOutstandingAmounts)
-            case JsError(errors) =>
-              logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
-              Left(InvalidJson)
-          }
-        case _ =>
-          logger.warn("Failed to retrieve outstanding amount data")
+          logger.warn("Failed to retrieve current payments data")
           Left(UnexpectedResponseStatus(response.status, response.body))
       }
     }

@@ -47,7 +47,7 @@ class WhichVatPeriodToPayController @Inject()(
   def onPageLoad(): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
       (for {
-        financialDataResponse <- financialDataConnector.getCurrentPayments(request.vrn)
+        financialDataResponse <- financialDataConnector.getFinancialData(request.vrn)
         maybeSavedReturnUrl <- vatReturnConnector.getSavedExternalEntry()
       } yield {
         financialDataResponse match {
@@ -74,7 +74,7 @@ class WhichVatPeriodToPayController @Inject()(
 
   def onSubmit(): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      financialDataConnector.getCurrentPayments(request.vrn) map {
+      financialDataConnector.getFinancialData(request.vrn) map {
         case Right(payments) =>
           val allPayments = payments.overduePayments ++ payments.duePayments
           val paymentError = allPayments.exists(_.paymentStatus == PaymentStatus.Unknown)

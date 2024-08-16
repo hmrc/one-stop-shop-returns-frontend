@@ -18,13 +18,15 @@ package controllers
 
 import base.SpecBase
 import connectors.VatReturnConnector
+import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
 import models.Quarter.{Q1, Q2}
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
-import models.financialdata.{Charge, VatReturnWithFinancialData}
+import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.UnexpectedResponseStatus
 import models.StandardPeriod
 import models.external.ExternalEntryUrl
+import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -37,23 +39,34 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.domain.Vrn
 import views.html.SubmittedReturnsHistoryView
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import scala.concurrent.Future
 
 class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   private val vatReturnConnector = mock[VatReturnConnector]
+  private val correctionConnector = mock[CorrectionConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
 
   private val period1 = StandardPeriod(2021, Q1)
   private val period2 = StandardPeriod(2021, Q2)
 
-  private val charge = Charge(period1, BigDecimal(1000), BigDecimal(1000), BigDecimal(1000))
-  private val charge2 = Charge(period2, BigDecimal(2000), BigDecimal(500), BigDecimal(1500))
-  private val vatOwed = (charge.outstandingAmount * 100).toLong
-  private val vatOwed2 = (charge2.outstandingAmount * 100).toLong
-
-  private val vatReturnWithFinancialData = VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, None)
+  private val payment1 = Payment(period1, BigDecimal(1000), LocalDate.now(), PaymentStatus.Unpaid)
+  private val payment2 = Payment(period2, BigDecimal(500), LocalDate.now(), PaymentStatus.Partial)
+  private val currentPayments = CurrentPayments(
+    duePayments = Seq(payment2),
+    overduePayments = Seq(payment1),
+    excludedPayments = Seq.empty,
+    totalAmountOwed = BigDecimal(1000),
+    totalAmountOverdue = BigDecimal(500)
+  )
+  private val emptyPayments = CurrentPayments(
+    duePayments = Seq.empty,
+    overduePayments = Seq.empty,
+    excludedPayments = Seq.empty,
+    totalAmountOwed = BigDecimal(0),
+    totalAmountOverdue = BigDecimal(0)
+  )
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
@@ -67,11 +80,15 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
         ).build()
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
@@ -80,7 +97,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, None)),
+          Map(period1 -> payment1),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -90,11 +107,13 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
         ).build()
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq.empty))
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(emptyPayments))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq.empty)
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -105,7 +124,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq.empty,
+          Map.empty,
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -115,10 +134,11 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
         ).build()
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
       running(application) {
@@ -134,11 +154,13 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
         ).build()
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -154,14 +176,15 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
         ).build()
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          vatReturnWithFinancialData.copy(charge = None, vatOwed = 66666)
-        ))))
+      when(financialDataConnector.getFinancialData(any())(any()))
+        .thenReturn(Future.successful(Right(emptyPayments)))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -171,7 +194,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, None, 66666, None)),
+          Map(period1 -> payment1.copy(paymentStatus = PaymentStatus.Unknown)),
           displayBanner = true
         )(request, messages(application)).toString
       }
@@ -182,14 +205,15 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
         ).build()
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          vatReturnWithFinancialData.copy(charge = None, vatOwed = 0)
-        ))))
+      when(financialDataConnector.getFinancialData(any())(any()))
+        .thenReturn(Future.successful(Right(emptyPayments)))
+      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -199,43 +223,12 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, None, 0, None)),
-          displayBanner = false
-        )(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and correct view with multiple periods" in {
-
-      val completeVatReturn2 = completeVatReturn.copy(vrn = Vrn("063407445"))
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
-        ).build()
-
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          vatReturnWithFinancialData,
-          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), vatOwed2, None)
-        ))))
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-        val vatReturnsWithFinancialData = List(
-          VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, None),
-          VatReturnWithFinancialData(completeVatReturn2, Some(charge2), vatOwed2, None)
-        )
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          vatReturnsWithFinancialData,
+          Map(period1 -> Payment(
+            period = period1,
+            amountOwed = 0,
+            dateDue = period.paymentDeadline,
+            paymentStatus = PaymentStatus.NilReturn
+          )),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -245,7 +238,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
         ).build()
 
       val completedCorrectionPayload: CorrectionPayload =
@@ -259,15 +253,11 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           Instant.ofEpochSecond(1630670836),
           Instant.ofEpochSecond(1630670836)
         )
-      val vatReturnWithFinancialData = VatReturnWithFinancialData(
-        vatReturn = completeVatReturn,
-        charge = Some(charge),
-        vatOwed = vatOwed,
-        corrections = Some(completedCorrectionPayload)
-      )
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
+      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(completedCorrectionPayload))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -277,7 +267,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, Some(completedCorrectionPayload))),
+          Map(period1 -> payment1, period2 -> payment2),
           displayBanner = false
         )(request, messages(application)).toString
       }
@@ -287,7 +277,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector)
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
         ).build()
 
       val completedCorrectionPayload: CorrectionPayload =
@@ -301,15 +292,11 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           Instant.ofEpochSecond(1630670836),
           Instant.ofEpochSecond(1630670836)
         )
-      val vatReturnWithFinancialData = VatReturnWithFinancialData(
-        vatReturn = completeVatReturn,
-        charge = Some(charge),
-        vatOwed = vatOwed,
-        corrections = Some(completedCorrectionPayload)
-      )
 
-      when(financialDataConnector.getVatReturnWithFinancialData(any())(any())) thenReturn Future.successful(Right(Seq(vatReturnWithFinancialData)))
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
+      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
+      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(completedCorrectionPayload))
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -319,7 +306,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          Seq(VatReturnWithFinancialData(completeVatReturn, Some(charge), vatOwed, Some(completedCorrectionPayload))),
+          Map(period1 -> payment1, period2 -> payment2),
           displayBanner = false,
           Some("example")
         )(request, messages(application)).toString

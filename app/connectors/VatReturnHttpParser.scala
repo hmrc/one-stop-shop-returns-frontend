@@ -36,7 +36,7 @@ object VatReturnHttpParser extends Logging {
           response.json.validate[VatReturn] match {
             case JsSuccess(vatReturn, _) => Right(vatReturn)
             case JsError(errors) =>
-              logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
+              logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}")
               Left(InvalidJson)
           }
         case NOT_FOUND =>
@@ -67,7 +67,7 @@ object VatReturnHttpParser extends Logging {
           response.json.validate[Seq[VatReturn]] match {
             case JsSuccess(vatReturns, _) => vatReturns
             case JsError(errors) =>
-              logger.warn(s"Failed trying to parse JSON $errors. JSON was ${response.json}", errors)
+              logger.warn(s"Failed trying to parse JSON $errors. JSON was ${response.json}")
               Seq.empty
           }
 

@@ -22,7 +22,10 @@ case class CurrentPayments(duePayments: Seq[Payment],
                            overduePayments: Seq[Payment],
                            excludedPayments: Seq[Payment],
                            totalAmountOwed: BigDecimal,
-                           totalAmountOverdue: BigDecimal)
+                           totalAmountOverdue: BigDecimal) {
+
+  val allOutstandingPayments: Seq[Payment] = duePayments ++ overduePayments
+}
 
 object CurrentPayments {
   implicit val formatCurrentPayments: Format[CurrentPayments] = Json.format[CurrentPayments]
