@@ -23,6 +23,7 @@ sealed trait PaymentState
 object PaymentState extends Enumerable.Implicits {
 
   case object NoneDue extends WithName("returnSubmitted.noneDue") with PaymentState
+  case object Excluded extends WithName("returnSubmitted.excluded") with PaymentState
   case object PaymentDue extends WithName("returnSubmitted.payNow") with PaymentState
   case object Paid extends WithName("returnSubmitted.paid") with PaymentState
 
@@ -33,7 +34,7 @@ object PaymentState extends Enumerable.Implicits {
       case PaymentStatus.Paid => Paid
       case PaymentStatus.Unknown => PaymentDue
       case PaymentStatus.NilReturn => NoneDue
-      case PaymentStatus.Excluded => NoneDue
+      case PaymentStatus.Excluded => Excluded
     }
   }
 
