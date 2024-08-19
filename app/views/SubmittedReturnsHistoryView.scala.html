@@ -15,14 +15,14 @@
  *@
 
 @import utils.CurrencyFormatter.currencyFormat
-@import models.financialdata.VatReturnWithFinancialData
-@import models.PaymentState._
+@import models.financialdata.Payment
+@import models.financialdata.PaymentStatus
 
 @this(
         layout: templates.Layout
 )
 
-@(vatReturnsWithFinancialData: Seq[VatReturnWithFinancialData], displayBanner: Boolean, externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
+@(periodToPaymentInfo: Map[Period, Payment], displayBanner: Boolean, externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title")), showBackLink = false) {
 
@@ -52,7 +52,7 @@
 
     <h1 class="govuk-heading-xl" style="margin-bottom:0px;">@messages("submittedReturnsHistory.heading")</h1>
 
-    @vatReturnsWithFinancialData.size match {
+    @periodToPaymentInfo.size match {
         case 0 => {
             <br>
             <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
@@ -61,7 +61,7 @@
             <p class="govuk-caption-m hmrc-caption-m" style="margin-bottom:50px;">
             @messages("submittedReturnsHistory.caption")
             </p>
-            @vatReturnsWithFinancialData.groupBy(_.vatReturn.period.year).map {
+            @periodToPaymentInfo.groupBy(_._1.year).map {
                 case (year, vatReturnsWithFinancialData) => {
                     <table class="govuk-table">
                         <caption class="govuk-table__caption govuk-table__caption--m">@year.toString</caption>
@@ -73,23 +73,21 @@
                             </tr>
                         </thead>
                         <tbody class="govuk-table__body">
-                        @for(vatReturnWithFinancialData <- vatReturnsWithFinancialData) {
+                        @for((period, payment) <- vatReturnsWithFinancialData) {
                             <tr class="govuk-table__row">
                                 <th scope="row" class="govuk-table__header">
-                                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(vatReturnWithFinancialData.vatReturn.period)" id="period">@vatReturnWithFinancialData.vatReturn.displayStartEnd</a>
+                                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(period)" id="period">@period.displayText</a>
                                 </th>
                                 <td class="govuk-table__cell">
-                                @if(vatReturnWithFinancialData.showUpdating) {
-                                    @messages("submittedReturnsHistory.updating")
-                                } else {
-                                    @vatReturnWithFinancialData.charge.map(c => Html(currencyFormat(c.outstandingAmount))).getOrElse(Html(currencyFormat(0L)))
-                                }
+                                    @Html(currencyFormat(payment.amountOwed))
                                 </td>
                                 <td class="govuk-table__cell">
-                                @if(vatReturnWithFinancialData.paymentState == PaymentDue) {
-                                    <a class="govuk-link" href="@routes.PaymentController.makePayment(vatReturnWithFinancialData.vatReturn.period, (vatReturnWithFinancialData.vatOwed * 100).toLong)">@messages(vatReturnWithFinancialData.paymentState.toString)</a>
+                                @if(PaymentState.fromPaymentStatus(payment.paymentStatus) == PaymentState.PaymentDue) {
+                                    <a class="govuk-link" href="@routes.PaymentController.makePayment(period, (payment.amountOwed * 100).toLong)">
+                                        @messages(PaymentState.fromPaymentStatus(payment.paymentStatus).toString)
+                                    </a>
                                 } else {
-                                    @messages(vatReturnWithFinancialData.paymentState.toString)
+                                    @messages(PaymentState.fromPaymentStatus(payment.paymentStatus).toString)
                                 }
                                 </td>
                             </tr>

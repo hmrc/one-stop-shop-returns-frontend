@@ -110,7 +110,7 @@ class YourAccountController @Inject()(
   private def getCurrentReturnsAndFinancialDataAndUserAnswers()(implicit request: RegistrationRequest[AnyContent]) = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.vrn)
-      currentPayments <- financialDataConnector.getCurrentPayments(request.vrn)
+      currentPayments <- financialDataConnector.getFinancialData(request.vrn)
       userAnswers <- getSavedAnswers()
     } yield {
       userAnswers.map(answers => sessionRepository.set(answers))

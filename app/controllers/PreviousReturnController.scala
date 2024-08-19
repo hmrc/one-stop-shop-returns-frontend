@@ -32,6 +32,7 @@ import viewmodels.previousReturn.corrections.CorrectionSummary
 import viewmodels.previousReturn.{PreviousReturnSummary, SaleAtVatRateSummary}
 import views.html.PreviousReturnView
 
+import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -42,7 +43,8 @@ class PreviousReturnController @Inject()(
                                           vatReturnConnector: VatReturnConnector,
                                           correctionConnector: CorrectionConnector,
                                           vatReturnSalesService: VatReturnSalesService,
-                                          financialDataConnector: FinancialDataConnector
+                                          financialDataConnector: FinancialDataConnector,
+                                          clock: Clock
                                         )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -77,7 +79,12 @@ class PreviousReturnController @Inject()(
 
         val mainList =
           SummaryListViewModel(rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOwed, amountOutstanding))
-        val displayPayNow = totalVatOwed > 0 && amountOutstanding.forall(outstanding => outstanding > 0)
+        val displayPayNow =
+          if(request.registration.excludedTrader.exists(_.isExcludedNotReversed) && period.isInExpiredPeriod(clock)) {
+            false
+          } else {
+            totalVatOwed > 0 && amountOutstanding.forall(outstanding => outstanding > 0)
+          }
         val vatOwedInPence: Long = (amountOutstanding.getOrElse(totalVatOwed) * 100).toLong
 
         val hasCorrections = maybeCorrectionPayload.exists(_.corrections.nonEmpty)

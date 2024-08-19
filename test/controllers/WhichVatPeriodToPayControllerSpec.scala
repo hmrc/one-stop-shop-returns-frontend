@@ -17,9 +17,9 @@
 package controllers
 
 import base.SpecBase
-import connectors.financialdata.CurrentPaymentsHttpParser.CurrentPaymentsResponse
 import connectors.financialdata.FinancialDataConnector
 import connectors.VatReturnConnector
+import connectors.financialdata.FinancialDataHttpParser.FinancialDataResponse
 import models.{Quarter, StandardPeriod}
 import models.external.ExternalEntryUrl
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
@@ -54,7 +54,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
             bind[VatReturnConnector].toInstance(vatReturnConnector)
           ).build()
 
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn
           Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
@@ -83,7 +83,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
             bind[VatReturnConnector].toInstance(vatReturnConnector)
           ).build()
 
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn
           Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
         when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some(externalUrl))))
@@ -122,7 +122,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         )
       )
 
-      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn
         Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
@@ -166,7 +166,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         )
       )
 
-      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn
         Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
@@ -228,7 +228,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         )
       )
 
-      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn
         Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
@@ -272,7 +272,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       val msg = "GET failed. Caused by: TimeoutException"
 
-      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.failed(new GatewayTimeoutException(msg))
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.failed(new GatewayTimeoutException(msg))
 
       running(application) {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
@@ -300,7 +300,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request = FakeRequest(GET, whichVatPeriodToPayRoute)
 
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.successful[CurrentPaymentsResponse](Left(InvalidJson))
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful[FinancialDataResponse](Left(InvalidJson))
         when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
         val result = route(application, request).value
@@ -336,7 +336,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         )
       )
 
-      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn
         Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
       when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
 
@@ -385,7 +385,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         )
       )
 
-      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn
         Future.successful(Right(CurrentPayments(duePayments, Seq.empty, Seq.empty, duePayments.map(_.amountOwed).sum, BigDecimal(0))))
 
       running(application) {
@@ -434,7 +434,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
 
       val msg = "GET failed. Caused by: TimeoutException"
 
-      when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.failed(new GatewayTimeoutException(msg))
+      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.failed(new GatewayTimeoutException(msg))
 
       running(application) {
         val request = FakeRequest(POST, whichVatPeriodToPayRoute)
@@ -488,7 +488,7 @@ class WhichVatPeriodToPayControllerSpec extends SpecBase with MockitoSugar {
         val request = FakeRequest(POST, whichVatPeriodToPayRoute)
           .withFormUrlEncodedBody("value" -> duePayments(2).period.toString)
 
-        when(financialDataConnector.getCurrentPayments(any())(any())) thenReturn Future.successful[CurrentPaymentsResponse](Left(InvalidJson))
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful[FinancialDataResponse](Left(InvalidJson))
 
         val result = route(application, request).value
         status(result) mustEqual SEE_OTHER

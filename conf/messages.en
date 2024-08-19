@@ -266,6 +266,7 @@ returnSubmitted.payVatOwed.p1 = For {0}, you owe
 returnSubmitted.payVatOwed.p2 = You can pay by corporate card or bank transfer.
 returnSubmitted.payNow = Pay now
 returnSubmitted.noneDue = No payment due
+returnSubmitted.excluded = You must pay this to the countries where you made your sales
 returnSubmitted.paid = Paid
 returnSubmitted.payBy.p1 = You need to pay by {0}.
 returnSubmitted.payBy.p2 = EU countries can charge you interest or penalties for late payments.
@@ -281,7 +282,6 @@ submittedReturnsHistory.no-returns = You have not submitted any returns.
 submittedReturnsHistory.returnPeriod = Return period
 submittedReturnsHistory.amountLeftToPay = Amount left to pay
 submittedReturnsHistory.payment = Payment
-submittedReturnsHistory.updating = Updating
 
 notificationBanner.title = Important
 notificationBanner.text = We cannot get your latest payment records due to a technical issue. Try again later.

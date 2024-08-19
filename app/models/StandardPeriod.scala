@@ -46,6 +46,11 @@ trait Period {
     paymentDeadline.isBefore(LocalDate.now(clock))
   }
 
+  def isInExpiredPeriod(clock: Clock): Boolean = {
+    val threeYearsAfterPayment = paymentDeadline.plusYears(3)
+    LocalDate.now(clock).isAfter(threeYearsAfterPayment)
+  }
+
   def displayText(implicit messages: Messages): String =
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
 

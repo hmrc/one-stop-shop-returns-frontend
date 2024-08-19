@@ -17,6 +17,7 @@
 package viewmodels.yourAccount
 
 import models.financialdata.{Payment, PaymentStatus}
+import models.requests.RegistrationRequest
 import play.api.i18n.Messages
 import utils.CurrencyFormatter.currencyFormat
 import utils.ReturnsUtils.isThreeYearsOld
@@ -25,14 +26,15 @@ import viewmodels.LinkModel
 import java.time.Clock
 
 case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[String] = None, link: Option[LinkModel] = None)
+
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
 object PaymentsViewModel {
   def apply(duePayments: Seq[Payment],
             overduePayments: Seq[Payment],
             excludedPayments: Seq[Payment],
-            hasDueReturnThreeYearsOld: Boolean)(implicit messages: Messages, clock: Clock): PaymentsViewModel = {
-    if(duePayments.isEmpty && overduePayments.isEmpty && excludedPayments.isEmpty){
+            hasDueReturnThreeYearsOld: Boolean)(implicit messages: Messages, clock: Clock, request: RegistrationRequest[_]): PaymentsViewModel = {
+    if (duePayments.isEmpty && overduePayments.isEmpty && excludedPayments.isEmpty) {
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
           contents = Seq(messages("index.payment.nothingOwed"))
@@ -49,7 +51,7 @@ object PaymentsViewModel {
       val excludedPaymentsSection =
         getPaymentsSection(None, excludedPayments, "excluded")
 
-      val link = if(hasDueReturnThreeYearsOld) {
+      val link = if (hasDueReturnThreeYearsOld) {
         None
       } else {
         Some(
@@ -69,32 +71,35 @@ object PaymentsViewModel {
     }
   }
 
-  private def getPaymentsSection(heading: Option[String], payments: Seq[Payment], key: String)(implicit messages: Messages, clock: Clock) = {
-    if(payments.nonEmpty){
+  private def getPaymentsSection(
+                                  heading: Option[String],
+                                  payments: Seq[Payment],
+                                  key: String
+                                )(implicit messages: Messages, clock: Clock, request: RegistrationRequest[_]) = {
+    if (payments.nonEmpty) {
       Some(
         PaymentsSection(
           heading = heading,
           contents = payments.map(
             payment => payment.paymentStatus match {
+              case _ if request.registration.excludedTrader.exists(_.isExcludedNotReversed) && isThreeYearsOld(payment.dateDue) =>
+                messages(
+                  "index.payment.amountOwedThreeYearsOld",
+                  payment.period.displayShortText
+                )
               case PaymentStatus.Unknown =>
                 messages(
                   s"index.payment.${key}AmountMaybeOwed",
                   payment.period.displayShortText,
                   payment.period.paymentDeadlineDisplay
                 )
-              case _ => if(isThreeYearsOld(payment.dateDue)){
-                messages(
-                  "index.payment.amountOwedThreeYearsOld",
-                  payment.period.displayShortText
-                )
-              } else {
+              case _ =>
                 messages(
                   s"index.payment.${key}AmountOwed",
                   currencyFormat(payment.amountOwed),
                   payment.period.displayShortText,
                   payment.period.paymentDeadlineDisplay
                 )
-              }
             }
           )
         )

@@ -19,7 +19,6 @@ package connectors.financialdata
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.WireMockHelper
-import formats.Format
 import models.Quarter.{Q1, Q3}
 import models.StandardPeriod
 import models.financialdata._
@@ -30,8 +29,6 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
-
-import java.time.LocalDate
 
 class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 
@@ -171,99 +168,6 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
     }
   }
 
-  ".getVatReturnWithFinancialData" - {
-
-    val commencementDate = LocalDate.now()
-    val url = s"$baseUrl/charge-history/${Format.dateTimeFormatter.format(commencementDate)}"
-
-    "with no correctionPayload" - {
-
-      val vatReturnWithFinancialData =
-        VatReturnWithFinancialData(
-          completeVatReturn,
-          Some(Charge(period, BigDecimal(100), BigDecimal(100), BigDecimal(100))),
-          100,
-          None
-        )
-      val responseJson = Json.toJson(Seq(vatReturnWithFinancialData))
-
-      "must return a Some(vatReturnWithFinancialData) when successful" in {
-
-        running(application) {
-          val connector = application.injector.instanceOf[FinancialDataConnector]
-
-          server.stubFor(
-            get(urlEqualTo(s"$url"))
-              .willReturn(
-                aResponse().withStatus(OK).withBody(responseJson.toString())
-              ))
-
-          connector.getVatReturnWithFinancialData(commencementDate).futureValue mustBe Right(Seq(vatReturnWithFinancialData))
-        }
-      }
-    }
-
-    "with a single correctionPayload" - {
-
-      val vatReturnWithFinancialData =
-        VatReturnWithFinancialData(
-          completeVatReturn,
-          Some(Charge(period, BigDecimal(100), BigDecimal(100), BigDecimal(100))),
-          100,
-          Some(emptyCorrectionPayload)
-        )
-      val responseJson = Json.toJson(Seq(vatReturnWithFinancialData))
-
-      "must return a Some(vatReturnWithFinancialData) when successful" in {
-
-        running(application) {
-          val connector = application.injector.instanceOf[FinancialDataConnector]
-
-          server.stubFor(
-            get(urlEqualTo(s"$url"))
-              .willReturn(
-                aResponse().withStatus(OK).withBody(responseJson.toString())
-              ))
-
-          connector.getVatReturnWithFinancialData(commencementDate).futureValue mustBe Right(Seq(vatReturnWithFinancialData))
-        }
-      }
-    }
-
-    "must return invalid response when invalid json returned" in {
-
-      val responseJson = Json.toJson(StandardPeriod(2021, Q3))
-
-      running(application) {
-        val connector = application.injector.instanceOf[FinancialDataConnector]
-
-        server.stubFor(
-          get(urlEqualTo(s"$url"))
-            .willReturn(
-              aResponse().withStatus(OK).withBody(responseJson.toString())
-            ))
-
-        connector.getVatReturnWithFinancialData(commencementDate).futureValue mustBe Left(InvalidJson)
-      }
-    }
-
-    "must return unexpected response if response code is not OK" in {
-
-      running(application) {
-        val connector = application.injector.instanceOf[FinancialDataConnector]
-
-        server.stubFor(
-          get(urlEqualTo(s"$url"))
-            .willReturn(
-              aResponse().withStatus(CREATED)
-            ))
-
-        connector.getVatReturnWithFinancialData(commencementDate).futureValue
-          .mustBe(Left(UnexpectedResponseStatus(CREATED, "")))
-      }
-    }
-  }
-
   ".getCurrentPayments" - {
 
     val period = StandardPeriod(2022, Q1)
@@ -289,7 +193,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCurrentPayments(vrn).futureValue mustBe Right(currentPayments)
+        connector.getFinancialData(vrn).futureValue mustBe Right(currentPayments)
       }
     }
 
@@ -306,7 +210,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(OK).withBody(responseJson.toString())
             ))
 
-        connector.getCurrentPayments(vrn).futureValue mustBe Left(InvalidJson)
+        connector.getFinancialData(vrn).futureValue mustBe Left(InvalidJson)
       }
     }
 
@@ -321,7 +225,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Eithe
               aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("")
             ))
 
-        connector.getCurrentPayments(vrn)
+        connector.getFinancialData(vrn)
           .futureValue mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, ""))
       }
     }

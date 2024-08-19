@@ -16,13 +16,27 @@
 
 package models
 
+import models.financialdata.PaymentStatus
+
 sealed trait PaymentState
 
 object PaymentState extends Enumerable.Implicits {
 
   case object NoneDue extends WithName("returnSubmitted.noneDue") with PaymentState
+  case object Excluded extends WithName("returnSubmitted.excluded") with PaymentState
   case object PaymentDue extends WithName("returnSubmitted.payNow") with PaymentState
   case object Paid extends WithName("returnSubmitted.paid") with PaymentState
+
+  def fromPaymentStatus(paymentStatus: PaymentStatus): PaymentState = {
+    paymentStatus match {
+      case PaymentStatus.Unpaid => PaymentDue
+      case PaymentStatus.Partial => PaymentDue
+      case PaymentStatus.Paid => Paid
+      case PaymentStatus.Unknown => PaymentDue
+      case PaymentStatus.NilReturn => NoneDue
+      case PaymentStatus.Excluded => Excluded
+    }
+  }
 
   val values: Seq[PaymentState] = Seq(NoneDue, PaymentDue, Paid)
 

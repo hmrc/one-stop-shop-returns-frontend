@@ -17,17 +17,14 @@
 package connectors.financialdata
 
 import config.Service
-import connectors.financialdata.CurrentPaymentsHttpParser._
+import connectors.financialdata.ChargeHttpParser._
 import connectors.financialdata.FinancialDataHttpParser._
-import connectors.financialdata.VatReturnWithFinancialDataHttpParser._
-import formats.Format
 import models.Period
 import play.api.Configuration
 import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
 
-import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,10 +39,6 @@ class FinancialDataConnector @Inject()(config: Configuration, httpClientV2: Http
   def getPeriodsAndOutstandingAmounts()(implicit hc: HeaderCarrier): Future[OutstandingPaymentsResponse] =
     httpClientV2.get(url"$baseUrl/financial-data/outstanding-payments").execute[OutstandingPaymentsResponse]
 
-  def getVatReturnWithFinancialData(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[VatReturnWithFinancialDataResponse] =
-    httpClientV2.get(url"$baseUrl/financial-data/charge-history/${Format.dateTimeFormatter.format(commencementDate)}")
-      .execute[VatReturnWithFinancialDataResponse]
-
-  def getCurrentPayments(vrn: Vrn)(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] =
-    httpClientV2.get(url"$baseUrl/financial-data/prepare/${vrn.vrn}").execute[CurrentPaymentsResponse]
+  def getFinancialData(vrn: Vrn)(implicit hc: HeaderCarrier): Future[FinancialDataResponse] =
+    httpClientV2.get(url"$baseUrl/financial-data/prepare/${vrn.vrn}").execute[FinancialDataResponse]
 }

@@ -26,7 +26,11 @@ object PaymentStatus extends Enumerable.Implicits {
 
   case object Partial extends WithName("PARTIAL") with PaymentStatus
 
+  case object Paid extends WithName("PAID") with PaymentStatus
+
   case object Unknown extends WithName("UNKNOWN") with PaymentStatus
+
+  case object NilReturn extends WithName("NIL_RETURN") with PaymentStatus
 
   case object Excluded extends WithName("EXCLUDED") with PaymentStatus
 

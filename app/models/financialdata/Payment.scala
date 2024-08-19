@@ -28,7 +28,11 @@ case class Payment(period: StandardPeriod,
                    amountOwed: BigDecimal,
                    dateDue: LocalDate,
                    paymentStatus: PaymentStatus
-                  )
+                  ) {
+  val showPayNow: Boolean = amountOwed > 0
+
+  val showUpdating: Boolean = paymentStatus == PaymentStatus.Unknown
+}
 
 object Payment {
   implicit val formatPayment: Format[Payment] = Json.format[Payment]
