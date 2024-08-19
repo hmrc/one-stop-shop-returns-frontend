@@ -21,7 +21,7 @@ import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import controllers.actions._
 import logging.Logging
-import models.{Period, StandardPeriod}
+import models.{PartialReturnPeriod, Period, StandardPeriod}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
@@ -85,7 +85,10 @@ class SubmittedReturnsHistoryController @Inject()(
 
       allPayments.find(_.period == vatReturn.period) match {
         case Some(payment) =>
-          Map(vatReturn.period -> payment).toFuture
+
+          val period = getPartialReturnPeriod(vatReturn)
+
+          Map(period -> payment).toFuture
         case _ =>
           correctionConnector.get(vatReturn.period).map {
             case Right(correctionPayload) =>
@@ -103,6 +106,14 @@ class SubmittedReturnsHistoryController @Inject()(
     }).map(_.flatten.toMap)
   }
 
+  private def getPartialReturnPeriod(vatReturn: VatReturn) = {
+    (vatReturn.startDate, vatReturn.endDate) match {
+      case (Some(sd), Some(ed)) =>
+        PartialReturnPeriod(sd, ed, vatReturn.period.year, vatReturn.period.quarter)
+      case _ => vatReturn.period
+    }
+  }
+
   private def mapPeriodToPayment(vatReturn: VatReturn, maybeCorrectionPayload: Option[CorrectionPayload]): Map[Period, Payment] = {
     val amountOwedFromReturn = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
 
@@ -111,7 +122,10 @@ class SubmittedReturnsHistoryController @Inject()(
     } else {
       PaymentStatus.Paid
     }
-    Map(vatReturn.period -> Payment(
+
+    val period = getPartialReturnPeriod(vatReturn)
+
+    Map(period -> Payment(
       period = StandardPeriod.fromPeriod(vatReturn.period),
       amountOwed = 0,
       dateDue = vatReturn.period.paymentDeadline,
