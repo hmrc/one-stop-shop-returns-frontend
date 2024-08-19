@@ -56,7 +56,7 @@
                 <a class="govuk-breadcrumbs__link" href="@routes.SubmittedReturnsHistoryController.onPageLoad()" id="submitted-returns">@messages("breadcrumbs.submittedReturns")</a>
             </li>
             <li class="govuk-breadcrumbs__list-item">
-                @vatReturn.period.displayText
+                @vatReturn.displayStartEnd
             </li>
         </ol>
     </div>
@@ -78,7 +78,7 @@
 
     <header class="hmrc-page-heading">
         <p class="govuk-caption-xl hmrc-caption-xl">@messages("previousReturn.title")</p>
-        <h1 class="govuk-heading-xl">@vatReturn.period.displayText</h1>
+        <h1 class="govuk-heading-xl">@vatReturn.displayStartEnd</h1>
     </header>
 
     <h2 class="govuk-heading-l">@messages("previousReturn.summary.title")</h2>
