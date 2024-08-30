@@ -50,10 +50,9 @@ lazy val root = (project in file("."))
     resolvers ++= Seq(Resolver.jcenterRepo),
     // concatenate js
     Concat.groups := Seq(
-      "javascripts/application.js" ->
-        group(Seq(
-          "javascripts/app.js"
-        ))
+      "javascripts/all-services.js" -> group(
+        baseDirectory.value / "app" / "assets" / "javascripts" / "src" * "*.js"
+      )
     ),
     // prevent removal of unused code which generates warning errors due to use of third-party libs
     uglifyCompressOptions := Seq("unused=false", "dead_code=false"),
