@@ -26,13 +26,15 @@ import models.requests.IdentifierRequest
 import play.api.http.Status.NO_CONTENT
 import play.api.mvc.Results._
 import play.api.mvc._
-import services.AuditService
+import services.{AuditService, UrlBuilderService}
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromAllowlist, OnlyRelative}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import utils.FutureSyntax._
 
@@ -42,11 +44,14 @@ class IdentifierAction @Inject()(
                                   override val authConnector: AuthConnector,
                                   auditService: AuditService,
                                   registrationConnector: RegistrationConnector,
-                                  config: FrontendAppConfig
+                                  config: FrontendAppConfig,
+                                  urlBuilder: UrlBuilderService
                                 )
                                 (implicit val executionContext: ExecutionContext)
   extends ActionRefiner[Request, IdentifierRequest]
     with AuthorisedFunctions with Logging {
+
+  private lazy val redirectPolicy = OnlyRelative | AbsoluteWithHostnameFromAllowlist(config.allowedRedirectUrls: _*)
 
   //noinspection ScalaStyle
   override def refine[A](request: Request[A]): Future[Either[Result, IdentifierRequest[A]]] = {
@@ -96,7 +101,7 @@ class IdentifierAction @Inject()(
 
     } recoverWith {
       case _: NoActiveSession =>
-        Left(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))).toFuture
+        Left(Redirect(config.loginUrl, Map("continue" -> Seq(urlBuilder.loginContinueUrl(request).get(redirectPolicy).url)))).toFuture
       case e: AuthorisationException =>
         logger.info(s"Got authorisation exception ${e.getMessage}", e)
         Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture

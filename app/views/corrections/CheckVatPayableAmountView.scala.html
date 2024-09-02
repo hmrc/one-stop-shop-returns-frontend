@@ -14,12 +14,15 @@
  * limitations under the License.
  *@
 
+@import components.ButtonGroup
+
 @this(
         layout: templates.Layout,
         govukSummaryList: GovukSummaryList,
         govukButton: GovukButton,
         formHelper: FormWithCSRF,
-        govukWarningText: GovukWarningText
+        govukWarningText: GovukWarningText,
+        button: ButtonGroup
 )
 
 @(period: Period, summaryList: SummaryList, country: Country, mode: Mode, correctionPeriod: Period, periodIndex: Index, countryIndex: Index, countryCorrectionComplete: Boolean)(implicit request: Request[_], messages: Messages)
@@ -46,13 +49,8 @@
 
                 <div class="govuk-button-group">
 
-                    @govukButton(
-                        ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
-                    )
+                    @button("site.continue", period, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(mode, period, periodIndex, countryIndex).url)
 
-                    <a id="saveProgress" role="button" href="@routes.SavedProgressController.onPageLoad(period, controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(mode, period, periodIndex, countryIndex).url)" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-                        @messages("saveProgress.button")
-                    </a>
                 </div>
 
             </p>

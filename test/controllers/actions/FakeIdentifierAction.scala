@@ -21,7 +21,7 @@ import connectors.RegistrationConnector
 import models.requests.IdentifierRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc._
-import services.AuditService
+import services.{AuditService, UrlBuilderService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
@@ -33,7 +33,8 @@ class FakeIdentifierAction extends IdentifierAction(
   mock[AuthConnector],
   mock[AuditService],
   mock[RegistrationConnector],
-  mock[FrontendAppConfig]
+  mock[FrontendAppConfig],
+  mock[UrlBuilderService]
 )(ExecutionContext.Implicits.global) {
 
   override def refine[A](request: Request[A]): Future[Either[Result, IdentifierRequest[A]]] =
