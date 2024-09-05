@@ -300,13 +300,13 @@ POST        /:period/return-continue                                            
 GET         /:period/return-delete-confirm                                                                          controllers.DeleteReturnController.onPageLoad(period: Period)
 POST        /:period/return-delete-confirm                                                                          controllers.DeleteReturnController.onSubmit(period: Period)
 
-GET         /:period/progress-saved                                                                                 controllers.SavedProgressController.onPageLoad(period: Period, continueUrl: String)
+GET         /:period/progress-saved                                                                                 controllers.SavedProgressController.onPageLoad(period: Period, continueUrl: RedirectUrl)
 
 GET         /return-not-submitted                                                                                   controllers.NoRegistrationFoundInCoreController.onPageLoad()
 
 GET         /return-service-down                                                                                    controllers.ReceivedErrorFromCoreController.onPageLoad()
 
-GET         /no-welsh-service                                                                                       controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[String] ?= None)
+GET         /no-welsh-service                                                                                       controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[RedirectUrl] ?= None)
 
 GET         /outstanding-payments                                                                                   controllers.WhichVatPeriodToPayController.onPageLoad()
 POST        /outstanding-payments                                                                                   controllers.WhichVatPeriodToPayController.onSubmit()

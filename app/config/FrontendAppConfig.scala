@@ -39,6 +39,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
   val signOutUrl: String       = configuration.get[String]("urls.signOut")
 
+  val allowedRedirectUrls: Seq[String] = configuration.get[Seq[String]]("urls.allowedRedirects")
+
   private val exitSurveyBaseUrl: String = configuration.get[String]("feedback-frontend.host") + configuration.get[String]("feedback-frontend.url")
   lazy val exitSurveyUrl: String        = s"$exitSurveyBaseUrl/${origin.toLowerCase}"
 

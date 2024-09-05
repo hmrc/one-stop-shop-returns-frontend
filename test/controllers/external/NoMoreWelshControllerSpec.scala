@@ -31,12 +31,12 @@ class NoMoreWelshControllerSpec extends SpecBase {
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.NoMoreWelshController.onPageLoad(Some("/url")).url)
+          val request = FakeRequest(GET, routes.NoMoreWelshController.onPageLoad().url)
           val view = application.injector.instanceOf[NoMoreWelshTranslationsView]
 
           val result = route(application, request).value
           status(result) mustBe OK
-          contentAsString(result) mustBe view(Some("/url"))(request, messages(application)).toString
+          contentAsString(result) mustBe view()(request, messages(application)).toString
         }
       }
   }
