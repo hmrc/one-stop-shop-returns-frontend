@@ -22,6 +22,8 @@ import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 
+import java.net.URI
+
 @Singleton
 class FrontendAppConfig @Inject() (configuration: Configuration) {
 
@@ -38,6 +40,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val loginUrl: String         = configuration.get[String]("urls.login")
   val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
   val signOutUrl: String       = configuration.get[String]("urls.signOut")
+  val ivUpliftUrl: String      = configuration.get[String]("urls.ivUplift")
 
   val allowedRedirectUrls: Seq[String] = configuration.get[Seq[String]]("urls.allowedRedirects")
 
@@ -76,5 +79,13 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val amendRegistrationEnabled: Boolean = configuration.get[Boolean]("features.amendRegistrationEnabled")
 
   val rejoinThisService: String = configuration.get[String]("urls.rejoinThisService")
+
+  val ivEvidenceStatusUrl: String =
+    s"${configuration.get[Service]("microservice.services.identity-verification").baseUrl}/disabled-evidences?origin=$origin"
+
+  private val ivJourneyServiceUrl: String =
+    s"${configuration.get[Service]("microservice.services.identity-verification").baseUrl}/journey/"
+
+  def ivJourneyResultUrl(journeyId: String): String = new URI(s"$ivJourneyServiceUrl$journeyId").toString
 
 }

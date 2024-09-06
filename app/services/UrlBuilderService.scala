@@ -17,6 +17,7 @@
 package services
 
 import config.FrontendAppConfig
+import controllers.auth.routes
 import play.api.mvc.Request
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
@@ -43,6 +44,6 @@ class UrlBuilderService @Inject()(config: FrontendAppConfig) {
     returnUrl
   }
 
-
-
+  def ivFailureUrl(request: Request[_]): String =
+    config.loginContinueUrl + routes.IdentityVerificationController.handleIvFailure(loginContinueUrl(request), None).url
 }

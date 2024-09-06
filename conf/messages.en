@@ -580,3 +580,31 @@ leaveThisService.p4 = To help confirm your identity, you must contact us from th
 leaveThisService.whatHappensNext.heading = What happens next
 leaveThisService.whatHappensNext.p1 = We’ll email you with any more information you may need and to confirm your details are correct.
 leaveThisService.returnToYourAccount = Return to your account
+
+ivFailedIdentityVerification.title = We could not confirm your identity
+ivFailedIdentityVerification.heading = We could not confirm your identity
+ivFailedIdentityVerification.p = We could not confirm your identity
+
+ivError.title = Sorry, there is a problem with the service
+ivError.heading = Sorry, there is a problem with the service
+ivError.p = Try again later.
+
+ivIncomplete.title = Sorry, there is a problem with the service
+ivIncomplete.heading = Sorry, there is a problem with the service
+ivIncomplete.p = Try again later.
+
+ivInsufficientEvidence.title = We could not confirm your identity online
+ivInsufficientEvidence.heading = We could not confirm your identity online
+ivInsufficientEvidence.p = You will need to contact HMRC by phone to confirm your identity.
+
+ivLockedOut.title = We could not confirm your identity
+ivLockedOut.heading = We could not confirm your identity
+ivLockedOut.p = You have entered information that does not match our records too many times. For security reasons, you must wait 24 hours and then sign in to try again.
+
+ivPreconditionFailed.title = Sorry, there is a problem
+ivPreconditionFailed.heading = Sorry, there is a problem
+ivPreconditionFailed.p = Try again later.
+
+ivTechnicalIssue.title = Sorry, there is a problem with the service
+ivTechnicalIssue.heading = Sorry, there is a problem with the service
+ivTechnicalIssue.p = Try again later.
