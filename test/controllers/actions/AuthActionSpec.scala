@@ -213,7 +213,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
     "when the user has logged in as an Individual with a VAT enrolment and strong credentials, but confidence level less then 200" - {
 
-      "must be redirected to the Not Registered page" in {
+      "must be redirected to the iv uplift journey" in {
 
         val application = applicationBuilder(None).configure(configNoEnrolment).build()
 
@@ -227,10 +227,10 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
 
           val action = new IdentifierAction(mockAuthConnector, mockAuditService, mockRegistrationConnector, appConfig, urlBuilder)
           val controller = new Harness(action, actionBuilder)
-          val result = controller.onPageLoad()(FakeRequest())
+          val result = controller.onPageLoad()(FakeRequest(GET, "/example"))
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
+          redirectLocation(result).value must startWith(s"${appConfig.ivUpliftUrl}?origin=OSS&confidenceLevel=250")
         }
       }
     }

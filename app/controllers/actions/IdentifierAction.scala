@@ -102,6 +102,9 @@ class IdentifierAction @Inject()(
     } recoverWith {
       case _: NoActiveSession =>
         Left(Redirect(config.loginUrl, Map("continue" -> Seq(urlBuilder.loginContinueUrl(request).get(redirectPolicy).url)))).toFuture
+      case _: InsufficientConfidenceLevel =>
+        logger.info("Insufficient confidence level")
+        Left(upliftConfidenceLevel(request)).toFuture
       case e: AuthorisationException =>
         logger.info(s"Got authorisation exception ${e.getMessage}", e)
         Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture
@@ -164,5 +167,18 @@ class IdentifierAction @Inject()(
       val loginAuditModel = LoginAuditModel.build(groupId, request)
       auditService.audit(loginAuditModel)(hc, request)
     }
+  }
+
+  private def upliftConfidenceLevel[A](request: Request[A]): Result = {
+    val redirectPolicy = OnlyRelative | AbsoluteWithHostnameFromAllowlist(config.allowedRedirectUrls: _*)
+    Redirect(
+      config.ivUpliftUrl,
+      Map(
+        "origin" -> Seq(config.origin),
+        "confidenceLevel" -> Seq(ConfidenceLevel.L250.toString),
+        "completionURL" -> Seq(urlBuilder.loginContinueUrl(request).get(redirectPolicy).url),
+        "failureURL" -> Seq(urlBuilder.ivFailureUrl(request))
+      )
+    )
   }
 }

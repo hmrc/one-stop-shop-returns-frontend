@@ -318,3 +318,17 @@ POST        /:period/ni-to-ni-intercept                                         
 
 GET         /:period/country-to-same-country                                                                        controllers.CountryToSameCountryController.onPageLoad(period: Period)
 POST        /:period/country-to-same-country                                                                        controllers.CountryToSameCountryController.onSubmit(period: Period)
+
+GET         /identity-problem                              controllers.auth.IdentityVerificationController.identityError(redirectUrl: RedirectUrl)
+GET         /identity-complete                             controllers.auth.IdentityVerificationController.handleIvFailure(redirectUrl: RedirectUrl, journeyId: Option[String])
+GET         /iv/error                                      controllers.auth.IvReturnController.error(continueUrl: RedirectUrl)
+GET         /iv/incomplete                                 controllers.auth.IvReturnController.incomplete(continueUrl: RedirectUrl)
+GET         /iv/insufficient-evidence                      controllers.auth.IvReturnController.insufficientEvidence(continueUrl: RedirectUrl)
+GET         /iv/locked-out                                 controllers.auth.IvReturnController.lockedOut(continueUrl: RedirectUrl)
+GET         /iv/precondition-failed                        controllers.auth.IvReturnController.preconditionFailed(continueUrl: RedirectUrl)
+GET         /iv/technical-issue                            controllers.auth.IvReturnController.technicalIssue(continueUrl: RedirectUrl)
+GET         /iv/timeout                                    controllers.auth.IvReturnController.timeout(continueUrl: RedirectUrl)
+GET         /iv/user-aborted                               controllers.auth.IvReturnController.userAborted(continueUrl: RedirectUrl)
+GET         /iv/insufficient-evidence-sources              controllers.auth.IvReturnController.notEnoughEvidenceSources(continueUrl: RedirectUrl)
+GET         /iv/failed-matching                            controllers.auth.IvReturnController.failedMatching(continueUrl: RedirectUrl)
+GET         /iv/failed-identity-verification               controllers.auth.IvReturnController.failed(continueUrl: RedirectUrl)
