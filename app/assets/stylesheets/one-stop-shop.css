@@ -18,6 +18,21 @@
     background: #f3f2f1;
 }
 
+/* Dynamic spinner for please-wait page within file upload journey */
+.processing-wheel-loader {
+    border: 12px solid #DEE0E2;
+    border-radius: 50%;
+    border-top-color: #005EA5;
+    width: 50px;
+    height: 50px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+#processing-wheel {
+    margin-top: -75px;
+}
+
 @media screen and (min-width: 600px) and (max-width: 900px) {
     .tile {
         flex-basis: 46.99%;

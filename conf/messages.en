@@ -13,6 +13,7 @@ site.govuk = GOV.UK
 site.to = to
 site.submit = Submit
 site.warning = Warning
+site.processing = We are processing your registration.
 
 date.day = Day
 date.month = Month
