@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import components.ButtonGroup
+@import components.ButtonGroupProcessing
 @import models.exclusions.ExcludedTrader
 @import utils.CurrencyFormatter.currencyFormat
 
@@ -22,7 +22,7 @@
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukSummaryList: GovukSummaryList,
-        button: ButtonGroup,
+        button: ButtonGroupProcessing,
         govukButton: GovukButton,
         govukWarningText: GovukWarningText
 )
@@ -141,4 +141,13 @@
             )
         }
     }
+
+    <div id="processing-wheel" hidden>
+        <div id="processing" aria-live="polite" class="govuk-!-margin-bottom-9">
+            <h2 class="govuk-heading-m">
+                @messages("site.processing")
+            </h2>
+            <div class="processing-wheel-loader"></div>
+        </div>
+    </div>
 }
