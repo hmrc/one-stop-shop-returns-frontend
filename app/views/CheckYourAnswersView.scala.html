@@ -136,9 +136,7 @@
         <p class="govuk-body">@messages("error.missing_answers_prompt.general")</p>
 
         @formHelper(action = routes.CheckYourAnswersController.onSubmit(period, true)) {
-            @govukButton(
-                ButtonViewModel(messages("error.resolve_missing_answers"))
-            )
+            @button("error.resolve_missing_answers", period, routes.CheckYourAnswersController.onPageLoad(period).url)
         }
     }
 

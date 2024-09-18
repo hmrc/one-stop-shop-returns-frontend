@@ -103,7 +103,7 @@ if (typeof HMRCAccessibleAutocomplete != 'undefined' && document.querySelector('
 }
 
 function showTheSpinner() {
-
+  console.log('Spinner function triggered');
   const processingWheel = document.getElementById("processing-wheel");
 
   //make the spinning wheel visible
