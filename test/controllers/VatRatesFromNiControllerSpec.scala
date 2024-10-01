@@ -29,6 +29,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.UserAnswersRepository
 import services.VatRateService
+import utils.FutureSyntax.FutureOps
 import views.html.VatRatesFromNiView
 
 import scala.concurrent.Future
@@ -48,7 +49,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
       val vatRateService = mock[VatRateService]
-      when(vatRateService.vatRates(any(), any())) thenReturn(vatRates)
+      when(vatRateService.vatRates(any(), any())(any())) thenReturn vatRates.toFuture
 
       val application = applicationBuilder(userAnswers = Some(answersWithCountry))
         .overrides(
@@ -84,7 +85,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
       val mockVatRateService    = mock[VatRateService]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockVatRateService.vatRates(any(), any())) thenReturn List(vatRate)
+      when(mockVatRateService.vatRates(any(), any())(any())) thenReturn List(vatRate).toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(answersWithCountry))
@@ -109,7 +110,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
       val vatRateService = mock[VatRateService]
-      when(vatRateService.vatRates(period, country)) thenReturn(vatRates)
+      when(vatRateService.vatRates(eqTo(period), eqTo(country))(any())) thenReturn vatRates.toFuture
       val userAnswers = answersWithCountry.set(VatRatesFromNiPage(index), vatRates).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
@@ -132,7 +133,7 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
       val mockVatRateService    = mock[VatRateService]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockVatRateService.vatRates(any(), any())) thenReturn vatRates
+      when(mockVatRateService.vatRates(any(), any())(any())) thenReturn vatRates.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(answersWithCountry))
@@ -157,8 +158,14 @@ class VatRatesFromNiControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
+      val mockVatRateService = mock[VatRateService]
+      when(mockVatRateService.vatRates(any(), any())(any())) thenReturn vatRates.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(answersWithCountry)).build()
+      val application = applicationBuilder(userAnswers = Some(answersWithCountry))
+        .overrides(
+          bind[VatRateService].toInstance(mockVatRateService)
+        )
+        .build()
 
       running(application) {
         val request =

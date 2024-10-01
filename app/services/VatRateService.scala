@@ -16,41 +16,26 @@
 
 package services
 
+import connectors.EuVatRateConnector
 import models.{Country, Period, VatRate}
-import play.api.libs.json.Json
-import play.api.{Configuration, Environment}
+import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
-import scala.io.Source
+import scala.concurrent.{ExecutionContext, Future}
 import scala.math.BigDecimal.RoundingMode
 
-class VatRateService @Inject()(env: Environment, config: Configuration) {
+class VatRateService @Inject()(
+                                euVatRateConnector: EuVatRateConnector
+                              )(implicit ec: ExecutionContext) {
 
-  private val vatRateFile = config.get[String]("vat-rates-file")
-
-  private val vatRates: Map[Country, Seq[VatRate]] = {
-
-    val json = env.resourceAsStream(vatRateFile)
-      .fold(throw new Exception("Could not open VAT Rate file"))(Source.fromInputStream).mkString
-
-    val parsedRates = Json.parse(json).as[Map[String, Seq[VatRate]]]
-
-    parsedRates.map {
-      case(countryCode, rates) =>
-        val country =
-          Country.euCountriesWithNI
-            .find(_.code == countryCode)
-            .getOrElse(throw new Exception(s"VAT rates file contained entry $countryCode that is not recognised"))
-
-        country -> rates.sortBy(_.rate)
-    }
+  def vatRates(period: Period, country: Country)(implicit hc: HeaderCarrier): Future[Seq[VatRate]] = {
+    euVatRateConnector
+      .getEuVatRates(country, period.firstDay, period.lastDay)
+      .map(_
+        .map(VatRate.fromEuVatRate)
+        .filterNot(_.rate == BigDecimal(0))
+      )
   }
-
-  def vatRates(period: Period, country: Country): Seq[VatRate] =
-    vatRates
-      .getOrElse(country, Seq.empty)
-      .filter(_.validFrom isBefore period.lastDay.plusDays(1))
-      .filter(rate => rate.validUntil.fold(true)(_.isAfter(period.firstDay.minusDays(1))))
 
   def standardVatOnSales(netSales: BigDecimal, vatRate: VatRate): BigDecimal =
     ((netSales * vatRate.rate) / 100).setScale(2, RoundingMode.HALF_EVEN)

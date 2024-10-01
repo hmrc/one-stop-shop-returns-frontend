@@ -47,25 +47,26 @@ class VatRatesFromNiController @Inject()(
       getCountryAsync(index) {
         country =>
 
-          val vatRates = vatRateService.vatRates(period, country)
-          val form = formProvider(vatRates)
-          val currentValue = request.userAnswers.get(VatRatesFromNiPage(index))
+          vatRateService.vatRates(period, country).flatMap { vatRates =>
+            val form = formProvider(vatRates)
+            val currentValue = request.userAnswers.get(VatRatesFromNiPage(index))
 
-          val preparedForm = currentValue match {
-            case None => form
-            case Some(value) => form.fill(value)
-          }
+            val preparedForm = currentValue match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
 
-          vatRates.size match {
-            case 1 =>
-              currentValue match {
-                case Some(_) =>
-                  Redirect(VatRatesFromNiPage(index).navigate(mode, request.userAnswers)).toFuture
-                case _ =>
-                  updateAndContinue(mode, index, request, vatRates.toList)
-              }
-            case _ =>
-              Ok(view(preparedForm, mode, request.userAnswers.period, index, country, checkboxItems(vatRates))).toFuture
+            vatRates.size match {
+              case 1 =>
+                currentValue match {
+                  case Some(_) =>
+                    Redirect(VatRatesFromNiPage(index).navigate(mode, request.userAnswers)).toFuture
+                  case _ =>
+                    updateAndContinue(mode, index, request, vatRates.toList)
+                }
+              case _ =>
+                Ok(view(preparedForm, mode, request.userAnswers.period, index, country, checkboxItems(vatRates))).toFuture
+            }
           }
       }
   }
@@ -75,20 +76,21 @@ class VatRatesFromNiController @Inject()(
       getCountryAsync(index) {
         country =>
 
-          val vatRates = vatRateService.vatRates(period, country)
-          val form = formProvider(vatRates)
+          vatRateService.vatRates(period, country).flatMap { vatRates =>
+            val form = formProvider(vatRates)
 
-          form.bindFromRequest().fold(
-            formWithErrors =>
-              BadRequest(view(formWithErrors, mode, request.userAnswers.period, index, country, checkboxItems(vatRates))).toFuture,
+            form.bindFromRequest().fold(
+              formWithErrors =>
+                BadRequest(view(formWithErrors, mode, request.userAnswers.period, index, country, checkboxItems(vatRates))).toFuture,
 
-            value => {
-              val existingAnswers = request.userAnswers.get(VatRatesFromNiPage(index)).getOrElse(List.empty)
-              val existingAnswersWithRemovals = existingAnswers.filter(rate => value.contains(rate))
-              val updated = existingAnswersWithRemovals ++ value.filterNot(rate => existingAnswersWithRemovals.contains(rate))
-              updateAndContinue(mode, index, request, updated)
-            }
-          )
+              value => {
+                val existingAnswers = request.userAnswers.get(VatRatesFromNiPage(index)).getOrElse(List.empty)
+                val existingAnswersWithRemovals = existingAnswers.filter(rate => value.contains(rate))
+                val updated = existingAnswersWithRemovals ++ value.filterNot(rate => existingAnswersWithRemovals.contains(rate))
+                updateAndContinue(mode, index, request, updated)
+              }
+            )
+          }
       }
   }
 

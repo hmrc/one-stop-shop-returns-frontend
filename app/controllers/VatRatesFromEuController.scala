@@ -47,34 +47,36 @@ class VatRatesFromEuController @Inject()(
       getCountriesAsync(countryFromIndex, countryToIndex) {
         case (countryFrom, countryTo) =>
 
-          val vatRates = vatRateService.vatRates(period, countryTo)
-          val form = formProvider(vatRates)
-          val currentValue = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex))
+          vatRateService.vatRates(period, countryTo).flatMap { vatRates =>
 
-          val preparedForm = currentValue match {
-            case None => form
-            case Some(value) => form.fill(value)
-          }
+            val form = formProvider(vatRates)
+            val currentValue = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex))
 
-          vatRates.size match {
-            case 1 =>
-              currentValue match {
-                case Some(_) =>
-                  Redirect(VatRatesFromEuPage(countryFromIndex, countryToIndex).navigate(mode, request.userAnswers)).toFuture
-                case _ =>
-                  updateAndContinue(mode, countryFromIndex, countryToIndex, request, vatRates.toList)
-              }
-            case _ =>
-              Ok(view(
-                preparedForm,
-                mode,
-                request.userAnswers.period,
-                countryFromIndex,
-                countryToIndex,
-                countryFrom,
-                countryTo,
-                checkboxItems(vatRates)
-              )).toFuture
+            val preparedForm = currentValue match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
+
+            vatRates.size match {
+              case 1 =>
+                currentValue match {
+                  case Some(_) =>
+                    Redirect(VatRatesFromEuPage(countryFromIndex, countryToIndex).navigate(mode, request.userAnswers)).toFuture
+                  case _ =>
+                    updateAndContinue(mode, countryFromIndex, countryToIndex, request, vatRates.toList)
+                }
+              case _ =>
+                Ok(view(
+                  preparedForm,
+                  mode,
+                  request.userAnswers.period,
+                  countryFromIndex,
+                  countryToIndex,
+                  countryFrom,
+                  countryTo,
+                  checkboxItems(vatRates)
+                )).toFuture
+            }
           }
       }
   }
@@ -84,29 +86,30 @@ class VatRatesFromEuController @Inject()(
       getCountriesAsync(countryFromIndex, countryToIndex) {
         case (countryFrom, countryTo) =>
 
-          val vatRates = vatRateService.vatRates(period, countryTo)
-          val form = formProvider(vatRates)
+          vatRateService.vatRates(period, countryTo).flatMap { vatRates =>
+            val form = formProvider(vatRates)
 
-          form.bindFromRequest().fold(
-            formWithErrors =>
-              BadRequest(view(
-                formWithErrors,
-                mode,
-                request.userAnswers.period,
-                countryFromIndex,
-                countryToIndex,
-                countryFrom,
-                countryTo,
-                checkboxItems(vatRates)
-              )).toFuture,
+            form.bindFromRequest().fold(
+              formWithErrors =>
+                BadRequest(view(
+                  formWithErrors,
+                  mode,
+                  request.userAnswers.period,
+                  countryFromIndex,
+                  countryToIndex,
+                  countryFrom,
+                  countryTo,
+                  checkboxItems(vatRates)
+                )).toFuture,
 
-            value => {
-              val existingAnswers = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).getOrElse(List.empty)
-              val existingAnswersWithRemovals = existingAnswers.filter(rate => value.contains(rate))
-              val updated = existingAnswersWithRemovals ++ value.filterNot(rate => existingAnswersWithRemovals.contains(rate))
-              updateAndContinue(mode, countryFromIndex, countryToIndex, request, updated)
-            }
-          )
+              value => {
+                val existingAnswers = request.userAnswers.get(VatRatesFromEuPage(countryFromIndex, countryToIndex)).getOrElse(List.empty)
+                val existingAnswersWithRemovals = existingAnswers.filter(rate => value.contains(rate))
+                val updated = existingAnswersWithRemovals ++ value.filterNot(rate => existingAnswersWithRemovals.contains(rate))
+                updateAndContinue(mode, countryFromIndex, countryToIndex, request, updated)
+              }
+            )
+          }
       }
   }
 
