@@ -38,6 +38,14 @@ trait ModelGenerators {
       Gen.oneOf(ContinueReturn.values.toSeq)
     }
 
+  implicit val arbitraryBigDecimal: Arbitrary[BigDecimal] =
+    Arbitrary {
+      for {
+        nonDecimalNumber <- arbitrary[Int].retryUntil(_ > 0)
+        decimalNumber <- arbitrary[Int].retryUntil(_ > 0).retryUntil(_.toString.reverse.head.toString != "0")
+      } yield BigDecimal(s"$nonDecimalNumber.$decimalNumber")
+    }
+
   implicit val arbitraryVatOnSales: Arbitrary[VatOnSales] =
     Arbitrary {
       for {
@@ -70,6 +78,22 @@ trait ModelGenerators {
         validFrom <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2100, 1, 1))
       } yield VatRate(rate.setScale(2, RoundingMode.HALF_EVEN), rateType, validFrom)
     }
+
+  implicit val arbitraryEuVatRate: Arbitrary[EuVatRate] = {
+    Arbitrary {
+      for {
+        country <- arbitrary[Country]
+        vatRate <- arbitrary[BigDecimal]
+        vatRateType <- Gen.oneOf(VatRateType.values)
+        situatedOn <- arbitrary[LocalDate]
+      } yield EuVatRate(
+        country = country,
+        vatRate = vatRate,
+        vatRateType = vatRateType,
+        situatedOn = situatedOn
+      )
+    }
+  }
 
   implicit val arbitraryStandardPeriod: Arbitrary[StandardPeriod] =
     Arbitrary {

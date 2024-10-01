@@ -88,4 +88,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   def ivJourneyResultUrl(journeyId: String): String = new URI(s"$ivJourneyServiceUrl$journeyId").toString
 
+  val internalAuthToken: String = configuration.get[String]("internal-auth.token")
+
 }

@@ -72,6 +72,15 @@ object VatRate {
       ) ++ validUntilJson
     }
   }
+
+  def fromEuVatRate(euVatRate: EuVatRate): VatRate = {
+    VatRate(
+      rate = euVatRate.vatRate,
+      rateType = euVatRate.vatRateType,
+      validFrom = euVatRate.situatedOn,
+      validUntil = None
+    )
+  }
 }
 sealed trait VatRateType
 

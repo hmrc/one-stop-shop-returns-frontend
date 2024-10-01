@@ -18,14 +18,23 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions._
+import play.api.{Configuration, Environment}
 
 import java.time.{Clock, ZoneOffset}
 
 class Module extends AbstractModule {
 
+  private val defaultConfig = Configuration.load(Environment.simple())
+
   override def configure(): Unit = {
     bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
     bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
+
+    if (defaultConfig.get[Boolean]("create-internal-auth-token-on-start")) {
+      bind(classOf[InternalAuthTokenInitialiser]).to(classOf[InternalAuthTokenInitialiserImpl]).asEagerSingleton()
+    } else {
+      bind(classOf[InternalAuthTokenInitialiser]).to(classOf[NoOpInternalAuthTokenInitialiser]).asEagerSingleton()
+    }
   }
 }

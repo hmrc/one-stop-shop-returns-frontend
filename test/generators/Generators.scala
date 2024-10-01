@@ -67,7 +67,7 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
     alphaStr suchThat(_.size > 0)
 
   def decimals: Gen[String] =
-    arbitrary[BigDecimal]
+    arbitraryBigDecimal.arbitrary
       .suchThat(_.abs < Int.MaxValue)
       .suchThat(!_.isValidInt)
       .map("%f".format(_))
