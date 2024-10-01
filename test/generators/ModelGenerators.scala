@@ -38,6 +38,14 @@ trait ModelGenerators {
       Gen.oneOf(ContinueReturn.values.toSeq)
     }
 
+  implicit val arbitraryBigDecimal: Arbitrary[BigDecimal] =
+    Arbitrary {
+      for {
+        nonDecimalNumber <- arbitrary[Int].retryUntil(_ > 0)
+        decimalNumber <- arbitrary[Int].retryUntil(_ > 0).retryUntil(_.toString.reverse.head.toString != "0")
+      } yield BigDecimal(s"$nonDecimalNumber.$decimalNumber")
+    }
+
   implicit val arbitraryVatOnSales: Arbitrary[VatOnSales] =
     Arbitrary {
       for {
