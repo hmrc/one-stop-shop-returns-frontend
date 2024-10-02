@@ -77,6 +77,32 @@ class VatRateServiceSpec
         )
       }
 
+      "and which have no end date and removes 0% rate and duplicates" in {
+
+        val country = arbitrary[Country].sample.value
+        val period = arbitrary[StandardPeriod].sample.value
+
+        val rates: Seq[EuVatRate] = Seq(
+          EuVatRate(country, BigDecimal(0), Standard, period.firstDay.minusDays(1)),
+          EuVatRate(country, BigDecimal(1), Reduced, period.firstDay),
+          EuVatRate(country, BigDecimal(2), Reduced, period.lastDay),
+          EuVatRate(country, BigDecimal(3), Reduced, period.lastDay.plusDays(1)),
+          EuVatRate(country, BigDecimal(3), Reduced, period.lastDay.plusDays(2))
+        )
+
+        when(mockEuVatRateConnector.getEuVatRates(any(), any(), any())(any())) thenReturn rates.toFuture
+
+        val service = new VatRateService(mockEuVatRateConnector)
+
+        val result = service.vatRates(period, country).futureValue
+
+        result must contain theSameElementsAs Seq(
+          VatRate(BigDecimal(1), Reduced, period.firstDay),
+          VatRate(BigDecimal(2), Reduced, period.lastDay),
+          VatRate(BigDecimal(3), Reduced, period.lastDay.plusDays(1))
+        )
+      }
+
     }
   }
 

@@ -35,6 +35,7 @@ class VatRateService @Inject()(
         .map(VatRate.fromEuVatRate)
         .filterNot(_.rate == BigDecimal(0))
       )
+      .map(_.distinctBy(_.rate))
   }
 
   def standardVatOnSales(netSales: BigDecimal, vatRate: VatRate): BigDecimal =
