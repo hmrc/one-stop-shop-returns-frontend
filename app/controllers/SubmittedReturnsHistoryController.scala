@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.Constants.submittedReturnsPeriodsLimit
 import connectors.financialdata.FinancialDataConnector
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
@@ -35,6 +36,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.SubmittedReturnsHistoryView
 
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,7 +46,8 @@ class SubmittedReturnsHistoryController @Inject()(
                                                    financialDataConnector: FinancialDataConnector,
                                                    vatReturnConnector: VatReturnConnector,
                                                    correctionConnector: CorrectionConnector,
-                                                   vatReturnSalesService: VatReturnSalesService
+                                                   vatReturnSalesService: VatReturnSalesService,
+                                                   clock: Clock,
                                                  )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
 
@@ -55,8 +58,9 @@ class SubmittedReturnsHistoryController @Inject()(
       for {
         maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
         submittedVatReturns <- vatReturnConnector.getSubmittedVatReturns()
+        filteredSubmittedVatReturns = filteredReturnsWithinSixYears(submittedVatReturns)
         financialData <- getFinancialInformation()
-        periodToPaymentInfo <- getPaymentInfoForReturns(submittedVatReturns, financialData)
+        periodToPaymentInfo <- getPaymentInfoForReturns(filteredSubmittedVatReturns, financialData)
       } yield {
         val externalUrl = maybeSavedExternalUrl.fold(_ => None, _.url)
         val displayBanner = financialData.allOutstandingPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
@@ -131,5 +135,18 @@ class SubmittedReturnsHistoryController @Inject()(
       dateDue = vatReturn.period.paymentDeadline,
       paymentStatus = paymentStatus
     ))
+  }
+
+  private def getPeriodsWithinSixYears(periods: Seq[Period]): Seq[Period] = {
+    val endOfPreviousPeriod = LocalDate.now(clock).withDayOfMonth(1).minusDays(1)
+    periods.filter { period =>
+      period.lastDay.isAfter(endOfPreviousPeriod.minusYears(submittedReturnsPeriodsLimit))
+
+    }
+  }
+
+  private def filteredReturnsWithinSixYears(vatReturns: Seq[VatReturn]): Seq[VatReturn] = {
+    val periodsWithinSixYears = getPeriodsWithinSixYears(vatReturns.map(_.period))
+    vatReturns.filter(vatReturn => periodsWithinSixYears.contains(vatReturn.period))
   }
 }

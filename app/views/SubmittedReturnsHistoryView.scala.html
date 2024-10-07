@@ -50,15 +50,17 @@
         </div>
     }
 
-    <h1 class="govuk-heading-xl" style="margin-bottom:0px;">@messages("submittedReturnsHistory.heading")</h1>
+    <h1 class="govuk-heading-xl">@messages("submittedReturnsHistory.heading")</h1>
+
+    <p class="govuk-body">@messages("submittedReturnsHistory.p1")</p>
 
     @periodToPaymentInfo.size match {
         case 0 => {
             <br>
-            <p class="govuk-body-m">@messages("submittedReturnsHistory.no-returns")</p>
+            <p class="govuk-body-m govuk-!-margin-bottom-9">@messages("submittedReturnsHistory.no-returns")</p>
         }
         case _ => {
-            <p class="govuk-caption-m hmrc-caption-m" style="margin-bottom:50px;">
+            <p class="govuk-caption-m hmrc-caption-m" style="govuk-!-margin-bottom-9">
             @messages("submittedReturnsHistory.caption")
             </p>
             @periodToPaymentInfo.groupBy(_._1.year).map {
