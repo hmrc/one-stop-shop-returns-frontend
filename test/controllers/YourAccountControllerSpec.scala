@@ -475,8 +475,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(secondPeriod, Due, false, false),
-                  Return.fromPeriod(firstPeriod, Overdue, false, true)
+                  Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
+                  Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true)
                 ), Seq.empty
               )(messages(application), clock),
               PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -593,9 +593,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -635,8 +635,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-              Return.fromPeriod(firstPeriod, Overdue, false, true),
-              Return.fromPeriod(secondPeriod, Overdue, false, false)
+              Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+              Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
             PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -719,7 +719,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)), Seq.empty)(messages(application), clock),
               PaymentsViewModel(
                 Seq(payment),
                 Seq.empty,
@@ -764,9 +764,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn BigDecimal(1000)
 
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(sessionRepository.set(any())) thenReturn Future.successful(true)
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -805,7 +805,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)), Seq.empty)(messages(application), clock),
               PaymentsViewModel(
                 Seq(payment),
                 Seq.empty,
@@ -857,9 +857,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )
             )
 
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(sessionRepository.set(any())) thenReturn Future.successful(true)
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -897,8 +897,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq(overduePayment), Seq.empty, hasDueReturnThreeYearsOld = false )(messages(application), clock, registrationRequest),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)), Seq.empty)(messages(application), clock),
+              PaymentsViewModel(Seq.empty, Seq(overduePayment), Seq.empty, hasDueReturnThreeYearsOld = false )
+              (messages(application), clock, registrationRequest),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -934,8 +935,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )
             )
 
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -973,7 +974,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)), Seq.empty)(messages(application), clock),
               PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
               paymentError = true,
               None,
@@ -1009,8 +1010,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn
             vatOwed
 
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -1049,7 +1050,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             contentAsString(result) mustEqual view(
               registration.registeredCompanyName,
               registration.vrn.vrn,
-              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
+              ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)), Seq.empty)(messages(application), clock),
               PaymentsViewModel(
                 Seq(payment),
                 Seq.empty,
@@ -1133,7 +1134,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            ReturnsViewModel(Seq(Return.fromPeriod(period, Next, false, false)), Seq.empty)(messages(application), clock),
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)), Seq.empty)(messages(application), clock),
             PaymentsViewModel(
               Seq(payment),
               Seq.empty,
@@ -1213,7 +1214,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
             registration.vrn.vrn,
-            ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, true, true)), Seq.empty)(messages(application), clock),
+            ReturnsViewModel(Seq(Return.fromPeriod(period, Overdue, inProgress = true, isOldest = true)), Seq.empty)(messages(application), clock),
             PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
             paymentError = false,
             None,
@@ -1330,7 +1331,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
-          implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
           val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
@@ -1393,9 +1393,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -1487,9 +1487,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -1565,8 +1565,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                   nextPeriod.lastDay,
                   nextPeriod.paymentDeadline,
                   SubmissionStatus.Next,
-                  false,
-                  false
+                  inProgress = false,
+                  isOldest = false
                 )
               ),
               excludedReturns = Seq(Return(
@@ -1575,8 +1575,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 excludedPeriod.lastDay,
                 excludedPeriod.paymentDeadline,
                 SubmissionStatus.Excluded,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))
             ))
           )
@@ -1585,9 +1585,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -1608,8 +1608,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         running(application) {
 
-          implicit val msgs: Messages = messages(application)
-
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
           val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
@@ -1626,12 +1624,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               returns = Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false),
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false),
               ), excludedReturns =  Seq(
-                Return.fromPeriod(excludedPeriod, Excluded, false, false)
+                Return.fromPeriod(excludedPeriod, Excluded, inProgress = false, isOldest = false)
               )
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock, registrationRequest),
+            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)
+            (messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
@@ -1665,8 +1664,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 excludedPeriod.lastDay,
                 excludedPeriod.paymentDeadline,
                 SubmissionStatus.Excluded,
-                false,
-                false
+                inProgress = false,
+                isOldest = false
               ))
             ))
           )
@@ -1675,9 +1674,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
@@ -1723,10 +1722,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               returns = Seq.empty,
               excludedReturns = Seq(
-                Return.fromPeriod(excludedPeriod, Excluded, false, false)
+                Return.fromPeriod(excludedPeriod, Excluded, inProgress = false, isOldest = false)
               )
             )(messages(application), clock),
-            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)(messages(application), clock, registrationRequest),
+            PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)
+            (messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
@@ -1768,9 +1768,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
@@ -1862,9 +1862,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -1953,9 +1953,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -1999,7 +1999,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
             PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -2057,9 +2057,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Future.successful(
                 Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-            when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-            when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-            when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+            when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+            when(sessionRepository.set(any())) thenReturn Future.successful(true)
+            when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
             when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
@@ -2104,7 +2104,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 registration.vrn.vrn,
                 ReturnsViewModel(
                   Seq(
-                    Return.fromPeriod(nextPeriod, Next, false, false)
+                    Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
                   ), Seq.empty
                 )(messages(application), clock),
                 PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -2158,9 +2158,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Future.successful(
                 Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-            when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-            when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-            when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+            when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+            when(sessionRepository.set(any())) thenReturn Future.successful(true)
+            when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
             when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
@@ -2205,7 +2205,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 registration.vrn.vrn,
                 ReturnsViewModel(
                   Seq(
-                    Return.fromPeriod(nextPeriod, Next, false, false)
+                    Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
                   ), Seq.empty
                 )(messages(application), clock),
                 PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -2262,9 +2262,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Future.successful(
                 Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-            when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-            when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-            when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+            when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+            when(sessionRepository.set(any())) thenReturn Future.successful(true)
+            when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
             when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
@@ -2303,7 +2303,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 registration.vrn.vrn,
                 ReturnsViewModel(
                   Seq(
-                    Return.fromPeriod(nextPeriod, Next, false, false)
+                    Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
                   ), Seq.empty
                 )(messages(application), clock),
                 PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -2358,9 +2358,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(sessionRepository.set(any())) thenReturn Future.successful(true)
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
           when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
@@ -2405,7 +2405,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(nextPeriod, Next, false, false)
+                  Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
                 ), Seq.empty
               )(messages(application), clock),
               PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -2460,9 +2460,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Future.successful(
               Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-          when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-          when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-          when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+          when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+          when(sessionRepository.set(any())) thenReturn Future.successful(true)
+          when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(finalVatReturn))
           when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
@@ -2507,7 +2507,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.vrn.vrn,
               ReturnsViewModel(
                 Seq(
-                  Return.fromPeriod(nextPeriod, Next, false, false)
+                  Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
                 ), Seq.empty
               )(messages(application), clock),
               PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -2556,9 +2556,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
@@ -2639,9 +2639,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
@@ -2685,7 +2685,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(nextPeriod, Next, false, false)
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
             PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -2730,9 +2730,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
-        when(sessionRepository.get(any())) thenReturn (Future.successful(Seq()))
-        when(sessionRepository.set(any())) thenReturn (Future.successful(true))
-        when(save4LaterConnector.get()(any())) thenReturn (Future.successful(Right(None)))
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))

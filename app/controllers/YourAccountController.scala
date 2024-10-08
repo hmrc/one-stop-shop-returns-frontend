@@ -169,7 +169,7 @@ class YourAccountController @Inject()(
         currentReturnIsFinal,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave()),
         exclusionService.getLink(
           exclusionService.calculateExclusionViewType(
             request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn,
@@ -218,7 +218,7 @@ class YourAccountController @Inject()(
         currentReturnIsFinal,
         frontendAppConfig.amendRegistrationEnabled,
         frontendAppConfig.changeYourRegistrationUrl,
-        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave),
+        request.registration.excludedTrader.fold(false)(_.hasRequestedToLeave()),
         exclusionService.getLink(
           exclusionService.calculateExclusionViewType(
             request.registration.excludedTrader, canCancel, hasSubmittedFinalReturn,
