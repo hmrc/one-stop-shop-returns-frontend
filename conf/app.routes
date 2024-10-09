@@ -332,3 +332,5 @@ GET         /iv/user-aborted                               controllers.auth.IvRe
 GET         /iv/insufficient-evidence-sources              controllers.auth.IvReturnController.notEnoughEvidenceSources(continueUrl: RedirectUrl)
 GET         /iv/failed-matching                            controllers.auth.IvReturnController.failedMatching(continueUrl: RedirectUrl)
 GET         /iv/failed-identity-verification               controllers.auth.IvReturnController.failed(continueUrl: RedirectUrl)
+
+GET         /no-longer-able-to-view-return                 controllers.NoLongerAbleToViewReturnController.onPageLoad()

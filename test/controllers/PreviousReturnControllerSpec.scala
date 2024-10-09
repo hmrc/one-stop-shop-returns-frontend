@@ -21,7 +21,7 @@ import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
 import models.{Country, StandardPeriod}
-import models.Quarter.Q3
+import models.Quarter.{Q1, Q3}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.external.ExternalEntryUrl
@@ -69,6 +69,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
   private val vatReturn = arbitrary[VatReturn].sample.value
   private val correctionPayload = arbitrary[CorrectionPayload].sample.value
+  private val year = 2015
 
   private val baseAnswers =
     emptyUserAnswers
@@ -76,6 +77,29 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
       .set(CountryOfConsumptionFromEuPage(index, index), countryTo).success.value
 
   "Previous Return Controller" - {
+
+    "must redirect to NoLongerAbleToViewReturnController when the return period is older than six years" in {
+
+      val period = StandardPeriod(year, Q1)
+
+      val application = applicationBuilder(Some(baseAnswers))
+        .overrides(
+          bind[VatReturnConnector].toInstance(vatReturnConnector),
+          bind[VatReturnSalesService].toInstance(vatReturnSalesService),
+          bind[FinancialDataConnector].toInstance(vatReturnsPaymentConnector),
+          bind[CorrectionConnector].toInstance(correctionConnector)
+        )
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(period).url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.NoLongerAbleToViewReturnController.onPageLoad().url
+      }
+    }
 
     "must return OK and the correct view for a GET with no banner" in {
 
