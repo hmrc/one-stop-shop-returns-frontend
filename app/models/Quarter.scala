@@ -36,6 +36,13 @@ object Quarter extends Enumerable.Implicits {
   implicit val enumerable: Enumerable[Quarter] =
     Enumerable(values.map(v => v.toString -> v): _*)
 
+  implicit val ordering: Ordering[Quarter] = Ordering.by {
+    case Q1 => 1
+    case Q2 => 2
+    case Q3 => 3
+    case Q4 => 4
+  }
+
   def fromString(string: String): Try[Quarter] = string match {
     case Q1.toString => Success(Q1)
     case Q2.toString => Success(Q2)

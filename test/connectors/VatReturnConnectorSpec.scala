@@ -389,7 +389,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
             .withBody(responseBody)
         ))
 
-        val result = connector.getSubmittedVatReturns.futureValue
+        val result = connector.getSubmittedVatReturns().futureValue
 
         result mustBe vatReturns
       }

@@ -22,7 +22,6 @@ import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Instant, LocalDate}
-import java.time.format.DateTimeFormatter
 
 case class VatReturn(
                       vrn: Vrn,
