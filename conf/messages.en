@@ -610,3 +610,7 @@ ivPreconditionFailed.p = Try again later.
 ivTechnicalIssue.title = Sorry, there is a problem with the service
 ivTechnicalIssue.heading = Sorry, there is a problem with the service
 ivTechnicalIssue.p = Try again later.
+
+noLongerAbleToViewReturn.title = You can no longer view this OSS return
+noLongerAbleToViewReturn.heading = You can no longer view this OSS return
+noLongerAbleToViewReturn.p = You cannot view returns that are over 6 years old.
