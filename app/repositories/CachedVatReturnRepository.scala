@@ -58,7 +58,7 @@ class CachedVatReturnRepository @Inject()(
 
   private def byId(id: String, period: Period): Bson = Filters.and(
     Filters.equal("userId", id),
-    Filters.equal("period", period.toBson(legacyNumbers = false))
+    Filters.equal("period", period.toBson)
   )
 
   def get(id: String, period: Period): Future[Option[CachedVatReturnWrapper]] =

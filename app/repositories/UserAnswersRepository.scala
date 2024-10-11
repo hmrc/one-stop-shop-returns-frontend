@@ -64,7 +64,7 @@ class UserAnswersRepository @Inject()(
   private def byUserIdAndPeriod(userId: String, period: Period): Bson =
     Filters.and(
       Filters.equal("userId", userId),
-      Filters.equal("period", period.toBson(legacyNumbers = false))
+      Filters.equal("period", period.toBson)
     )
 
   def keepAlive(userId: String): Future[Boolean] =
