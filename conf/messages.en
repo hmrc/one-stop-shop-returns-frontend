@@ -235,7 +235,7 @@ checkYourAnswers.returnPeriod.checkYourAnswersLabel = Return period
 checkYourAnswers.salesFromNi.heading = Sales from Northern Ireland to EU countries
 checkYourAnswers.salesFromEU.heading = Sales from EU countries to other EU countries
 checkYourAnswers.vatOwedToEuCountries.heading = VAT owed to EU countries
-checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading = VAT declared to EU countries after corrections
+checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading = VAT declared to EU countries or Northern Ireland after corrections
 checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption = VAT owed to each country
 checkYourAnswers.noPaymentsDue.heading = VAT declared where no payment is due
 checkYourAnswers.noPaymentsDue.caption = EU countries are responsible for refunding any overpayments.
@@ -315,7 +315,7 @@ previousReturn.totalVatOnSales.label = VAT owed this period
 
 previousReturn.correction.correctionPeriod.title = Corrections
 previousReturn.correction.correctionToCountry.correctionAmount.label = Correction amount
-previousReturn.correction.vatDeclared.title = VAT declared to EU countries after corrections
+previousReturn.correction.vatDeclared.title = VAT declared to EU countries or Northern Ireland after corrections
 previousReturn.correction.vatDeclared.noPaymentDue.title = VAT declared where no payment is due
 previousReturn.correction.vatDeclared.noPaymentDue.hint = EU countries are responsible for refunding any overpayments.
 previousReturn.correction.vatDeclared.paymentDue.title = VAT owed to each country
