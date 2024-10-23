@@ -30,10 +30,12 @@ import viewmodels.govuk.table._
 object SaleAtVatRateSummary extends CurrencyFormatter {
 
   def getAllNiSales(vatReturn: VatReturn)(implicit messages: Messages): Seq[TitledTable] = {
-    for {
-      saleFromNi <- vatReturn.salesFromNi
-      countryFrom = northernIreland
-    } yield summaryRowsOfSales(countryFrom, Seq(saleFromNi))
+    if (vatReturn.salesFromNi.nonEmpty) {
+      val countryFrom = northernIreland
+      Seq(summaryRowsOfSales(countryFrom, vatReturn.salesFromNi))
+    } else {
+      Seq.empty
+    }
   }
 
   def getAllEuSales(vatReturn: VatReturn)(implicit messages: Messages): Seq[TitledTable] = {
