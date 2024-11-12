@@ -18,9 +18,9 @@ package services.corrections
 
 import cats.implicits._
 import connectors.corrections.CorrectionConnector
-import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
+import models.corrections.{CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
 import models.requests.corrections.CorrectionRequest
-import models.{DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult}
+import models.{Country, DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.Lang.logger
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
@@ -70,7 +70,7 @@ class CorrectionService @Inject()(
         periodWithCorrections.zipWithIndex.map {
           case (_, index) =>
             processCorrectionsToCountry(answers, Index(index))
-        }.sequence.map{ _ =>
+        }.sequence.map { _ =>
           periodWithCorrections
         }
       case _ =>
@@ -94,8 +94,8 @@ class CorrectionService @Inject()(
     answers.get(CorrectionToCountryQuery(periodIndex, countryIndex)) match {
       case Some(value) =>
         value match {
-          case CorrectionToCountry(_, Some(_)) =>      value.validNec
-          case CorrectionToCountry(_, None) =>         DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
+          case CorrectionToCountry(_, Some(_)) => value.validNec
+          case CorrectionToCountry(_, None) => DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
 
         }
       case _ =>
@@ -104,14 +104,15 @@ class CorrectionService @Inject()(
   }
 
   def getCorrectionsForPeriod(period: Period)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Seq[CorrectionToCountry]] = {
-    connector.getForCorrectionPeriod(period).map{
-      response => response match {
-        case Right(payloads) => {
-          payloads.flatMap{payload => payload.corrections.flatMap{_.correctionsToCountry.getOrElse(List.empty)}}}
-        case Left(error) =>
-          logger.error(s"there was an error when getting corrections for period: $error")
-          throw new Exception(error.toString)
-      }
+    connector.getForCorrectionPeriod(period).map {
+      case Right(payloads) =>
+        payloads.flatMap(payload => payload.corrections.flatMap(_.correctionsToCountry.getOrElse(List.empty)))
+      case Left(error) =>
+        logger.error(s"there was an error when getting corrections for period: $error")
+        throw new Exception(error.toString)
     }
   }
+
+  def getReturnCorrectionValue(country: Country, period: Period)(implicit hc: HeaderCarrier): Future[ReturnCorrectionValue] =
+    connector.getReturnCorrectionValue(country.code, period)
 }

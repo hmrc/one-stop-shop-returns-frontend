@@ -19,8 +19,9 @@ package connectors.corrections
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.WireMockHelper
-import models.corrections.CorrectionPayload
+import models.corrections.{CorrectionPayload, ReturnCorrectionValue}
 import models.responses.{ConflictFound, InvalidJson, NotFound, UnexpectedResponseStatus}
+import models.Country
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
@@ -28,6 +29,8 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
+
+import scala.concurrent.Future
 
 class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 
@@ -201,6 +204,82 @@ class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherVa
         )
 
         connector.getForCorrectionPeriod(period).futureValue mustBe Left(InvalidJson)
+      }
+    }
+  }
+
+  ".getReturnCorrectionValue" - {
+    val url = "/one-stop-shop-returns/max-correction-value"
+    val returnCorrectionValue = arbitrary[ReturnCorrectionValue].sample.value
+    val responseJson = Json.toJson(returnCorrectionValue)
+
+    val country1 = arbitrary[Country].sample.value
+
+    "must return ReturnCorrectionValue when the server responds with OK" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${country1.code}/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getReturnCorrectionValue(country1.code, period).futureValue mustBe returnCorrectionValue
+      }
+    }
+
+    "must return an error when the server responds with NOT_FOUND" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${country1.code}/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(NOT_FOUND)
+            ))
+
+        whenReady(connector.getReturnCorrectionValue(country1.code, period).failed) { exp =>
+          exp mustBe a[Exception]
+        }
+      }
+    }
+
+    "must return unexpected response when response is not OK" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${country1.code}/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(123).withBody("")
+            ))
+
+        whenReady(connector.getReturnCorrectionValue(country1.code, period).failed) { exp =>
+          exp mustBe a[Exception]
+        }
+      }
+    }
+
+    "must return Invalid JSON when the server responds with an incorrectly formatted JSON payload" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[CorrectionConnector]
+
+        val responseJson = """{ "foo": "bar" }"""
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/${country1.code}/${period.toString}"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson))
+        )
+
+        whenReady(connector.getReturnCorrectionValue(country1.code, period).failed) { exp =>
+          exp mustBe a[Exception]
+        }
       }
     }
   }
