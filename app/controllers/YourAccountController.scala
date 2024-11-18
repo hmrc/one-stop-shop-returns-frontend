@@ -33,6 +33,7 @@ import models.{Period, UserAnswers}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.UserAnswersRepository
+import services.ObligationsService
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -53,6 +54,7 @@ class YourAccountController @Inject()(
                                        saveForLaterConnector: SaveForLaterConnector,
                                        vatReturnConnector: VatReturnConnector,
                                        registrationConnector: RegistrationConnector,
+                                       obligationsService: ObligationsService,
                                        view: IndexView,
                                        sessionRepository: UserAnswersRepository,
                                        frontendAppConfig: FrontendAppConfig,
@@ -275,10 +277,17 @@ class YourAccountController @Inject()(
   }
 
   private def checkVatReturnSubmissionStatus(excludedTrader: ExcludedTrader)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    vatReturnConnector.getSubmittedVatReturns().map { submittedVatReturnsResponse =>
-      val periods = submittedVatReturnsResponse.map(_.period)
+    if (frontendAppConfig.strategicReturnApiEnabled) {
+      obligationsService.getFulfilledObligations(excludedTrader.vrn).map { obligations =>
+        val periods = obligations.map(obligation => Period.fromEtmpPeriodKey(obligation.periodKey))
+        !periods.contains(excludedTrader.finalReturnPeriod)
+      }
+    } else {
+      vatReturnConnector.getSubmittedVatReturns().map { submittedVatReturnsResponse =>
+        val periods = submittedVatReturnsResponse.map(_.period)
 
-      !periods.contains(excludedTrader.finalReturnPeriod)
+        !periods.contains(excludedTrader.finalReturnPeriod)
+      }
     }
   }
 

@@ -20,6 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
+import models.etmp.EtmpObligations
 import models.external.ExternalEntryUrl
 import models.requests.corrections.CorrectionRequest
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
@@ -53,6 +54,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
     "error",
     "Error message"
   )
+  private val etmpObligations: EtmpObligations = arbitraryObligations.arbitrary.sample.value
 
   ".submit" - {
 
@@ -446,6 +448,30 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
           exp mustBe a[Exception]
           exp.getMessage mustBe s"Received unexpected error from vat returns with status: $error"
         }
+      }
+    }
+  }
+
+  ".getObligations" - {
+
+    val getObligationsUrl: String = s"/one-stop-shop-returns/obligations/$vrn"
+
+    "must return Ok with a Payload of EtmpObligations" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        val responseBody = Json.toJson(etmpObligations).toString()
+
+        server.stubFor(get(urlEqualTo(getObligationsUrl)).willReturn(
+          aResponse()
+            .withStatus(OK)
+            .withBody(responseBody)
+        ))
+
+        val result = connector.getObligations(vrn).futureValue
+
+        result mustBe etmpObligations
       }
     }
   }

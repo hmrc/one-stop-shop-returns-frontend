@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
@@ -28,6 +29,7 @@ import models.StandardPeriod
 import models.external.ExternalEntryUrl
 import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar.mock
@@ -36,6 +38,7 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.ObligationsService
 import uk.gov.hmrc.domain.Vrn
 import views.html.SubmittedReturnsHistoryView
 
@@ -47,6 +50,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   private val vatReturnConnector = mock[VatReturnConnector]
   private val correctionConnector = mock[CorrectionConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
+  private val mockObligationsService: ObligationsService = mock[ObligationsService]
+  private val config = mock[FrontendAppConfig]
 
   private val period1 = StandardPeriod(2021, Q1)
   private val period2 = StandardPeriod(2021, Q2)
@@ -82,248 +87,285 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     Mockito.reset(vatReturnConnector)
     Mockito.reset(financialDataConnector)
     Mockito.reset(correctionConnector)
+    Mockito.reset(mockObligationsService)
     super.beforeEach()
   }
 
   "SubmittedReturnsHistory Controller" - {
 
-    "must return OK and correct view with the current period when a return for this period exists" in {
+    "when strategicReturnApiEnabled is true" - {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
-        ).build()
+      "must return OK and correct view with the current period when a return for this period exists" in {
+        when(config.strategicReturnApiEnabled).thenReturn(false)
 
-      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
-      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          ).build()
 
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          Map(period3 -> payment3),
-          displayBanner = false
-        )(request, messages(application)).toString
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            Map(period3 -> payment3),
+            displayBanner = false
+          )(request, messages(application)).toString
+        }
       }
     }
 
-    "must return OK and correct view with no-returns message when no returns exist" in {
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
-        ).build()
+    "when strategicReturnApiEnabled is false" - {
 
-      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(emptyPayments))
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq.empty)
 
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+      "must return OK and correct view with the current period when a return for this period exists" in {
 
-        val result = route(application, request).value
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          ).build()
 
-        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          Map.empty,
-          displayBanner = false
-        )(request, messages(application)).toString
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            Map(period3 -> payment3),
+            displayBanner = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must return OK and correct view with no-returns message when no returns exist" in {
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          ).build()
+
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(emptyPayments))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq.empty)
+
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            Map.empty,
+            displayBanner = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must throw an exception when an unexpected result is returned" in {
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          ).build()
+
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          whenReady(result.failed) { exp => exp mustBe a[Exception] }
+        }
+      }
+
+      "must throw an exception when the connector returns Left(ErrorResponse)" in {
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          ).build()
+
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          whenReady(result.failed) { exp => exp mustBe a[Exception] }
+        }
+      }
+
+      "must return OK and correct view when a vat return exists but no charge is found" in {
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          ).build()
+
+        when(financialDataConnector.getFinancialData(any())(any()))
+          .thenReturn(Future.successful(Right(unknownPayment)))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            Map(period3 -> unknownPaymentAmount),
+            displayBanner = true
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must return OK and correct view when a nil vat return exists and no charge is found" in {
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          ).build()
+
+        when(financialDataConnector.getFinancialData(any())(any()))
+          .thenReturn(Future.successful(Right(emptyPayments)))
+        when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(vatReturnConnector.get(eqTo(period3))(any())) thenReturn Future.successful(Right(emptyVatReturn))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            Map(period3 -> Payment(
+              period = period3,
+              amountOwed = 0,
+              dateDue = period.paymentDeadline,
+              paymentStatus = PaymentStatus.NilReturn
+            )),
+            displayBanner = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must return OK and correct view when a correction exists" in {
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          ).build()
+
+        val completedCorrectionPayload: CorrectionPayload =
+          CorrectionPayload(
+            Vrn("063407423"),
+            StandardPeriod("2086", "Q3").get,
+            List(PeriodWithCorrections(
+              period,
+              Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
+            )),
+            Instant.ofEpochSecond(1630670836),
+            Instant.ofEpochSecond(1630670836)
+          )
+
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
+        when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(completedCorrectionPayload))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            Map(period3 -> payment3),
+            displayBanner = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must return OK and correct view and add the external backToYourAccount url that has been saved" in {
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector)
+          ).build()
+
+        val completedCorrectionPayload: CorrectionPayload =
+          CorrectionPayload(
+            Vrn("063407423"),
+            StandardPeriod("2086", "Q3").get,
+            List(PeriodWithCorrections(
+              period,
+              Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
+            )),
+            Instant.ofEpochSecond(1630670836),
+            Instant.ofEpochSecond(1630670836)
+          )
+
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
+        when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(completedCorrectionPayload))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            Map(period3 -> payment3),
+            displayBanner = false,
+            Some("example")
+          )(request, messages(application)).toString
+        }
       }
     }
-
-    "must throw an exception when an unexpected result is returned" in {
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
-        ).build()
-
-      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-        val result = route(application, request).value
-
-        whenReady(result.failed) { exp => exp mustBe a[Exception] }
-      }
-    }
-
-    "must throw an exception when the connector returns Left(ErrorResponse)" in {
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
-        ).build()
-
-      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
-
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-        val result = route(application, request).value
-
-        whenReady(result.failed) { exp => exp mustBe a[Exception] }
-      }
-    }
-
-    "must return OK and correct view when a vat return exists but no charge is found" in {
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
-        ).build()
-
-      when(financialDataConnector.getFinancialData(any())(any()))
-        .thenReturn(Future.successful(Right(unknownPayment)))
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
-      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
-
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          Map(period3 -> unknownPaymentAmount),
-          displayBanner = true
-        )(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and correct view when a nil vat return exists and no charge is found" in {
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
-        ).build()
-
-      when(financialDataConnector.getFinancialData(any())(any()))
-        .thenReturn(Future.successful(Right(emptyPayments)))
-      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
-
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          Map(period3 -> Payment(
-            period = period3,
-            amountOwed = 0,
-            dateDue = period.paymentDeadline,
-            paymentStatus = PaymentStatus.NilReturn
-          )),
-          displayBanner = false
-        )(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and correct view when a correction exists" in {
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
-        ).build()
-
-      val completedCorrectionPayload: CorrectionPayload =
-        CorrectionPayload(
-          Vrn("063407423"),
-          StandardPeriod("2086", "Q3").get,
-          List(PeriodWithCorrections(
-            period,
-            Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
-          )),
-          Instant.ofEpochSecond(1630670836),
-          Instant.ofEpochSecond(1630670836)
-        )
-
-      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
-      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(completedCorrectionPayload))
-
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          Map(period3 -> payment3),
-          displayBanner = false
-        )(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and correct view and add the external backToYourAccount url that has been saved" in {
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[CorrectionConnector].toInstance(correctionConnector)
-        ).build()
-
-      val completedCorrectionPayload: CorrectionPayload =
-        CorrectionPayload(
-          Vrn("063407423"),
-          StandardPeriod("2086", "Q3").get,
-          List(PeriodWithCorrections(
-            period,
-            Some(List(Arbitrary.arbitrary[CorrectionToCountry].sample.value))
-          )),
-          Instant.ofEpochSecond(1630670836),
-          Instant.ofEpochSecond(1630670836)
-        )
-
-      when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
-      when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
-      when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(completedCorrectionPayload))
-
-      running(application) {
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          Map(period3 -> payment3),
-          displayBanner = false,
-          Some("example")
-        )(request, messages(application)).toString
-      }
-    }
-
   }
 }
