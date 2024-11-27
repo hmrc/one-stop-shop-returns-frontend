@@ -28,12 +28,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class ObligationsService @Inject()(vatReturnConnector: VatReturnConnector)
                                   (implicit ec: ExecutionContext) extends Logging {
 
-  def getOpenObligations(vrn: Vrn)(implicit hc: HeaderCarrier): Future[Seq[EtmpObligationDetails]] = {
-    vatReturnConnector.getObligations(vrn).map { etmpObligations =>
-      etmpObligations.obligations.flatMap(_.obligationDetails).filter(_.status == EtmpObligationsFulfilmentStatus.Open)
-    }
-  }
-
   def getFulfilledObligations(vrn: Vrn)(implicit hc: HeaderCarrier): Future[Seq[EtmpObligationDetails]] = {
     vatReturnConnector.getObligations(vrn).map { etmpObligations =>
       etmpObligations.obligations.flatMap(_.obligationDetails).filter(_.status == EtmpObligationsFulfilmentStatus.Fulfilled)

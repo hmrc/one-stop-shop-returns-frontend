@@ -68,12 +68,12 @@ class CorrectPreviousReturnController @Inject()(
       } yield {
 
         periods match {
-          case Right(periods) => {
+          case Right(periods) =>
             val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
             val allPeriods = periods.filter(_.status.equals(Complete)).map(_.period)
             val uncompletedCorrectionPeriods = allPeriods.diff(completedCorrectionPeriods).distinct
             Redirect(CorrectPreviousReturnPage.navigate(mode, updatedAnswers, uncompletedCorrectionPeriods.size))
-          }
+
           case Left(value) =>
             logger.error(s"there was an error $value")
             Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
