@@ -7,56 +7,79 @@ Backend: https://github.com/hmrc/one-stop-shop-returns
 
 Stub: https://github.com/hmrc/one-stop-shop-returns-stub
 
+One Stop Shop Returns Service
+------------
+
+The main function of this service is to allow traders who are registered with the One Stop Shop Registration
+service to submit a One Stop Shop VAT return and pay VAT.
+
+The service provides a main dashboard where traders can see which returns are due, how much they owe and view
+previously submitted returns. 
+
+In addition to this, depending on the status of their account and returns, there are links to amend registration 
+(redirects to one-stop-shop-registration-frontend), rejoin registration (redirects to 
+one-stop-shop-registration-frontend and to leave the service (redirects to one-stop-shop-exclusions-frontend).
+If a trader has been excluded from the service, there will also be messaging around this above the tiles on this page.
+
+Summary of APIs
+------------
+
+This service utilises various APIs from other platforms in order to obtain and store information required for the
+returns process.
+
+ETMP:
+- HMRC VAT registration details are retrieved via one-stop-shop-registration
+- One Stop Shop Registration details are obtained including any exclusions via one-stop-shop-registration
+- Previously submitted returns, outstanding returns (known as obligations) and corrections data is retrieved
+
+Core:
+- Submitted returns are sent to Core for any further EU processing
+
+Note: locally (and on staging) these connections are stubbed via one-stop-shop-returns-stub.
+
 Requirements
 ------------
 
 This service is written in [Scala](http://www.scala-lang.org/) and [Play](http://playframework.com/), so needs at least a [JRE] to run.
 
-## Run the application
+## Run the application locally via Service Manager
 
-To update from Nexus and start all services from the RELEASE version instead of snapshot
 ```
 sm2 --start ONE_STOP_SHOP_ALL -r
 ```
 
-### To run the application locally execute the following:
+### To run the application locally from the repository, execute the following:
 ```
 sm2 --stop ONE_STOP_SHOP_RETURNS_FRONTEND
 ```
 and 
 ```
-sbt 'run 10204'
+sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes
 ```
 
 ### Running correct version of mongo
-We have introduced a transaction to the call to be able to ensure that both the vatreturn and correction get submitted to mongo.
-Your local mongo is unlikely to be running a latest enough version and probably not in a replica set.
-To do this, you'll need to stop your current mongo instance (docker ps to get the name of your mongo docker then docker stop <name> to stop)
-Run at least 4.0 with a replica set:
-```  
-docker run --restart unless-stopped -d -p 27017-27019:27017-27019 --name mongo4 mongo:4.0 --replSet rs0
-```
-Connect to said replica set:
-```
-docker exec -it mongo4 mongo
-```
-When that console is there:
-```
-rs.initiate()
-```
-You then should be running 4.0 with a replica set. You may have to re-run the rs.initiate() after you've restarted
+Mongo 6 with a replica set is required to run the service. Please refer to the MDTP Handbook for instructions on how to run this
 
 
 ### Using the application
-To log in using the Authority Wizard provide "continue url", "affinity group" and "enrolments" as follows:
 
-![image](https://user-images.githubusercontent.com/48218839/145842535-6209b43e-483b-4874-b53d-364c9b121f14.png)
+Access the Authority Wizard to log in:
+http://localhost:9949/auth-login-stub/gg-sign-in
 
-![image](https://user-images.githubusercontent.com/48218839/145842926-c318cb10-70c3-4186-a839-b1928c8e2625.png)
+Enter the following details on this page and submit:
+- Redirect URL: http://localhost:10204/pay-vat-on-goods-sold-to-eu/northern-ireland-returns-payments
+- Affinity Group: Organisation
+- Enrolments (there are two rows this time):
+- Enrolment Key: HMRC-MTD-VAT
+- Identifier Name: VRN
+- Identifier Value: 100000002
+- Enrolment Key: HMRC-OSS-ORG
+- Identifier Name: VRN
+- Identifier Value: 100000002
 
-The VRN can be any 9-digit number.
-  
-To be able to use the application you need to be registered for the service (instructions to complete a registration can be found here https://github.com/hmrc/one-stop-shop-registration-frontend).
+It is recommended to use VRN 100000002 for a regular returns journey, however alternatives can be found in the
+one-stop-shop-registration-stub and one-stop-shop-returns-stub, which hold scenarios for registered traders and
+returns/corrections that will be available to submit.
 
 Unit and Integration Tests
 ------------
