@@ -19,6 +19,7 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions._
 import play.api.{Configuration, Environment}
+import services.{VatReturnService, VatReturnServiceEtmpImpl, VatReturnServiceRepoImpl}
 
 import java.time.{Clock, ZoneOffset}
 
@@ -35,6 +36,12 @@ class Module extends AbstractModule {
       bind(classOf[InternalAuthTokenInitialiser]).to(classOf[InternalAuthTokenInitialiserImpl]).asEagerSingleton()
     } else {
       bind(classOf[InternalAuthTokenInitialiser]).to(classOf[NoOpInternalAuthTokenInitialiser]).asEagerSingleton()
+    }
+
+    if (defaultConfig.get[Boolean]("features.strategic-returns.enabled")) {
+      bind(classOf[VatReturnService]).to(classOf[VatReturnServiceEtmpImpl]).asEagerSingleton()
+    } else {
+      bind(classOf[VatReturnService]).to(classOf[VatReturnServiceRepoImpl]).asEagerSingleton()
     }
   }
 }

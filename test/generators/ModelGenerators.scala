@@ -18,7 +18,7 @@ package generators
 
 import connectors.SavedUserAnswers
 import models.VatOnSalesChoice.Standard
-import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
+import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.financialdata.Charge
 import models.registration._
@@ -352,5 +352,12 @@ trait ModelGenerators {
         deregistrationDecisionDate <- Gen.option(arbitrary[LocalDate])
 
       } yield VatCustomerInfo(address,registrationDate,partOfVatGroup, organisationName, individualName, singleMarketIndicator, deregistrationDecisionDate)
+    }
+
+  implicit val arbitraryReturnCorrectionValue: Arbitrary[ReturnCorrectionValue] =
+    Arbitrary {
+      for {
+        correctionValue <- arbitrary[BigDecimal]
+      } yield ReturnCorrectionValue(correctionValue)
     }
 }

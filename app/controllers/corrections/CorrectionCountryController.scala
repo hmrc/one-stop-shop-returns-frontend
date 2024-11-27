@@ -33,12 +33,12 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionCountryController @Inject()(
-                                        cc: AuthenticatedControllerComponents,
-                                        formProvider: CorrectionCountryFormProvider,
-                                        vatReturnConnector: VatReturnConnector,
-                                        view: CorrectionCountryView,
-                                        correctionService: CorrectionService
-                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                             cc: AuthenticatedControllerComponents,
+                                             formProvider: CorrectionCountryFormProvider,
+                                             vatReturnConnector: VatReturnConnector,
+                                             view: CorrectionCountryView,
+                                             correctionService: CorrectionService
+                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -84,11 +84,11 @@ class CorrectionCountryController @Inject()(
           request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
             case Some(correctionPeriod) =>
               for {
-                          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
-                          _              <- cc.sessionRepository.set(updatedAnswers)
-                          vatReturnResult <- vatReturnConnector.get(correctionPeriod)
-                          correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionPeriod)
-                        } yield {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+                vatReturnResult <- vatReturnConnector.get(correctionPeriod)
+                correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionPeriod)
+              } yield {
                 vatReturnResult match {
                   case Right(vatReturn) => {
                     val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
@@ -101,7 +101,7 @@ class CorrectionCountryController @Inject()(
                     logger.error(s"there was an error $value")
                     throw new Exception(value.toString)
                 }
-                }
+              }
             case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
           }
 

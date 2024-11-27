@@ -22,7 +22,7 @@ import cats.data.Validated.{Invalid, Valid}
 import connectors.corrections.CorrectionConnector
 import models.{Country, DataMissingError, Index, StandardPeriod}
 import models.Quarter.{Q1, Q2}
-import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
+import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
 import models.requests.corrections.CorrectionRequest
 import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.any
@@ -219,6 +219,22 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
     "must throw if connector returns an error" in new Fixture {
       when(connector.getForCorrectionPeriod(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
       val result = service.getCorrectionsForPeriod(period)(ExecutionContext.global, hc)
+      whenReady(result.failed) { exp => exp mustBe a[Exception] }
+    }
+  }
+
+  ".getReturnCorrectionValue" - {
+    val country1 = arbitrary[Country].sample.value
+
+    "must return list of corrections" in new Fixture {
+      val returnCorrectionValue: ReturnCorrectionValue = arbitrary[ReturnCorrectionValue].sample.value
+      when(connector.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.successful(returnCorrectionValue)
+      service.getReturnCorrectionValue(country1, period)(hc).futureValue mustBe returnCorrectionValue
+    }
+
+    "must throw if connector returns an error" in new Fixture {
+      when(connector.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.failed(new Exception("error"))
+      val result: Future[ReturnCorrectionValue] = service.getReturnCorrectionValue(country1, period)(hc)
       whenReady(result.failed) { exp => exp mustBe a[Exception] }
     }
   }

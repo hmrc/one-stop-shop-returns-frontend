@@ -20,7 +20,7 @@ import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import connectors.VatReturnConnector
-import models.corrections.CorrectionToCountry
+import models.corrections.{CorrectionToCountry, ReturnCorrectionValue}
 import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import models.registration._
 import models.requests.VatReturnRequest
@@ -30,7 +30,7 @@ import models.Quarter.Q4
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterEach, PrivateMethodTester}
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
 import queries._
@@ -40,7 +40,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
-class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach with PrivateMethodTester {
 
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
   implicit private lazy val ec: ExecutionContext = ExecutionContext.global
@@ -313,15 +313,17 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
   "getVatOwedToCountryOnReturn" - {
 
+    val getVatOwedToCountryOnReturn = PrivateMethod[Future[BigDecimal]](Symbol("getVatOwedToCountryOnReturn"))
+
     "must return a valid amount when connector returns a VatReturnResponse" in {
 
       val vatReturnConnector = mock[VatReturnConnector]
       val correctionService = mock[CorrectionService]
-      val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
+      val vatReturnService = new VatReturnServiceRepoImpl(vatReturnConnector, correctionService)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(simpleCompleteVatReturn))
 
-      val result = vatReturnService.getVatOwedToCountryOnReturn(Country("LT", "Lithuania"), period)
+      val result = vatReturnService invokePrivate getVatOwedToCountryOnReturn(Country("LT", "Lithuania"), period, hc, ec)
 
       val expected = BigDecimal(1800.00)
 
@@ -332,23 +334,23 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       val vatReturnConnector = mock[VatReturnConnector]
       val correctionService = mock[CorrectionService]
-      val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
+      val vatReturnService = new VatReturnServiceRepoImpl(vatReturnConnector, correctionService)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
 
-      val result = vatReturnService.getVatOwedToCountryOnReturn(Country("LT", "Lithuania"), period)
+      val result = vatReturnService invokePrivate getVatOwedToCountryOnReturn(Country("LT", "Lithuania"), period, hc, ec)
 
       whenReady(result.failed) { exp => exp mustBe a[Exception] }
     }
   }
 
-  "getLatestVatAmountForPeriodAndCountry" - {
+  "VatReturnServiceRepoImpl#getLatestVatAmountForPeriodAndCountry" - {
 
     "must return a valid amount when connector returns a VatReturnResponse and the service returns a list of corrections" in {
 
       val vatReturnConnector = mock[VatReturnConnector]
       val correctionService = mock[CorrectionService]
-      val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
+      val vatReturnService = new VatReturnServiceRepoImpl(vatReturnConnector, correctionService)
 
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(simpleCompleteVatReturn))
       when(correctionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(Seq(CorrectionToCountry(Country("LT", "Lithuania"), Some(BigDecimal(10)))))
@@ -364,9 +366,37 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       val vatReturnConnector = mock[VatReturnConnector]
       val correctionService = mock[CorrectionService]
-      val vatReturnService = new VatReturnService(vatReturnConnector, correctionService)
+      val vatReturnService = new VatReturnServiceRepoImpl(vatReturnConnector, correctionService)
       when(correctionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(Seq(CorrectionToCountry(Country("LT", "Lithuania"), Some(BigDecimal(10)))))
       when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
+
+      val result = vatReturnService.getLatestVatAmountForPeriodAndCountry(Country("LT", "Lithuania"), period)
+
+      whenReady(result.failed) { exp => exp mustBe a[Exception] }
+    }
+  }
+
+  "VatReturnServiceEtmpImpl#getLatestVatAmountForPeriodAndCountry" - {
+
+    "must return a valid amount when connector returns a VatReturnResponse and the service returns a list of corrections" in {
+
+      val correctionService = mock[CorrectionService]
+      val vatReturnService = new VatReturnServiceEtmpImpl(correctionService)
+
+      when(correctionService.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.successful(ReturnCorrectionValue(BigDecimal(1810)))
+
+      val result = vatReturnService.getLatestVatAmountForPeriodAndCountry(Country("LT", "Lithuania"), period)
+
+      val expected = BigDecimal(1810.00)
+
+      assert(result.futureValue == expected)
+    }
+
+    "must return an exception when connector returns a ErrorResponse" in {
+
+      val correctionService = mock[CorrectionService]
+      val vatReturnService = new VatReturnServiceEtmpImpl(correctionService)
+      when(correctionService.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.failed(new Exception("error"))
 
       val result = vatReturnService.getLatestVatAmountForPeriodAndCountry(Country("LT", "Lithuania"), period)
 
@@ -378,7 +408,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     protected val connector = mock[VatReturnConnector]
     protected val correctionService = mock[CorrectionService]
 
-    protected val service = new VatReturnService(connector, correctionService)
+    protected val service = new VatReturnServiceRepoImpl(connector, correctionService)
 
     protected val country1: Country             = arbitrary[Country].sample.value
     protected val country2: Country             = arbitrary[Country].sample.value

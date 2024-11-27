@@ -19,6 +19,7 @@ package connectors.corrections
 import config.Service
 import connectors.corrections.CorrectionHttpParser._
 import models.Period
+import models.corrections.ReturnCorrectionValue
 import play.api.Configuration
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
@@ -36,4 +37,8 @@ class CorrectionConnector @Inject()(config: Configuration, httpClientV2: HttpCli
 
   def getForCorrectionPeriod(period: Period)(implicit hc: HeaderCarrier): Future[CorrectionsForPeriodResponse] =
     httpClientV2.get(url"$baseUrl/corrections-for-period/$period").execute[CorrectionsForPeriodResponse]
+
+  def getReturnCorrectionValue(countryCode: String, period: Period)(implicit hc: HeaderCarrier): Future[ReturnCorrectionValue] =
+    httpClientV2.get(url"$baseUrl/max-correction-value/$countryCode/$period").execute[ReturnCorrectionValue]
+
 }

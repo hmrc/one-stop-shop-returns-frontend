@@ -31,10 +31,9 @@ import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class VatReturnService @Inject()(connector: VatReturnConnector, correctionService: CorrectionService) {
-
+trait VatReturnService {
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, registration: Registration): ValidationResult[VatReturnRequest] =
     (
       getSalesFromNi(answers),
@@ -44,29 +43,8 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
         VatReturnRequest(vrn, StandardPeriod.fromPeriod(period), Some(period.firstDay), Some(period.lastDay), salesFromNi, salesFromEu)
     )
 
-  def getVatOwedToCountryOnReturn(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext) = {
-    connector.get(period).map {
-      case Right(vatReturn) =>
-        val sumFromNiToSelectedCountry = vatReturn.salesFromNi.filter(_.countryOfConsumption.code == country.code)
-          .flatMap(sales => sales.amounts.map(_.vatOnSales.amount)).sum
-        val salesFromEU = vatReturn.salesFromEu.flatMap(_.sales)
-        val sumFromEUToSelectedCountry = salesFromEU.filter(_.countryOfConsumption.code == country.code)
-          .flatMap(sales => sales.amounts.map(_.vatOnSales.amount)).sum
-        val vatOwedToCountryOnPrevReturn = sumFromEUToSelectedCountry + sumFromNiToSelectedCountry
-        vatOwedToCountryOnPrevReturn
-      case Left(value) =>
-        logger.error(s"there was an error getting the vat return: $value")
-        throw new Exception(value.toString)
-  }}
+  def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[BigDecimal]
 
-  def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
-    for {
-      vatOwedToCountryOnPrevReturn <- getVatOwedToCountryOnReturn(country, period)
-      correctionsForPeriod <- correctionService.getCorrectionsForPeriod(period)
-    }yield{
-      val correctionsToCountry = correctionsForPeriod.filter(_.correctionCountry == country).map{_.countryVatCorrection.getOrElse(BigDecimal(0))}.sum
-      vatOwedToCountryOnPrevReturn + correctionsToCountry
-    }
 
   private def getSalesFromNi(answers: UserAnswers): ValidationResult[List[SalesToCountry]] =
     answers.get(SoldGoodsFromNiPage) match {
@@ -115,17 +93,16 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
     answers.get(NiSalesAtVatRateWithOptionalVatQuery(countryIndex, vatRateIndex)) match {
       case Some(SalesAtVatRateWithOptionalVat(netValueOfSales, Some(vatOnSales))) =>
         SalesDetails(
-          vatRate         = toDomainVatRate(vatRate),
+          vatRate = toDomainVatRate(vatRate),
           netValueOfSales = netValueOfSales,
-          vatOnSales      = vatOnSales
+          vatOnSales = vatOnSales
         ).validNec
       case Some(SalesAtVatRateWithOptionalVat(_, None)) =>
         DataMissingError(VatOnSalesFromNiQuery(countryIndex, vatRateIndex)).invalidNec
       case None =>
-        DataMissingError(NiSalesAtVatRateQuery(countryIndex,  vatRateIndex)).invalidNec
+        DataMissingError(NiSalesAtVatRateQuery(countryIndex, vatRateIndex)).invalidNec
 
     }
-
 
   private def getSalesFromEu(answers: UserAnswers, registration: Registration): ValidationResult[List[SalesFromEuCountry]] =
     answers.get(SoldGoodsFromEuPage) match {
@@ -150,9 +127,9 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
             salesFromEu.zip(salesDetails).map {
               case (sales, salesDetails) =>
                 val taxIdentifier = registration.euRegistrations.find(_.country == sales.countryOfSale) match {
-                  case Some(r: EuVatRegistration)                  => Some(EuTaxIdentifier(Vat, r.vatNumber))
+                  case Some(r: EuVatRegistration) => Some(EuTaxIdentifier(Vat, r.vatNumber))
                   case Some(r: RegistrationWithFixedEstablishment) => Some(r.taxIdentifier)
-                  case _                                           => None
+                  case _ => None
                 }
                 SalesFromEuCountry(sales.countryOfSale, taxIdentifier, salesDetails)
             }
@@ -202,9 +179,9 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
     answers.get(EuSalesAtVatRateWithOptionalVatQuery(countryFromIndex, countryToIndex, vatRateIndex)) match {
       case Some(SalesAtVatRateWithOptionalVat(netValueOfSales, Some(vatOnSales))) =>
         SalesDetails(
-          vatRate         = toDomainVatRate(vatRate),
+          vatRate = toDomainVatRate(vatRate),
           netValueOfSales = netValueOfSales,
-          vatOnSales      = vatOnSales
+          vatOnSales = vatOnSales
         ).validNec
       case Some(SalesAtVatRateWithOptionalVat(_, None)) =>
         DataMissingError(VatOnSalesFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex)).invalidNec
@@ -215,11 +192,51 @@ class VatReturnService @Inject()(connector: VatReturnConnector, correctionServic
   private def toDomainVatRate(vatRate: VatRate): DomainVatRate = {
     DomainVatRate(
       vatRate.rate,
-      if(vatRate.rateType == VatRateType.Reduced) {
+      if (vatRate.rateType == VatRateType.Reduced) {
         DomainVatRateType.Reduced
       } else {
         DomainVatRateType.Standard
       }
     )
   }
+}
+
+class VatReturnServiceRepoImpl @Inject()(connector: VatReturnConnector, correctionService: CorrectionService) extends VatReturnService {
+
+  private def getVatOwedToCountryOnReturn(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[BigDecimal] = {
+    connector.get(period).map {
+      case Right(vatReturn) =>
+        val sumFromNiToSelectedCountry = vatReturn.salesFromNi.filter(_.countryOfConsumption.code == country.code)
+          .flatMap(sales => sales.amounts.map(_.vatOnSales.amount)).sum
+        val salesFromEU = vatReturn.salesFromEu.flatMap(_.sales)
+        val sumFromEUToSelectedCountry = salesFromEU.filter(_.countryOfConsumption.code == country.code)
+          .flatMap(sales => sales.amounts.map(_.vatOnSales.amount)).sum
+        val vatOwedToCountryOnPrevReturn = sumFromEUToSelectedCountry + sumFromNiToSelectedCountry
+        vatOwedToCountryOnPrevReturn
+      case Left(value) =>
+        logger.error(s"there was an error getting the vat return: $value")
+        throw new Exception(value.toString)
+    }
+  }
+
+  override def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[BigDecimal] =
+    for {
+      vatOwedToCountryOnPrevReturn <- getVatOwedToCountryOnReturn(country, period)
+      correctionsForPeriod <- correctionService.getCorrectionsForPeriod(period)
+    } yield {
+      val correctionsToCountry = correctionsForPeriod.filter(_.correctionCountry == country).map {
+        _.countryVatCorrection.getOrElse(BigDecimal(0))
+      }.sum
+      vatOwedToCountryOnPrevReturn + correctionsToCountry
+    }
+
+}
+
+class VatReturnServiceEtmpImpl @Inject()(correctionService: CorrectionService) extends VatReturnService {
+
+  override def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[BigDecimal] =
+    for {
+      correctionsForPeriod <- correctionService.getReturnCorrectionValue(country, period)
+    } yield correctionsForPeriod.maximumCorrectionValue
+
 }
