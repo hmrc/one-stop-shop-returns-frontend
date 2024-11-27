@@ -13,7 +13,7 @@ One Stop Shop Returns Service
 The main function of this service is to allow traders who are registered with the One Stop Shop Registration
 service to submit a One Stop Shop VAT return and pay VAT.
 
-The service provides a main dashboard where traders can see which returns are due, how much they owe and view
+The service provides a main dashboard where traders can see which returns are due, how much VAT they owe and view
 previously submitted returns. 
 
 In addition to this, depending on the status of their account and returns, there are links to amend registration 
@@ -33,7 +33,7 @@ ETMP:
 - Previously submitted returns, outstanding returns (known as obligations) and corrections data is retrieved
 
 Core:
-- Submitted returns are sent to Core for any further EU processing
+- Submitted returns are sent to Core for processing and then on to the EU and ETMP
 
 Note: locally (and on staging) these connections are stubbed via one-stop-shop-returns-stub.
 
