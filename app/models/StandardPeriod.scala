@@ -149,6 +149,17 @@ object Period {
       value.toString
   }
 
+  def fromEtmpPeriodKey(key: String): Period = {
+    val yearLast2 = key.take(2)
+    val quarterString = key.drop(2)
+    val year = s"20$yearLast2".toInt
+    val quarter = Quarter.fromString(quarterString) match {
+      case Success(q) => q
+      case Failure(_) => throw new IllegalArgumentException(s"Invalid quarter string: $quarterString")
+    }
+    StandardPeriod(year, quarter)
+  }
+
   def reads: Reads[Period] =
     PartialReturnPeriod.format.widen[Period] orElse
       StandardPeriod.format.widen[Period]

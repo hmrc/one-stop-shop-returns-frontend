@@ -20,6 +20,7 @@ import connectors.SavedUserAnswers
 import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
 import models.financialdata.Charge
 import models.registration._
 import models.{domain, _}
@@ -359,5 +360,27 @@ trait ModelGenerators {
       for {
         correctionValue <- arbitrary[BigDecimal]
       } yield ReturnCorrectionValue(correctionValue)
+    }
+
+  implicit val arbitraryObligationDetails: Arbitrary[EtmpObligationDetails] =
+    Arbitrary {
+      for {
+        status <- Gen.oneOf(EtmpObligationsFulfilmentStatus.values)
+        periodKey <- arbitraryPeriod.arbitrary
+      } yield EtmpObligationDetails(
+        status = status,
+        periodKey = periodKey.toString
+      )
+    }
+
+  implicit val arbitraryObligations: Arbitrary[EtmpObligations] =
+    Arbitrary {
+      for {
+        obligationDetails <- Gen.listOfN(3, arbitrary[EtmpObligationDetails])
+      } yield {
+        EtmpObligations(Seq(EtmpObligation(
+          obligationDetails = obligationDetails
+        )))
+      }
     }
 }

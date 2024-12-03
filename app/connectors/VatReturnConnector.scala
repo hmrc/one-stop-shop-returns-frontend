@@ -15,15 +15,16 @@
  */
 
 package connectors
-
 import config.Service
 import connectors.ExternalEntryUrlHttpParser.{ExternalEntryUrlResponse, _}
 import connectors.VatReturnHttpParser._
 import connectors.VatReturnWithCorrectionHttpParser._
 import models.Period
+import models.etmp.EtmpObligations
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import play.api.Configuration
 import play.api.libs.json.Json
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 
@@ -50,4 +51,7 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
   def getSubmittedVatReturns()(implicit hc: HeaderCarrier): Future[VatReturnMultipleResponse] = {
     httpClientV2.get(url"$baseUrl/vat-returns").execute[VatReturnMultipleResponse]
   }
+
+  def getObligations(vrn: Vrn)(implicit hc:HeaderCarrier): Future[EtmpObligations] =
+    httpClientV2.get(url"$baseUrl/obligations/$vrn").execute[EtmpObligations]
 }
