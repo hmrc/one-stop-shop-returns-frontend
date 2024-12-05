@@ -70,8 +70,6 @@ class CountryToSameCountryController @Inject()(
         Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(CheckMode, period).url)
       case(_, _, Some(true), Nil) =>
         Redirect(controllers.routes.SoldGoodsFromEuController.onPageLoad(CheckMode, period).url)
-      case (Some(true), Nil, Some(true), Nil) =>
-        Redirect(controllers.routes.SoldGoodsFromEuController.onPageLoad(CheckMode, period).url)
       case _ =>
         Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url)
     }

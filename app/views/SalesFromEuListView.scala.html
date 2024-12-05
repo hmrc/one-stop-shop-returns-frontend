@@ -55,7 +55,7 @@
 
             @addToList(list, Long, "salesFromEuList.change.hidden", "salesFromEuList.remove.hidden", None)
                 @if(incompleteCountriesFrom.isEmpty) {
-                    @formHelper(action = routes.SalesFromEuListController.onSubmit(mode, period, false), 'autoComplete -> "off") {
+                    @formHelper(action = routes.SalesFromEuListController.onSubmit(mode, period, false), Symbol("autoComplete") -> "off") {
                         @if(canAddCountries) {
                             @govukRadios(
                                 RadiosViewModel.yesNo(

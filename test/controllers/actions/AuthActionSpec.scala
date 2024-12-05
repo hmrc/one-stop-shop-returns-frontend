@@ -52,7 +52,7 @@ class AuthActionSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach 
   private val configNoEnrolment = "features.oss-enrolment" -> false
   private val groupId = UUID.randomUUID().toString
 
-  class Harness(authAction: IdentifierAction, defaultAction: DefaultActionBuilder) extends  {
+  class Harness(authAction: IdentifierAction, defaultAction: DefaultActionBuilder) {
     def onPageLoad(): Action[AnyContent] = (defaultAction andThen authAction) { _ => Results.Ok }
   }
 

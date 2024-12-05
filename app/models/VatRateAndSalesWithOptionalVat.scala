@@ -16,7 +16,7 @@
 
 package models
 
-import play.api.libs.functional.syntax.{toAlternativeOps, toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.{toAlternativeOps, toFunctionalBuilderOps}
 import play.api.libs.json._
 
 import java.time.LocalDate
@@ -71,5 +71,5 @@ object VatRateAndSalesWithOptionalVat {
       (__ \ "validFrom").write[LocalDate] and
       (__ \ "validUntil").writeNullable[LocalDate] and
       (__  \ "salesAtVatRate").writeNullable[SalesAtVatRateWithOptionalVat]
-    ) (unlift(VatRateAndSalesWithOptionalVat.unapply))
+    ) (vatRateAndSalesWithOptionalVat => Tuple.fromProductTyped(vatRateAndSalesWithOptionalVat))
 }

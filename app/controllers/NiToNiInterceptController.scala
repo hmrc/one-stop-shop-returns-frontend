@@ -69,16 +69,16 @@ class NiToNiInterceptController @Inject()(
     val numberOfSalesFromEu = userAnswers.get(AllSalesFromEuQueryWithOptionalVatQuery).getOrElse(List.empty)
 
     (soldGoodsToNi,numberOfSalesFromNi,soldGoodsToEu, numberOfSalesFromEu) match {
+      case (Some(true), Nil, Some(true), Nil) =>
+        Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url)
       case (Some(true), Nil, Some(true), _) =>
         Redirect(controllers.routes.CountryToSameCountryController.onPageLoad(period).url)
       case (Some(true), Nil, _, _) =>
         Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url)
-      case (Some(true), _, Some(true), _) =>
-        Redirect(controllers.routes.CountryToSameCountryController.onPageLoad(period).url)
-      case (Some(true), Nil, Some(true), Nil) =>
-        Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url)
       case (Some(true), _, Some(true), Nil) =>
         Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url)
+      case (Some(true), _, Some(true), _) =>
+        Redirect(controllers.routes.CountryToSameCountryController.onPageLoad(period).url)
       case _ =>
         Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url)
     }

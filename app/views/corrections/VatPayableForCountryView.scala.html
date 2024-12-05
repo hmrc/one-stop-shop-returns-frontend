@@ -29,7 +29,7 @@
 
 @layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount)))) {
 
-    @formHelper(action = controllers.corrections.routes.VatPayableForCountryController.onSubmit(mode, period, periodIndex, countryIndex), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.VatPayableForCountryController.onSubmit(mode, period, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

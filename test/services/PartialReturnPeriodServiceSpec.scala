@@ -21,7 +21,8 @@ import connectors.ReturnStatusConnector
 import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.{PartialReturnPeriod, PeriodWithStatus, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar.{mock, when}
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.mock
 import services.exclusions.ExclusionService
 import uk.gov.hmrc.http.HeaderCarrier
 

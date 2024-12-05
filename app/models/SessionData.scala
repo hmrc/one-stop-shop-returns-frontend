@@ -81,7 +81,7 @@ object SessionData {
         (__ \ "userId").write[String] and
         (__ \ "data").write[JsObject] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-      ) (unlift(SessionData.unapply))
+      ) (sessionData => Tuple.fromProductTyped(sessionData))
   }
 
   implicit val format: OFormat[SessionData] = OFormat(reads, writes)

@@ -19,7 +19,7 @@ package services
 import config.FrontendAppConfig
 import org.mockito.Mockito.when
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
+import org.scalatest.matchers.must.Matchers.mustEqual
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest

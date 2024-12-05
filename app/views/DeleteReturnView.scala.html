@@ -26,7 +26,7 @@
 
 @layout(pageTitle = title(form, messages("deleteReturn.title"))) {
 
-    @formHelper(action = routes.DeleteReturnController.onSubmit(period), 'autoComplete -> "off") {
+    @formHelper(action = routes.DeleteReturnController.onSubmit(period), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

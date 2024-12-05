@@ -28,11 +28,10 @@ import models.responses.UnexpectedResponseStatus
 import models.StandardPeriod
 import models.external.ExternalEntryUrl
 import models.responses.NotFound
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
-import org.mockito.MockitoSugar.mock
+import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalacheck.Arbitrary
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.bind

@@ -33,7 +33,7 @@
     Some(messages("caption.fromNi.periodAndCountry", period.displayText, country.name))
 )) {
 
-    @formHelper(action = routes.VatRatesFromNiController.onSubmit(mode, period, index), 'autoComplete -> "off") {
+    @formHelper(action = routes.VatRatesFromNiController.onSubmit(mode, period, index), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value_0")))

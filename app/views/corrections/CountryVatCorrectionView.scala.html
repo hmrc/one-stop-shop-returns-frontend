@@ -40,7 +40,7 @@
         action = controllers.corrections.routes.CountryVatCorrectionController.onSubmit(
             mode, period, periodIndex, countryIndex, undeclaredCountry
         ),
-        'autoComplete -> "off"
+        Symbol("autoComplete") -> "off"
     ) {
 
         @if(form.errors.nonEmpty) {

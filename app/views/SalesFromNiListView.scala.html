@@ -55,7 +55,7 @@
 
             @addToList(list, Long, "salesFromNiList.change.hidden", "salesFromNiList.remove.hidden", None)
             @if(incompleteCountries.isEmpty) {
-                @formHelper(action = routes.SalesFromNiListController.onSubmit(mode, period, false), 'autoComplete -> "off") {
+                @formHelper(action = routes.SalesFromNiListController.onSubmit(mode, period, false), Symbol("autoComplete") -> "off") {
 
                 @if(canAddCountries) {
                     @govukRadios(

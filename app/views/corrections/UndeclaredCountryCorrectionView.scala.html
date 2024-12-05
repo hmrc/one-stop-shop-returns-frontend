@@ -30,7 +30,7 @@
 
 @layout(pageTitle = title(form, messages("undeclaredCountryCorrection.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(mode, period, periodIndex, countryIndex), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(mode, period, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
 
         @if(form.errors.nonEmpty) {

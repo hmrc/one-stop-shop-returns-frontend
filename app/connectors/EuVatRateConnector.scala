@@ -20,6 +20,7 @@ import config.{FrontendAppConfig, Service}
 import models.{Country, EuVatRate}
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import play.api.http.HeaderNames.AUTHORIZATION
 

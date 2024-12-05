@@ -31,7 +31,7 @@
     Some(messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name))
 )) {
 
-    @formHelper(action = routes.VatRatesFromEuController.onSubmit(mode, period, countryFromIndex, countryToIndex), 'autoComplete -> "off") {
+    @formHelper(action = routes.VatRatesFromEuController.onSubmit(mode, period, countryFromIndex, countryToIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value_0")))

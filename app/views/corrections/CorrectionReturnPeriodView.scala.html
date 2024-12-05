@@ -28,7 +28,7 @@
 
 @layout(pageTitle = title(form, messages("correctionReturnPeriod.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectionReturnPeriodController.onSubmit(mode, period, periodIndex), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.CorrectionReturnPeriodController.onSubmit(mode, period, periodIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))

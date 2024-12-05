@@ -2354,9 +2354,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 ))))
             )
 
-        when(financialDataConnector.getFinancialData(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+          when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.
+              successful(Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(sessionRepository.set(any())) thenReturn Future.successful(true)

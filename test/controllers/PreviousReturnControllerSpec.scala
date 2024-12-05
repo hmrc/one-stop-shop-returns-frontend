@@ -27,8 +27,7 @@ import models.domain.VatReturn
 import models.external.ExternalEntryUrl
 import models.financialdata.Charge
 import models.responses.{UnexpectedResponseStatus, NotFound => NotFoundResponse}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary

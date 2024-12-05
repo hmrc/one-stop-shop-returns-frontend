@@ -18,13 +18,11 @@ object AppDependencies {
   val test = Seq(
     "org.scalatest"           %% "scalatest"               % "3.2.19",
     "org.scalatestplus"       %% "scalacheck-1-15"         % "3.2.11.0",
-    "org.scalatestplus"       %% "mockito-4-6"             % "3.2.15.0",
     "uk.gov.hmrc"             %% "bootstrap-test-play-30"  % bootstrapVersion,
     "org.scalatestplus.play"  %% "scalatestplus-play"      % "7.0.1",
     "org.pegdown"             %  "pegdown"                 % "1.6.0",
     "org.jsoup"               %  "jsoup"                   % "1.18.1",
     "org.playframework"       %% "play-test"               % PlayVersion.current,
-    "org.mockito"             %% "mockito-scala"           % "1.17.37",
     "org.scalacheck"          %% "scalacheck"              % "1.18.0",
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-30" % "2.2.0",
     "com.vladsch.flexmark"    %  "flexmark-all"            % "0.64.8"

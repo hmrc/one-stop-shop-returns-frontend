@@ -59,7 +59,7 @@
 
             @if(incompleteSales.isEmpty) {
 
-                @formHelper(action = routes.SalesToEuListController.onSubmit(mode, period, index, false), 'autoComplete -> "off") {
+                @formHelper(action = routes.SalesToEuListController.onSubmit(mode, period, index, false), Symbol("autoComplete") -> "off") {
 
                     @if(canAddCountries) {
                         @govukRadios(

@@ -30,7 +30,7 @@ import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, ReceivedErrorFromCore, RegistrationNotFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
@@ -584,17 +584,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[AuditService].toInstance(auditService)
               ).build()
+          
+          when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          doNothing().when(auditService).audit(any())(any(), any())
 
-        when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
-        when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
-        doNothing().when(auditService).audit(any())(any(), any())
-
-        running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
-          val result = route(app, request).value
-          val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
-          val expectedAuditEvent =
-            ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Failure, None, None, dataRequest)
+          running(app) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(period, incompletePromptShown = false).url)
+            val result = route(app, request).value
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, completeUserAnswers)
+            val expectedAuditEvent = ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Failure, None, None, dataRequest)
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
