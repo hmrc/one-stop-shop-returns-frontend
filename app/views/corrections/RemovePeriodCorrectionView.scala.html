@@ -28,7 +28,7 @@
 
 @layout(pageTitle = title(form, messages("removePeriodCorrection.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.RemovePeriodCorrectionController.onSubmit(mode, period, periodIndex), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.RemovePeriodCorrectionController.onSubmit(mode, period, periodIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

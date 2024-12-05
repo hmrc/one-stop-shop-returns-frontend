@@ -71,5 +71,5 @@ object VatRateAndSales {
         (__ \ "validFrom").write[LocalDate] and
         (__ \ "validUntil").writeNullable[LocalDate] and
         (__  \ "salesAtVatRate").writeNullable[SalesAtVatRate]
-      ) (unlift(VatRateAndSales.unapply))
+      ) (vatRateAndSales => Tuple.fromProductTyped(vatRateAndSales))
   }

@@ -18,7 +18,7 @@ package repositories
 
 import models.Period
 import models.domain.VatReturn
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.{toFunctionalBuilderOps}
 import play.api.libs.json.{__, OFormat, OWrites, Reads}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
@@ -47,7 +47,7 @@ object CachedVatReturnWrapper {
       (__ \ "period").write[Period] and
       (__ \ "vatReturn").writeNullable[VatReturn] and
       (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-    ) (unlift(CachedVatReturnWrapper.unapply))
+    ) (cachedVatReturnWrapper => Tuple.fromProductTyped(cachedVatReturnWrapper))
 
   implicit val format: OFormat[CachedVatReturnWrapper] = OFormat(reads, writes)
 }

@@ -72,23 +72,23 @@ class NetValueOfSalesFromNiPageSpec extends PageBehaviours {
         }
       }
 
-   "must navigate in Check Second Inner Loop mode" - {
+    "must navigate in Check Second Inner Loop mode" - {
 
         "to VAT on sales" in {
 
           NetValueOfSalesFromNiPage(index, index).navigate(CheckSecondInnerLoopMode, emptyUserAnswers)
             .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(CheckSecondInnerLoopMode, period, index, index))
         }
-      }
+    }
 
-   "must navigate in Check Final Inner Loop mode" - {
+    "must navigate in Check Final Inner Loop mode" - {
 
         "to VAT on sales" in {
 
           NetValueOfSalesFromNiPage(index, index).navigate(CheckFinalInnerLoopMode, emptyUserAnswers)
             .mustEqual(routes.VatOnSalesFromNiController.onPageLoad(CheckFinalInnerLoopMode, period, index, index))
         }
-      }
+    }
 
     "must remove VAT on sales for the same index when set" in {
 

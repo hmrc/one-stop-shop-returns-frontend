@@ -19,9 +19,6 @@
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
-        govukErrorSummary: GovukErrorSummary,
-        govukSummaryList: GovukSummaryList,
-        govukRadios: GovukRadios,
         button: ButtonGroup,
         govukButton: GovukButton,
         addToList: components.addToSimpleList,
@@ -55,11 +52,11 @@ else {
         @addToList(periodList, itemSize = Long, "vatPeriodCorrectionsList.change.hidden", "vatPeriodCorrectionsList.remove.hidden")
 
         @if(incompletePeriods.isEmpty) {
-            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, false), 'autoComplete -> "off") {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, false), Symbol("autoComplete") -> "off") {
                 @button("site.continue", period, controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(mode, period).url)
             }
         } else {
-            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, true), 'autoComplete -> "off") {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(mode, period, true), Symbol("autoComplete") -> "off") {
                 @govukButton(
                     ButtonViewModel(messages("error.resolve_missing_answers"))
                 )

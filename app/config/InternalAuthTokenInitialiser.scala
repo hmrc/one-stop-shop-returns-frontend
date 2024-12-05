@@ -23,6 +23,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import play.api.libs.ws.writeableOf_JsValue
 
 import java.net.URL
 import javax.inject.{Inject, Singleton}

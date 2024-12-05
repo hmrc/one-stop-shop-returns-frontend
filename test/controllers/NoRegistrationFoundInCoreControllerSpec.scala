@@ -53,25 +53,25 @@ class NoRegistrationFoundInCoreControllerSpec extends SpecBase {
         }
       }
 
-    "must return OK and the correct view for a GET and add the external backToYourAccount url that has been saved" in {
-      val vatReturnConnector = mock[VatReturnConnector]
-      when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
-
-      val application = applicationBuilder(userAnswers = None)
-        .overrides(inject.bind[VatReturnConnector].toInstance(vatReturnConnector))
-        .build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.NoRegistrationFoundInCoreController.onPageLoad().url)
-
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[NoRegistrationFoundInCoreView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(Some("example"))(request, messages(application)).toString
+      "must return OK and the correct view for a GET and add the external backToYourAccount url that has been saved" in {
+        val vatReturnConnector = mock[VatReturnConnector]
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
+  
+        val application = applicationBuilder(userAnswers = None)
+          .overrides(inject.bind[VatReturnConnector].toInstance(vatReturnConnector))
+          .build()
+  
+        running(application) {
+          val request = FakeRequest(GET, routes.NoRegistrationFoundInCoreController.onPageLoad().url)
+  
+          val result = route(application, request).value
+  
+          val view = application.injector.instanceOf[NoRegistrationFoundInCoreView]
+  
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(Some("example"))(request, messages(application)).toString
+        }
       }
-    }
 
   }
 }

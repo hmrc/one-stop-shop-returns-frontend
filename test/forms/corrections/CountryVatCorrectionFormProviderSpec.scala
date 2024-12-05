@@ -49,7 +49,7 @@ class CountryVatCorrectionFormProviderSpec extends DecimalFieldBehaviours {
     "bind valid data positive" in {
 
       forAll(validDataGeneratorForPositive -> "validDataItem") {
-        dataItem: String =>
+        (dataItem: String) =>
           val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
           result.value.value mustBe dataItem
           result.errors mustBe empty
@@ -58,7 +58,7 @@ class CountryVatCorrectionFormProviderSpec extends DecimalFieldBehaviours {
 
     "bind valid data negative" in {
       forAll(validDataGeneratorForNegative -> "validDataItem") {
-        dataItem: String =>
+        (dataItem: String) =>
           val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
           result.value.value mustBe dataItem
           result.errors mustBe empty
@@ -99,7 +99,7 @@ class CountryVatCorrectionFormProviderSpec extends DecimalFieldBehaviours {
       val form = new CountryVatCorrectionFormProvider()(country, minimumAllowedCorrection, false)
 
       forAll(validDataGeneratorForNegative -> "validDataItem") {
-        dataItem: String =>
+        (dataItem: String) =>
           val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
           result.value.value mustBe dataItem
           result.errors mustBe List(FormError(fieldName, "countryVatCorrection.error.negative", Seq(CurrencyFormatter.currencyFormat(minimumAllowedCorrection))))

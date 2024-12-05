@@ -46,7 +46,7 @@
         </div>
     }
 
-    @formHelper(action = routes.WhichVatPeriodToPayController.onSubmit(), 'autoComplete -> "off") {
+    @formHelper(action = routes.WhichVatPeriodToPayController.onSubmit(), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))

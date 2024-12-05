@@ -43,7 +43,7 @@ object RegistrationWrapper {
       (__ \ "_id").write[String] and
       (__ \ "registration").write[Registration] and
       (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-    ) (unlift(RegistrationWrapper.unapply))
+    ) (registrationWrapper => Tuple.fromProductTyped(registrationWrapper))
 
   implicit val format: OFormat[RegistrationWrapper] = OFormat(reads, writes)
 }

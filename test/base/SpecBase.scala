@@ -108,8 +108,8 @@ trait SpecBase
       VatReturn(
         vrn,
         period,
-        ReturnReference("XI/XI063407423/Q3.2086"),
-        PaymentReference("NI063407423Q386"),
+        ReturnReference(Vrn("063407423"), StandardPeriod(2086, Quarter.Q3)),
+        PaymentReference(Vrn("063407423"), StandardPeriod(2086, Quarter.Q3)),
         None,
         None,
         List(SalesToCountry(Country("LT",
@@ -156,8 +156,8 @@ trait SpecBase
     VatReturn(
       vrn,
       period,
-      ReturnReference("XI/XI063407423/Q3.2086"),
-      PaymentReference("XI063407423Q386"),
+      ReturnReference(Vrn("063407423"), StandardPeriod(2086, Quarter.Q3)),
+      PaymentReference(Vrn("063407423"), StandardPeriod(2086, Quarter.Q3)),
       None,
       None,
       List(SalesToCountry(Country("LT",
@@ -204,8 +204,8 @@ trait SpecBase
     VatReturn(
       vrn,
       period,
-      ReturnReference(s"XI/XI$vrn/Q3.2021"),
-      PaymentReference(s"XI${vrn}Q321"),
+      ReturnReference(vrn, period),
+      PaymentReference(vrn, period),
       None,
       None,
       List.empty,

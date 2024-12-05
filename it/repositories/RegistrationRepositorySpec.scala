@@ -33,12 +33,12 @@ class RegistrationRepositorySpec
   private val registration: Registration = arbitrary[Registration].sample.value
 
   private val mockAppConfig = mock[FrontendAppConfig]
-  when(mockAppConfig.cacheTtl) thenReturn 1
+  when(mockAppConfig.cacheTtl) thenReturn 1L
 
-  protected override val repository = new RegistrationRepository(
+  protected override val repository: RegistrationRepository = new RegistrationRepository(
     mongoComponent = mongoComponent,
-    appConfig      = mockAppConfig,
-    clock          = stubClock
+    appConfig = mockAppConfig,
+    clock = stubClock
   )
 
   ".set" - {

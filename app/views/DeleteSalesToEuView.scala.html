@@ -40,7 +40,7 @@
     Some(period.displayText)
 )) {
 
-    @formHelper(action = routes.DeleteSalesToEuController.onSubmit(mode, period, countryFromIndex, countryToIndex), 'autoComplete -> "off") {
+    @formHelper(action = routes.DeleteSalesToEuController.onSubmit(mode, period, countryFromIndex, countryToIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

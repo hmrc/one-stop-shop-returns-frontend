@@ -29,7 +29,7 @@
 
 @layout(pageTitle = title(form, messages("soldGoodsFromNi.title"), Some(period.displayText))) {
 
-    @formHelper(action = routes.SoldGoodsFromNiController.onSubmit(mode, period), 'autoComplete -> "off") {
+    @formHelper(action = routes.SoldGoodsFromNiController.onSubmit(mode, period), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

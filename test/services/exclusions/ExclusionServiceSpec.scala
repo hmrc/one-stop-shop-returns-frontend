@@ -26,7 +26,10 @@ import models.registration.Registration
 import models.requests.RegistrationRequest
 import models.responses.NotFound
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.{Mockito, MockitoSugar}
+import org.mockito.Mockito
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
+
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import play.api.i18n.Messages
