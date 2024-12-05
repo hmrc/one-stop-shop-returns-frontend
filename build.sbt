@@ -45,9 +45,7 @@ lazy val root = (project in file("."))
     ScoverageKeys.coverageMinimumStmtTotal := 78,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
-    scalacOptions ++= Seq("-feature"),
-    scalacOptions += "-Wconf:msg=Flag.*repeatedly:s",
-    scalacOptions += "-Wconf:msg=unused import&src=html/.*:s",
+    scalacOptions ++= Seq("-feature", "-Wconf:msg=Flag.*repeatedly:s", "-Wconf:msg=unused import&src=html/.*:s"),
     libraryDependencies ++= AppDependencies(),
     retrieveManaged := true,
     update / evictionWarningOptions :=
