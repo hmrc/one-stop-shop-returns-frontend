@@ -59,6 +59,7 @@ class NiToNiInterceptController @Inject()(
             val updatedUserAnswers = updatedReturn
             navigate(period, updatedUserAnswers)
           }
+        case _ => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 

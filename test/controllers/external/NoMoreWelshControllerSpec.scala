@@ -17,7 +17,6 @@
 package controllers.external
 
 import base.SpecBase
-import play.api.http.Status.OK
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.NoMoreWelshTranslationsView

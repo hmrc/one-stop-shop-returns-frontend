@@ -23,7 +23,7 @@ import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import controllers.actions._
 import logging.Logging
-import models.{PartialReturnPeriod, Period, StandardPeriod}
+import models.{Period, StandardPeriod}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
@@ -100,9 +100,6 @@ class SubmittedReturnsHistoryController @Inject()(
 
       allPayments.find(_.period == period) match {
         case Some(payment) =>
-
-//          val period = getPartialReturnPeriod(vatReturn) //todo
-
           Map(period -> payment).toFuture
         case _ =>
           vatReturnConnector.get(period).flatMap {
@@ -123,14 +120,6 @@ class SubmittedReturnsHistoryController @Inject()(
           }
       }
     }).map(_.flatten.toMap)
-  }
-
-  private def getPartialReturnPeriod(vatReturn: VatReturn) = {
-    (vatReturn.startDate, vatReturn.endDate) match {
-      case (Some(sd), Some(ed)) =>
-        PartialReturnPeriod(sd, ed, vatReturn.period.year, vatReturn.period.quarter)
-      case _ => vatReturn.period
-    }
   }
 
   private def mapPeriodToPayment(vatReturn: VatReturn, maybeCorrectionPayload: Option[CorrectionPayload]): Map[Period, Payment] = {

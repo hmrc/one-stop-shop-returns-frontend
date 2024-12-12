@@ -26,7 +26,6 @@
     hmrcHead: HmrcHead,
     hmrcStandardHeader: HmrcStandardHeader,
     hmrcStandardFooter: HmrcStandardFooter,
-    hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet,
     hmrcLanguageSelect: HmrcLanguageSelect,
     hmrcTimeoutDialog: HmrcTimeoutDialog,
     hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
@@ -35,8 +34,7 @@
     defaultMainContentLayout: TwoThirdsMainContent,
     fullWidthLayout: FullWidthLayout,
     autocompleteCss: HmrcAccessibleAutocompleteCss,
-    autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
-    hmrcStandardPage: HmrcStandardPage
+    autocompleteJavascript: HmrcAccessibleAutocompleteJavascript
 )
 
 @(pageTitle: String, showBackLink: Boolean = true, timeout: Boolean = true, showSignOut: Boolean = true, fullWidth: Boolean = false)(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
