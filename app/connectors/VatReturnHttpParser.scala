@@ -18,6 +18,7 @@ package connectors
 
 import logging.Logging
 import models.domain.VatReturn
+import models.etmp.EtmpVatReturn
 import models.responses._
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess}
@@ -28,6 +29,8 @@ object VatReturnHttpParser extends Logging {
 
   type VatReturnResponse = Either[ErrorResponse, VatReturn]
   type VatReturnMultipleResponse = Seq[VatReturn]
+  type EtmpVatReturnResponse = Either[ErrorResponse, EtmpVatReturn]
+  type EtmpVatReturnMultipleResponse = Seq[EtmpVatReturn]
 
   implicit object VatReturnReads extends HttpReads[VatReturnResponse] {
     override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {

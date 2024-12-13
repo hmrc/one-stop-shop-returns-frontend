@@ -20,7 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
-import models.etmp.EtmpObligations
+import models.etmp.{EtmpObligations, EtmpVatReturn}
 import models.external.ExternalEntryUrl
 import models.requests.corrections.CorrectionRequest
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
@@ -474,5 +474,40 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         result mustBe etmpObligations
       }
     }
+  }
+
+  ".getEtmpVatReturn" - {
+
+    val url = s"/one-stop-shop-returns/etmp-vat-returns/period"
+
+    val etmpVatReturn: EtmpVatReturn = arbitraryEtmpVatReturn.arbitrary.sample.value
+
+    // TODO - Parser with responses
+    "must return a valid payload when server returns a valid payload" in {
+
+      val jsonResponseBody = Json.toJson(etmpVatReturn).toString()
+
+      running(application) {
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/$period"))
+            .willReturn(
+              aResponse().withStatus(OK)
+                .withBody(jsonResponseBody)
+            )
+        )
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        val result = connector.getEtmpVatReturn(period).futureValue
+
+        result mustBe etmpVatReturn
+      }
+    }
+  }
+
+  // TODO - Return Seq of EtmpVatReturn
+  ".getSubmittedEtmpVatReturns" - {
+
   }
 }
