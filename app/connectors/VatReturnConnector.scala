@@ -20,7 +20,7 @@ import connectors.ExternalEntryUrlHttpParser.{ExternalEntryUrlResponse, _}
 import connectors.VatReturnHttpParser._
 import connectors.VatReturnWithCorrectionHttpParser._
 import models.Period
-import models.etmp.EtmpObligations
+import models.etmp.{EtmpObligations, EtmpVatReturn}
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import play.api.Configuration
 import play.api.libs.json.Json
@@ -42,7 +42,7 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
     httpClientV2.post(url"$baseUrl/vat-returns").withBody(Json.toJson(vatReturnRequest)).execute[VatReturnResponse]
 
   def submitWithCorrections(vatReturnRequest: VatReturnWithCorrectionRequest)(implicit hc: HeaderCarrier): Future[VatReturnWithCorrectionResponse] =
-    httpClientV2.post(url"$baseUrl/vat-return-with-corrections").withBody(Json.toJson( vatReturnRequest)).execute[VatReturnWithCorrectionResponse]
+    httpClientV2.post(url"$baseUrl/vat-return-with-corrections").withBody(Json.toJson(vatReturnRequest)).execute[VatReturnWithCorrectionResponse]
 
   def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] =
     httpClientV2.get(url"$baseUrl/vat-returns/period/$period").execute[VatReturnResponse]
@@ -54,6 +54,10 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
     httpClientV2.get(url"$baseUrl/vat-returns").execute[VatReturnMultipleResponse]
   }
 
-  def getObligations(vrn: Vrn)(implicit hc:HeaderCarrier): Future[EtmpObligations] =
+  def getObligations(vrn: Vrn)(implicit hc: HeaderCarrier): Future[EtmpObligations] =
     httpClientV2.get(url"$baseUrl/obligations/$vrn").execute[EtmpObligations]
+
+  // TODO - HttpParser
+  def getEtmpVatReturn(period: Period)(implicit hc: HeaderCarrier): Future[EtmpVatReturn] =
+    httpClientV2.get(url"$baseUrl/etmp-vat-returns/period/$period").execute[EtmpVatReturn]
 }
