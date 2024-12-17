@@ -19,8 +19,7 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    govukButton: GovukButton,
-    govukWarningText: GovukWarningText
+    govukButton: GovukButton
 )
 
 @(form: Form[_], period: Period, maybePartialReturnPeriod: Option[PartialReturnPeriod])(implicit request: Request[_], messages: Messages)

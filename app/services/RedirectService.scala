@@ -107,9 +107,6 @@ class RedirectService @Inject()(
       case DataMissingError(_) =>
         logger.error(s"Unhandled DataMissingError")
         None
-      case _ =>
-        logger.error(s"Unhandled ValidationError")
-        None
     }
   }
 }

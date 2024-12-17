@@ -22,6 +22,9 @@ import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import org.mongodb.scala.SingleObservableFuture
+import org.mongodb.scala.ObservableFuture
+
 
 import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit

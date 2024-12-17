@@ -30,7 +30,6 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
 
 class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 

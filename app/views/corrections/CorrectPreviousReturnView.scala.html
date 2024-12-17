@@ -29,7 +29,7 @@
 
 @layout(pageTitle = title(form, messages("correctPreviousReturn.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectPreviousReturnController.onSubmit(mode, period), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.CorrectPreviousReturnController.onSubmit(mode, period), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
