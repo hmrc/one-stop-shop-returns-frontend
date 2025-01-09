@@ -482,10 +482,9 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
     val etmpVatReturn: EtmpVatReturn = arbitraryEtmpVatReturn.arbitrary.sample.value
 
-    // TODO - Parser with responses
-    "must return a valid payload when server returns a valid payload" in {
+    "must return Right(EtmpVatReturn) when server responds with OK" in {
 
-      val jsonResponseBody = Json.toJson(etmpVatReturn).toString()
+      val jsonResponseBody = Json.toJson(etmpVatReturn)
 
       running(application) {
 
@@ -493,7 +492,7 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
           get(urlEqualTo(s"$url/$period"))
             .willReturn(
               aResponse().withStatus(OK)
-                .withBody(jsonResponseBody)
+                .withBody(jsonResponseBody.toString())
             )
         )
 
@@ -501,13 +500,49 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
         val result = connector.getEtmpVatReturn(period).futureValue
 
-        result mustBe etmpVatReturn
+        result mustBe Right(etmpVatReturn)
       }
     }
-  }
 
-  // TODO - Return Seq of EtmpVatReturn
-  ".getSubmittedEtmpVatReturns" - {
+    "must return Left(InvalidJson) when JSON cannot be parsed correctly" in {
 
+      val responseBody: String = """{ "foo": "bar" }"""
+
+      running(application) {
+
+        server.stubFor(
+          get(urlEqualTo(s"$url/$period"))
+            .willReturn(
+              aResponse().withStatus(OK)
+                .withBody(responseBody)
+            )
+        )
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        val result = connector.getEtmpVatReturn(period).futureValue
+
+        result mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when server responds with any other error response" in {
+
+      running(application) {
+
+        server.stubFor(get(urlEqualTo(s"$url/$period"))
+          .willReturn(
+            aResponse().withStatus(INTERNAL_SERVER_ERROR)
+              .withBody("error")
+          )
+        )
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        val result = connector.getEtmpVatReturn(period).futureValue
+
+        result mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "error"))
+      }
+    }
   }
 }

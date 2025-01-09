@@ -17,23 +17,22 @@
 package controllers
 
 import base.SpecBase
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
 import models.Quarter.{Q1, Q2, Q3}
-import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
-import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
-import models.responses.UnexpectedResponseStatus
 import models.StandardPeriod
+import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
+import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus, EtmpVatReturn}
 import models.external.ExternalEntryUrl
-import models.responses.NotFound
+import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
+import models.responses.{NotFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalacheck.Arbitrary
 import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -50,7 +49,6 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   private val correctionConnector = mock[CorrectionConnector]
   private val financialDataConnector = mock[FinancialDataConnector]
   private val mockObligationsService: ObligationsService = mock[ObligationsService]
-  private val config = mock[FrontendAppConfig]
 
   private val period1 = StandardPeriod(2021, Q1)
   private val period2 = StandardPeriod(2021, Q2)
@@ -95,13 +93,13 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     "when strategicReturnApiEnabled is true" - {
 
       "must return OK and correct view with the current period when a return for this period exists" in {
-        when(config.strategicReturnApiEnabled).thenReturn(false)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .configure("features.strategic-returns.enabled" -> true)
           .overrides(
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
+            bind[CorrectionConnector].toInstance(correctionConnector),
           ).build()
 
         when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
@@ -122,10 +120,46 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
           )(request, messages(application)).toString
         }
       }
+
+      // Correct test for above??
+      "must return OK and correct view when ???" in {
+
+        val etmpVatReturn: EtmpVatReturn = arbitraryEtmpVatReturn.arbitrary.sample.value.copy()
+        val etmpObligationDetails: EtmpObligationDetails = EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, "21Q3")
+
+        val currentPayments: CurrentPayments = CurrentPayments(Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .configure("features.strategic-returns.enabled" -> true)
+          .overrides(
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[VatReturnConnector].toInstance(vatReturnConnector),
+            bind[CorrectionConnector].toInstance(correctionConnector),
+            bind[ObligationsService].toInstance(mockObligationsService)
+          ).build()
+
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
+        when(vatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Future.successful(Seq(etmpObligationDetails))
+        when(vatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(etmpVatReturn))
+        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+
+        running(application) {
+          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            Map(period3 -> payment3),
+            displayBanner = false
+          )(request, messages(application)).toString
+        }
+      }
     }
 
     "when strategicReturnApiEnabled is false" - {
-
 
       "must return OK and correct view with the current period when a return for this period exists" in {
 

@@ -16,6 +16,8 @@
 
 package viewmodels
 
+import utils.CurrencyFormatter
+
 package object govuk {
 
   object all
@@ -23,6 +25,7 @@ package object govuk {
       with BackLinkFluency
       with ButtonFluency
       with CheckboxFluency
+      with CurrencyFormatter
       with DateFluency
       with ErrorSummaryFluency
       with FieldsetFluency

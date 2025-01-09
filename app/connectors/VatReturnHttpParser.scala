@@ -30,7 +30,6 @@ object VatReturnHttpParser extends Logging {
   type VatReturnResponse = Either[ErrorResponse, VatReturn]
   type VatReturnMultipleResponse = Seq[VatReturn]
   type EtmpVatReturnResponse = Either[ErrorResponse, EtmpVatReturn]
-  type EtmpVatReturnMultipleResponse = Seq[EtmpVatReturn]
 
   implicit object VatReturnReads extends HttpReads[VatReturnResponse] {
     override def read(method: String, url: String, response: HttpResponse): VatReturnResponse = {
@@ -82,6 +81,25 @@ object VatReturnHttpParser extends Logging {
           val message: String = s"Received unexpected error from vat returns with status: $status"
           logger.warn(message)
           throw new Exception(message)
+      }
+    }
+  }
+
+  implicit object EtmpVatReturnReads extends HttpReads[EtmpVatReturnResponse] {
+
+    override def read(method: String, url: String, response: HttpResponse): EtmpVatReturnResponse = {
+      response.status match {
+        case OK =>
+          response.json.validate[EtmpVatReturn] match {
+            case JsSuccess(etmpVatReturn, _) => Right(etmpVatReturn)
+            case JsError(errors) =>
+              logger.warn(s"Failed trying to parse EtmpVatReturn JSON $errors. Json was ${response.json}")
+              Left(InvalidJson)
+          }
+
+        case _ =>
+          logger.error(s"Failed to retrieve EtmpVatReturn from server")
+          Left(UnexpectedResponseStatus(response.status, response.body))
       }
     }
   }

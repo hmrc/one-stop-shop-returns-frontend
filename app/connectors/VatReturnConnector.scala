@@ -20,15 +20,15 @@ import connectors.ExternalEntryUrlHttpParser.{ExternalEntryUrlResponse, _}
 import connectors.VatReturnHttpParser._
 import connectors.VatReturnWithCorrectionHttpParser._
 import models.Period
-import models.etmp.{EtmpObligations, EtmpVatReturn}
+import models.etmp.EtmpObligations
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import play.api.Configuration
 import play.api.libs.json.Json
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -57,7 +57,6 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
   def getObligations(vrn: Vrn)(implicit hc: HeaderCarrier): Future[EtmpObligations] =
     httpClientV2.get(url"$baseUrl/obligations/$vrn").execute[EtmpObligations]
 
-  // TODO - HttpParser
-  def getEtmpVatReturn(period: Period)(implicit hc: HeaderCarrier): Future[EtmpVatReturn] =
-    httpClientV2.get(url"$baseUrl/etmp-vat-returns/period/$period").execute[EtmpVatReturn]
+  def getEtmpVatReturn(period: Period)(implicit hc: HeaderCarrier): Future[EtmpVatReturnResponse] =
+    httpClientV2.get(url"$baseUrl/etmp-vat-returns/period/$period").execute[EtmpVatReturnResponse]
 }
