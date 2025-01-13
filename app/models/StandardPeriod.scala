@@ -82,6 +82,15 @@ trait Period {
 
   override def toString: String = s"$year-${quarter.toString}"
 
+  def toEtmpPeriodString(currentPeriod: Period): String = {
+    val standardPeriod = StandardPeriod(currentPeriod.year, currentPeriod.quarter)
+    val year = standardPeriod.year
+    val quarter = standardPeriod.quarter
+    val lastYearDigits = year.toString.substring(2)
+
+    s"$lastYearDigits$quarter"
+  }
+
 }
 
 case class StandardPeriod(year: Int, quarter: Quarter) extends Period {
