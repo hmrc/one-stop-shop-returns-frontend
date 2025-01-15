@@ -21,24 +21,25 @@ import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import models.Quarter.{Q2, Q3}
 import models.StandardPeriod
+import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason, ExclusionViewType}
 import models.registration.Registration
 import models.requests.RegistrationRequest
 import models.responses.NotFound
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import play.api.i18n.Messages
 import play.api.mvc.AnyContent
 import play.api.test.Helpers.running
+import services.ObligationsService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.{Clock, Instant, ZoneId}
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 import scala.concurrent.{ExecutionContext, Future}
 
 class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
@@ -50,7 +51,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   private val mockRegistration: Registration = mock[Registration]
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
   private val mockFrontendAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
-  private val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, stubClockAtArbitraryDate)
+  private val mockObligationService: ObligationsService = mock[ObligationsService]
+  private val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, mockObligationService, stubClockAtArbitraryDate)
 
   private val exclusionReason = Gen.oneOf(ExclusionReason.values.filterNot(x => Seq(ExclusionReason.TransferringMSID, ExclusionReason.Reversal).contains(x))).sample.value
   private val finalReturnPeriod = StandardPeriod(2022, Q2)
@@ -63,7 +65,42 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
   ".hasSubmittedFinalReturn" - {
 
+    "must return true if final return period is in the obligations" in {
+      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn true
+
+      val excludedTrader = ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false)
+      when(mockRegistrationRequest.registration) thenReturn mockRegistration
+      when(mockRegistration.excludedTrader) thenReturn Some(excludedTrader)
+
+      val fulfilledObligations = Seq(
+        EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, finalReturnPeriod.toEtmpPeriodString(finalReturnPeriod))
+      )
+
+      println(s"finalReturnPeriod : ${finalReturnPeriod.toEtmpPeriodString(period)}")
+      when(mockObligationService.getFulfilledObligations(excludedTrader.vrn)(hc)) thenReturn Future.successful(fulfilledObligations)
+
+      exclusionService.hasSubmittedFinalReturn(mockRegistrationRequest.registration)(hc, ec).futureValue mustBe true
+    }
+
+    "must return false if final return period is not in the obligations" in {
+      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn true
+
+      val excludedTrader = ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false)
+      when(mockRegistrationRequest.registration) thenReturn mockRegistration
+      when(mockRegistration.excludedTrader) thenReturn Some(excludedTrader)
+
+      val fulfilledObligations = Seq(
+        EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Open, finalReturnPeriod.toEtmpPeriodString(period))
+      )
+      when(mockObligationService.getFulfilledObligations(excludedTrader.vrn)(hc)) thenReturn Future.successful(fulfilledObligations)
+
+      exclusionService.hasSubmittedFinalReturn(mockRegistrationRequest.registration)(hc, ec).futureValue mustBe false
+    }
+
+
     "must return true if final return completed" in {
+      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn false
+
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
@@ -75,6 +112,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     }
 
     "must return false if final return not completed" in {
+      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn false
+
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
       when(mockRegistration.excludedTrader) thenReturn
@@ -89,6 +128,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   ".currentReturnIsFinal" - {
 
     "must return true if current return is final" in {
+      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn false
 
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
@@ -104,6 +144,8 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     }
 
     "must return false if the current return is not final for excluded trader" in {
+
+      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn false
 
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
@@ -195,7 +237,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       val instant = Instant.parse("2024-03-31T12:00:00Z")
       val newClock: Clock = Clock.fixed(instant, ZoneId.systemDefault())
 
-      val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, newClock)
+      val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, mockObligationService, newClock)
 
       val effectiveDate = StandardPeriod(2022, Q2).firstDay
 
@@ -230,7 +272,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       val instant = Instant.parse("2024-04-01T12:00:00Z")
       val newClock: Clock = Clock.fixed(instant, ZoneId.systemDefault())
 
-      val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, newClock)
+      val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, mockObligationService, newClock)
 
       val effectiveDate = StandardPeriod(2022, Q2).firstDay
 

@@ -20,10 +20,11 @@ import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import logging.Logging
 import models.Period
-import models.exclusions.ExclusionViewType._
+import models.exclusions.ExclusionViewType.*
 import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason, ExclusionViewType}
 import models.registration.Registration
 import play.api.i18n.Messages
+import services.ObligationsService
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, LocalDate}
@@ -33,15 +34,27 @@ import scala.concurrent.{ExecutionContext, Future}
 class ExclusionService @Inject()(
                                   connector: VatReturnConnector,
                                   frontendAppConfig: FrontendAppConfig,
+                                  obligationsService: ObligationsService,
                                   clock: Clock
                                 ) extends Logging {
 
   def hasSubmittedFinalReturn(registration: Registration)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     registration.excludedTrader match {
       case Some(excludedTrader) =>
-        connector.get(excludedTrader.finalReturnPeriod).map {
-          case Right(_) => true
-          case _ => false
+        if (frontendAppConfig.strategicReturnApiEnabled) {
+          obligationsService.getFulfilledObligations(excludedTrader.vrn).map { obligations =>
+            val periods = obligations.map(obligation => Period.fromEtmpPeriodKey(obligation.periodKey))
+            if (periods.contains(excludedTrader.finalReturnPeriod)) {
+              true
+            } else {
+              false
+            }
+          }
+        } else {
+          connector.get(excludedTrader.finalReturnPeriod).map {
+            case Right(_) => true
+            case _ => false
+          }
         }
       case _ => Future.successful(false)
     }
