@@ -49,7 +49,7 @@ class ReturnSubmittedController @Inject()(
     implicit request =>
 
       (for {
-        vatReturnResponse <- vatReturnConnector.get(period)
+        vatReturnResponse <- vatReturnConnector.get(period) // TODO -> Need flag with etmp totalVATAmountDueForAllMSGBP value 
         correctionResponse <- correctionConnector.get(period)
         maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
        } yield (vatReturnResponse, correctionResponse, maybeSavedExternalUrl)).flatMap {

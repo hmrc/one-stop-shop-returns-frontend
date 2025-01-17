@@ -25,11 +25,12 @@ import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.Period
 import models.etmp.EtmpVatReturn
+import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.requests.RegistrationRequest
 import models.responses.NotFound as NotFoundResponse
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import services.VatReturnSalesService
+import services.{PartialReturnPeriodService, VatReturnSalesService}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -37,7 +38,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import viewmodels.govuk.summarylist.*
 import viewmodels.previousReturn.corrections.CorrectionSummary
-import viewmodels.previousReturn.{NewPreviousReturnSummary, PreviousReturnSummary, PreviousReturnVatOwedSummary, PreviousReturnsCorrectionsSummary, PreviousReturnsDeclaredVATNoPaymentDueSummary, SaleAtVatRateSummary}
+import viewmodels.previousReturn.*
 import views.html.{NewPreviousReturnView, PreviousReturnView}
 
 import java.time.{Clock, LocalDate}
@@ -50,10 +51,11 @@ class PreviousReturnController @Inject()(
                                           view: PreviousReturnView,
                                           newView: NewPreviousReturnView,
                                           vatReturnConnector: VatReturnConnector,
+                                          financialDataConnector: FinancialDataConnector,
                                           correctionConnector: CorrectionConnector,
                                           vatReturnSalesService: VatReturnSalesService,
-                                          financialDataConnector: FinancialDataConnector,
-                                          config: FrontendAppConfig,
+                                          partialReturnPeriodService: PartialReturnPeriodService,
+                                          frontendAppConfig: FrontendAppConfig,
                                           clock: Clock
                                         )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
@@ -63,7 +65,7 @@ class PreviousReturnController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request => {
 
-      if (config.strategicReturnApiEnabled) {
+      if (frontendAppConfig.strategicReturnApiEnabled) {
         newOnPageLoad(period)
       } else {
         legacyOnPageLoad(period)
@@ -73,45 +75,54 @@ class PreviousReturnController @Inject()(
 
   private def newOnPageLoad(period: Period)
                            (implicit hc: HeaderCarrier, messages: Messages, request: RegistrationRequest[_]): Future[Result] = {
-    for {
-      etmpVatReturnResponse <- vatReturnConnector.getEtmpVatReturn(period)
-      getChargeResult <- financialDataConnector.getCharge(period)
-      maybeExternalUrl <- vatReturnConnector.getSavedExternalEntry()
-    } yield {
-      (etmpVatReturnResponse, getChargeResult) match {
-        case (Right(etmpVatReturn), chargeResult) =>
-          val maybeCharge = chargeResult.fold(_ => None, charge => charge)
+    if (isPeriodOlderThanSixYears(period)) {
+      Redirect(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad()).toFuture
+    } else {
+      for {
+        etmpVatReturnResponse <- vatReturnConnector.getEtmpVatReturn(period)
+        getChargeResult <- financialDataConnector.getCharge(period)
+      } yield {
+        (etmpVatReturnResponse, getChargeResult) match {
+          case (Right(etmpVatReturn), chargeResult) =>
+            val maybeCharge = chargeResult.fold(_ => None, charge => charge)
 
-          val outstandingAmount = maybeCharge.map(_.outstandingAmount)
+            val outstandingAmount = maybeCharge.map(_.outstandingAmount)
 
-          val outstanding: BigDecimal = outstandingAmount.getOrElse(etmpVatReturn.totalVATAmountPayable)
-          val vatDeclared: BigDecimal = etmpVatReturn.totalVATAmountDueForAllMSGBP
+            val outstanding: BigDecimal = outstandingAmount.getOrElse(etmpVatReturn.totalVATAmountPayable)
+            val vatDeclared: BigDecimal = etmpVatReturn.totalVATAmountDueForAllMSGBP
 
-          val displayPayNow = (vatDeclared > 0 && outstanding > 0) // TODO -> Exclusions?
+            val currentReturnExcluded = isCurrentlyExcluded(request.registration.excludedTrader) &&
+              hasActiveWindowExpired(Period.fromEtmpPeriodKey(etmpVatReturn.periodKey).paymentDeadline)
 
-          val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, outstandingAmount, period))
+            val displayPayNow = !currentReturnExcluded &&
+              (vatDeclared > 0 && outstanding > 0)
 
-//          val salesFronNISummaryList = ???
-//          val salesFromEuSummaryList = ???
-//          val correctionsSummaryList = ???
+            val returnIsExcludedAndOutstandingAmount: Boolean = currentReturnExcluded && (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
 
+            val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, outstandingAmount, period))
 
-          Ok(newView(
-            period = period,
-            mainSummaryList = mainSummaryList,
-            corrections = PreviousReturnsCorrectionsSummary.correctionRows(etmpVatReturn.correctionPreviousVATReturn),
-            negativeAndZeroBalanceCorrectionCountries = PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn),
-            vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn),
-            displayPayNow = displayPayNow
-          ))
+            partialReturnPeriodService.getPartialReturnPeriod(request.registration, period).map { maybePartialReturnPeriod =>
+              Ok(newView(
+                period = maybePartialReturnPeriod.getOrElse(period),
+                mainSummaryList = mainSummaryList,
+                allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(etmpVatReturn.goodsSupplied),
+                corrections = PreviousReturnCorrectionsSummary.correctionRows(etmpVatReturn.correctionPreviousVATReturn),
+                negativeAndZeroBalanceCorrectionCountries = PreviousReturnDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn),
+                vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn),
+                displayPayNow = displayPayNow,
+                totalVatPayable = outstanding,
+                returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount
+              ))
+            }
 
-        case _ =>
-          val message: String = s"There was an error retrieving ETMP VAT return"
-          val exception = new Exception(message)
-          logger.error(exception.getMessage, exception)
-          throw exception
+          case _ =>
+            val message: String = s"There was an error retrieving ETMP VAT return"
+            val exception = new Exception(message)
+            logger.error(exception.getMessage, exception)
+            throw exception
+        }
       }
-    }
+    }.flatten
   }
 
   private def legacyOnPageLoad(period: Period)(implicit hc: HeaderCarrier, request: RegistrationRequest[_]): Future[Result] = {
@@ -223,4 +234,14 @@ class PreviousReturnController @Inject()(
       )
     )
   }
+
+  private def isCurrentlyExcluded(exclusion: Option[ExcludedTrader]): Boolean = {
+    exclusion.exists(_.exclusionReason != ExclusionReason.Reversal)
+  }
+
+  private def hasActiveWindowExpired(dueDate: LocalDate): Boolean = {
+    val today = LocalDate.now(clock)
+    today.isAfter(dueDate.plusYears(3))
+  }
 }
+

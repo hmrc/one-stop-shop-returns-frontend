@@ -258,8 +258,8 @@ object Country {
     Country("XI", "Northern Ireland")
 
   val euCountriesWithNI: Seq[Country] = {
-    val positionOfNI = 20
-    euCountries.take(positionOfNI) ++ Seq(northernIreland) ++ euCountries.drop(positionOfNI)
+    val positionOfXI = 20
+    euCountries.take(positionOfXI) ++ Seq(northernIreland) ++ euCountries.drop(positionOfXI)
   }
 
   val internationalCountries: Seq[Country] =
@@ -280,7 +280,7 @@ object Country {
             text = country.name
           )
       }
- 
+
   def getCountryName(countryCode: String): String =
     euCountriesWithNI
       .filter(_.code == countryCode)

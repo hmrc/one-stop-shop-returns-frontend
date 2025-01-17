@@ -22,7 +22,7 @@ import models.etmp.EtmpVatReturnCorrection
 import play.api.i18n.Messages
 import viewmodels.govuk.all.currencyFormat
 
-object PreviousReturnsCorrectionsSummary {
+object PreviousReturnCorrectionsSummary {
 
   case class CorrectionRow(
                             period: String,

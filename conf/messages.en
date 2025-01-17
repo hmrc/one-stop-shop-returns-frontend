@@ -626,6 +626,11 @@ newPreviousReturn.summary.returnReference = Return reference
 newPreviousReturn.summary.paymentReference = Payment reference
 newPreviousReturn.payNow = Pay now
 newPreviousReturn.details = Details
+newPreviousReturn.otherCountryVatOwed = You must pay any outstanding VAT from this return directly to the countries where you made your sales.
+
+newPreviousReturn.salesToEu.title = Sales from {0}
+newPreviousReturn.salesToEu.allNetSales = Sales excluding VAT
+newPreviousReturn.salesToEu.allVatSales = VAT
 
 newPreviousReturn.corrections.title = Corrections
 
@@ -634,6 +639,8 @@ newPreviousReturn.corrections.p1 = The tax authorities in countries where you de
 
 newPreviousReturn.vatOwed.title = VAT owed
 newPreviousReturn.vatOwed.titleWithCorrections = VAT owed (including corrections)
+
+newPreviousReturn.totalVat.title = Total VAT payable
 
 
 

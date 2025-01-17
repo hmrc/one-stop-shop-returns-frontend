@@ -18,25 +18,17 @@ package controllers
 
 import config.Constants.submittedReturnsPeriodsLimit
 import config.FrontendAppConfig
-import connectors.financialdata.FinancialDataConnector
 import connectors.VatReturnConnector
-import connectors.corrections.CorrectionConnector
+import connectors.financialdata.FinancialDataConnector
 import controllers.actions.*
 import logging.Logging
-import models.Quarter.Q3
-import models.{Period, StandardPeriod}
-import models.corrections.CorrectionPayload
-import models.domain.VatReturn
-import models.etmp.EtmpVatReturn
+import models.Period
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.requests.RegistrationRequest
-import models.responses.NotFound as ResponseNotFound
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.{ObligationsService, VatReturnSalesService}
-import uk.gov.hmrc.http.HeaderCarrier
+import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax.FutureOps
 import views.html.SubmittedReturnsHistoryView
 
 import java.time.{Clock, LocalDate}
@@ -49,8 +41,6 @@ class SubmittedReturnsHistoryController @Inject()(
                                                    view: SubmittedReturnsHistoryView,
                                                    financialDataConnector: FinancialDataConnector,
                                                    vatReturnConnector: VatReturnConnector,
-//                                                   correctionConnector: CorrectionConnector,
-//                                                   vatReturnSalesService: VatReturnSalesService,
                                                    obligationService: ObligationsService,
                                                    clock: Clock,
                                                  )(implicit ec: ExecutionContext)
@@ -85,7 +75,6 @@ class SubmittedReturnsHistoryController @Inject()(
   private def getFinancialInformation()(implicit request: RegistrationRequest[_]): Future[CurrentPayments] = {
     financialDataConnector.getFinancialData(request.vrn).map {
       case Right(vatReturnsWithFinancialData) =>
-        println(s"vatReturnsWithFinancialData: $vatReturnsWithFinancialData")
         vatReturnsWithFinancialData
       case Left(e) =>
         logger.error(s"There were some errors: $e")
@@ -98,22 +87,7 @@ class SubmittedReturnsHistoryController @Inject()(
                                         currentPayments: CurrentPayments
                                       ): Map[Period, Payment] = {
 
-//    val allPayments = currentPayments.allOutstandingPayments ++ currentPayments.excludedPayments
-
-// TODO - Remove test data
-    val myPeriod = StandardPeriod(2021, Q3)
-    val allPayments = CurrentPayments(
-      duePayments = Seq(Payment(
-        period = myPeriod,
-        amountOwed = BigDecimal(1500),
-        dateDue = myPeriod.paymentDeadline,
-        paymentStatus = PaymentStatus.Unpaid
-      )),
-      overduePayments = Seq.empty,
-      excludedPayments = Seq.empty,
-      totalAmountOwed = BigDecimal(1500),
-      totalAmountOverdue = BigDecimal(1500)
-    ).allOutstandingPayments
+    val allPayments = currentPayments.allOutstandingPayments ++ currentPayments.excludedPayments
 
     periods.flatMap { period =>
       allPayments.find(_.period == period) match {
@@ -129,37 +103,6 @@ class SubmittedReturnsHistoryController @Inject()(
 
   }
 
-//  private def mapPeriodToPayment(vatReturn: VatReturn, maybeCorrectionPayload: Option[CorrectionPayload]): Map[Period, Payment] = {
-//    val amountOwedFromReturn = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
-//
-//    val paymentStatus = if (amountOwedFromReturn == 0) {
-//      PaymentStatus.NilReturn
-//    } else {
-//      PaymentStatus.Unknown // TODO check why is this set as paid, rather than unknown?
-//    }
-//
-//    Map(vatReturn.period -> Payment(
-//      period = StandardPeriod.fromPeriod(vatReturn.period),
-//      amountOwed = 0,
-//      dateDue = vatReturn.period.paymentDeadline,
-//      paymentStatus = paymentStatus
-//    ))
-//  }
-
-//  private def mapPeriodToPayment(vatReturn: EtmpVatReturn, period: Period): Map[Period, Payment] = {
-//    val paymentStatus = if (vatReturn.correctionPreviousVATReturn.isEmpty && vatReturn.goodsSupplied.isEmpty) {
-//      PaymentStatus.NilReturn
-//    } else {
-//      PaymentStatus.Unknown // TODO check why is this set as paid, rather than unknown?
-//    }
-//    Map(period -> Payment(
-//      period = StandardPeriod.fromPeriod(period),
-//      amountOwed = 0, // TODO Show original return amount???
-//      dateDue = period.paymentDeadline,
-//      paymentStatus = paymentStatus
-//    ))
-//  }
-
   private def getPeriodsWithinSixYears(periods: Seq[Period]): Seq[Period] = {
     val endOfPreviousPeriod = LocalDate.now(clock).withDayOfMonth(1).minusDays(1)
     periods.filter { period =>
@@ -172,36 +115,5 @@ class SubmittedReturnsHistoryController @Inject()(
     val periodsWithinSixYears = getPeriodsWithinSixYears(periods)
     periods.filter(period => periodsWithinSixYears.contains(period))
   }
-
-//  private def newPaymentInfoForPeriods(period: Period)(implicit hc: HeaderCarrier): Future[Map[Period, Payment]] = {
-//    println(s"Hello")
-//    vatReturnConnector.getEtmpVatReturn(period).map {
-//      case Right(etmpVatReturn) =>
-//        mapPeriodToPayment(etmpVatReturn, period)
-//      case Left(error) =>
-//        val message = s"Failed to retrieve ETMP VAT return for period: $period with error: $error"
-//        logger.error(message)
-//        throw new Exception(message)
-//    }
-//  }
-
-//  private def legacyPaymentInfoForPeriods(period: Period)(implicit hc: HeaderCarrier): Future[Map[Period, Payment]] = {
-//    vatReturnConnector.get(period).flatMap {
-//      case Right(vatReturn) =>
-//        correctionConnector.get(period).map {
-//          case Right(correctionPayload) =>
-//            mapPeriodToPayment(vatReturn, Some(correctionPayload))
-//          case Left(ResponseNotFound) =>
-//            mapPeriodToPayment(vatReturn, None)
-//          case _ =>
-//            val errorMessage = "Was unable to get a correction response for fallback payment info"
-//            logger.error(errorMessage)
-//            throw new Exception(errorMessage)
-//        }
-//      case Left(error) =>
-//        val message = s"Failed to retrieve VAT return for period: $period with error: $error"
-//        logger.error(message)
-//        throw new Exception(message)
-//    }
-//  }
 }
+

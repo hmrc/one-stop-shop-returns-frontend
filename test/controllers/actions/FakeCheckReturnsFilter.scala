@@ -17,8 +17,8 @@
 package controllers.actions
 
 import connectors.VatReturnConnector
-import models.{Period, StandardPeriod}
 import models.requests.OptionalDataRequest
+import models.{Period, StandardPeriod}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 import repositories.CachedVatReturnRepository

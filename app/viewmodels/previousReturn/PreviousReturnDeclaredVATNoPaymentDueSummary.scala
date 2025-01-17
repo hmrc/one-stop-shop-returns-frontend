@@ -27,7 +27,7 @@ import viewmodels.govuk.all.currencyFormat
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
 
-object PreviousReturnsDeclaredVATNoPaymentDueSummary {
+object PreviousReturnDeclaredVATNoPaymentDueSummary {
 
   def summaryRowsOfNegativeAndZeroValues(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): Seq[SummaryListRow] = {
     calculateNegativeAndZeroCorrections(etmpVatReturn).map {

@@ -18,9 +18,9 @@ package controllers.actions
 
 import connectors.VatReturnConnector
 import controllers.routes
-import models.{Period, StandardPeriod}
 import models.requests.OptionalDataRequest
 import models.responses.NotFound
+import models.{Period, StandardPeriod}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import repositories.CachedVatReturnRepository
@@ -30,10 +30,14 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckReturnsFilterImpl(period: Period, repository: CachedVatReturnRepository, connector: VatReturnConnector)
+class CheckReturnsFilterImpl(
+                              period: Period,
+                              repository: CachedVatReturnRepository,
+                              connector: VatReturnConnector
+                            )
                             (implicit val executionContext: ExecutionContext)
   extends ActionFilter[OptionalDataRequest] {
-  
+
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
