@@ -666,7 +666,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 vatOwedSummaryList,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                vatOwedInPence = (outstandingAmount * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -737,7 +738,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 vatOwedSummaryList,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                vatOwedInPence = (outstandingAmount * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -818,7 +820,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 vatOwedSummaryList,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                vatOwedInPence = (outstandingAmount * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -895,7 +898,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 vatOwedSummaryList,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                vatOwedInPence = (outstandingAmount * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -964,7 +968,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 vatOwedSummaryList,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                vatOwedInPence = (outstandingAmount * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -1051,7 +1056,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                   vatOwedSummaryList,
                   displayPayNow = false,
                   outstandingAmount,
-                  returnIsExcludedAndOutstandingAmount = false
+                  returnIsExcludedAndOutstandingAmount = false,
+                  vatOwedInPence = (outstandingAmount * 100).toLong
                 )(request, messages(application)).toString
             }
           }
@@ -1119,7 +1125,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                   vatOwedSummaryList,
                   displayPayNow = false,
                   outstandingAmount,
-                  returnIsExcludedAndOutstandingAmount = true
+                  returnIsExcludedAndOutstandingAmount = true,
+                  vatOwedInPence = (outstandingAmount * 100).toLong
                 )(request, messages(application)).toString
             }
           }
@@ -1193,7 +1200,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 vatOwedSummaryList,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                vatOwedInPence = (outstandingAmount * 100).toLong
               )(request, messages(application)).toString
           }
         }

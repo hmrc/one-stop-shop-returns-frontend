@@ -37,8 +37,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import viewmodels.govuk.summarylist.*
-import viewmodels.previousReturn.corrections.CorrectionSummary
 import viewmodels.previousReturn.*
+import viewmodels.previousReturn.corrections.CorrectionSummary
 import views.html.{NewPreviousReturnView, PreviousReturnView}
 
 import java.time.{Clock, LocalDate}
@@ -101,6 +101,8 @@ class PreviousReturnController @Inject()(
 
             val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, outstandingAmount, period))
 
+            val vatOwedInPence: Long = (outstanding * 100).toLong
+
             partialReturnPeriodService.getPartialReturnPeriod(request.registration, period).map { maybePartialReturnPeriod =>
               Ok(newView(
                 period = maybePartialReturnPeriod.getOrElse(period),
@@ -111,7 +113,8 @@ class PreviousReturnController @Inject()(
                 vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn),
                 displayPayNow = displayPayNow,
                 totalVatPayable = outstanding,
-                returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount
+                returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount,
+                vatOwedInPence = vatOwedInPence
               ))
             }
 

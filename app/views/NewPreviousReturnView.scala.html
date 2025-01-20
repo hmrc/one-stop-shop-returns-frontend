@@ -31,7 +31,8 @@
         vatOwedSummaryList: SummaryList,
         displayPayNow: Boolean,
         totalVatPayable: BigDecimal,
-        returnIsExcludedAndOutstandingAmount: Boolean
+        returnIsExcludedAndOutstandingAmount: Boolean,
+        vatOwedInPence: Long
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("newPreviousReturn.title", period.displayText))) {
@@ -48,7 +49,9 @@
 
   @if(displayPayNow) {
     <p class="govuk-!-margin-bottom-5">
-      <a class="govuk-button" id="pay-now" href="">@messages("newPreviousReturn.payNow")</a>
+      <a class="govuk-button" id="pay-now" href="@routes.PaymentController.makePayment(period, vatOwedInPence).url">
+      @messages("newPreviousReturn.payNow")
+      </a>
     </p>
   }
 
