@@ -160,15 +160,12 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
       when(mockCorrectionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(List.empty)
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any()))
-        .thenReturn(Future.successful(validAnswer))
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
           .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
-          .overrides(bind[VatReturnService].toInstance(mockService))
           .build()
 
       running(application) {
@@ -248,14 +245,11 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(previousVatReturn))
       when(mockCorrectionService.getCorrectionsForPeriod(any())(any(), any()))
         .thenReturn(Future.successful(List(previousCorrection)))
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any()))
-        .thenReturn(Future.successful(BigDecimal(300)))
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
         .overrides(
           bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-          bind[CorrectionService].toInstance(mockCorrectionService),
-          bind[VatReturnService].toInstance(mockService)
+          bind[CorrectionService].toInstance(mockCorrectionService)
         )
         .build()
 

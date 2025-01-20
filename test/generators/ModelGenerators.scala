@@ -19,11 +19,11 @@ package generators
 import connectors.SavedUserAnswers
 import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
-import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus, EtmpVatRateType, EtmpVatReturn, EtmpVatReturnBalanceOfVatDue, EtmpVatReturnCorrection, EtmpVatReturnGoodsSupplied}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate as DomainVatRate, VatRateType as DomainVatRateType}
+import models.etmp.*
 import models.financialdata.Charge
-import models.registration._
-import models.{domain, _}
+import models.registration.*
+import models.{domain, *}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
@@ -444,7 +444,7 @@ trait ModelGenerators {
     }
 
 
-  implicit lazy val arbitraryEtmpVatReturn: Arbitrary[EtmpVatReturn] =
+  implicit lazy val arbitraryEtmpVatReturn: Arbitrary[EtmpVatReturn] = {
     Arbitrary {
       for {
         returnReference <- arbitrary[String]
@@ -480,5 +480,22 @@ trait ModelGenerators {
         totalVATAmountDueForAllMSGBP = totalVATAmountDueForAllMSGBP,
         paymentReference = paymentReference
       )
+    }
+  }
+
+    implicit lazy val arbitraryPartialReturnPeriod: Arbitrary[PartialReturnPeriod] = {
+      Arbitrary {
+        for {
+          firstDay <- arbitraryPeriod.arbitrary.map(_.firstDay)
+          lastDay <- arbitraryPeriod.arbitrary.map(_.lastDay)
+          year <- arbitraryPeriod.arbitrary.map(_.year)
+          quarter <- arbitraryPeriod.arbitrary.map(_.quarter)
+        } yield PartialReturnPeriod(
+          firstDay = firstDay,
+          lastDay = lastDay,
+          year = year,
+          quarter = quarter
+        )
+      }
     }
 }

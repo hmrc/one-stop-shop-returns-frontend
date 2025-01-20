@@ -37,7 +37,7 @@ object PreviousReturnTotalNetValueOfSalesSummary {
 
         val countryRows = goodsSuppliedFromCountry.map { singleGoodsSupplied =>
           SalesToCountryRow(
-            country = getCountryName(singleGoodsSupplied.msOfConsumption),
+            country = messages("newPreviousReturn.salesToEu.toCountry", getCountryName(singleGoodsSupplied.msOfConsumption)),
             salesAmount = currencyFormat(singleGoodsSupplied.taxableAmountGBP),
             vatAmount = currencyFormat(singleGoodsSupplied.vatAmountGBP)
           )

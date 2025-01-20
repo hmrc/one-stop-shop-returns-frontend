@@ -631,6 +631,7 @@ newPreviousReturn.otherCountryVatOwed = You must pay any outstanding VAT from th
 newPreviousReturn.salesToEu.title = Sales from {0}
 newPreviousReturn.salesToEu.allNetSales = Sales excluding VAT
 newPreviousReturn.salesToEu.allVatSales = VAT
+newPreviousReturn.salesToEu.toCountry = To {0}
 
 newPreviousReturn.corrections.title = Corrections
 
