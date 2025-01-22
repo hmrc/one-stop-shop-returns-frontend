@@ -17,10 +17,10 @@
 package controllers.corrections
 
 import connectors.VatReturnConnector
-import controllers.actions._
+import controllers.actions.*
 import forms.corrections.CorrectionCountryFormProvider
 import models.{Index, Mode, Period}
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
+import pages.corrections.CorrectionCountryPage
 import play.api.i18n.I18nSupport
 import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -43,68 +43,62 @@ class CorrectionCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period) {
+  def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
+    cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
-      val form = formProvider(countryIndex,
-        request.userAnswers
-          .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
+      correctionService.getCorrectionReturnPeriod(periodIndex) { correctionReturnPeriod =>
+        val form = formProvider(countryIndex,
+          request.userAnswers
+            .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
 
-      val preparedForm = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
-
-      request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
-        case Some(correctionPeriod) => Ok(view(preparedForm, mode, request.userAnswers.period, periodIndex, correctionPeriod, countryIndex))
-        case None => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
+        val preparedForm = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
+          case None => form
+          case Some(value) => form.fill(value)
+        }
+        Future.successful(Ok(view(preparedForm, mode, request.userAnswers.period, periodIndex, correctionReturnPeriod, countryIndex)))
       }
   }
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
-      val form = formProvider(countryIndex,
-        request.userAnswers
-          .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
+      correctionService.getCorrectionReturnPeriod(periodIndex) { correctionReturnPeriod =>
+        val form = formProvider(countryIndex,
+          request.userAnswers
+            .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
-            case Some(correctionPeriod) => Future.successful(BadRequest(view(
+        form.bindFromRequest().fold(
+          formWithErrors =>
+            Future.successful(BadRequest(view(
               formWithErrors,
               mode,
               request.userAnswers.period,
               periodIndex,
-              correctionPeriod,
+              correctionReturnPeriod,
               countryIndex
-            )))
-            case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
-          },
+            ))),
 
         value =>
-          request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
-            case Some(correctionPeriod) =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
-                _ <- cc.sessionRepository.set(updatedAnswers)
-                vatReturnResult <- vatReturnConnector.get(correctionPeriod)
-                correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionPeriod)
-              } yield {
-                vatReturnResult match {
-                  case Right(vatReturn) => {
-                    val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
-                    val countriesFromEU = vatReturn.salesFromEu.flatMap(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption))
-                    val allRecipientCountries = (countriesFromNi ::: countriesFromEU ::: correctionsForPeriod.map(_.correctionCountry).toList).distinct
+          for {
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
+            _ <- cc.sessionRepository.set(updatedAnswers)
+            vatReturnResult <- vatReturnConnector.get(correctionReturnPeriod)
+            correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionReturnPeriod)
+          } yield {
+            vatReturnResult match {
+              case Right(vatReturn) => {
+                val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
+                val countriesFromEU = vatReturn.salesFromEu.flatMap(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption))
+                val allRecipientCountries = (countriesFromNi ::: countriesFromEU ::: correctionsForPeriod.map(_.correctionCountry).toList).distinct
 
-                    Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, allRecipientCountries))
-                  }
-                  case Left(value) =>
-                    logger.error(s"there was an error $value")
-                    throw new Exception(value.toString)
-                }
+                Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, allRecipientCountries))
               }
-            case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
+              case Left(value) =>
+                logger.error(s"there was an error $value")
+                throw new Exception(value.toString)
+            }
           }
 
-      )
+        )
+      }
   }
 }

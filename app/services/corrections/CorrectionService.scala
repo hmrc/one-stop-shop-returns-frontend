@@ -16,14 +16,17 @@
 
 package services.corrections
 
-import cats.implicits._
+import cats.implicits.*
 import connectors.corrections.CorrectionConnector
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
+import models.requests.DataRequest
 import models.requests.corrections.CorrectionRequest
 import models.{Country, DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.Lang.logger
-import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
+import play.api.mvc.Results.Redirect
+import play.api.mvc.{AnyContent, Result}
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionPeriodQuery, CorrectionToCountryQuery}
 import services.PeriodService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
@@ -112,6 +115,15 @@ class CorrectionService @Inject()(
         throw new Exception(error.toString)
     }
   }
+
+  def getCorrectionReturnPeriod(periodIndex: Index)
+                                         (block: Period => Future[Result])
+                                         (implicit request: DataRequest[AnyContent]): Future[Result] =
+    request.userAnswers
+      .get(CorrectionPeriodQuery(periodIndex))
+      .map(_.correctionReturnPeriod)
+      .map(block(_))
+      .getOrElse(Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())))
 
   def getReturnCorrectionValue(country: Country, period: Period)(implicit hc: HeaderCarrier): Future[ReturnCorrectionValue] =
     connector.getReturnCorrectionValue(country.code, period)
