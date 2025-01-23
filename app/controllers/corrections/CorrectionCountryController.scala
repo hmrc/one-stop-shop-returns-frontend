@@ -38,7 +38,7 @@ class CorrectionCountryController @Inject()(
                                              vatReturnConnector: VatReturnConnector,
                                              view: CorrectionCountryView,
                                              correctionService: CorrectionService
-                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with CorrectionBaseController {
 
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -46,7 +46,7 @@ class CorrectionCountryController @Inject()(
   def onPageLoad(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
     cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
-      correctionService.getCorrectionReturnPeriod(periodIndex) { correctionReturnPeriod =>
+      getCorrectionReturnPeriod(periodIndex) { correctionReturnPeriod =>
         val form = formProvider(countryIndex,
           request.userAnswers
             .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
@@ -61,7 +61,7 @@ class CorrectionCountryController @Inject()(
 
   def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
-      correctionService.getCorrectionReturnPeriod(periodIndex) { correctionReturnPeriod =>
+      getCorrectionReturnPeriod(periodIndex) { correctionReturnPeriod =>
         val form = formProvider(countryIndex,
           request.userAnswers
             .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
