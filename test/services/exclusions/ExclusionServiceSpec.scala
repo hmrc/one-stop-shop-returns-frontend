@@ -75,8 +75,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       val fulfilledObligations = Seq(
         EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, finalReturnPeriod.toEtmpPeriodString(finalReturnPeriod))
       )
-
-      println(s"finalReturnPeriod : ${finalReturnPeriod.toEtmpPeriodString(period)}")
+      
       when(mockObligationService.getFulfilledObligations(excludedTrader.vrn)(hc)) thenReturn Future.successful(fulfilledObligations)
 
       exclusionService.hasSubmittedFinalReturn(mockRegistrationRequest.registration)(hc, ec).futureValue mustBe true
