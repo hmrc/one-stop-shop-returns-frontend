@@ -18,6 +18,7 @@ package services.corrections
 
 import cats.implicits.*
 import connectors.corrections.CorrectionConnector
+import connectors.VatReturnConnector
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
 import models.requests.corrections.CorrectionRequest
 import models.{Country, DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult}
@@ -34,8 +35,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionService @Inject()(
                                    periodService: PeriodService,
-                                   connector: CorrectionConnector
-                                 ) {
+                                   connector: CorrectionConnector,
+                                   vatReturnConnector: VatReturnConnector
+                                 )(implicit ec: ExecutionContext) {
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, commencementDate: LocalDate): ValidationResult[CorrectionRequest] = {
     if (firstPeriod(period, commencementDate)) {
@@ -115,4 +117,41 @@ class CorrectionService @Inject()(
   
   def getReturnCorrectionValue(country: Country, period: Period)(implicit hc: HeaderCarrier): Future[ReturnCorrectionValue] =
     connector.getReturnCorrectionValue(country.code, period)
+
+  def getAccumulativeVatForCountryTotalAmount(
+                                               vrn: Vrn,
+                                               country: Country,
+                                               correctionPeriod: Period
+                                             )(implicit hc: HeaderCarrier): Future[(Boolean, BigDecimal)] = {
+    for {
+      returnCorrectionValue <- getReturnCorrectionValue(country, correctionPeriod)
+      correctionReturn <- vatReturnConnector.get(correctionPeriod)
+    } yield {
+      val (isPreviouslyDeclaredCountry, totalVatAmount) = correctionReturn match {
+        case Right(vatReturn) =>
+          val niVatForCountry = vatReturn.salesFromNi
+            .filter(_.countryOfConsumption == country)
+            .flatMap(_.amounts)
+            .map(_.vatOnSales.amount)
+            .sum
+          
+          val euVatForCountry = vatReturn.salesFromEu
+            .flatMap(_.sales)
+            .filter(_.countryOfConsumption == country)
+            .flatMap(_.amounts)
+            .map(_.vatOnSales.amount)
+            .sum
+          
+          val totalVatForCountry = niVatForCountry + euVatForCountry
+          
+          val isDeclared = totalVatForCountry > 0 || returnCorrectionValue.maximumCorrectionValue != 0
+
+          (isDeclared, totalVatForCountry)
+          
+        case Left(error) => throw new IllegalStateException(s"Unable to get vat return for accumulating correction total $error")
+      }
+
+      (isPreviouslyDeclaredCountry, totalVatAmount + returnCorrectionValue.maximumCorrectionValue)
+    }
+  }
 }

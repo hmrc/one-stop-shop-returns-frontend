@@ -16,6 +16,7 @@
 
 package controllers.corrections
 
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import controllers.actions.*
 import forms.corrections.CorrectionCountryFormProvider
@@ -24,7 +25,7 @@ import pages.corrections.CorrectionCountryPage
 import play.api.i18n.I18nSupport
 import play.api.i18n.Lang.logger
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.corrections.AllCorrectionCountriesQuery
+import queries.corrections.{AllCorrectionCountriesQuery, PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 import services.corrections.CorrectionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionCountryView
@@ -37,7 +38,8 @@ class CorrectionCountryController @Inject()(
                                              formProvider: CorrectionCountryFormProvider,
                                              vatReturnConnector: VatReturnConnector,
                                              view: CorrectionCountryView,
-                                             correctionService: CorrectionService
+                                             correctionService: CorrectionService,
+                                             config: FrontendAppConfig
                                            )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with CorrectionBaseController {
 
 
@@ -79,19 +81,35 @@ class CorrectionCountryController @Inject()(
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
-            _ <- cc.sessionRepository.set(updatedAnswers)
+            updatedAnswers <- if (config.strategicReturnApiEnabled) {
+              for {
+                (isPreviouslyDeclared, accumulativeVatForCountryTotalAmount) <- correctionService
+                  .getAccumulativeVatForCountryTotalAmount(request.vrn, value, correctionReturnPeriod)
+
+                updated <- Future.fromTry(request.userAnswers.set(
+                  CorrectionCountryPage(periodIndex, countryIndex), value
+                ).flatMap(_.set(
+                  PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex),
+                  PreviouslyDeclaredCorrectionAmount(isPreviouslyDeclared, accumulativeVatForCountryTotalAmount)
+                )))
+              } yield updated
+              
+            } else {
+             Future.fromTry (request.userAnswers.set (CorrectionCountryPage (periodIndex, countryIndex), value))
+            }
+            
+            _ <- cc.sessionRepository.set (updatedAnswers)
             vatReturnResult <- vatReturnConnector.get(correctionReturnPeriod)
             correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionReturnPeriod)
           } yield {
             vatReturnResult match {
-              case Right(vatReturn) => {
+              case Right(vatReturn) =>
                 val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
                 val countriesFromEU = vatReturn.salesFromEu.flatMap(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption))
                 val allRecipientCountries = (countriesFromNi ::: countriesFromEU ::: correctionsForPeriod.map(_.correctionCountry).toList).distinct
 
-                Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, allRecipientCountries))
-              }
+                Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, allRecipientCountries, config.strategicReturnApiEnabled))
+
               case Left(value) =>
                 logger.error(s"there was an error $value")
                 throw new Exception(value.toString)
