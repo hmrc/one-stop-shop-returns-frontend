@@ -19,6 +19,7 @@ package services.corrections
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
+import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import models.{Country, DataMissingError, Index, StandardPeriod}
 import models.Quarter.{Q1, Q2}
@@ -26,11 +27,11 @@ import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCor
 import models.requests.corrections.CorrectionRequest
 import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections._
+import pages.corrections.*
 import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
 import services.PeriodService
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,6 +41,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
+  implicit private lazy val ec: ExecutionContext = ExecutionContext.global
 
   ".fromUserAnswers" - {
 
@@ -243,7 +245,8 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
     protected val periodService: PeriodService = mock[PeriodService]
     protected val connector: CorrectionConnector = mock[CorrectionConnector]
-    protected val service = new CorrectionService(periodService, connector)
+    protected val vatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
+    protected val service = new CorrectionService(periodService, connector, vatReturnConnector)
 
   }
 

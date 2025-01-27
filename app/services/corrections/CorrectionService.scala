@@ -127,31 +127,18 @@ class CorrectionService @Inject()(
       returnCorrectionValue <- getReturnCorrectionValue(country, correctionPeriod)
       correctionReturn <- vatReturnConnector.get(correctionPeriod)
     } yield {
-      val (isPreviouslyDeclaredCountry, totalVatAmount) = correctionReturn match {
+      val isPreviouslyDeclaredCountry: Boolean = correctionReturn match {
         case Right(vatReturn) =>
-          val niVatForCountry = vatReturn.salesFromNi
-            .filter(_.countryOfConsumption == country)
-            .flatMap(_.amounts)
-            .map(_.vatOnSales.amount)
-            .sum
+          val niVatForCountry = vatReturn.salesFromNi.exists(_.countryOfConsumption == country)
           
-          val euVatForCountry = vatReturn.salesFromEu
-            .flatMap(_.sales)
-            .filter(_.countryOfConsumption == country)
-            .flatMap(_.amounts)
-            .map(_.vatOnSales.amount)
-            .sum
-          
-          val totalVatForCountry = niVatForCountry + euVatForCountry
-          
-          val isDeclared = totalVatForCountry > 0 || returnCorrectionValue.maximumCorrectionValue != 0
+          val euVatForCountry = vatReturn.salesFromEu.exists(_.countryOfSale == country)
 
-          (isDeclared, totalVatForCountry)
-          
+          niVatForCountry || euVatForCountry || returnCorrectionValue.maximumCorrectionValue != 0
+
         case Left(error) => throw new IllegalStateException(s"Unable to get vat return for accumulating correction total $error")
       }
 
-      (isPreviouslyDeclaredCountry, totalVatAmount + returnCorrectionValue.maximumCorrectionValue)
+      (isPreviouslyDeclaredCountry, returnCorrectionValue.maximumCorrectionValue)
     }
   }
 }

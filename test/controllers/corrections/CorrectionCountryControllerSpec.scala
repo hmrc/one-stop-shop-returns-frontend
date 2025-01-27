@@ -17,18 +17,19 @@
 package controllers.corrections
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import forms.corrections.CorrectionCountryFormProvider
 import models.responses.UnexpectedResponseStatus
 import models.{Country, Index, NormalMode}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.UserAnswersRepository
 import services.corrections.CorrectionService
 import views.html.corrections.CorrectionCountryView
@@ -39,8 +40,10 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new CorrectionCountryFormProvider()
   private val form = formProvider(index, Seq.empty)
+  private val mockFrontendAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
   val country: Country = arbitrary[Country].sample.value
   val country2: Country = arbitrary[Country].retryUntil(_ != country).sample.value
+  val strategicReturnsEnabled: Boolean = mockFrontendAppConfig.strategicReturnApiEnabled
 
   private lazy val correctionCountryRoute = controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, period, index, index).url
 
@@ -151,7 +154,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq()).url
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq(), strategicReturnsEnabled).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
       }
     }
@@ -184,7 +187,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq(country)).url
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq(country), strategicReturnsEnabled).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
       }
     }
@@ -220,7 +223,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionCountryPage(index, Index(1)).navigate(NormalMode, expectedAnswers2, Seq()).url
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, Index(1)).navigate(NormalMode, expectedAnswers2, Seq(), strategicReturnsEnabled).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
       }
     }
