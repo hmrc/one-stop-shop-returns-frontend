@@ -39,6 +39,9 @@ trait SummaryListFluency {
 
     def withAttribute(attribute: (String, String)): SummaryList =
       list copy (attributes = list.attributes + attribute)
+
+    def withCard(card: Card): SummaryList =
+      list.copy(card = Some(card))
   }
 
   object SummaryListRowViewModel {
@@ -48,7 +51,7 @@ trait SummaryListFluency {
                value: Value
              ): SummaryListRow =
       SummaryListRow(
-        key   = key,
+        key = key,
         value = value
       )
 
@@ -58,8 +61,8 @@ trait SummaryListFluency {
                actions: Seq[ActionItem]
              ): SummaryListRow =
       SummaryListRow(
-        key     = key,
-        value   = value,
+        key = key,
+        value = value,
         actions = Some(Actions(items = actions))
       )
   }
@@ -78,7 +81,7 @@ trait SummaryListFluency {
              ): ActionItem =
       ActionItem(
         content = content,
-        href    = href
+        href = href
       )
   }
 

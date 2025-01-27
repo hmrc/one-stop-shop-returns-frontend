@@ -19,6 +19,7 @@ package utils
 import models.Country
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
+import models.etmp.EtmpVatReturn
 
 object CorrectionUtils {
 
@@ -63,4 +64,31 @@ object CorrectionUtils {
     }
   }
 
+  def calculateNegativeAndZeroCorrections(etmpVatReturn: EtmpVatReturn): Map[String, BigDecimal] = {
+    val allGoodsSuppliedAmountsForCountry = etmpVatReturn.goodsSupplied.groupBy(_.msOfConsumption).flatMap {
+      case (country, goodsSuppliedSales) =>
+        val totalAmount = goodsSuppliedSales.map(_.vatAmountGBP).sum
+
+        Map(country -> totalAmount)
+    }
+
+    val allCorrectionAmountsForCountry = etmpVatReturn.correctionPreviousVATReturn.groupBy(_.msOfConsumption).flatMap {
+      case (country, corrections) =>
+        val totalCorrectionAmount = corrections.map(_.totalVATAmountCorrectionGBP).sum
+
+        Map(country -> totalCorrectionAmount)
+    }
+
+    val countriesList = (allGoodsSuppliedAmountsForCountry.keys ++ allCorrectionAmountsForCountry.keys).toList.distinct
+
+    countriesList.flatMap { country =>
+      val goodsSuppliedAmountForCountry = allGoodsSuppliedAmountsForCountry.getOrElse(country, BigDecimal(0))
+      val correctionsAmountForCountry = allCorrectionAmountsForCountry.getOrElse(country, BigDecimal(0))
+
+      Map(country -> (goodsSuppliedAmountForCountry + correctionsAmountForCountry))
+    }.toMap.filter {
+      case (_, vatAmount) =>
+        vatAmount <= 0
+    }
+  }
 }

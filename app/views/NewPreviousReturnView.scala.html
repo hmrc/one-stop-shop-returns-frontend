@@ -1,0 +1,171 @@
+@*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import viewmodels.previousReturn.PreviousReturnCorrectionsSummary.CorrectionRow
+@import viewmodels.previousReturn.PreviousReturnTotalNetValueOfSalesSummary.SalesToCountryRow
+
+@this(
+        layout: templates.Layout,
+        govukSummaryList: GovukSummaryList
+)
+
+@(
+        period: Period,
+        mainSummaryList: SummaryList,
+        allEuSales: Map[String, Seq[SalesToCountryRow]],
+        corrections: Seq[CorrectionRow],
+        negativeAndZeroBalanceCorrectionCountries: Seq[SummaryListRow],
+        vatOwedSummaryList: SummaryList,
+        displayPayNow: Boolean,
+        totalVatPayable: BigDecimal,
+        returnIsExcludedAndOutstandingAmount: Boolean,
+        vatOwedInPence: Long
+)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = titleNoForm(messages("newPreviousReturn.title", period.displayText))) {
+
+  <h1 class="govuk-heading-l">@messages("newPreviousReturn.heading", period.displayText)</h1>
+
+  <h2 class="govuk-heading-m">@messages("newPreviousReturn.summary")</h2>
+
+  <div class="govuk-summary-card">
+    <div class="govuk-summary-card__content">
+    @govukSummaryList(mainSummaryList)
+    </div>
+  </div>
+
+  @if(displayPayNow) {
+    <p class="govuk-!-margin-bottom-5">
+      <a class="govuk-button" id="pay-now" href="@routes.PaymentController.makePayment(period, vatOwedInPence).url">
+      @messages("newPreviousReturn.payNow")
+      </a>
+    </p>
+  }
+
+  @if(returnIsExcludedAndOutstandingAmount) {
+    <p class="govuk-!-margin-bottom-5">
+    @messages("newPreviousReturn.otherCountryVatOwed")
+    </p>
+  }
+
+  <h2 class="govuk-heading-m">@messages("newPreviousReturn.details")</h2>
+
+  @for((country, goods) <- allEuSales) {
+    <div class="govuk-summary-card">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">@messages("newPreviousReturn.salesToEu.title", country)</h2>
+      </div>
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list">
+        @for(singleGoods <- goods) {
+          <div class="govuk-summary-list__row corrections-no-border">
+            <dt class="govuk-summary-list__key">
+            @singleGoods.country
+            </dt>
+            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+            @messages("newPreviousReturn.salesToEu.allNetSales")
+            </dd>
+            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+            @Html(singleGoods.salesAmount)
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__row--no-actions"></dt>
+            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+            @messages("newPreviousReturn.salesToEu.allVatSales")
+            </dd>
+            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+            @Html(singleGoods.vatAmount)
+            </dd>
+          </div>
+        }
+        </dl>
+      </div>
+    </div>
+  }
+
+  @if(corrections.nonEmpty) {
+    <div class="govuk-summary-card">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">@messages("newPreviousReturn.corrections.title")</h2>
+      </div>
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list">
+        @for(correctionRow <- corrections) {
+          <div @if(correctionRow.isLastCountry && !correctionRow.isLastPeriod) {
+            class="govuk-summary-list__row"
+          } else {
+            class="govuk-summary-list__row corrections-no-border"}>
+            <dt class="govuk-summary-list__key">
+            @if(correctionRow.isFirst) {
+              @correctionRow.period
+            }
+            </dt>
+            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+            @correctionRow.country
+            </dd>
+            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+            @Html(correctionRow.totalVATAmountCorrectionGBP)
+            </dd>
+          </div>
+        }
+        </dl>
+      </div>
+    </div>
+  }
+
+  @if(negativeAndZeroBalanceCorrectionCountries.nonEmpty) {
+    <div class="govuk-summary-card">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">@messages("newPreviousReturn.corrections.vatDeclarationNotDue")</h2>
+      </div>
+      <div class="govuk-summary-card__content">
+        <p class="govuk-body">@messages("newPreviousReturn.corrections.p1")</p>
+        <dl class="govuk-summary-list">
+        @for(negativeAndZeroBalanceCorrectionCountry <- negativeAndZeroBalanceCorrectionCountries) {
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+            @negativeAndZeroBalanceCorrectionCountry.key.content.asHtml
+            </dt>
+            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+            @negativeAndZeroBalanceCorrectionCountry.value.content.asHtml
+            </dd>
+          </div>
+        }
+        </dl>
+      </div>
+    </div>
+  }
+
+  @if(vatOwedSummaryList.rows.nonEmpty) {
+    @govukSummaryList(vatOwedSummaryList)
+  }
+
+  <div class="govuk-summary-card">
+    <div class="govuk-summary-card__title-wrapper govuk-summary-card__content">
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-card__title govuk-!-font-size-24">
+          @messages("newPreviousReturn.totalVat.title")
+          </dt>
+          <dd class="govuk-summary-list__value govuk-!-font-size-24 govuk-table__cell--numeric govuk-!-width-one-third">
+          @Html(currencyFormatWithAccuracy(totalVatPayable))
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+}

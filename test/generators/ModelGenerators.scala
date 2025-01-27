@@ -19,17 +19,17 @@ package generators
 import connectors.SavedUserAnswers
 import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
-import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate as DomainVatRate, VatRateType as DomainVatRateType}
+import models.etmp.*
 import models.financialdata.Charge
-import models.registration._
-import models.{domain, _}
+import models.registration.*
+import models.{domain, *}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Instant, LocalDate, ZoneOffset}
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
@@ -102,7 +102,7 @@ trait ModelGenerators {
         year <- Gen.choose(2022, 2099)
         quarter <- Gen.oneOf(Quarter.values)
       } yield StandardPeriod(year, quarter)
-  }
+    }
 
   implicit val arbitraryPeriod: Arbitrary[Period] =
     Arbitrary {
@@ -118,7 +118,7 @@ trait ModelGenerators {
         period <- arbitrary[StandardPeriod]
         status <- Gen.oneOf(SubmissionStatus.values)
       } yield PeriodWithStatus(period, status)
-  }
+    }
 
   implicit def arbitraryVrn: Arbitrary[Vrn] = Arbitrary {
     Gen.listOfN(9, Gen.numChar).map(_.mkString).map(Vrn(_))
@@ -132,23 +132,23 @@ trait ModelGenerators {
   implicit lazy val arbitraryInternationalAddress: Arbitrary[InternationalAddress] =
     Arbitrary {
       for {
-        line1         <- arbitrary[String]
-        line2         <- Gen.option(arbitrary[String])
-        townOrCity    <- arbitrary[String]
+        line1 <- arbitrary[String]
+        line2 <- Gen.option(arbitrary[String])
+        townOrCity <- arbitrary[String]
         stateOrRegion <- Gen.option(arbitrary[String])
-        postCode      <- Gen.option(arbitrary[String])
-        country       <- arbitrary[Country]
+        postCode <- Gen.option(arbitrary[String])
+        country <- arbitrary[Country]
       } yield InternationalAddress(line1, line2, townOrCity, stateOrRegion, postCode, country)
     }
 
   implicit lazy val arbitraryUkAddress: Arbitrary[UkAddress] =
     Arbitrary {
       for {
-        line1      <- arbitrary[String]
-        line2      <- Gen.option(arbitrary[String])
+        line1 <- arbitrary[String]
+        line2 <- Gen.option(arbitrary[String])
         townOrCity <- arbitrary[String]
-        county     <- Gen.option(arbitrary[String])
-        postCode   <- arbitrary[String]
+        county <- Gen.option(arbitrary[String])
+        postCode <- arbitrary[String]
       } yield UkAddress(line1, line2, townOrCity, county, postCode)
     }
 
@@ -164,12 +164,12 @@ trait ModelGenerators {
   implicit lazy val arbitraryDesAddress: Arbitrary[DesAddress] =
     Arbitrary {
       for {
-        line1       <- arbitrary[String]
-        line2       <- Gen.option(arbitrary[String])
-        line3       <- Gen.option(arbitrary[String])
-        line4       <- Gen.option(arbitrary[String])
-        line5       <- Gen.option(arbitrary[String])
-        postCode    <- Gen.option(arbitrary[String])
+        line1 <- arbitrary[String]
+        line2 <- Gen.option(arbitrary[String])
+        line3 <- Gen.option(arbitrary[String])
+        line4 <- Gen.option(arbitrary[String])
+        line5 <- Gen.option(arbitrary[String])
+        postCode <- Gen.option(arbitrary[String])
         countryCode <- Gen.listOfN(2, Gen.alphaChar).map(_.mkString)
       } yield DesAddress(line1, line2, line3, line4, line5, postCode, countryCode)
     }
@@ -178,7 +178,7 @@ trait ModelGenerators {
     Arbitrary {
       for {
         tradingName <- arbitrary[String]
-        address     <- arbitrary[InternationalAddress]
+        address <- arbitrary[InternationalAddress]
       } yield TradeDetails(tradingName, address)
     }
 
@@ -190,9 +190,9 @@ trait ModelGenerators {
   implicit lazy val arbitraryContactDetails: Arbitrary[ContactDetails] =
     Arbitrary {
       for {
-        fullName        <- arbitrary[String]
+        fullName <- arbitrary[String]
         telephoneNumber <- arbitrary[String]
-        emailAddress    <- arbitrary[String]
+        emailAddress <- arbitrary[String]
       } yield ContactDetails(fullName, telephoneNumber, emailAddress)
     }
 
@@ -200,17 +200,17 @@ trait ModelGenerators {
     Arbitrary {
       for {
         identifierType <- arbitrary[EuTaxIdentifierType]
-        value          <- arbitrary[Int].map(_.toString)
+        value <- arbitrary[Int].map(_.toString)
       } yield domain.EuTaxIdentifier(identifierType, value)
     }
 
   implicit val arbitraryVatDetails: Arbitrary[VatDetails] =
     Arbitrary {
       for {
-        address  <- arbitrary[Address]
-        source   <- Gen.oneOf(VatDetailSource.values)
+        address <- arbitrary[Address]
+        source <- Gen.oneOf(VatDetailSource.values)
         vatGroup <- arbitrary[Boolean]
-        date     <- datesBetween(LocalDate.of(1900, 1, 1), LocalDate.of(2021, 1, 1))
+        date <- datesBetween(LocalDate.of(1900, 1, 1), LocalDate.of(2021, 1, 1))
       } yield VatDetails(date, address, vatGroup, source)
     }
 
@@ -218,11 +218,11 @@ trait ModelGenerators {
   implicit val arbitraryRegistration: Arbitrary[Registration] =
     Arbitrary {
       for {
-        vrn               <- arbitrary[Vrn]
-        name              <- arbitrary[String]
-        vatDetails        <- arbitrary[VatDetails]
-        contactDetails    <- arbitrary[ContactDetails]
-        commencementDate  <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
+        vrn <- arbitrary[Vrn]
+        name <- arbitrary[String]
+        vatDetails <- arbitrary[VatDetails]
+        contactDetails <- arbitrary[ContactDetails]
+        commencementDate <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
         isOnlineMarketplace <- arbitrary[Boolean]
       } yield Registration(vrn, name, vatDetails, Nil, contactDetails, commencementDate, isOnlineMarketplace, None, None)
     }
@@ -231,16 +231,16 @@ trait ModelGenerators {
     Arbitrary {
       for {
         vatRateType <- Gen.oneOf(DomainVatRateType.values)
-        rate        <- Gen.choose(BigDecimal(0), BigDecimal(100))
+        rate <- Gen.choose(BigDecimal(0), BigDecimal(100))
       } yield DomainVatRate(rate.setScale(2, RoundingMode.HALF_EVEN), vatRateType)
     }
 
   implicit val arbitrarySalesDetails: Arbitrary[SalesDetails] =
     Arbitrary {
       for {
-        vatRate       <- arbitrary[DomainVatRate]
+        vatRate <- arbitrary[DomainVatRate]
         taxableAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
-        vatAmount     <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
+        vatAmount <- Gen.choose(BigDecimal(0), BigDecimal(1000000))
       } yield SalesDetails(
         vatRate,
         taxableAmount.setScale(2, RoundingMode.HALF_EVEN),
@@ -252,7 +252,7 @@ trait ModelGenerators {
     Arbitrary {
       for {
         country <- arbitrary[Country]
-        number  <- Gen.choose(1, 2)
+        number <- Gen.choose(1, 2)
         amounts <- Gen.listOfN(number, arbitrary[SalesDetails])
       } yield SalesToCountry(country, amounts)
     }
@@ -260,23 +260,23 @@ trait ModelGenerators {
   implicit val arbitrarySalesFromEuCountry: Arbitrary[SalesFromEuCountry] =
     Arbitrary {
       for {
-        country       <- arbitrary[Country]
+        country <- arbitrary[Country]
         taxIdentifier <- Gen.option(arbitrary[EuTaxIdentifier])
-        number        <- Gen.choose(1, 3)
-        amounts       <- Gen.listOfN(number, arbitrary[SalesToCountry])
+        number <- Gen.choose(1, 3)
+        amounts <- Gen.listOfN(number, arbitrary[SalesToCountry])
       } yield SalesFromEuCountry(country, taxIdentifier, amounts)
     }
 
   implicit val arbitraryVatReturn: Arbitrary[VatReturn] =
     Arbitrary {
       for {
-        vrn         <- arbitrary[Vrn]
-        period      <- arbitrary[StandardPeriod]
-        niSales     <- Gen.choose(1, 3)
-        euSales     <- Gen.choose(1, 3)
+        vrn <- arbitrary[Vrn]
+        period <- arbitrary[StandardPeriod]
+        niSales <- Gen.choose(1, 3)
+        euSales <- Gen.choose(1, 3)
         salesFromNi <- Gen.listOfN(niSales, arbitrary[SalesToCountry])
         salesFromEu <- Gen.listOfN(euSales, arbitrary[SalesFromEuCountry])
-        now         = Instant.now
+        now = Instant.now
       } yield VatReturn(vrn, period, ReturnReference(vrn, period), PaymentReference(vrn, period), None, None, salesFromNi, salesFromEu, now, now)
     }
 
@@ -334,10 +334,10 @@ trait ModelGenerators {
   implicit val arbitrarySavedUserAnswers: Arbitrary[SavedUserAnswers] =
     Arbitrary {
       for {
-        vrn         <- arbitrary[Vrn]
-        period      <- arbitrary[StandardPeriod]
-        data        = JsObject(Seq("test" -> Json.toJson("test")))
-        now         = Instant.now
+        vrn <- arbitrary[Vrn]
+        period <- arbitrary[StandardPeriod]
+        data = JsObject(Seq("test" -> Json.toJson("test")))
+        now = Instant.now
       } yield SavedUserAnswers(vrn, period, data, now)
     }
 
@@ -352,7 +352,7 @@ trait ModelGenerators {
         singleMarketIndicator <- Gen.option(arbitrary[Boolean])
         deregistrationDecisionDate <- Gen.option(arbitrary[LocalDate])
 
-      } yield VatCustomerInfo(address,registrationDate,partOfVatGroup, organisationName, individualName, singleMarketIndicator, deregistrationDecisionDate)
+      } yield VatCustomerInfo(address, registrationDate, partOfVatGroup, organisationName, individualName, singleMarketIndicator, deregistrationDecisionDate)
     }
 
   implicit val arbitraryReturnCorrectionValue: Arbitrary[ReturnCorrectionValue] =
@@ -381,6 +381,121 @@ trait ModelGenerators {
         EtmpObligations(Seq(EtmpObligation(
           obligationDetails = obligationDetails
         )))
+      }
+    }
+
+  implicit lazy val arbitraryEtmpVatReturnGoodsSupplied: Arbitrary[EtmpVatReturnGoodsSupplied] = {
+    Arbitrary {
+      for {
+        msOfConsumption <- arbitraryCountry.arbitrary.map(_.code)
+        msOfEstablishment <- arbitraryCountry.arbitrary.map(_.code)
+        vatRateType <- Gen.oneOf(EtmpVatRateType.values)
+        taxableAmountGBP <- arbitrary[BigDecimal]
+        vatAmountGBP <- arbitrary[BigDecimal]
+      } yield EtmpVatReturnGoodsSupplied(
+        msOfConsumption = msOfConsumption,
+        msOfEstablishment = msOfEstablishment,
+        vatRateType = vatRateType,
+        taxableAmountGBP = taxableAmountGBP,
+        vatAmountGBP = vatAmountGBP
+      )
+    }
+  }
+
+  implicit lazy val arbitraryPeriodKey: Arbitrary[String] = {
+    Arbitrary {
+      for {
+        year <- Gen.oneOf(21, 99)
+        quarter <- arbitraryQuarter.arbitrary
+      } yield s"${year}$quarter"
+    }
+  }
+
+  implicit lazy val arbitraryEtmpVatReturnCorrection: Arbitrary[EtmpVatReturnCorrection] =
+    Arbitrary {
+      for {
+        periodKey <- arbitraryPeriodKey.arbitrary
+        periodFrom <- arbitrary[String]
+        periodTo <- arbitrary[String]
+        msOfConsumption <- arbitraryCountry.arbitrary.map(_.code)
+        totalVATAmountCorrectionGBP <- arbitrary[BigDecimal]
+        totalVATAmountCorrectionEUR <- arbitrary[BigDecimal]
+      } yield EtmpVatReturnCorrection(
+        periodKey = periodKey,
+        periodFrom = periodFrom,
+        periodTo = periodTo,
+        msOfConsumption = msOfConsumption,
+        totalVATAmountCorrectionGBP = totalVATAmountCorrectionGBP,
+        totalVATAmountCorrectionEUR = totalVATAmountCorrectionEUR
+      )
+    }
+
+  implicit lazy val arbitraryEtmpVatReturnBalanceOfVatDue: Arbitrary[EtmpVatReturnBalanceOfVatDue] =
+    Arbitrary {
+      for {
+        msOfConsumption <- arbitraryCountry.arbitrary.map(_.code)
+        totalVATDueGBP <- arbitrary[BigDecimal]
+        totalVATEUR <- arbitrary[BigDecimal]
+      } yield EtmpVatReturnBalanceOfVatDue(
+        msOfConsumption = msOfConsumption,
+        totalVATDueGBP = totalVATDueGBP,
+        totalVATEUR = totalVATEUR
+      )
+    }
+
+
+  implicit lazy val arbitraryEtmpVatReturn: Arbitrary[EtmpVatReturn] = {
+    Arbitrary {
+      for {
+        returnReference <- arbitrary[String]
+        returnVersion <- arbitrary[LocalDateTime]
+        periodKey <- arbitraryPeriodKey.arbitrary
+        returnPeriodFrom <- arbitrary[LocalDate]
+        returnPeriodTo <- arbitrary[LocalDate]
+        amountOfGoodsSupplied <- Gen.oneOf(List(1, 2, 3))
+        goodsSupplied <- Gen.listOfN(amountOfGoodsSupplied, arbitrary[EtmpVatReturnGoodsSupplied])
+        totalVATGoodsSuppliedGBP <- arbitrary[BigDecimal]
+        totalVATAmountPayable <- arbitrary[BigDecimal]
+        totalVATAmountPayableAllSpplied <- arbitrary[BigDecimal]
+        amountOfCorrections <- Gen.oneOf(List(1, 2, 3))
+        correctionPreviousVATReturn <- Gen.listOfN(amountOfCorrections, arbitrary[EtmpVatReturnCorrection])
+        totalVATAmountFromCorrectionGBP <- arbitrary[BigDecimal]
+        amountOfBalanceOfVATDueForMS <- Gen.oneOf(List(1, 2, 3))
+        balanceOfVATDueForMS <- Gen.listOfN(amountOfBalanceOfVATDueForMS, arbitrary[EtmpVatReturnBalanceOfVatDue])
+        totalVATAmountDueForAllMSGBP <- arbitrary[BigDecimal]
+        paymentReference <- arbitrary[String]
+      } yield EtmpVatReturn(
+        returnReference = returnReference,
+        returnVersion = returnVersion,
+        periodKey = periodKey,
+        returnPeriodFrom = returnPeriodFrom,
+        returnPeriodTo = returnPeriodTo,
+        goodsSupplied = goodsSupplied,
+        totalVATGoodsSuppliedGBP = totalVATGoodsSuppliedGBP,
+        totalVATAmountPayable = totalVATAmountPayable,
+        totalVATAmountPayableAllSpplied = totalVATAmountPayableAllSpplied,
+        correctionPreviousVATReturn = correctionPreviousVATReturn,
+        totalVATAmountFromCorrectionGBP = totalVATAmountFromCorrectionGBP,
+        balanceOfVATDueForMS = balanceOfVATDueForMS,
+        totalVATAmountDueForAllMSGBP = totalVATAmountDueForAllMSGBP,
+        paymentReference = paymentReference
+      )
+    }
+  }
+
+    implicit lazy val arbitraryPartialReturnPeriod: Arbitrary[PartialReturnPeriod] = {
+      Arbitrary {
+        for {
+          firstDay <- arbitraryPeriod.arbitrary.map(_.firstDay)
+          lastDay <- arbitraryPeriod.arbitrary.map(_.lastDay)
+          year <- arbitraryPeriod.arbitrary.map(_.year)
+          quarter <- arbitraryPeriod.arbitrary.map(_.quarter)
+        } yield PartialReturnPeriod(
+          firstDay = firstDay,
+          lastDay = lastDay,
+          year = year,
+          quarter = quarter
+        )
       }
     }
 }

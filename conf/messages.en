@@ -1,4 +1,4 @@
-service.name = Submit a One Stop Shop VAT return and pay VAT
+service.name = Submit a One Stop Shop return and pay VAT
 
 site.back = Back
 site.remove = Remove
@@ -614,3 +614,34 @@ ivTechnicalIssue.p = Try again later.
 noLongerAbleToViewReturn.title = You can no longer view this OSS return
 noLongerAbleToViewReturn.heading = You can no longer view this OSS return
 noLongerAbleToViewReturn.p = You cannot view returns that are over 6 years old.
+
+newPreviousReturn.title = Submitted return for {0}
+newPreviousReturn.heading = Submitted return for {0}
+newPreviousReturn.summary = Summary
+newPreviousReturn.summary.payableVatDeclared = Payable VAT declared
+newPreviousReturn.summary.amountRemaining = Amount left to pay
+newPreviousReturn.summary.dateSubmitted = Return submitted
+newPreviousReturn.summary.paymentDeadline = Payment due by
+newPreviousReturn.summary.returnReference = Return reference
+newPreviousReturn.summary.paymentReference = Payment reference
+newPreviousReturn.payNow = Pay now
+newPreviousReturn.details = Details
+newPreviousReturn.otherCountryVatOwed = You must pay any outstanding VAT from this return directly to the countries where you made your sales.
+
+newPreviousReturn.salesToEu.title = Sales from {0}
+newPreviousReturn.salesToEu.allNetSales = Sales excluding VAT
+newPreviousReturn.salesToEu.allVatSales = VAT
+newPreviousReturn.salesToEu.toCountry = To {0}
+
+newPreviousReturn.corrections.title = Corrections
+
+newPreviousReturn.corrections.vatDeclarationNotDue = VAT declared where no payment is due
+newPreviousReturn.corrections.p1 = The tax authorities in countries where you declared too much VAT are responsible for refunding any overpayments.
+
+newPreviousReturn.vatOwed.title = VAT owed
+newPreviousReturn.vatOwed.titleWithCorrections = VAT owed (including corrections)
+
+newPreviousReturn.totalVat.title = Total VAT payable
+
+
+
