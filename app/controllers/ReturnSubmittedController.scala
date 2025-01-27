@@ -16,17 +16,22 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.domain.VatReturn
+import models.etmp.EtmpVatReturn
 import models.{Period, ReturnReference}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.EmailConfirmationQuery
 import services.VatReturnSalesService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.CurrencyFormatter._
+import utils.CurrencyFormatter.*
+import utils.FutureSyntax.FutureOps
 import views.html.ReturnSubmittedView
 
 import java.time.{Clock, LocalDate}
@@ -39,6 +44,7 @@ class ReturnSubmittedController @Inject()(
                                            vatReturnConnector: VatReturnConnector,
                                            correctionConnector: CorrectionConnector,
                                            vatReturnSalesService: VatReturnSalesService,
+                                           frontendAppConfig: FrontendAppConfig,
                                            clock: Clock
                                          )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
@@ -49,19 +55,11 @@ class ReturnSubmittedController @Inject()(
     implicit request =>
 
       (for {
-        vatReturnResponse <- vatReturnConnector.get(period) // TODO -> Need flag with etmp totalVATAmountDueForAllMSGBP value 
-        correctionResponse <- correctionConnector.get(period)
+        vatOwed <- getVatOwed(period)
         maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
-       } yield (vatReturnResponse, correctionResponse, maybeSavedExternalUrl)).flatMap {
-        case (Right(vatReturn), correctionResponse, maybeSavedExternalUrl) =>
+      } yield (vatOwed, maybeSavedExternalUrl)).flatMap {
+        case (vatOwed, maybeSavedExternalUrl) =>
 
-          val maybeCorrectionPayload =
-            correctionResponse match {
-              case Right(correctionPayload) => Some(correctionPayload)
-              case _ => None
-            }
-
-          val vatOwed = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
           val returnReference = ReturnReference(request.vrn, period)
           val email = request.registration.contactDetails.emailAddress
           val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)
@@ -86,12 +84,43 @@ class ReturnSubmittedController @Inject()(
               backToYourAccountUrl
             ))
           }
-        case _ =>
-            Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
       }.recover {
         case e: Exception =>
           logger.error(s"Error occurred: ${e.getMessage}", e)
           throw e
       }
+  }
+  
+  private def getVatOwed(period: Period)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+    if (frontendAppConfig.strategicReturnApiEnabled) {
+      vatReturnConnector.getEtmpVatReturn(period).flatMap {
+        case Right(etmpVatReturn: EtmpVatReturn) =>
+          etmpVatReturn.totalVATAmountDueForAllMSGBP.toFuture
+        case Left(error) =>
+          val message: String = s"There wss an error retrieving the ETMP VAT return: $error"
+          val exception = new Exception(message)
+          logger.error(exception.getMessage, exception)
+          throw exception
+      }
+    } else {
+      (for {
+        vatReturnResponse <- vatReturnConnector.get(period)
+        correctionResponse <- correctionConnector.get(period)
+      } yield (vatReturnResponse, correctionResponse)).flatMap {
+        case (Right(vatReturn), correctionResponse) =>
+          val maybeCorrectionPayload = correctionResponse match {
+            case Right(correctionPayload) =>
+              Some(correctionPayload)
+            case _ => None
+          }
+          vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload).toFuture
+
+        case (Left(error), _) =>
+          val message: String = s"There wss an error retrieving the VAT return: $error"
+          val exception = new Exception(message)
+          logger.error(exception.getMessage, exception)
+          throw exception
+      }
     }
+  }
 }
