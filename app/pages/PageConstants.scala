@@ -29,4 +29,5 @@ object PageConstants {
   val correctionsToCountry: String = "correctionsToCountry"
   val correctionReturnPeriod: String = "correctionReturnPeriod"
   val correctionPeriod: String = "correctionPeriod"
+  val previouslyDeclaredCorrectionsForCountry: String = "previouslyDeclaredCorrectionAmountForCountry"
 }
