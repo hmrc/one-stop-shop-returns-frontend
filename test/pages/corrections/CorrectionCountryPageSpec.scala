@@ -20,6 +20,7 @@ import controllers.routes
 import models.{CheckMode, CheckThirdLoopMode, Country, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
+import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 
 
 class CorrectionCountryPageSpec extends PageBehaviours {
@@ -32,16 +33,129 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
     beRemovable[Country](CorrectionCountryPage(index, index))
 
-    "must navigate in Normal mode" - {
+    "when strategicReturnApiEnabled is false" - {
+      "must navigate in Normal mode" - {
+
+        "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
+
+          val country = arbitrary[Country].sample.value
+          val countries = Seq(country)
+
+          val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
+          CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries, strategicReturnApiEnabled = false)
+            .mustEqual(
+              controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+                NormalMode, answers.period, index, index, undeclaredCountry = false
+              )
+            )
+        }
+
+        "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
+
+          val country = arbitrary[Country].sample.value
+
+          val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
+          CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq(), strategicReturnApiEnabled = false)
+            .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
+        }
+
+        "to Journey recovery page when answer is invalid" in {
+
+          CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = false)
+            .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+        }
+      }
+
+      "must navigate in Check mode" - {
+
+        "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
+
+          val country = arbitrary[Country].sample.value
+          val countries = Seq(country)
+
+          val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
+          CorrectionCountryPage(index, index).navigate(CheckMode, answers, countries, strategicReturnApiEnabled = false)
+            .mustEqual(
+              controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+                CheckMode, answers.period, index, index, undeclaredCountry = false
+              )
+            )
+        }
+
+        "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
+
+          val country = arbitrary[Country].sample.value
+
+          val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
+          CorrectionCountryPage(index, index).navigate(CheckMode, answers, Seq(), strategicReturnApiEnabled = false)
+            .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
+        }
+
+        "to Journey recovery page when answer is invalid" in {
+
+          CorrectionCountryPage(index, index).navigate(CheckMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = false)
+            .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+        }
+      }
+
+      "must navigate in CheckThirdLoop mode" - {
+
+        "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
+
+          val country = arbitrary[Country].sample.value
+          val countries = Seq(country)
+
+          val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, countries, strategicReturnApiEnabled = false)
+            .mustEqual(
+              controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+                CheckThirdLoopMode, answers.period, index, index, undeclaredCountry = false
+              )
+            )
+        }
+
+        "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
+
+          val country = arbitrary[Country].sample.value
+
+          val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, Seq(), strategicReturnApiEnabled = false)
+            .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index))
+        }
+
+        "to Journey recovery page when answer is invalid" in {
+
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = false)
+            .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+        }
+      }
+    }
+
+    "when strategicReturnApiEnabled is true" - {
+
+      "must navigate in Normal mode" - {
 
       "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
 
         val country  = arbitrary[Country].sample.value
         val countries = Seq(country)
 
-        val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+        val previouslyDeclaredCorrectionAmount: BigDecimal = BigDecimal(1500)
 
-        CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries, strategicReturnApiEnabled = false)
+        val answers = emptyUserAnswers
+          .set(CorrectionCountryPage(index, index), country).success.value
+          .set(
+            PreviouslyDeclaredCorrectionAmountQuery(index, index),
+            PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = previouslyDeclaredCorrectionAmount)
+          ).success.value
+
+        CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries, strategicReturnApiEnabled = true)
           .mustEqual(
             controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
               NormalMode, answers.period, index, index, undeclaredCountry = false
@@ -55,82 +169,97 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-        CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq(), strategicReturnApiEnabled = false)
+        CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq(), strategicReturnApiEnabled = true)
           .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
       "to Journey recovery page when answer is invalid" in {
 
-        CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = false)
+        CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = true)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }
 
-    "must navigate in Check mode" - {
+      "must navigate in Check mode" - {
 
-      "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
+        "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
 
-        val country  = arbitrary[Country].sample.value
-        val countries = Seq(country)
+          val country  = arbitrary[Country].sample.value
+          val countries = Seq(country)
 
-        val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+          val previouslyDeclaredCorrectionAmount: BigDecimal = BigDecimal(1500)
 
-        CorrectionCountryPage(index, index).navigate(CheckMode, answers, countries, strategicReturnApiEnabled = false)
-          .mustEqual(
-            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
-              CheckMode, answers.period, index, index, undeclaredCountry = false
+          val answers = emptyUserAnswers
+            .set(CorrectionCountryPage(index, index), country).success.value
+            .set(
+              PreviouslyDeclaredCorrectionAmountQuery(index, index),
+              PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = previouslyDeclaredCorrectionAmount)
+            ).success.value
+
+          CorrectionCountryPage(index, index).navigate(CheckMode, answers, countries, strategicReturnApiEnabled = true)
+            .mustEqual(
+              controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+                CheckMode, answers.period, index, index, undeclaredCountry = false
+              )
             )
-          )
+        }
+
+        "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
+
+          val country  = arbitrary[Country].sample.value
+
+          val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+
+          CorrectionCountryPage(index, index).navigate(CheckMode, answers, Seq(), strategicReturnApiEnabled = true)
+            .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
+        }
+
+        "to Journey recovery page when answer is invalid" in {
+
+          CorrectionCountryPage(index, index).navigate(CheckMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = true)
+            .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+        }
       }
 
-      "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
+      "must navigate in CheckThirdLoop mode" - {
 
-        val country  = arbitrary[Country].sample.value
+        "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
 
-        val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+          val country  = arbitrary[Country].sample.value
+          val countries = Seq(country)
 
-        CorrectionCountryPage(index, index).navigate(CheckMode, answers, Seq(), strategicReturnApiEnabled = false)
-          .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
-      }
+          val previouslyDeclaredCorrectionAmount: BigDecimal = BigDecimal(1500)
 
-      "to Journey recovery page when answer is invalid" in {
+          val answers = emptyUserAnswers
+            .set(CorrectionCountryPage(index, index), country).success.value
+            .set(
+              PreviouslyDeclaredCorrectionAmountQuery(index, index),
+              PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = previouslyDeclaredCorrectionAmount)
+            ).success.value
 
-        CorrectionCountryPage(index, index).navigate(CheckMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = false)
-          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
-      }
-    }
-
-    "must navigate in CheckThirdLoop mode" - {
-
-      "to What is your correction for the total VAT payable page when answer is valid and the country was present in the previous Vat return" in {
-
-        val country  = arbitrary[Country].sample.value
-        val countries = Seq(country)
-
-        val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
-
-        CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, countries, strategicReturnApiEnabled = false)
-          .mustEqual(
-            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
-              CheckThirdLoopMode, answers.period, index, index, undeclaredCountry = false
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, countries, strategicReturnApiEnabled = true)
+            .mustEqual(
+              controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+                CheckThirdLoopMode, answers.period, index, index, undeclaredCountry = false
+              )
             )
-          )
-      }
+        }
 
-      "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
+        "to Undeclared country page when answer is valid and the country was not present in the previous Vat return" in {
 
-        val country  = arbitrary[Country].sample.value
+          val country  = arbitrary[Country].sample.value
 
-        val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+          val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-        CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, Seq(), strategicReturnApiEnabled = false)
-          .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index))
-      }
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, Seq(), strategicReturnApiEnabled = true)
+            .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index))
+        }
 
-      "to Journey recovery page when answer is invalid" in {
+        "to Journey recovery page when answer is invalid" in {
 
-        CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = false)
-          .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = true)
+            .mustEqual(routes.JourneyRecoveryController.onPageLoad())
+        }
       }
     }
   }
