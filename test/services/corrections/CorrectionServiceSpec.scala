@@ -21,14 +21,16 @@ import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
-import models.{Country, DataMissingError, Index, StandardPeriod}
+import models.{Country, DataMissingError, Index, StandardPeriod, VatOnSales}
 import models.Quarter.{Q1, Q2}
+import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
+import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate, VatRateType, VatReturn}
 import models.requests.corrections.CorrectionRequest
 import models.responses.UnexpectedResponseStatus
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import org.scalacheck.Arbitrary.arbitrary
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.*
@@ -238,6 +240,63 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
       when(connector.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.failed(new Exception("error"))
       val result: Future[ReturnCorrectionValue] = service.getReturnCorrectionValue(country1, period)(hc)
       whenReady(result.failed) { exp => exp mustBe a[Exception] }
+    }
+  }
+
+  ".getAccumulativeVatForCountryTotalAmount" - {
+
+    "must return the vatAmountGBP sum of all vatReturns within period range for the selected correction country" in new Fixture {
+
+      val country: Country = Country("DE", "Germany")
+
+      val vatReturn: VatReturn = arbitraryVatReturn.arbitrary.sample.value.copy(
+        salesFromEu = List(SalesFromEuCountry(
+          country,
+          None,
+          List(SalesToCountry(
+            Country("FI", "Finland"),
+            List(SalesDetails(VatRate(20, VatRateType.Standard), 500.00, VatOnSales(Standard, 100.00)))
+          ))
+        )),
+        salesFromNi = List(SalesToCountry(
+          country,
+          List(SalesDetails(VatRate(20, VatRateType.Standard), 1000.00, VatOnSales(Standard, 200.00)))
+        ))
+      )
+
+      val returnCorrectionValue: ReturnCorrectionValue = ReturnCorrectionValue(400)
+
+      when(vatReturnConnector.get(eqTo(period))(any())) thenReturn Future.successful(Right(vatReturn))
+      when(connector.getReturnCorrectionValue(eqTo(country.code), eqTo(period))(any())) thenReturn Future.successful(returnCorrectionValue)
+
+      val result: (Boolean, BigDecimal) = service.getAccumulativeVatForCountryTotalAmount(vrn, country, period).futureValue
+
+      result mustBe(true, 400)
+
+      verify(vatReturnConnector, times(1)).get(eqTo(period))(any())
+      verify(connector, times(1)).getReturnCorrectionValue(eqTo(country.code), eqTo(period))(any())
+    }
+
+    "must return false for isPreviouslyDeclaredCountry if the country is not in VAT returns" in new Fixture {
+      val country: Country = Country("DE", "Germany")
+      val period: StandardPeriod = period
+
+      val vatReturn: VatReturn = arbitraryVatReturn.arbitrary.sample.value.copy(
+        salesFromNi = List.empty,
+        salesFromEu = List.empty
+      )
+
+      val returnCorrectionValue: ReturnCorrectionValue = ReturnCorrectionValue(0)
+
+      when(vatReturnConnector.get(eqTo(period))(any())) thenReturn Future.successful(Right(vatReturn))
+      when(connector.getReturnCorrectionValue(eqTo(country.code), eqTo(period))(any())) thenReturn Future.successful(returnCorrectionValue)
+
+      val result: (Boolean, BigDecimal) = service.getAccumulativeVatForCountryTotalAmount(vrn, country, period).futureValue
+
+      result mustBe(false, 0)
+
+      verify(vatReturnConnector, times(1)).get(eqTo(period))(any())
+      verify(connector, times(1)).getReturnCorrectionValue(eqTo(country.code), eqTo(period))(any())
     }
   }
 
