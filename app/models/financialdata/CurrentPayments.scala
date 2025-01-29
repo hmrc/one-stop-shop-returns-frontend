@@ -21,6 +21,7 @@ import play.api.libs.json.{Format, Json}
 case class CurrentPayments(duePayments: Seq[Payment],
                            overduePayments: Seq[Payment],
                            excludedPayments: Seq[Payment],
+                           completedPayments: Seq[Payment],
                            totalAmountOwed: BigDecimal,
                            totalAmountOverdue: BigDecimal) {
 
