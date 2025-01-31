@@ -18,10 +18,11 @@ package pages.corrections
 
 import controllers.routes
 import models.{Country, Index, Mode, UserAnswers}
-import pages.PageConstants._
+import pages.PageConstants.*
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.corrections.PreviouslyDeclaredCorrectionAmountQuery
 
 case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Country] {
 
@@ -29,17 +30,30 @@ case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) extend
 
   override def toString: String = "correctionCountry"
 
-   def navigate(mode: Mode, answers: UserAnswers, countries: Seq[Country]): Call = {
+   def navigate(mode: Mode, answers: UserAnswers, countries: Seq[Country], strategicReturnApiEnabled: Boolean): Call = {
     answers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
       case Some(country) =>
-        if(countries.contains(country)) {
-          controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
-            mode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
-          )
+        if (strategicReturnApiEnabled) {
+          answers.get(PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex)) match {
+            case Some(n) if n.amount > 0 =>
+              controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+                mode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
+              )
+            case _ =>
+              controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(
+                mode, answers.period, periodIndex, countryIndex
+              )
+          }
         } else {
-          controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(
-            mode, answers.period, periodIndex, countryIndex
-          )
+          if (countries.contains(country)) {
+            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+              mode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
+            )
+          } else {
+            controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(
+              mode, answers.period, periodIndex, countryIndex
+            )
+          }
         }
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
