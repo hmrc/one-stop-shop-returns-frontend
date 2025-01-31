@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package models.financialdata
+package models.etmp
 
 import play.api.libs.json.{Format, Json}
 
-case class CurrentPayments(duePayments: Seq[Payment],
-                           overduePayments: Seq[Payment],
-                           excludedPayments: Seq[Payment],
-                           completedPayments: Seq[Payment],
-                           totalAmountOwed: BigDecimal,
-                           totalAmountOverdue: BigDecimal) {
+case class EtmpVatReturnCorrection(
+                                    periodKey: String,
+                                    periodFrom: String,
+                                    periodTo: String,
+                                    msOfConsumption: String,
+                                    totalVATAmountCorrectionGBP: BigDecimal,
+                                    totalVATAmountCorrectionEUR: BigDecimal
+                                  )
 
-  val allOutstandingPayments: Seq[Payment] = duePayments ++ overduePayments
-}
+object EtmpVatReturnCorrection {
 
-object CurrentPayments {
-  implicit val formatCurrentPayments: Format[CurrentPayments] = Json.format[CurrentPayments]
+  implicit val format: Format[EtmpVatReturnCorrection] = Json.format[EtmpVatReturnCorrection]
 }

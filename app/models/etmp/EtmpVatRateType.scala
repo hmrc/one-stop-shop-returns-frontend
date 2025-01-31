@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-package viewmodels
+package models.etmp
 
-import utils.CurrencyFormatter
+import models.{Enumerable, WithName}
 
-package object govuk {
 
-  object all
-    extends ImplicitConversions
-      with BackLinkFluency
-      with ButtonFluency
-      with CheckboxFluency
-      with CurrencyFormatter
-      with DateFluency
-      with ErrorSummaryFluency
-      with FieldsetFluency
-      with HintFluency
-      with InputFluency
-      with LabelFluency
-      with RadiosFluency
-      with SelectFluency
-      with SummaryListFluency
-      with TagFluency
-      with TableFluency
+sealed trait EtmpVatRateType
+
+object EtmpVatRateType extends Enumerable.Implicits {
+
+  case object StandardVatRate extends WithName("STANDARD") with EtmpVatRateType
+
+  case object ReducedVatRate extends WithName("REDUCED") with EtmpVatRateType
+
+  val values: Seq[EtmpVatRateType] = Seq(
+    StandardVatRate,
+    ReducedVatRate
+  )
+
+  implicit val enumerable: Enumerable[EtmpVatRateType] =
+    Enumerable(values.map(v => v.toString -> v): _*)
 }

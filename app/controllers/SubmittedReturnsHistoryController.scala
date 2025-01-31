@@ -18,23 +18,17 @@ package controllers
 
 import config.Constants.submittedReturnsPeriodsLimit
 import config.FrontendAppConfig
-import connectors.financialdata.FinancialDataConnector
 import connectors.VatReturnConnector
-import connectors.corrections.CorrectionConnector
-import controllers.actions._
+import connectors.financialdata.FinancialDataConnector
+import controllers.actions.*
 import logging.Logging
-import models.{Period, StandardPeriod}
-import models.corrections.CorrectionPayload
-import models.domain.VatReturn
+import models.Period
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.requests.RegistrationRequest
-import models.responses.{NotFound => ResponseNotFound}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.{ObligationsService, VatReturnSalesService}
-import uk.gov.hmrc.http.HeaderCarrier
+import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax.FutureOps
 import views.html.SubmittedReturnsHistoryView
 
 import java.time.{Clock, LocalDate}
@@ -47,8 +41,6 @@ class SubmittedReturnsHistoryController @Inject()(
                                                    view: SubmittedReturnsHistoryView,
                                                    financialDataConnector: FinancialDataConnector,
                                                    vatReturnConnector: VatReturnConnector,
-                                                   correctionConnector: CorrectionConnector,
-                                                   vatReturnSalesService: VatReturnSalesService,
                                                    obligationService: ObligationsService,
                                                    clock: Clock,
                                                  )(implicit ec: ExecutionContext)
@@ -71,14 +63,13 @@ class SubmittedReturnsHistoryController @Inject()(
         submittedPeriods <- submittedVatReturnsFuture
         filteredSubmittedVatReturns = filteredReturnsWithinSixYears(submittedPeriods)
         financialData <- getFinancialInformation()
-        periodToPaymentInfo <- getPaymentInfoForReturns(filteredSubmittedVatReturns, financialData)
+        periodToPaymentInfo = getPaymentInfoForReturns(filteredSubmittedVatReturns, financialData)
       } yield {
         val externalUrl = maybeSavedExternalUrl.fold(_ => None, _.url)
         val displayBanner = financialData.allOutstandingPayments.exists(_.paymentStatus == PaymentStatus.Unknown)
 
         Ok(view(periodToPaymentInfo, displayBanner, externalUrl))
       }
-
   }
 
   private def getFinancialInformation()(implicit request: RegistrationRequest[_]): Future[CurrentPayments] = {
@@ -94,49 +85,22 @@ class SubmittedReturnsHistoryController @Inject()(
   private def getPaymentInfoForReturns(
                                         periods: Seq[Period],
                                         currentPayments: CurrentPayments
-                                      )(implicit hc: HeaderCarrier): Future[Map[Period, Payment]] = {
-    Future.sequence(periods.map { period =>
-      val allPayments = currentPayments.allOutstandingPayments ++ currentPayments.excludedPayments
+                                      ): Map[Period, Payment] = {
 
+    val allPayments = currentPayments.allOutstandingPayments ++ currentPayments.excludedPayments ++ currentPayments.completedPayments
+
+    periods.flatMap { period =>
       allPayments.find(_.period == period) match {
         case Some(payment) =>
-          Map(period -> payment).toFuture
+          Map(period -> payment)
         case _ =>
-          vatReturnConnector.get(period).flatMap {
-            case Right(vatReturn) =>
-              correctionConnector.get(period).map {
-                case Right(correctionPayload) =>
-                  mapPeriodToPayment(vatReturn, Some(correctionPayload))
-                case Left(ResponseNotFound) =>
-                  mapPeriodToPayment(vatReturn, None)
-                case _ =>
-                  val errorMessage = "Was unable to get a correction response for fallback payment info"
-                  logger.error(errorMessage)
-                  throw new Exception(errorMessage)
-              }
-            case Left(error) =>
-              logger.error(s"Error fetching VAT return for period $period: $error")
-              Future.failed(new Exception(s"Error fetching VAT return for period $period"))
-          }
+          val message = s"Unable to find period in financial data for expected period ${period}"
+          val exception = IllegalStateException(message)
+          logger.error(exception.getMessage, exception)
+          throw exception
       }
-    }).map(_.flatten.toMap)
-  }
+    }.toMap
 
-  private def mapPeriodToPayment(vatReturn: VatReturn, maybeCorrectionPayload: Option[CorrectionPayload]): Map[Period, Payment] = {
-    val amountOwedFromReturn = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
-
-    val paymentStatus = if (amountOwedFromReturn == 0) {
-      PaymentStatus.NilReturn
-    } else {
-      PaymentStatus.Paid
-    }
-
-    Map(vatReturn.period -> Payment(
-      period = StandardPeriod.fromPeriod(vatReturn.period),
-      amountOwed = 0,
-      dateDue = vatReturn.period.paymentDeadline,
-      paymentStatus = paymentStatus
-    ))
   }
 
   private def getPeriodsWithinSixYears(periods: Seq[Period]): Seq[Period] = {
@@ -152,3 +116,4 @@ class SubmittedReturnsHistoryController @Inject()(
     periods.filter(period => periodsWithinSixYears.contains(period))
   }
 }
+

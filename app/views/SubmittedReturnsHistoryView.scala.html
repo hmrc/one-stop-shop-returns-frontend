@@ -80,7 +80,7 @@
                             .reverse) {
                             <tr class="govuk-table__row">
                                 <th scope="row" class="govuk-table__header">
-                                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(period)" id="period">@period.displayText</a>
+                                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(period)" id="period">@period.displayQuarterText</a>
                                 </th>
                                 <td class="govuk-table__cell">
                                     @Html(currencyFormat(payment.amountOwed))
