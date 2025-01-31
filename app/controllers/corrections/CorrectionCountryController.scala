@@ -20,7 +20,10 @@ import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import controllers.actions.*
 import forms.corrections.CorrectionCountryFormProvider
-import models.{Index, Mode, Period}
+import models.corrections.CorrectionToCountry
+import models.domain.VatReturn
+import models.requests.DataRequest
+import models.{Country, Index, Mode, Period, UserAnswers}
 import pages.corrections.CorrectionCountryPage
 import play.api.i18n.I18nSupport
 import play.api.i18n.Lang.logger
@@ -61,12 +64,11 @@ class CorrectionCountryController @Inject()(
       }
   }
 
-  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
-    implicit request =>
+  def onSubmit(mode: Mode, period: Period, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
+    cc.authAndGetDataAndCorrectionEligible(period).async { implicit request =>
       getCorrectionReturnPeriod(periodIndex) { correctionReturnPeriod =>
-        val form = formProvider(countryIndex,
-          request.userAnswers
-            .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
+        val form = formProvider(countryIndex, request.userAnswers
+          .get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(Seq.empty).map(_.correctionCountry))
 
         form.bindFromRequest().fold(
           formWithErrors =>
@@ -79,44 +81,50 @@ class CorrectionCountryController @Inject()(
               countryIndex
             ))),
 
-        value =>
-          for {
-            updatedAnswers <- if (config.strategicReturnApiEnabled) {
-              for {
-                (isPreviouslyDeclared, accumulativeVatForCountryTotalAmount) <- correctionService
-                  .getAccumulativeVatForCountryTotalAmount(request.vrn, value, correctionReturnPeriod)
+          value =>
+            for {
+              updatedAnswers <- updateUserAnswers(value, periodIndex, countryIndex, correctionReturnPeriod)
+              _ <- cc.sessionRepository.set(updatedAnswers)
+              vatReturnResult <- vatReturnConnector.get(correctionReturnPeriod)
+              correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionReturnPeriod)
+            } yield {
+              vatReturnResult match {
+                case Right(vatReturn) => Redirect(CorrectionCountryPage(periodIndex, countryIndex)
+                    .navigate(mode, updatedAnswers, allRecipientCountries(vatReturn, correctionsForPeriod), config.strategicReturnApiEnabled))
 
-                updated <- Future.fromTry(request.userAnswers.set(
-                  CorrectionCountryPage(periodIndex, countryIndex), value
-                ).flatMap(_.set(
-                  PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex),
-                  PreviouslyDeclaredCorrectionAmount(isPreviouslyDeclared, accumulativeVatForCountryTotalAmount)
-                )))
-              } yield updated
-              
-            } else {
-             Future.fromTry (request.userAnswers.set (CorrectionCountryPage (periodIndex, countryIndex), value))
+                case Left(value) =>
+                  logger.error(s"Error retrieving VAT return for period $correctionReturnPeriod: $value")
+                  throw new Exception(value.toString)
+              }
             }
-            
-            _ <- cc.sessionRepository.set (updatedAnswers)
-            vatReturnResult <- vatReturnConnector.get(correctionReturnPeriod)
-            correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionReturnPeriod)
-          } yield {
-            vatReturnResult match {
-              case Right(vatReturn) =>
-                val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
-                val countriesFromEU = vatReturn.salesFromEu.flatMap(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption))
-                val allRecipientCountries = (countriesFromNi ::: countriesFromEU ::: correctionsForPeriod.map(_.correctionCountry).toList).distinct
-
-                Redirect(CorrectionCountryPage(periodIndex, countryIndex).navigate(mode, updatedAnswers, allRecipientCountries, config.strategicReturnApiEnabled))
-
-              case Left(value) =>
-                logger.error(s"there was an error $value")
-                throw new Exception(value.toString)
-            }
-          }
-
         )
       }
+    }
+
+  private def updateUserAnswers(country: Country, periodIndex: Index, countryIndex: Index, correctionReturnPeriod: Period)
+                               (implicit request: DataRequest[AnyContent]): Future[UserAnswers] = {
+    if (config.strategicReturnApiEnabled) {
+      for {
+        (isPreviouslyDeclared, accumulativeVatForCountryTotalAmount) <- correctionService
+          .getAccumulativeVatForCountryTotalAmount(request.vrn, country, correctionReturnPeriod)
+
+        updated <- Future.fromTry(
+          request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), country)
+            .flatMap(_.set(
+              PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex),
+              PreviouslyDeclaredCorrectionAmount(isPreviouslyDeclared, accumulativeVatForCountryTotalAmount)
+            ))
+        )
+      } yield updated
+    } else {
+      Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), country))
+    }
   }
+
+  private val allRecipientCountries: (VatReturn, Seq[CorrectionToCountry]) => Seq[Country] = (vatReturn, correctionsForPeriod) => {
+    val countriesFromNi = vatReturn.salesFromNi.map(sales => sales.countryOfConsumption)
+    val countriesFromEU = vatReturn.salesFromEu.flatMap(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption))
+    (countriesFromNi ::: countriesFromEU ::: correctionsForPeriod.map(_.correctionCountry).toList).distinct
+  }
+
 }
