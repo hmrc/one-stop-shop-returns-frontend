@@ -87,7 +87,7 @@ class SubmittedReturnsHistoryController @Inject()(
                                         currentPayments: CurrentPayments
                                       ): Map[Period, Payment] = {
 
-    val allPayments = currentPayments.allOutstandingPayments ++ currentPayments.excludedPayments
+    val allPayments = currentPayments.allOutstandingPayments ++ currentPayments.excludedPayments ++ currentPayments.completedPayments
 
     periods.flatMap { period =>
       allPayments.find(_.period == period) match {

@@ -58,6 +58,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     duePayments = Seq(payment2, payment3),
     overduePayments = Seq(payment1),
     excludedPayments = Seq.empty,
+    completedPayments = Seq.empty,
     totalAmountOwed = BigDecimal(1000),
     totalAmountOverdue = BigDecimal(500)
   )
@@ -68,6 +69,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     duePayments = Seq(unknownPaymentAmount),
     overduePayments = Seq.empty,
     excludedPayments = Seq.empty,
+    completedPayments = Seq.empty,
     totalAmountOwed = BigDecimal(0),
     totalAmountOverdue = BigDecimal(0)
   )
@@ -76,6 +78,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     duePayments = Seq.empty,
     overduePayments = Seq.empty,
     excludedPayments = Seq.empty,
+    completedPayments = Seq.empty,
     totalAmountOwed = BigDecimal(0),
     totalAmountOverdue = BigDecimal(0)
   )

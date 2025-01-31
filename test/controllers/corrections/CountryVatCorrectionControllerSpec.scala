@@ -19,7 +19,7 @@ package controllers.corrections
 import base.SpecBase
 import connectors.VatReturnConnector
 import forms.corrections.CountryVatCorrectionFormProvider
-import models.corrections.CorrectionToCountry
+import models.corrections.{CorrectionToCountry, ReturnCorrectionValue}
 import models.domain.*
 import models.{Country, NormalMode, PaymentReference, ReturnReference, VatOnSales, VatOnSalesChoice}
 import org.jsoup.Jsoup
@@ -160,6 +160,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
       when(mockCorrectionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(List.empty)
+      when(mockCorrectionService.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.successful(ReturnCorrectionValue(BigDecimal(0)))
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
@@ -245,6 +246,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(previousVatReturn))
       when(mockCorrectionService.getCorrectionsForPeriod(any())(any(), any()))
         .thenReturn(Future.successful(List(previousCorrection)))
+      when(mockCorrectionService.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.successful(ReturnCorrectionValue(BigDecimal(-300)))
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
         .overrides(
