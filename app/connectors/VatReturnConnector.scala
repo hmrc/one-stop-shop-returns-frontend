@@ -24,11 +24,11 @@ import models.etmp.EtmpObligations
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import play.api.Configuration
 import play.api.libs.json.Json
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,7 +42,7 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
     httpClientV2.post(url"$baseUrl/vat-returns").withBody(Json.toJson(vatReturnRequest)).execute[VatReturnResponse]
 
   def submitWithCorrections(vatReturnRequest: VatReturnWithCorrectionRequest)(implicit hc: HeaderCarrier): Future[VatReturnWithCorrectionResponse] =
-    httpClientV2.post(url"$baseUrl/vat-return-with-corrections").withBody(Json.toJson( vatReturnRequest)).execute[VatReturnWithCorrectionResponse]
+    httpClientV2.post(url"$baseUrl/vat-return-with-corrections").withBody(Json.toJson(vatReturnRequest)).execute[VatReturnWithCorrectionResponse]
 
   def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] =
     httpClientV2.get(url"$baseUrl/vat-returns/period/$period").execute[VatReturnResponse]
@@ -54,6 +54,9 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
     httpClientV2.get(url"$baseUrl/vat-returns").execute[VatReturnMultipleResponse]
   }
 
-  def getObligations(vrn: Vrn)(implicit hc:HeaderCarrier): Future[EtmpObligations] =
+  def getObligations(vrn: Vrn)(implicit hc: HeaderCarrier): Future[EtmpObligations] =
     httpClientV2.get(url"$baseUrl/obligations/$vrn").execute[EtmpObligations]
+
+  def getEtmpVatReturn(period: Period)(implicit hc: HeaderCarrier): Future[EtmpVatReturnResponse] =
+    httpClientV2.get(url"$baseUrl/etmp-vat-returns/period/$period").execute[EtmpVatReturnResponse]
 }

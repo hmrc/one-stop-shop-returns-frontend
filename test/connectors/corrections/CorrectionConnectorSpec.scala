@@ -19,9 +19,9 @@ package connectors.corrections
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.WireMockHelper
+import models.Country
 import models.corrections.{CorrectionPayload, ReturnCorrectionValue}
 import models.responses.{ConflictFound, InvalidJson, NotFound, UnexpectedResponseStatus}
-import models.Country
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application
@@ -29,7 +29,6 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
-
 
 class CorrectionConnectorSpec extends SpecBase with WireMockHelper with EitherValues {
 

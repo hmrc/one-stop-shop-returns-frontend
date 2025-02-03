@@ -30,4 +30,8 @@ object Format {
   val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     .withLocale(Locale.UK)
     .withZone(ZoneId.systemDefault())
+
+  val etmpDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(("d MMMM yyyy"))
+    .withLocale(Locale.UK)
+    .withZone(ZoneId.systemDefault())
 }

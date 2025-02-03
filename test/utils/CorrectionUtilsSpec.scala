@@ -17,13 +17,15 @@
 package utils
 
 import base.SpecBase
-import models.{Country, StandardPeriod, VatOnSales}
 import models.Quarter.{Q3, Q4}
 import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections}
-import models.domain.{SalesDetails, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.domain.{SalesDetails, SalesToCountry, VatRate as DomainVatRate, VatRateType as DomainVatRateType}
+import models.{Country, StandardPeriod, VatOnSales}
 import org.scalacheck.Arbitrary.arbitrary
 import uk.gov.hmrc.domain.Vrn
+import utils.CorrectionUtils.calculateNegativeAndZeroCorrections
+import utils.EtmpVatReturnCorrectionsData.*
 
 import java.time.Instant
 
@@ -146,4 +148,34 @@ class CorrectionUtilsSpec extends SpecBase {
 
   }
 
+  "calculateNegativeAndZeroCorrections" - {
+
+    "must return a calculated negative balance for a single country with negative corrections" in {
+
+      val result = calculateNegativeAndZeroCorrections(etmpVatReturnCorrectionSingleCountryScenario)
+
+      result mustBe Map("DE" -> BigDecimal(-2900))
+    }
+
+    "must return a calculated negative balance for multiple counties with negative corrections" in {
+
+      val result = calculateNegativeAndZeroCorrections(etmpVatReturnCorrectionMultipleCountryScenario)
+
+      result mustBe Map("LT" -> BigDecimal(-1050), "IT" -> BigDecimal(-2350))
+    }
+
+    "must return a nil balance for multiple counties with negative corrections" in {
+
+      val result = calculateNegativeAndZeroCorrections(etmpVatReturnCorrectionMultipleCountryNilScenario)
+
+      result mustBe Map("EE" -> BigDecimal(0), "PL" -> BigDecimal(0))
+    }
+
+    "must return a calculated negative balance for multiple counties with both negative and positive corrections" in {
+
+      val result = calculateNegativeAndZeroCorrections(etmpVatReturnCorrectionMultipleCountryMixPosAndNegCorrectionsScenario)
+
+      result mustBe Map("AT" -> BigDecimal(-350), "HR" -> BigDecimal(-50))
+    }
+  }
 }

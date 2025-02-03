@@ -14,27 +14,17 @@
  * limitations under the License.
  */
 
-package viewmodels
+package models.etmp
 
-import utils.CurrencyFormatter
+import play.api.libs.json.{Format, Json}
 
-package object govuk {
+case class EtmpVatReturnBalanceOfVatDue(
+                                         msOfConsumption: String,
+                                         totalVATDueGBP: BigDecimal,
+                                         totalVATEUR: BigDecimal
+                                       )
 
-  object all
-    extends ImplicitConversions
-      with BackLinkFluency
-      with ButtonFluency
-      with CheckboxFluency
-      with CurrencyFormatter
-      with DateFluency
-      with ErrorSummaryFluency
-      with FieldsetFluency
-      with HintFluency
-      with InputFluency
-      with LabelFluency
-      with RadiosFluency
-      with SelectFluency
-      with SummaryListFluency
-      with TagFluency
-      with TableFluency
+object EtmpVatReturnBalanceOfVatDue {
+
+  implicit val format: Format[EtmpVatReturnBalanceOfVatDue] = Json.format[EtmpVatReturnBalanceOfVatDue]
 }

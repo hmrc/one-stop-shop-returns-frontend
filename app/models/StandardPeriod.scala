@@ -37,6 +37,8 @@ trait Period {
 
   protected val firstDayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM")
   protected val lastDayFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+  protected val firstQuarterFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM")
+  protected val lastQuarterFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
   val paymentDeadline: LocalDate = LocalDate.of(year, quarter.startMonth, 1).plusMonths(4).minusDays(1)
 
@@ -53,6 +55,9 @@ trait Period {
 
   def displayText(implicit messages: Messages): String =
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
+
+  def displayQuarterText(implicit messages: Messages): String =
+    s"${firstDay.format(firstQuarterFormatter)} ${messages("site.to")} ${lastDay.format(lastQuarterFormatter)}"
 
   def getNextPeriod: Period = {
     quarter match {

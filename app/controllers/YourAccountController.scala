@@ -24,7 +24,7 @@ import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.Period.getPeriod
 import models.exclusions.ExcludedTrader
-import models.exclusions.ExcludedTrader._
+import models.exclusions.ExcludedTrader.*
 import models.exclusions.ExclusionReason.{NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration.RegistrationWithFixedEstablishment
@@ -39,7 +39,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import utils.ReturnsUtils
-import viewmodels.yourAccount._
+import viewmodels.yourAccount.*
 import views.html.IndexView
 
 import java.time.{Clock, LocalDate}
