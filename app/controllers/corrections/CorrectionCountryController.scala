@@ -84,19 +84,12 @@ class CorrectionCountryController @Inject()(
 
           value =>
             for {
-              (isPreviouslyDeclared, accumulativeVatForCountryTotalAmount) <- correctionService
-                .getAccumulativeVatForCountryTotalAmount(request.vrn, value, correctionReturnPeriod)
-
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
-              updatedAnswersWithPreviouslyDeclaredCorrections <- Future.fromTry(updatedAnswers.set(
-                PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex),
-                PreviouslyDeclaredCorrectionAmount(isPreviouslyDeclared, accumulativeVatForCountryTotalAmount)
-              ))
-
+              updatedAnswers <- updateUserAnswers(value, periodIndex, countryIndex, correctionReturnPeriod)
               _ <- cc.sessionRepository.set(updatedAnswers)
               vatReturnResult <- if (config.strategicReturnApiEnabled) {
                 vatReturnConnector.getEtmpVatReturn(correctionReturnPeriod)
               } else {
+                println("vatreturn result else ln 92 ccontroller")
                 vatReturnConnector.get(correctionReturnPeriod)
               }
 
@@ -104,8 +97,6 @@ class CorrectionCountryController @Inject()(
             } yield {
               vatReturnResult match {
                 case Right(vatReturn) =>
-                  println("correction country controller ln 107")
-                  println(s"$updatedAnswers")
                   Redirect(CorrectionCountryPage(periodIndex, countryIndex)
                     .navigate(mode, updatedAnswers))
 
@@ -116,24 +107,22 @@ class CorrectionCountryController @Inject()(
             }
         )
       }
+    }
 
-//  private def updateUserAnswers(country: Country, periodIndex: Index, countryIndex: Index, correctionReturnPeriod: Period)
-//                               (implicit request: DataRequest[AnyContent]): Future[UserAnswers] = {
-//    if (config.strategicReturnApiEnabled) {
-//      for {
-//        (isPreviouslyDeclared, accumulativeVatForCountryTotalAmount) <- correctionService
-//          .getAccumulativeVatForCountryTotalAmount(request.vrn, country, correctionReturnPeriod)
-//
-//        updated <- Future.fromTry(
-//          request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), country)
-//            .flatMap(_.set(
-//              PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex),
-//              PreviouslyDeclaredCorrectionAmount(isPreviouslyDeclared, accumulativeVatForCountryTotalAmount)
-//            ))
-//        )
-//      } yield updated
-//    } else {
-//      Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), country))
-//    }
+  private def updateUserAnswers(country: Country, periodIndex: Index, countryIndex: Index, correctionReturnPeriod: Period)
+                               (implicit request: DataRequest[AnyContent]): Future[UserAnswers] = {
+      for {
+        (isPreviouslyDeclared, accumulativeVatForCountryTotalAmount) <- correctionService
+          .getAccumulativeVatForCountryTotalAmount(request.vrn, country, correctionReturnPeriod)
+        
+        updated <- Future.fromTry(
+          request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), country)
+            .flatMap(_.set(
+              PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex),
+              PreviouslyDeclaredCorrectionAmount(isPreviouslyDeclared, accumulativeVatForCountryTotalAmount)
+            ))
+        )
+      } yield updated
   }
 }
+

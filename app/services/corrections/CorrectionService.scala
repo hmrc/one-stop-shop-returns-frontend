@@ -146,8 +146,11 @@ class CorrectionService @Inject()(
         correctionReturn match {
           case Right(vatReturn) =>
             val niVatForCountry = vatReturn.salesFromNi.exists(_.countryOfConsumption == country)
+            println(s"niVatForCountry: $niVatForCountry")
+            println(s"vatReturn.salesFromNi: ${vatReturn.salesFromNi}")
 
             val euVatForCountry = vatReturn.salesFromEu.exists(_.countryOfSale == country)
+            println(s"euVatForCountry: $euVatForCountry")
 
             niVatForCountry || euVatForCountry || returnCorrectionValue.maximumCorrectionValue != 0
 
@@ -155,6 +158,7 @@ class CorrectionService @Inject()(
         }
       }
 
+      println(s"returnCorrectionValue.maximumCorrectionValue: ${returnCorrectionValue.maximumCorrectionValue}")
       (isPreviouslyDeclaredCountry, returnCorrectionValue.maximumCorrectionValue)
     }
   }
