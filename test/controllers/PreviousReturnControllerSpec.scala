@@ -667,7 +667,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
                 returnIsExcludedAndOutstandingAmount = false,
-                vatOwedInPence = (outstandingAmount * 100).toLong
+                vatOwedInPence = (vatDeclared * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -739,7 +739,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
                 returnIsExcludedAndOutstandingAmount = false,
-                vatOwedInPence = (outstandingAmount * 100).toLong
+                vatOwedInPence = (vatDeclared * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -821,7 +821,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
                 returnIsExcludedAndOutstandingAmount = false,
-                vatOwedInPence = (outstandingAmount * 100).toLong
+                vatOwedInPence = (vatDeclared * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -899,7 +899,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
                 returnIsExcludedAndOutstandingAmount = false,
-                vatOwedInPence = (outstandingAmount * 100).toLong
+                vatOwedInPence = (vatDeclared * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -969,7 +969,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
                 returnIsExcludedAndOutstandingAmount = false,
-                vatOwedInPence = (outstandingAmount * 100).toLong
+                vatOwedInPence = (vatDeclared * 100).toLong
               )(request, messages(application)).toString
           }
         }
@@ -1044,6 +1044,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               )
 
               val outstandingAmount: BigDecimal = nilCharge.outstandingAmount
+              val vatDeclared: BigDecimal = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
               status(result) mustBe OK
               contentAsString(result) mustBe
@@ -1057,7 +1058,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                   displayPayNow = false,
                   outstandingAmount,
                   returnIsExcludedAndOutstandingAmount = false,
-                  vatOwedInPence = (outstandingAmount * 100).toLong
+                  vatOwedInPence = (vatDeclared * 100).toLong
                 )(request, messages(application)).toString
             }
           }
@@ -1113,6 +1114,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               )
 
               val outstandingAmount: BigDecimal = outstandingCharge.outstandingAmount
+              val vatDeclared: BigDecimal = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
               status(result) mustBe OK
               contentAsString(result) mustBe
@@ -1126,7 +1128,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                   displayPayNow = false,
                   outstandingAmount,
                   returnIsExcludedAndOutstandingAmount = true,
-                  vatOwedInPence = (outstandingAmount * 100).toLong
+                  vatOwedInPence = (vatDeclared * 100).toLong
                 )(request, messages(application)).toString
             }
           }
@@ -1201,7 +1203,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
                 outstandingAmount,
                 returnIsExcludedAndOutstandingAmount = false,
-                vatOwedInPence = (outstandingAmount * 100).toLong
+                vatOwedInPence = (vatDeclared * 100).toLong
               )(request, messages(application)).toString
           }
         }

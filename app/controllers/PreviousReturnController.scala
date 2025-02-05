@@ -101,7 +101,7 @@ class PreviousReturnController @Inject()(
 
             val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, outstandingAmount, period))
 
-            val vatOwedInPence: Long = (outstanding * 100).toLong
+            val vatOwedInPence: Long = (vatDeclared * 100).toLong
 
             partialReturnPeriodService.getPartialReturnPeriod(request.registration, period).map { maybePartialReturnPeriod =>
               Ok(newView(
