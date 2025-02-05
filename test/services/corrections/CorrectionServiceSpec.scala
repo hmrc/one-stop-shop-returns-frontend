@@ -19,6 +19,7 @@ package services.corrections
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import models.{Country, DataMissingError, Index, StandardPeriod, VatOnSales}
@@ -267,7 +268,9 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
       val returnCorrectionValue: ReturnCorrectionValue = ReturnCorrectionValue(400)
 
       when(vatReturnConnector.get(eqTo(period))(any())) thenReturn Future.successful(Right(vatReturn))
+      when(vatReturnConnector.getEtmpVatReturn(eqTo(period))(any())) thenReturn Future.successful(Right(vatReturn))
       when(connector.getReturnCorrectionValue(eqTo(country.code), eqTo(period))(any())) thenReturn Future.successful(returnCorrectionValue)
+      when(config.strategicReturnApiEnabled) thenReturn false
 
       val result: (Boolean, BigDecimal) = service.getAccumulativeVatForCountryTotalAmount(vrn, country, period).futureValue
 
@@ -290,6 +293,8 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
 
       when(vatReturnConnector.get(eqTo(period))(any())) thenReturn Future.successful(Right(vatReturn))
       when(connector.getReturnCorrectionValue(eqTo(country.code), eqTo(period))(any())) thenReturn Future.successful(returnCorrectionValue)
+      when(vatReturnConnector.getEtmpVatReturn(eqTo(period))(any())) thenReturn Future.successful(Right(vatReturn))
+      when(config.strategicReturnApiEnabled) thenReturn false
 
       val result: (Boolean, BigDecimal) = service.getAccumulativeVatForCountryTotalAmount(vrn, country, period).futureValue
 
@@ -305,7 +310,8 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
     protected val periodService: PeriodService = mock[PeriodService]
     protected val connector: CorrectionConnector = mock[CorrectionConnector]
     protected val vatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
-    protected val service = new CorrectionService(periodService, connector, vatReturnConnector)
+    protected val config: FrontendAppConfig = mock[FrontendAppConfig]
+    protected val service = new CorrectionService(config, periodService, connector, vatReturnConnector)
 
   }
 

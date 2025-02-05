@@ -17,6 +17,7 @@
 package services.corrections
 
 import cats.implicits.*
+import config.FrontendAppConfig
 import connectors.corrections.CorrectionConnector
 import connectors.VatReturnConnector
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
@@ -34,6 +35,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionService @Inject()(
+                                   config: FrontendAppConfig,
                                    periodService: PeriodService,
                                    connector: CorrectionConnector,
                                    vatReturnConnector: VatReturnConnector
@@ -126,16 +128,27 @@ class CorrectionService @Inject()(
     for {
       returnCorrectionValue <- getReturnCorrectionValue(country, correctionPeriod)
       correctionReturn <- vatReturnConnector.get(correctionPeriod)
+      correctionReturnEtmp <- vatReturnConnector.getEtmpVatReturn(correctionPeriod)
     } yield {
-      val isPreviouslyDeclaredCountry: Boolean = correctionReturn match {
-        case Right(vatReturn) =>
-          val niVatForCountry = vatReturn.salesFromNi.exists(_.countryOfConsumption == country)
-          
-          val euVatForCountry = vatReturn.salesFromEu.exists(_.countryOfSale == country)
 
-          niVatForCountry || euVatForCountry || returnCorrectionValue.maximumCorrectionValue != 0
+      val isPreviouslyDeclaredCountry: Boolean = if (config.strategicReturnApiEnabled) {
+        correctionReturnEtmp match {
+          case Right(vatReturn) =>
+            vatReturn.goodsSupplied.exists(_.msOfConsumption == country.code) ||
+              returnCorrectionValue.maximumCorrectionValue != 0
+          case Left(error) => throw new IllegalStateException(s"Unable to get vat return for accumulating correction total $error")
+        }
+      } else {
+        correctionReturn match {
+          case Right(vatReturn) =>
+            val niVatForCountry = vatReturn.salesFromNi.exists(_.countryOfConsumption == country)
 
-        case Left(error) => throw new IllegalStateException(s"Unable to get vat return for accumulating correction total $error")
+            val euVatForCountry = vatReturn.salesFromEu.exists(_.countryOfSale == country)
+
+            niVatForCountry || euVatForCountry || returnCorrectionValue.maximumCorrectionValue != 0
+
+          case Left(error) => throw new IllegalStateException(s"Unable to get vat return for accumulating correction total $error")
+        }
       }
 
       (isPreviouslyDeclaredCountry, returnCorrectionValue.maximumCorrectionValue)

@@ -22,7 +22,6 @@ import controllers.actions.*
 import forms.corrections.CorrectionCountryFormProvider
 import models.corrections.CorrectionToCountry
 import models.domain.VatReturn
-import models.etmp.EtmpVatReturn
 import models.requests.DataRequest
 import models.{Country, Index, Mode, Period, UserAnswers}
 import pages.corrections.CorrectionCountryPage
@@ -87,13 +86,11 @@ class CorrectionCountryController @Inject()(
               updatedAnswers <- updateUserAnswers(value, periodIndex, countryIndex, correctionReturnPeriod)
               _ <- cc.sessionRepository.set(updatedAnswers)
               vatReturnResult <- vatReturnConnector.get(correctionReturnPeriod)
-              vatEtmpReturnResult <- vatReturnConnector.getEtmpVatReturn(correctionReturnPeriod)
               correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionReturnPeriod)
               
             } yield {
-              val vatReturnResultToUse = if(config.strategicReturnApiEnabled) vatEtmpReturnResult else vatReturnResult
 
-              vatReturnResultToUse match {
+              vatReturnResult match {
                 case Right(vatReturn) => Redirect(CorrectionCountryPage(periodIndex, countryIndex)
                   .navigate(mode, updatedAnswers, allRecipientCountries(vatReturn, correctionsForPeriod), config.strategicReturnApiEnabled))
 
