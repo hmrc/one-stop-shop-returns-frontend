@@ -132,10 +132,14 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
+      val config = mock[FrontendAppConfig]
 
       when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(config.strategicReturnApiEnabled) thenReturn false
+
       val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
       val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
       val application =
@@ -165,10 +169,14 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
+      val config = mock[FrontendAppConfig]
 
       when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(config.strategicReturnApiEnabled) thenReturn false
+
       val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
       val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
       val application =
@@ -197,10 +205,13 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       val mockSessionRepository = mock[UserAnswersRepository]
       val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
+      val config = mock[FrontendAppConfig]
 
       when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(config.strategicReturnApiEnabled) thenReturn false
       val expectedAnswers2 = emptyUserAnswers
         .set(CorrectionCountryPage(index, index), country).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value

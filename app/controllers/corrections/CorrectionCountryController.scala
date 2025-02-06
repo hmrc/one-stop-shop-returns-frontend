@@ -22,6 +22,7 @@ import controllers.actions.*
 import forms.corrections.CorrectionCountryFormProvider
 import models.corrections.CorrectionToCountry
 import models.domain.VatReturn
+import models.etmp.EtmpVatReturn
 import models.requests.DataRequest
 import models.{Country, Index, Mode, Period, UserAnswers}
 import pages.corrections.CorrectionCountryPage
@@ -86,17 +87,30 @@ class CorrectionCountryController @Inject()(
               updatedAnswers <- updateUserAnswers(value, periodIndex, countryIndex, correctionReturnPeriod)
               _ <- cc.sessionRepository.set(updatedAnswers)
               vatReturnResult <- vatReturnConnector.get(correctionReturnPeriod)
+              etmpVatReturnResult <- vatReturnConnector.getEtmpVatReturn(correctionReturnPeriod)
               correctionsForPeriod <- correctionService.getCorrectionsForPeriod(correctionReturnPeriod)
               
             } yield {
 
-              vatReturnResult match {
-                case Right(vatReturn) => Redirect(CorrectionCountryPage(periodIndex, countryIndex)
-                  .navigate(mode, updatedAnswers, allRecipientCountries(vatReturn, correctionsForPeriod), config.strategicReturnApiEnabled))
+              if (config.strategicReturnApiEnabled) {
+                etmpVatReturnResult match {
+                  case Right(vatReturn) =>
+                    Redirect(CorrectionCountryPage(periodIndex, countryIndex)
+                    .navigate(mode, updatedAnswers, allRecipientCountriesEtmp(vatReturn, correctionsForPeriod), config.strategicReturnApiEnabled))
 
-                case Left(value) =>
-                  logger.error(s"Error retrieving VAT return for period $correctionReturnPeriod: $value")
-                  throw new Exception(value.toString)
+                  case Left(value) =>
+                    logger.error(s"Error retrieving VAT return for period $correctionReturnPeriod: $value")
+                    throw new Exception(value.toString)
+                }
+              } else {
+                vatReturnResult match {
+                  case Right(vatReturn) => Redirect(CorrectionCountryPage(periodIndex, countryIndex)
+                    .navigate(mode, updatedAnswers, allRecipientCountries(vatReturn, correctionsForPeriod), config.strategicReturnApiEnabled))
+
+                  case Left(value) =>
+                    logger.error(s"Error retrieving VAT return for period $correctionReturnPeriod: $value")
+                    throw new Exception(value.toString)
+                }
               }
             }
         )
@@ -128,5 +142,11 @@ class CorrectionCountryController @Inject()(
     val countriesFromEU = vatReturn.salesFromEu.flatMap(recipientCountries => recipientCountries.sales.map(_.countryOfConsumption))
     (countriesFromNi ::: countriesFromEU ::: correctionsForPeriod.map(_.correctionCountry).toList).distinct
   }
-  
+
+
+  private val allRecipientCountriesEtmp: (EtmpVatReturn, Seq[CorrectionToCountry]) => Seq[Country] = (etmpVatReturn, correctionsForPeriod) => {
+    val countriesFromSoldGoods = etmpVatReturn.goodsSupplied.map(_.msOfConsumption)
+    val countryMap: Map[String, Country] = Country.euCountries.map(c => c.code -> c).toMap
+    (countriesFromSoldGoods.flatMap(countryMap.get).toList ::: correctionsForPeriod.map(_.correctionCountry).toList).distinct
+  }
 }
