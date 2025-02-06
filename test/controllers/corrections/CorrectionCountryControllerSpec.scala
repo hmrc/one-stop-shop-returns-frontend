@@ -163,6 +163,42 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "must save the answer and redirect to the next page when valid data is submitted when Strategic Api is Enabled" in {
+
+      val mockSessionRepository = mock[UserAnswersRepository]
+      val mockVatReturnConnector = mock[VatReturnConnector]
+      val mockService = mock[CorrectionService]
+      val config = mock[FrontendAppConfig]
+
+      when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(config.strategicReturnApiEnabled) thenReturn true
+
+      val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+      val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+      val application =
+        applicationBuilder(userAnswers = Some(expectedAnswers2))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
+          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[CorrectionService].toInstance(mockService))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, correctionCountryRoute)
+            .withFormUrlEncodedBody(("value", country.code))
+
+        val result = route(application, request).value
+
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq(), strategicReturnsEnabled).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
+      }
+    }
+
     "must save the answer and redirect to the next page when valid data is submitted and corrected vat return is not empty" in {
 
       val country = completeVatReturn.salesFromNi.map(_.countryOfConsumption).head
@@ -200,6 +236,43 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "must save the answer and redirect to the next page when valid data is submitted and corrected vat return is not empty when Strategic Api is Enabled" in {
+
+      val country = completeVatReturn.salesFromNi.map(_.countryOfConsumption).head
+      val mockSessionRepository = mock[UserAnswersRepository]
+      val mockVatReturnConnector = mock[VatReturnConnector]
+      val mockService = mock[CorrectionService]
+      val config = mock[FrontendAppConfig]
+
+      when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(config.strategicReturnApiEnabled) thenReturn true
+
+      val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
+      val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+      val application =
+        applicationBuilder(userAnswers = Some(expectedAnswers2))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
+          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[CorrectionService].toInstance(mockService))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, correctionCountryRoute)
+            .withFormUrlEncodedBody(("value", country.code))
+
+        val result = route(application, request).value
+
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2, Seq(country), strategicReturnsEnabled).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
+      }
+    }
+
     "must save the answer and redirect to the next page when valid data is submitted when the questions have been answered" in {
 
       val mockSessionRepository = mock[UserAnswersRepository]
@@ -212,6 +285,45 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
       when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
       when(config.strategicReturnApiEnabled) thenReturn false
+      val expectedAnswers2 = emptyUserAnswers
+        .set(CorrectionCountryPage(index, index), country).success.value
+        .set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
+        .set(CorrectionCountryPage(index, Index(1)), country2).success.value
+
+      val application =
+        applicationBuilder(userAnswers = Some(expectedAnswers2))
+          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
+          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[CorrectionService].toInstance(mockService))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, controllers.corrections.routes.CorrectionCountryController.onPageLoad(NormalMode, period, index, Index(1)).url)
+            .withFormUrlEncodedBody(("value", country2.code))
+
+        val result = route(application, request).value
+
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, Index(1)).navigate(NormalMode, expectedAnswers2, Seq(), strategicReturnsEnabled).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
+      }
+    }
+
+    "must save the answer and redirect to the next page when valid data is submitted when the questions have been answered when Strategic Api is Enabled" in {
+
+      val mockSessionRepository = mock[UserAnswersRepository]
+      val mockVatReturnConnector = mock[VatReturnConnector]
+      val mockService = mock[CorrectionService]
+      val config = mock[FrontendAppConfig]
+
+      when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(config.strategicReturnApiEnabled) thenReturn true
       val expectedAnswers2 = emptyUserAnswers
         .set(CorrectionCountryPage(index, index), country).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value
