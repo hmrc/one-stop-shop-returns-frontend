@@ -112,7 +112,7 @@ class PreviousReturnController @Inject()(
                 negativeAndZeroBalanceCorrectionCountries = PreviousReturnDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn),
                 vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn),
                 displayPayNow = displayPayNow,
-                totalVatPayable = outstanding,
+                totalVatPayable = vatDeclared,
                 returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount,
                 vatOwedInPence = vatOwedInPence
               ))
