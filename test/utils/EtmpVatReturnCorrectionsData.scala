@@ -28,7 +28,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
   val etmpVatReturnCorrectionSingleCountryScenario: EtmpVatReturn = EtmpVatReturn(
     returnReference = arbitrary[String].sample.value,
     returnVersion = arbitrary[LocalDateTime].sample.value,
-    periodKey = "23Q4",
+    periodKey = "23C4",
     returnPeriodFrom = LocalDate.of(2023, 12, 1),
     returnPeriodTo = LocalDate.of(2023, 12, 31),
     goodsSupplied = Seq(
@@ -52,7 +52,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     totalVATAmountPayableAllSpplied = BigDecimal(1100),
     correctionPreviousVATReturn = Seq(
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 8, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 8, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "DE",
@@ -60,7 +60,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "DE",
@@ -68,7 +68,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q4",
+        periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "DE",
@@ -96,7 +96,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
   val etmpVatReturnCorrectionMultipleCountryScenario: EtmpVatReturn = EtmpVatReturn(
     returnReference = arbitrary[String].sample.value,
     returnVersion = arbitrary[LocalDateTime].sample.value,
-    periodKey = "23Q4",
+    periodKey = "23C4",
     returnPeriodFrom = LocalDate.of(2023, 12, 1),
     returnPeriodTo = LocalDate.of(2023, 12, 31),
     goodsSupplied = Seq(
@@ -120,7 +120,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     totalVATAmountPayableAllSpplied = BigDecimal(1100),
     correctionPreviousVATReturn = Seq(
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 8, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 8, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "IT",
@@ -128,7 +128,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "IT",
@@ -136,7 +136,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q4",
+        periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "IT",
@@ -144,7 +144,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-510.40)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "LT",
@@ -152,7 +152,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q4",
+        periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "LT",
@@ -180,7 +180,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
   val etmpVatReturnCorrectionMultipleCountryNilScenario: EtmpVatReturn = EtmpVatReturn(
     returnReference = arbitrary[String].sample.value,
     returnVersion = arbitrary[LocalDateTime].sample.value,
-    periodKey = "23Q4",
+    periodKey = "23C4",
     returnPeriodFrom = LocalDate.of(2023, 12, 1),
     returnPeriodTo = LocalDate.of(2023, 12, 31),
     goodsSupplied = Seq(
@@ -211,7 +211,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     totalVATAmountPayableAllSpplied = BigDecimal(3250),
     correctionPreviousVATReturn = Seq(
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 8, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 8, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "EE",
@@ -219,7 +219,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-275.10)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "PL",
@@ -227,7 +227,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q4",
+        periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "PL",
@@ -235,7 +235,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-510.40)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "PL",
@@ -268,7 +268,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
   val etmpVatReturnCorrectionMultipleCountryMixPosAndNegCorrectionsScenario: EtmpVatReturn = EtmpVatReturn(
     returnReference = arbitrary[String].sample.value,
     returnVersion = arbitrary[LocalDateTime].sample.value,
-    periodKey = "23Q4",
+    periodKey = "23C4",
     returnPeriodFrom = LocalDate.of(2023, 12, 1),
     returnPeriodTo = LocalDate.of(2023, 12, 31),
     goodsSupplied = Seq(
@@ -292,7 +292,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     totalVATAmountPayableAllSpplied = BigDecimal(1150),
     correctionPreviousVATReturn = Seq(
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 8, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 8, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "AT",
@@ -300,7 +300,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-275.10)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "AT",
@@ -308,7 +308,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(550.21)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q4",
+        periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "AT",
@@ -316,7 +316,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-825.31)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q3",
+        periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "HR",
@@ -324,7 +324,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-880.33)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q4",
+        periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "HR",
@@ -332,7 +332,7 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         totalVATAmountCorrectionEUR = BigDecimal(-550.21)
       ),
       EtmpVatReturnCorrection(
-        periodKey = "23Q4",
+        periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 11, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 11, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "HR",

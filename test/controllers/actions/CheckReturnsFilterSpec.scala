@@ -81,11 +81,11 @@ class CheckReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAf
           ),
           EtmpObligationDetails(
             status = Fulfilled,
-            periodKey = "21Q4"
+            periodKey = "21C4"
           ),
           EtmpObligationDetails(
             status = Open,
-            periodKey = "22Q1"
+            periodKey = "22C1"
           )
         )
 

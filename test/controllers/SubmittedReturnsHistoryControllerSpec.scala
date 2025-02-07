@@ -83,7 +83,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     totalAmountOverdue = BigDecimal(0)
   )
 
-  private val etmpObligationDetails: EtmpObligationDetails = EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, "21Q3")
+  private val etmpObligationDetails: EtmpObligationDetails = EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, "21C3")
 
   private val etmpVatReturn: EtmpVatReturn = arbitraryEtmpVatReturn.arbitrary.sample.value
 
@@ -233,7 +233,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       "must throw an Illegal State Exception when a nil vat return exists and no charge is found" in {
 
         val nilEtmpVatReturn: EtmpVatReturn = etmpVatReturn.copy(
-          periodKey = "21Q3",
+          periodKey = "21C3",
           goodsSupplied = Seq.empty,
           totalVATGoodsSuppliedGBP = BigDecimal(0),
           totalVATAmountPayable = BigDecimal(0),
