@@ -91,9 +91,10 @@ trait Period {
     val standardPeriod = StandardPeriod(currentPeriod.year, currentPeriod.quarter)
     val year = standardPeriod.year
     val quarter = standardPeriod.quarter
+    val etmpQuarter = quarter.toString.replace("Q", "C")
     val lastYearDigits = year.toString.substring(2)
 
-    s"$lastYearDigits$quarter"
+    s"$lastYearDigits$etmpQuarter"
   }
 
 }
@@ -165,7 +166,8 @@ object Period {
 
   def fromEtmpPeriodKey(key: String): Period = {
     val yearLast2 = key.take(2)
-    val quarterString = key.drop(2)
+    val etmpQuarterString = key.drop(2)
+    val quarterString = etmpQuarterString.replace("C", "Q")
     val year = s"20$yearLast2".toInt
     val quarter = Quarter.fromString(quarterString) match {
       case Success(q) => q
