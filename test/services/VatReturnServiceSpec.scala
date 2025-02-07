@@ -359,7 +359,7 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       val expected = BigDecimal(1810.00)
 
-      assert(result.futureValue == expected)
+      assert(result.futureValue.amount == expected)
     }
 
     "must return an exception when connector returns a ErrorResponse" in {
@@ -381,7 +381,8 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     "must return a valid amount when connector returns a VatReturnResponse and the service returns a list of corrections" in {
 
       val correctionService = mock[CorrectionService]
-      val vatReturnService = new VatReturnServiceEtmpImpl(correctionService)
+      val vatReturnConnector = mock[VatReturnConnector]
+      val vatReturnService = new VatReturnServiceEtmpImpl(correctionService, vatReturnConnector)
 
       when(correctionService.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.successful(ReturnCorrectionValue(BigDecimal(1810)))
 
@@ -389,13 +390,14 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
       val expected = BigDecimal(1810.00)
 
-      assert(result.futureValue == expected)
+      assert(result.futureValue.amount == expected)
     }
 
     "must return an exception when connector returns a ErrorResponse" in {
 
       val correctionService = mock[CorrectionService]
-      val vatReturnService = new VatReturnServiceEtmpImpl(correctionService)
+      val vatReturnConnector = mock[VatReturnConnector]
+      val vatReturnService = new VatReturnServiceEtmpImpl(correctionService, vatReturnConnector)
       when(correctionService.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.failed(new Exception("error"))
 
       val result = vatReturnService.getLatestVatAmountForPeriodAndCountry(Country("LT", "Lithuania"), period)

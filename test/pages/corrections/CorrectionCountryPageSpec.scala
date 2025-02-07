@@ -43,7 +43,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
           val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-          CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries, strategicReturnApiEnabled = false)
+          CorrectionCountryPage(index, index).navigate(NormalMode, answers)
             .mustEqual(
               controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
                 NormalMode, answers.period, index, index, undeclaredCountry = false
@@ -57,13 +57,13 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
           val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-          CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq(), strategicReturnApiEnabled = false)
+          CorrectionCountryPage(index, index).navigate(NormalMode, answers)
             .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
         }
 
         "to Journey recovery page when answer is invalid" in {
 
-          CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = false)
+          CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers)
             .mustEqual(routes.JourneyRecoveryController.onPageLoad())
         }
       }
@@ -77,7 +77,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
           val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-          CorrectionCountryPage(index, index).navigate(CheckMode, answers, countries, strategicReturnApiEnabled = false)
+          CorrectionCountryPage(index, index).navigate(CheckMode, answers)
             .mustEqual(
               controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
                 CheckMode, answers.period, index, index, undeclaredCountry = false
@@ -91,13 +91,13 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
           val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-          CorrectionCountryPage(index, index).navigate(CheckMode, answers, Seq(), strategicReturnApiEnabled = false)
+          CorrectionCountryPage(index, index).navigate(CheckMode, answers)
             .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
         }
 
         "to Journey recovery page when answer is invalid" in {
 
-          CorrectionCountryPage(index, index).navigate(CheckMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = false)
+          CorrectionCountryPage(index, index).navigate(CheckMode, emptyUserAnswers)
             .mustEqual(routes.JourneyRecoveryController.onPageLoad())
         }
       }
@@ -111,7 +111,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
           val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, countries, strategicReturnApiEnabled = false)
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers)
             .mustEqual(
               controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
                 CheckThirdLoopMode, answers.period, index, index, undeclaredCountry = false
@@ -125,13 +125,13 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
           val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, Seq(), strategicReturnApiEnabled = false)
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers)
             .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index))
         }
 
         "to Journey recovery page when answer is invalid" in {
 
-          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = false)
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, emptyUserAnswers)
             .mustEqual(routes.JourneyRecoveryController.onPageLoad())
         }
       }
@@ -155,7 +155,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
             PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = previouslyDeclaredCorrectionAmount)
           ).success.value
 
-        CorrectionCountryPage(index, index).navigate(NormalMode, answers, countries, strategicReturnApiEnabled = true)
+        CorrectionCountryPage(index, index).navigate(NormalMode, answers)
           .mustEqual(
             controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
               NormalMode, answers.period, index, index, undeclaredCountry = false
@@ -169,13 +169,13 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
         val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-        CorrectionCountryPage(index, index).navigate(NormalMode, answers, Seq(), strategicReturnApiEnabled = true)
+        CorrectionCountryPage(index, index).navigate(NormalMode, answers)
           .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(NormalMode, answers.period, index, index))
       }
 
       "to Journey recovery page when answer is invalid" in {
 
-        CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = true)
+        CorrectionCountryPage(index, index).navigate(NormalMode, emptyUserAnswers)
           .mustEqual(routes.JourneyRecoveryController.onPageLoad())
       }
     }
@@ -196,7 +196,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
               PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = previouslyDeclaredCorrectionAmount)
             ).success.value
 
-          CorrectionCountryPage(index, index).navigate(CheckMode, answers, countries, strategicReturnApiEnabled = true)
+          CorrectionCountryPage(index, index).navigate(CheckMode, answers)
             .mustEqual(
               controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
                 CheckMode, answers.period, index, index, undeclaredCountry = false
@@ -210,13 +210,13 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
           val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-          CorrectionCountryPage(index, index).navigate(CheckMode, answers, Seq(), strategicReturnApiEnabled = true)
+          CorrectionCountryPage(index, index).navigate(CheckMode, answers)
             .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckMode, answers.period, index, index))
         }
 
         "to Journey recovery page when answer is invalid" in {
 
-          CorrectionCountryPage(index, index).navigate(CheckMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = true)
+          CorrectionCountryPage(index, index).navigate(CheckMode, emptyUserAnswers)
             .mustEqual(routes.JourneyRecoveryController.onPageLoad())
         }
       }
@@ -237,7 +237,7 @@ class CorrectionCountryPageSpec extends PageBehaviours {
               PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = previouslyDeclaredCorrectionAmount)
             ).success.value
 
-          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, countries, strategicReturnApiEnabled = true)
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers)
             .mustEqual(
               controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
                 CheckThirdLoopMode, answers.period, index, index, undeclaredCountry = false
@@ -251,13 +251,13 @@ class CorrectionCountryPageSpec extends PageBehaviours {
 
           val answers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
-          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers, Seq(), strategicReturnApiEnabled = true)
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, answers)
             .mustEqual(controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(CheckThirdLoopMode, answers.period, index, index))
         }
 
         "to Journey recovery page when answer is invalid" in {
 
-          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, emptyUserAnswers, Seq(), strategicReturnApiEnabled = true)
+          CorrectionCountryPage(index, index).navigate(CheckThirdLoopMode, emptyUserAnswers)
             .mustEqual(routes.JourneyRecoveryController.onPageLoad())
         }
       }

@@ -53,9 +53,9 @@ class CheckVatPayableAmountController @Inject()(
           } yield {
             val summaryList = SummaryListViewModel(
               rows = Seq(
-                Some(PreviousVatTotalSummary.row(originalAmount)),
+                Some(PreviousVatTotalSummary.row(originalAmount.amount)),
                 CountryVatCorrectionSummary.row(request.userAnswers, periodIndex, countryIndex, mode),
-                NewVatTotalSummary.row(request.userAnswers, periodIndex, countryIndex, originalAmount)
+                NewVatTotalSummary.row(request.userAnswers, periodIndex, countryIndex, originalAmount.amount)
               ).flatten
             ).withCssClass("govuk-!-margin-bottom-9")
 
