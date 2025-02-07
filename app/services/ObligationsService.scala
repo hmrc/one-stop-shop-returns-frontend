@@ -33,5 +33,4 @@ class ObligationsService @Inject()(vatReturnConnector: VatReturnConnector)
       etmpObligations.obligations.flatMap(_.obligationDetails).filter(_.status == EtmpObligationsFulfilmentStatus.Fulfilled)
     }
   }
-
 }

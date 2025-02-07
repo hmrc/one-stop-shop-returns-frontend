@@ -643,5 +643,5 @@ newPreviousReturn.vatOwed.titleWithCorrections = VAT owed (including corrections
 
 newPreviousReturn.totalVat.title = Total VAT payable
 
-
-
+noReturnsDue.title = You do not have any One Stop Shop returns to complete
+noReturnsDue.heading = You do not have any One Stop Shop returns to complete

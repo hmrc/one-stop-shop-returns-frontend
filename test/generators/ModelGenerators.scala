@@ -28,6 +28,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Vrn
+import viewmodels.yourAccount.{CurrentReturns, Return}
 
 import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import scala.math.BigDecimal.RoundingMode
@@ -483,19 +484,62 @@ trait ModelGenerators {
     }
   }
 
-    implicit lazy val arbitraryPartialReturnPeriod: Arbitrary[PartialReturnPeriod] = {
-      Arbitrary {
-        for {
-          firstDay <- arbitraryPeriod.arbitrary.map(_.firstDay)
-          lastDay <- arbitraryPeriod.arbitrary.map(_.lastDay)
-          year <- arbitraryPeriod.arbitrary.map(_.year)
-          quarter <- arbitraryPeriod.arbitrary.map(_.quarter)
-        } yield PartialReturnPeriod(
+  implicit lazy val arbitraryPartialReturnPeriod: Arbitrary[PartialReturnPeriod] = {
+    Arbitrary {
+      for {
+        firstDay <- arbitraryPeriod.arbitrary.map(_.firstDay)
+        lastDay <- arbitraryPeriod.arbitrary.map(_.lastDay)
+        year <- arbitraryPeriod.arbitrary.map(_.year)
+        quarter <- arbitraryPeriod.arbitrary.map(_.quarter)
+      } yield PartialReturnPeriod(
+        firstDay = firstDay,
+        lastDay = lastDay,
+        year = year,
+        quarter = quarter
+      )
+    }
+  }
+
+  implicit lazy val arbitraryReturn: Arbitrary[Return] = {
+    Arbitrary {
+      for {
+        period <- arbitrary[StandardPeriod]
+        firstDay <- arbitraryPeriod.arbitrary.map(_.firstDay)
+        lastDay <- arbitraryPeriod.arbitrary.map(_.lastDay)
+        dueDate <- arbitraryPeriod.arbitrary.map(_.paymentDeadline)
+        submissionStatus <- Gen.oneOf(SubmissionStatus.values)
+        inProgress <- arbitrary[Boolean]
+        isOldest <- arbitrary[Boolean]
+      } yield {
+        Return(
+          period = period,
           firstDay = firstDay,
           lastDay = lastDay,
-          year = year,
-          quarter = quarter
+          dueDate = dueDate,
+          submissionStatus = submissionStatus,
+          inProgress = inProgress,
+          isOldest = isOldest
         )
       }
     }
+  }
+
+  implicit lazy val arbitraryCurrentReturns: Arbitrary[CurrentReturns] = {
+    Arbitrary {
+      for {
+        returns <- Gen.listOfN(3, arbitraryReturn.arbitrary)
+        excluded <- arbitrary[Boolean]
+        excludedReturns <- Gen.listOfN(1, arbitraryReturn.arbitrary)
+      } yield {
+        CurrentReturns(
+          returns = returns,
+          excluded = excluded,
+          excludedReturns = excludedReturns
+        )
+      }
+    }
+  }
+
 }
+
+  

@@ -334,3 +334,7 @@ GET         /iv/failed-matching                                                 
 GET         /iv/failed-identity-verification                                                                        controllers.auth.IvReturnController.failed(continueUrl: RedirectUrl)
 
 GET         /no-longer-able-to-view-return                                                                          controllers.NoLongerAbleToViewReturnController.onPageLoad()
+
+GET         /start-return                                                                                           controllers.StartDueReturnController.onPageLoad()
+
+GET         /no-returns-due                                                                                         controllers.NoReturnsDueController.onPageLoad()
