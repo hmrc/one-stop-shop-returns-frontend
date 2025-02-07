@@ -21,6 +21,7 @@ import play.api.i18n.Messages
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
+import utils.CurrencyFormatter.currencyFormat
 
 import java.time.LocalDate
 
@@ -45,7 +46,7 @@ object Payment {
       if (hasUnknownPayments) {
         payment.period.displayText
       } else {
-        messages("whichVatPeriodToPay.amountKnown", payment.amountOwed, payment.period.displayShortText)
+        messages("whichVatPeriodToPay.amountKnown", currencyFormat(payment.amountOwed), payment.period.displayShortText)
       }
 
     payments.zipWithIndex.map {
