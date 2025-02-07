@@ -519,7 +519,7 @@ noMoreWelsh.heading = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o 
 noMoreWelsh.submit = Yn eich blaen
 whichVatPeriodToPay.title = Which VAT period do you want to pay?
 whichVatPeriodToPay.heading = Which VAT period do you want to pay?
-whichVatPeriodToPay.amountKnown = You owe <b>£{0}</b> for {1}
+whichVatPeriodToPay.amountKnown = You owe <b>{0}</b> for {1}
 whichVatPeriodToPay.error.required = Select a period to pay
 
 noPayments.title = You do not owe any One Stop Shop VAT
