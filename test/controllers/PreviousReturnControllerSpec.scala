@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
-import models.Period.getPeriod
+import models.Period.{fromEtmpPeriodKey, getPeriod}
 import models.Quarter.{Q1, Q3}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
@@ -41,7 +41,7 @@ import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.{PartialReturnPeriodService, VatReturnSalesService}
+import services.VatReturnSalesService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle}
 import utils.FutureSyntax.FutureOps
@@ -59,14 +59,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
   private val vatReturnSalesService = mock[VatReturnSalesService]
   private val mockFinancialDataConnector = mock[FinancialDataConnector]
   private val correctionConnector = mock[CorrectionConnector]
-  private val mockPartialReturnPeriodService = mock[PartialReturnPeriodService]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockVatReturnConnector)
     Mockito.reset(vatReturnSalesService)
     Mockito.reset(mockFinancialDataConnector)
     Mockito.reset(correctionConnector)
-    Mockito.reset(mockPartialReturnPeriodService)
     super.beforeEach()
   }
 
@@ -608,19 +606,19 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             .configure("features.strategic-returns.enabled" -> true)
             .overrides(
               bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-              bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService)
+              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
             ).build()
 
           running(application) {
             when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Right(etmpVatReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn None.toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(period).url)
+            val determinedPeriod: Period = fromEtmpPeriodKey(etmpVatReturn.periodKey)
+
+            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -631,7 +629,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 NewPreviousReturnSummary.rowPayableVatDeclared(etmpVatReturn.totalVATAmountDueForAllMSGBP),
                 NewPreviousReturnSummary.rowAmountLeftToPay(Some(charge.outstandingAmount)),
                 NewPreviousReturnSummary.rowReturnSubmittedDate(etmpVatReturn.returnVersion),
-                NewPreviousReturnSummary.rowPaymentDueDate(period.paymentDeadline),
+                NewPreviousReturnSummary.rowPaymentDueDate(determinedPeriod.paymentDeadline),
                 NewPreviousReturnSummary.rowReturnReference(etmpVatReturn.returnReference),
                 NewPreviousReturnSummary.rowPaymentReference(etmpVatReturn.paymentReference)
               ).flatten
@@ -658,7 +656,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             status(result) mustBe OK
             contentAsString(result) mustBe
               view(
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 allEuSales,
                 correctionRowsSummaryList,
@@ -680,19 +678,19 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             .configure("features.strategic-returns.enabled" -> true)
             .overrides(
               bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-              bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService)
+              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
             ).build()
 
           running(application) {
             when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Right(etmpVatReturnNoCorrections).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn None.toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(period).url)
+            val determinedPeriod: Period = fromEtmpPeriodKey(etmpVatReturnNoCorrections.periodKey)
+
+            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -703,7 +701,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 NewPreviousReturnSummary.rowPayableVatDeclared(etmpVatReturnNoCorrections.totalVATAmountDueForAllMSGBP),
                 NewPreviousReturnSummary.rowAmountLeftToPay(Some(charge.outstandingAmount)),
                 NewPreviousReturnSummary.rowReturnSubmittedDate(etmpVatReturnNoCorrections.returnVersion),
-                NewPreviousReturnSummary.rowPaymentDueDate(period.paymentDeadline),
+                NewPreviousReturnSummary.rowPaymentDueDate(determinedPeriod.paymentDeadline),
                 NewPreviousReturnSummary.rowReturnReference(etmpVatReturnNoCorrections.returnReference),
                 NewPreviousReturnSummary.rowPaymentReference(etmpVatReturnNoCorrections.paymentReference)
               ).flatten
@@ -730,7 +728,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             status(result) mustBe OK
             contentAsString(result) mustBe
               view(
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 allEuSales,
                 correctionRowsSummaryList,
@@ -761,19 +759,19 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             .configure("features.strategic-returns.enabled" -> true)
             .overrides(
               bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-              bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService)
+              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
             ).build()
 
           running(application) {
             when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Right(etmpVatReturnPositiveCorrections).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn None.toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(period).url)
+            val determinedPeriod: Period = fromEtmpPeriodKey(etmpVatReturnPositiveCorrections.periodKey)
+
+            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -784,7 +782,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 NewPreviousReturnSummary.rowPayableVatDeclared(etmpVatReturnPositiveCorrections.totalVATAmountDueForAllMSGBP),
                 NewPreviousReturnSummary.rowAmountLeftToPay(Some(charge.outstandingAmount)),
                 NewPreviousReturnSummary.rowReturnSubmittedDate(etmpVatReturnPositiveCorrections.returnVersion),
-                NewPreviousReturnSummary.rowPaymentDueDate(period.paymentDeadline),
+                NewPreviousReturnSummary.rowPaymentDueDate(determinedPeriod.paymentDeadline),
                 NewPreviousReturnSummary.rowReturnReference(etmpVatReturnPositiveCorrections.returnReference),
                 NewPreviousReturnSummary.rowPaymentReference(etmpVatReturnPositiveCorrections.paymentReference)
               ).flatten
@@ -812,7 +810,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             status(result) mustBe OK
             contentAsString(result) mustBe
               view(
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 allEuSales,
                 correctionRowsSummaryList,
@@ -844,18 +842,18 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             .configure("features.strategic-returns.enabled" -> true)
             .overrides(
               bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-              bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService)
+              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
             ).build()
 
           running(application) {
             when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Right(nilEtmpVatReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn None.toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(period).url)
+            val determinedPeriod: Period = fromEtmpPeriodKey(nilEtmpVatReturn.periodKey)
+
+            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -866,7 +864,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 NewPreviousReturnSummary.rowPayableVatDeclared(nilEtmpVatReturn.totalVATAmountDueForAllMSGBP),
                 NewPreviousReturnSummary.rowAmountLeftToPay(None),
                 NewPreviousReturnSummary.rowReturnSubmittedDate(nilEtmpVatReturn.returnVersion),
-                NewPreviousReturnSummary.rowPaymentDueDate(period.paymentDeadline),
+                NewPreviousReturnSummary.rowPaymentDueDate(determinedPeriod.paymentDeadline),
                 NewPreviousReturnSummary.rowReturnReference(nilEtmpVatReturn.returnReference),
                 NewPreviousReturnSummary.rowPaymentReference(nilEtmpVatReturn.paymentReference)
               ).flatten
@@ -890,7 +888,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             status(result) mustBe OK
             contentAsString(result) mustBe
               view(
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 allEuSales,
                 correctionRowsSummaryList,
@@ -910,19 +908,19 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             .configure("features.strategic-returns.enabled" -> true)
             .overrides(
               bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-              bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService)
+              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
             ).build()
 
           running(application) {
             when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Right(etmpVatReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "ERROR")).toFuture
             when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn None.toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(period).url)
+            val determinedPeriod: Period = fromEtmpPeriodKey(etmpVatReturn.periodKey)
+
+            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -933,7 +931,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 NewPreviousReturnSummary.rowPayableVatDeclared(etmpVatReturn.totalVATAmountDueForAllMSGBP),
                 NewPreviousReturnSummary.rowAmountLeftToPay(None),
                 NewPreviousReturnSummary.rowReturnSubmittedDate(etmpVatReturn.returnVersion),
-                NewPreviousReturnSummary.rowPaymentDueDate(period.paymentDeadline),
+                NewPreviousReturnSummary.rowPaymentDueDate(determinedPeriod.paymentDeadline),
                 NewPreviousReturnSummary.rowReturnReference(etmpVatReturn.returnReference),
                 NewPreviousReturnSummary.rowPaymentReference(etmpVatReturn.paymentReference)
               ).flatten
@@ -960,7 +958,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             status(result) mustBe OK
             contentAsString(result) mustBe
               view(
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 allEuSales,
                 correctionRowsSummaryList,
@@ -981,7 +979,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           val exceededPeriod = getPeriod(exceededDate)
           val vatReturnNoCorrections: EtmpVatReturn = etmpVatReturn.copy(
             correctionPreviousVATReturn = Seq.empty,
-            periodKey = exceededPeriod.toString.replace("-", "").substring(2, 6)
+            periodKey = exceededPeriod.toEtmpPeriodString,
+            returnPeriodFrom = exceededPeriod.firstDay,
+            returnPeriodTo = exceededPeriod.lastDay
           )
 
           val excludedTrader: ExcludedTrader = ExcludedTrader(
@@ -1010,7 +1010,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
               implicit val msgs: Messages = messages(application)
 
-              val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(exceededPeriod).url)
+              val determinedPeriod: Period = fromEtmpPeriodKey(vatReturnNoCorrections.periodKey)
+
+              val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(determinedPeriod).url)
 
               val result = route(application, request).value
 
@@ -1080,7 +1082,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
               implicit val msgs: Messages = messages(application)
 
-              val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(exceededPeriod).url)
+              val determinedPeriod: Period = fromEtmpPeriodKey(vatReturnNoCorrections.periodKey)
+
+              val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(determinedPeriod).url)
 
               val result = route(application, request).value
 
@@ -1137,26 +1141,30 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         "when there is a partial return period" in {
 
           val partialReturnPeriod: PartialReturnPeriod = arbitraryPartialReturnPeriod.arbitrary.sample.value
-          val periodKey = s"${partialReturnPeriod.year.toString.substring(2, 4)}${partialReturnPeriod.quarter}"
-          val partialReturn: EtmpVatReturn = etmpVatReturn.copy(periodKey = periodKey)
+          val periodKey = partialReturnPeriod.toEtmpPeriodString
+          val partialReturn: EtmpVatReturn = etmpVatReturn.copy(
+            periodKey = periodKey,
+            returnPeriodFrom = partialReturnPeriod.firstDay,
+            returnPeriodTo = partialReturnPeriod.lastDay
+          )
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .configure("features.strategic-returns.enabled" -> true)
             .overrides(
               bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-              bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService)
+              bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
             ).build()
 
           running(application) {
             when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Right(partialReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Some(partialReturnPeriod).toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(partialReturnPeriod).url)
+            val determinedPeriod: Period = fromEtmpPeriodKey(partialReturn.periodKey)
+
+            val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -1167,7 +1175,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 NewPreviousReturnSummary.rowPayableVatDeclared(partialReturn.totalVATAmountDueForAllMSGBP),
                 NewPreviousReturnSummary.rowAmountLeftToPay(Some(charge.outstandingAmount)),
                 NewPreviousReturnSummary.rowReturnSubmittedDate(partialReturn.returnVersion),
-                NewPreviousReturnSummary.rowPaymentDueDate(partialReturnPeriod.paymentDeadline),
+                NewPreviousReturnSummary.rowPaymentDueDate(determinedPeriod.paymentDeadline),
                 NewPreviousReturnSummary.rowReturnReference(partialReturn.returnReference),
                 NewPreviousReturnSummary.rowPaymentReference(partialReturn.paymentReference)
               ).flatten

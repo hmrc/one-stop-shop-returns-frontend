@@ -73,7 +73,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistration.excludedTrader) thenReturn Some(excludedTrader)
 
       val fulfilledObligations = Seq(
-        EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, finalReturnPeriod.toEtmpPeriodString(finalReturnPeriod))
+        EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, finalReturnPeriod.toEtmpPeriodString)
       )
       
       when(mockObligationService.getFulfilledObligations(excludedTrader.vrn)(hc)) thenReturn Future.successful(fulfilledObligations)
@@ -89,7 +89,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       when(mockRegistration.excludedTrader) thenReturn Some(excludedTrader)
 
       val fulfilledObligations = Seq(
-        EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Open, finalReturnPeriod.toEtmpPeriodString(period))
+        EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Open, period.toEtmpPeriodString)
       )
       when(mockObligationService.getFulfilledObligations(excludedTrader.vrn)(hc)) thenReturn Future.successful(fulfilledObligations)
 

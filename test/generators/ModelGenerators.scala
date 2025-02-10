@@ -17,6 +17,7 @@
 package generators
 
 import connectors.SavedUserAnswers
+import models.Period.fromEtmpPeriodKey
 import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, SalesDetails, SalesFromEuCountry, SalesToCountry, VatReturn, VatRate as DomainVatRate, VatRateType as DomainVatRateType}
@@ -451,8 +452,6 @@ trait ModelGenerators {
         returnReference <- arbitrary[String]
         returnVersion <- arbitrary[LocalDateTime]
         periodKey <- arbitraryPeriodKey.arbitrary
-        returnPeriodFrom <- arbitrary[LocalDate]
-        returnPeriodTo <- arbitrary[LocalDate]
         amountOfGoodsSupplied <- Gen.oneOf(List(1, 2, 3))
         goodsSupplied <- Gen.listOfN(amountOfGoodsSupplied, arbitrary[EtmpVatReturnGoodsSupplied])
         totalVATGoodsSuppliedGBP <- arbitrary[BigDecimal]
@@ -469,8 +468,8 @@ trait ModelGenerators {
         returnReference = returnReference,
         returnVersion = returnVersion,
         periodKey = periodKey,
-        returnPeriodFrom = returnPeriodFrom,
-        returnPeriodTo = returnPeriodTo,
+        returnPeriodFrom = fromEtmpPeriodKey(periodKey).firstDay,
+        returnPeriodTo = fromEtmpPeriodKey(periodKey).lastDay,
         goodsSupplied = goodsSupplied,
         totalVATGoodsSuppliedGBP = totalVATGoodsSuppliedGBP,
         totalVATAmountPayable = totalVATAmountPayable,
@@ -487,15 +486,12 @@ trait ModelGenerators {
   implicit lazy val arbitraryPartialReturnPeriod: Arbitrary[PartialReturnPeriod] = {
     Arbitrary {
       for {
-        firstDay <- arbitraryPeriod.arbitrary.map(_.firstDay)
-        lastDay <- arbitraryPeriod.arbitrary.map(_.lastDay)
-        year <- arbitraryPeriod.arbitrary.map(_.year)
-        quarter <- arbitraryPeriod.arbitrary.map(_.quarter)
+        period <- arbitraryPeriod.arbitrary
       } yield PartialReturnPeriod(
-        firstDay = firstDay,
-        lastDay = lastDay,
-        year = year,
-        quarter = quarter
+        firstDay = period.firstDay.withDayOfMonth(9),
+        lastDay = period.lastDay,
+        year = period.year,
+        quarter = period.quarter
       )
     }
   }
@@ -504,18 +500,15 @@ trait ModelGenerators {
     Arbitrary {
       for {
         period <- arbitrary[StandardPeriod]
-        firstDay <- arbitraryPeriod.arbitrary.map(_.firstDay)
-        lastDay <- arbitraryPeriod.arbitrary.map(_.lastDay)
-        dueDate <- arbitraryPeriod.arbitrary.map(_.paymentDeadline)
         submissionStatus <- Gen.oneOf(SubmissionStatus.values)
         inProgress <- arbitrary[Boolean]
         isOldest <- arbitrary[Boolean]
       } yield {
         Return(
           period = period,
-          firstDay = firstDay,
-          lastDay = lastDay,
-          dueDate = dueDate,
+          firstDay = period.firstDay,
+          lastDay = period.lastDay,
+          dueDate = period.paymentDeadline,
           submissionStatus = submissionStatus,
           inProgress = inProgress,
           isOldest = isOldest
