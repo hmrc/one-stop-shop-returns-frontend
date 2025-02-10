@@ -38,101 +38,87 @@
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
-    pageTitle = titleNoForm(
-        messages("previousReturn.title"),
-        Some(vatReturn.displayStartEnd)
-    ),
-    showBackLink = false
+  pageTitle = titleNoForm(
+    messages("previousReturn.title"),
+    Some(vatReturn.displayStartEnd)
+  ),
+  showBackLink = false
 ) {
-
-    <div class="govuk-breadcrumbs" style="margin-bottom:50px;">
-        <ol class="govuk-breadcrumbs__list">
-            <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@{externalUrl.getOrElse(routes.YourAccountController.onPageLoad())}" id="your-account">@messages("breadcrumbs.yourAccount")</a>
-            </li>
-            <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@routes.SubmittedReturnsHistoryController.onPageLoad()" id="submitted-returns">@messages("breadcrumbs.submittedReturns")</a>
-            </li>
-            <li class="govuk-breadcrumbs__list-item">
-                @vatReturn.displayStartEnd
-            </li>
-        </ol>
-    </div>
-
-    @if(displayBanner) {
-        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-            <div class="govuk-notification-banner__header">
-                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                    @messages("notificationBanner.title")
-                </h2>
-            </div>
-            <div class="govuk-notification-banner__content">
-                <p class="govuk-notification-banner__heading">
-                    @messages("notificationBanner.text")
-                </p>
-            </div>
-        </div>
-    }
-
-    <header class="hmrc-page-heading">
-        <p class="govuk-caption-xl hmrc-caption-xl">@messages("previousReturn.title")</p>
-        <h1 class="govuk-heading-xl">@vatReturn.displayStartEnd</h1>
-    </header>
-
-    <h2 class="govuk-heading-l">@messages("previousReturn.summary.title")</h2>
-
-    @govukSummaryList(mainList)
-
-    @if(displayPayNow) {
-        <p class="govuk-!-margin-bottom-9">
-            <a class="govuk-button" href="@routes.PaymentController.makePayment(vatReturn.period, vatOwedInPence)">@messages("previousReturn.payNow")</a>
+    
+  @if(displayBanner) {
+    <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+        @messages("notificationBanner.title")
+        </h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">
+        @messages("notificationBanner.text")
         </p>
+      </div>
+    </div>
+  }
+
+  <header class="hmrc-page-heading">
+    <p class="govuk-caption-xl hmrc-caption-xl">@messages("previousReturn.title")</p>
+    <h1 class="govuk-heading-xl">@vatReturn.displayStartEnd</h1>
+  </header>
+
+  <h2 class="govuk-heading-l">@messages("previousReturn.summary.title")</h2>
+
+  @govukSummaryList(mainList)
+
+  @if(displayPayNow) {
+    <p class="govuk-!-margin-bottom-9">
+      <a class="govuk-button" href="@routes.PaymentController.makePayment(vatReturn.period, vatOwedInPence)">@messages("previousReturn.payNow")</a>
+    </p>
+  }
+
+  <h2 class="govuk-heading-l">@messages("previousReturn.details.title")</h2>
+
+  @for(item <- niSalesList) {
+    <h2 class="govuk-heading-m">@{
+      item.title
+    }</h2>
+
+    @govukTable(item.list)
+  }
+
+  @for(item <- euSalesList) {
+    <h2 class="govuk-heading-m">@{
+      item.title
+    }</h2>
+
+    @govukTable(item.list)
+  }
+
+  @if(correctionsForPeriodList.nonEmpty) {
+
+    <h2 class="govuk-heading-m">@{
+      correctionsForPeriodList.get.title
+    }</h2>
+
+    @govukTable(correctionsForPeriodList.get.list)
+
+    <h2 class="govuk-heading-m">@messages("previousReturn.correction.vatDeclared.title")</h2>
+
+  }
+
+  @for(item <- declaredVatAfterCorrections) {
+    <h2 class="govuk-heading-s">@{
+      item.title
+    }</h2>
+
+    @if(item.hint.isDefined) {
+      <p class="govuk-body">@item.hint.get</p>
     }
 
-    <h2 class="govuk-heading-l">@messages("previousReturn.details.title")</h2>
+    @govukSummaryList(item.list)
+  }
 
-    @for(item <- niSalesList) {
-        <h2 class="govuk-heading-m">@{
-            item.title
-        }</h2>
-
-        @govukTable(item.list)
-    }
-
-    @for(item <- euSalesList) {
-        <h2 class="govuk-heading-m">@{
-            item.title
-        }</h2>
-
-        @govukTable(item.list)
-    }
-
-    @if(correctionsForPeriodList.nonEmpty) {
-
-        <h2 class="govuk-heading-m">@{
-            correctionsForPeriodList.get.title
-        }</h2>
-
-        @govukTable(correctionsForPeriodList.get.list)
-
-        <h2 class="govuk-heading-m">@messages("previousReturn.correction.vatDeclared.title")</h2>
-
-    }
-
-    @for(item <- declaredVatAfterCorrections) {
-        <h2 class="govuk-heading-s">@{
-            item.title
-        }</h2>
-
-        @if(item.hint.isDefined) {
-            <p class="govuk-body">@item.hint.get</p>
-        }
-
-        @govukSummaryList(item.list)
-    }
-
-    @if(totalVatList.isDefined) {
-        @govukSummaryList(totalVatList.get)
-    }
+  @if(totalVatList.isDefined) {
+    @govukSummaryList(totalVatList.get)
+  }
 
 }
