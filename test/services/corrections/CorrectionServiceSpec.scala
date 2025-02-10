@@ -20,16 +20,14 @@ import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import connectors.corrections.CorrectionConnector
-import models.{Country, DataMissingError, Index, StandardPeriod, VatOnSales}
+import models.{Country, DataMissingError, Index, StandardPeriod}
 import models.Quarter.{Q1, Q2}
-import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
-import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate, VatRateType, VatReturn}
 import models.requests.corrections.CorrectionRequest
 import models.responses.UnexpectedResponseStatus
 import org.mockito.Mockito.*
 import org.scalacheck.Arbitrary.arbitrary
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.*
@@ -42,7 +40,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
-  implicit private lazy val ec: ExecutionContext = ExecutionContext.global
 
   ".fromUserAnswers" - {
 

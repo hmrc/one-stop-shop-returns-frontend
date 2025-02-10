@@ -30,7 +30,9 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Cou
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 import repositories.UserAnswersRepository
+import services.VatReturnService
 import services.corrections.CorrectionService
 import views.html.corrections.CorrectionCountryView
 
@@ -130,23 +132,26 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[UserAnswersRepository]
-      val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
-      val config = mock[FrontendAppConfig]
+      val mockVatReturnService = mock[VatReturnService]
 
       when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(config.strategicReturnApiEnabled) thenReturn false
+      when(mockVatReturnService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, BigDecimal(1000)))
 
       val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
       val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+      val previouslyDeclaredCorrectionAmount = PreviouslyDeclaredCorrectionAmount(previouslyDeclared = false, amount = 1000)
+      val expectedAnswers3 = expectedAnswers2.set(
+        PreviouslyDeclaredCorrectionAmountQuery(index, index),
+        previouslyDeclaredCorrectionAmount
+      ).success.value
+
       val application =
-        applicationBuilder(userAnswers = Some(expectedAnswers2))
+        applicationBuilder(userAnswers = Some(expectedAnswers3))
           .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
-          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockService))
+          .overrides(bind[VatReturnService].toInstance(mockVatReturnService))
           .build()
 
       running(application) {
@@ -158,8 +163,8 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers3).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers3))
       }
     }
     
@@ -167,23 +172,26 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
       val country = completeVatReturn.salesFromNi.map(_.countryOfConsumption).head
       val mockSessionRepository = mock[UserAnswersRepository]
-      val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
-      val config = mock[FrontendAppConfig]
+      val mockVatReturnService = mock[VatReturnService]
 
       when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
-      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(config.strategicReturnApiEnabled) thenReturn false
+      when(mockVatReturnService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn
+        Future.successful(PreviouslyDeclaredCorrectionAmount(false, BigDecimal(1000)))
 
       val expectedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
       val expectedAnswers2 = expectedAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+      val previouslyDeclaredCorrectionAmount = PreviouslyDeclaredCorrectionAmount(previouslyDeclared = false, amount = 1000)
+      val expectedAnswers3 = expectedAnswers2.set(
+        PreviouslyDeclaredCorrectionAmountQuery(index, index),
+        previouslyDeclaredCorrectionAmount
+      ).success.value
       val application =
-        applicationBuilder(userAnswers = Some(expectedAnswers2))
+        applicationBuilder(userAnswers = Some(expectedAnswers3))
           .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
-          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockService))
+          .overrides(bind[VatReturnService].toInstance(mockVatReturnService))
           .build()
 
       running(application) {
@@ -195,8 +203,8 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers2).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers2))
+        redirectLocation(result).value mustEqual CorrectionCountryPage(index, index).navigate(NormalMode, expectedAnswers3).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers3))
       }
     }
     
@@ -204,24 +212,26 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
     "must save the answer and redirect to the next page when valid data is submitted when the questions have been answered" in {
 
       val mockSessionRepository = mock[UserAnswersRepository]
-      val mockVatReturnConnector = mock[VatReturnConnector]
       val mockService = mock[CorrectionService]
+      val mockVatReturnService = mock[VatReturnService]
 
       when(mockService.getCorrectionsForPeriod(any())(any(), any())).thenReturn(Future.successful(List.empty))
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
+      when(mockVatReturnService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn
+        Future.successful(PreviouslyDeclaredCorrectionAmount(false, BigDecimal(1000)))
+      val previouslyDeclaredCorrectionAmount = PreviouslyDeclaredCorrectionAmount(previouslyDeclared = false, amount = 1000)
       val expectedAnswers2 = emptyUserAnswers
         .set(CorrectionCountryPage(index, index), country).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
         .set(CorrectionCountryPage(index, Index(1)), country2).success.value
+        .set(PreviouslyDeclaredCorrectionAmountQuery(index, Index(1)), previouslyDeclaredCorrectionAmount).success.value
 
       val application =
         applicationBuilder(userAnswers = Some(expectedAnswers2))
           .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
-          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[CorrectionService].toInstance(mockService))
+          .overrides(bind[VatReturnService].toInstance(mockVatReturnService))
           .build()
 
       running(application) {

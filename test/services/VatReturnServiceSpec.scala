@@ -21,19 +21,20 @@ import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import connectors.VatReturnConnector
 import models.corrections.{CorrectionToCountry, ReturnCorrectionValue}
-import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
-import models.registration._
+import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate as DomainVatRate, VatRateType as DomainVatRateType}
+import models.registration.*
 import models.requests.VatReturnRequest
 import models.responses.UnexpectedResponseStatus
 import models.{Country, DataMissingError, Index, PartialReturnPeriod, StandardPeriod, VatOnSales, VatRate, VatRateType}
 import models.Quarter.Q4
+import models.etmp.EtmpVatReturn
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.{BeforeAndAfterEach, PrivateMethodTester}
 import org.scalatestplus.mockito.MockitoSugar
-import pages._
-import queries._
+import pages.*
+import queries.*
 import services.corrections.CorrectionService
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -380,11 +381,14 @@ class VatReturnServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
     "must return a valid amount when connector returns a VatReturnResponse and the service returns a list of corrections" in {
 
+      val etmpVatReturn: EtmpVatReturn = arbitraryEtmpVatReturn.arbitrary.sample.value
       val correctionService = mock[CorrectionService]
       val vatReturnConnector = mock[VatReturnConnector]
       val vatReturnService = new VatReturnServiceEtmpImpl(correctionService, vatReturnConnector)
 
       when(correctionService.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.successful(ReturnCorrectionValue(BigDecimal(1810)))
+
+      when(vatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Future.successful(Right(etmpVatReturn))
 
       val result = vatReturnService.getLatestVatAmountForPeriodAndCountry(Country("LT", "Lithuania"), period)
 

@@ -24,7 +24,8 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
+import queries.corrections.PreviouslyDeclaredCorrectionAmount
 import services.VatReturnService
 
 import scala.concurrent.Future
@@ -35,7 +36,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
 
     "must return OK and the correct view in Normal mode for a GET" in {
       val mockService = mock[VatReturnService]
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(20))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, BigDecimal(20)))
       val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
@@ -56,7 +57,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
 
     "must return OK and the correct view in Check Second Loop Mode for a GET" in {
       val mockService = mock[VatReturnService]
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(20))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, BigDecimal(20)))
       val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CountryVatCorrectionPage(index, index), BigDecimal(10)).success.value
@@ -77,7 +78,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
 
     "must return OK and the correct view with missing data warning for a GET" in {
       val mockService = mock[VatReturnService]
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(BigDecimal(20))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, BigDecimal(20)))
       val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(CorrectionReturnPeriodPage(index), period).success.value
       val application = applicationBuilder(userAnswers = Some(userAnswers))
