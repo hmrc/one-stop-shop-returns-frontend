@@ -24,7 +24,7 @@
 
 @(periodToPaymentInfo: Map[Period, Payment], displayBanner: Boolean, externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title")), showBackLink = false) {
+@layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
 
   @if(displayBanner) {
     <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
@@ -41,7 +41,7 @@
     </div>
   }
 
-  <h1 class="govuk-heading-xl">@messages("submittedReturnsHistory.heading")</h1>
+  <h1 class="govuk-heading-l">@messages("submittedReturnsHistory.heading")</h1>
 
   <p class="govuk-body">@messages("submittedReturnsHistory.p1")</p>
 

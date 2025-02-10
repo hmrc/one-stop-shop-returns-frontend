@@ -37,14 +37,8 @@
         externalUrl: Option[String] = None
 )(implicit request: Request[_], messages: Messages)
 
-@layout(
-  pageTitle = titleNoForm(
-    messages("previousReturn.title"),
-    Some(vatReturn.displayStartEnd)
-  ),
-  showBackLink = false
-) {
-    
+@layout(pageTitle = titleNoForm(messages("previousReturn.title"), Some(vatReturn.displayStartEnd))) {
+
   @if(displayBanner) {
     <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
       <div class="govuk-notification-banner__header">
@@ -62,7 +56,7 @@
 
   <header class="hmrc-page-heading">
     <p class="govuk-caption-xl hmrc-caption-xl">@messages("previousReturn.title")</p>
-    <h1 class="govuk-heading-xl">@vatReturn.displayStartEnd</h1>
+    <h1 class="govuk-heading-l">@vatReturn.displayStartEnd</h1>
   </header>
 
   <h2 class="govuk-heading-l">@messages("previousReturn.summary.title")</h2>
