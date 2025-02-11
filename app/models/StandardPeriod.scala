@@ -87,8 +87,8 @@ trait Period {
 
   override def toString: String = s"$year-${quarter.toString}"
 
-  def toEtmpPeriodString(currentPeriod: Period): String = {
-    val standardPeriod = StandardPeriod(currentPeriod.year, currentPeriod.quarter)
+  def toEtmpPeriodString: String = {
+    val standardPeriod = StandardPeriod(this.year, this.quarter)
     val year = standardPeriod.year
     val quarter = standardPeriod.quarter
     val etmpQuarter = quarter.toString.replace("Q", "C")
