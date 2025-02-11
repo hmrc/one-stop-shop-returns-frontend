@@ -33,6 +33,7 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Cou
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import queries.corrections.PreviouslyDeclaredCorrectionAmount
 import repositories.UserAnswersRepository
 import services.VatReturnService
 import services.corrections.CorrectionService
@@ -74,8 +75,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
 
     "must return OK and the correct view for a GET" in {
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any()))
-        .thenReturn(Future.successful(validAnswer))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
         .overrides(
@@ -99,8 +99,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
 
     "must return OK and the correct view for a GET for undeclared country" in {
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any()))
-        .thenReturn(Future.successful(validAnswer))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
         .overrides(
@@ -132,8 +131,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
         userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
 
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any()))
-        .thenReturn(Future.successful(validAnswer))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
@@ -186,8 +184,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
 
     "must return a Bad Request and errors when invalid data is submitted" in {
       when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any()))
-        .thenReturn(Future.successful(validAnswer))
+      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
         .overrides(

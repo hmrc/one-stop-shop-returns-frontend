@@ -16,16 +16,17 @@
 
 package services
 
-import cats.implicits._
+import cats.implicits.*
 import connectors.VatReturnConnector
-import models._
+import models.*
 import models.domain.EuTaxIdentifierType.Vat
-import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate as DomainVatRate, VatRateType as DomainVatRateType}
 import models.registration.{EuVatRegistration, Registration, RegistrationWithFixedEstablishment}
 import models.requests.VatReturnRequest
-import pages._
+import pages.*
 import play.api.i18n.Lang.logger
-import queries._
+import queries.*
+import queries.corrections.PreviouslyDeclaredCorrectionAmount
 import services.corrections.CorrectionService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
@@ -43,7 +44,7 @@ trait VatReturnService {
         VatReturnRequest(vrn, StandardPeriod.fromPeriod(period), Some(period.firstDay), Some(period.lastDay), salesFromNi, salesFromEu)
     )
 
-  def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[BigDecimal]
+  def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[PreviouslyDeclaredCorrectionAmount]
 
 
   private def getSalesFromNi(answers: UserAnswers): ValidationResult[List[SalesToCountry]] =
@@ -219,24 +220,36 @@ class VatReturnServiceRepoImpl @Inject()(connector: VatReturnConnector, correcti
     }
   }
 
-  override def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[BigDecimal] =
+  override def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[PreviouslyDeclaredCorrectionAmount] =
     for {
       vatOwedToCountryOnPrevReturn <- getVatOwedToCountryOnReturn(country, period)
       correctionsForPeriod <- correctionService.getCorrectionsForPeriod(period)
     } yield {
-      val correctionsToCountry = correctionsForPeriod.filter(_.correctionCountry == country).map {
+      val correctionsToCountry = correctionsForPeriod.filter(_.correctionCountry.code == country.code)
+      val sumOfCorrectionsToCountry = correctionsToCountry.map {
         _.countryVatCorrection.getOrElse(BigDecimal(0))
       }.sum
-      vatOwedToCountryOnPrevReturn + correctionsToCountry
+      val previouslyDeclaredAmount = vatOwedToCountryOnPrevReturn + sumOfCorrectionsToCountry
+      val isPreviouslyDeclared = correctionsToCountry.nonEmpty || previouslyDeclaredAmount != 0
+      PreviouslyDeclaredCorrectionAmount(isPreviouslyDeclared, previouslyDeclaredAmount)
     }
 
 }
 
-class VatReturnServiceEtmpImpl @Inject()(correctionService: CorrectionService) extends VatReturnService {
+class VatReturnServiceEtmpImpl @Inject()(correctionService: CorrectionService, vatReturnConnector: VatReturnConnector) extends VatReturnService {
 
-  override def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[BigDecimal] =
+  override def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[PreviouslyDeclaredCorrectionAmount] =
     for {
+      returnCorrectionValue <- correctionService.getReturnCorrectionValue(country, period)
       correctionsForPeriod <- correctionService.getReturnCorrectionValue(country, period)
-    } yield correctionsForPeriod.maximumCorrectionValue
+      vatReturn <- vatReturnConnector.getEtmpVatReturn(period)
+    } yield
+      val isDeclared = vatReturn match {
+        case Right(vr) => vr.goodsSupplied.exists(_.msOfConsumption == country.code) ||
+          returnCorrectionValue.maximumCorrectionValue != 0
 
+        case Left(error) => throw new IllegalStateException(s"Unable to get vat return for accumulating correction total $error")
+      }
+
+      PreviouslyDeclaredCorrectionAmount(isDeclared, correctionsForPeriod.maximumCorrectionValue)
 }

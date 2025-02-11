@@ -30,31 +30,20 @@ case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) extend
 
   override def toString: String = "correctionCountry"
 
-   def navigate(mode: Mode, answers: UserAnswers, countries: Seq[Country], strategicReturnApiEnabled: Boolean): Call = {
+   override def navigate(mode: Mode, answers: UserAnswers): Call = {
     answers.get(CorrectionCountryPage(periodIndex, countryIndex)) match {
       case Some(country) =>
-        if (strategicReturnApiEnabled) {
-          answers.get(PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex)) match {
-            case Some(n) if n.amount > 0 =>
-              controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
-                mode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
-              )
-            case _ =>
-              controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(
-                mode, answers.period, periodIndex, countryIndex
-              )
-          }
-        } else {
-          if (countries.contains(country)) {
+        answers.get(PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex)) match {
+          case Some(n) if n.amount > 0 =>
             controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
               mode, answers.period, periodIndex, countryIndex, undeclaredCountry = false
             )
-          } else {
+          case _ =>
             controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(
               mode, answers.period, periodIndex, countryIndex
             )
-          }
         }
+        
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
   }
