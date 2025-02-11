@@ -1469,6 +1469,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
         val nextPeriod = StandardPeriod(2024, Q4)
+        val deregisteredFromVat: VatCustomerInfo = vatCustomerInfo
+          .copy(deregistrationDecisionDate = Some(LocalDate.now(clock)))
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1493,7 +1495,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(deregisteredFromVat))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1555,6 +1557,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val nextPeriod = StandardPeriod(2024, Q4)
         val excludedPeriod = StandardPeriod(2019, Q2)
+        
+        val deregisteredFromVat: VatCustomerInfo = vatCustomerInfo
+          .copy(deregistrationDecisionDate = Some(LocalDate.now(clock))) 
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1591,7 +1596,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(deregisteredFromVat))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),

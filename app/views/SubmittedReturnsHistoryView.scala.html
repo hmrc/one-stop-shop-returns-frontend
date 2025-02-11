@@ -24,82 +24,73 @@
 
 @(periodToPaymentInfo: Map[Period, Payment], displayBanner: Boolean, externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title")), showBackLink = false) {
+@layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
 
-    <div class="govuk-breadcrumbs" style="margin-bottom:50px;">
-        <ol class="govuk-breadcrumbs__list">
-            <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@{externalUrl.getOrElse(routes.YourAccountController.onPageLoad())}" id="your-account">@messages("breadcrumbs.yourAccount")</a>
-            </li>
-            <li class="govuk-breadcrumbs__list-item">@messages("breadcrumbs.submittedReturns")</li>
-        </ol>
+  @if(displayBanner) {
+    <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+        @messages("notificationBanner.title")
+        </h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">
+        @messages("notificationBanner.text")
+        </p>
+      </div>
     </div>
+  }
 
-    @if(displayBanner) {
-        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-            <div class="govuk-notification-banner__header">
-                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                @messages("notificationBanner.title")
-                </h2>
-            </div>
-            <div class="govuk-notification-banner__content">
-                <p class="govuk-notification-banner__heading">
-                @messages("notificationBanner.text")
-                </p>
-            </div>
-        </div>
+  <h1 class="govuk-heading-l">@messages("submittedReturnsHistory.heading")</h1>
+
+  <p class="govuk-body">@messages("submittedReturnsHistory.p1")</p>
+
+  @periodToPaymentInfo.size match {
+    case 0 => {
+      <br>
+      <p class="govuk-body-m govuk-!-margin-bottom-9">@messages("submittedReturnsHistory.no-returns")</p>
     }
-
-    <h1 class="govuk-heading-xl">@messages("submittedReturnsHistory.heading")</h1>
-
-    <p class="govuk-body">@messages("submittedReturnsHistory.p1")</p>
-
-    @periodToPaymentInfo.size match {
-        case 0 => {
-            <br>
-            <p class="govuk-body-m govuk-!-margin-bottom-9">@messages("submittedReturnsHistory.no-returns")</p>
-        }
-        case _ => {
-            <p class="govuk-caption-m hmrc-caption-m" style="govuk-!-margin-bottom-9">
-            @messages("submittedReturnsHistory.caption")
-            </p>
-            @periodToPaymentInfo.groupBy(_._1.year).toList.sortBy(_._1).reverse.map {
-                case (year, vatReturnsWithFinancialData) => {
-                    <table class="govuk-table">
-                        <caption class="govuk-table__caption govuk-table__caption--m">@year.toString</caption>
-                        <thead class="govuk-table__head">
-                            <tr class="govuk-table__row">
-                                <th scope="col" class="govuk-table__header return-period-column">@messages("submittedReturnsHistory.returnPeriod")</th>
-                                <th scope="col" class="govuk-table__header amount-left-column">@messages("submittedReturnsHistory.amountLeftToPay")</th>
-                                <th scope="col" class="govuk-table__header payment-column">@messages("submittedReturnsHistory.payment")</th>
-                            </tr>
-                        </thead>
-                        <tbody class="govuk-table__body">
-                        @for((period, payment) <- vatReturnsWithFinancialData.toList
-                            .sortBy { case (period, _) => (period.year, period.quarter) }
-                            .reverse) {
-                            <tr class="govuk-table__row">
-                                <th scope="row" class="govuk-table__header">
-                                    <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(period)" id="period">@period.displayQuarterText</a>
-                                </th>
-                                <td class="govuk-table__cell">
-                                    @Html(currencyFormat(payment.amountOwed))
-                                </td>
-                                <td class="govuk-table__cell">
-                                    @if(PaymentState.fromPaymentStatus(payment.paymentStatus) == PaymentState.PaymentDue) {
-                                    <a class="govuk-link" href="@routes.PaymentController.makePayment(period, (payment.amountOwed * 100).toLong)">
-                                        @messages(PaymentState.fromPaymentStatus(payment.paymentStatus).toString)
-                                    </a>
-                                    } else {
-                                    @messages(PaymentState.fromPaymentStatus(payment.paymentStatus).toString)
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
+    case _ => {
+      <p class="govuk-caption-m hmrc-caption-m" style="govuk- ! -margin-bottom-9">
+      @messages("submittedReturnsHistory.caption")
+      </p>
+      @periodToPaymentInfo.groupBy(_._1.year).toList.sortBy(_._1).reverse.map {
+        case (year, vatReturnsWithFinancialData) => {
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">@year.toString</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header return-period-column">@messages("submittedReturnsHistory.returnPeriod")</th>
+                <th scope="col" class="govuk-table__header amount-left-column">@messages("submittedReturnsHistory.amountLeftToPay")</th>
+                <th scope="col" class="govuk-table__header payment-column">@messages("submittedReturnsHistory.payment")</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+            @for((period, payment) <- vatReturnsWithFinancialData.toList
+            .sortBy { case (period, _) => (period.year, period.quarter) }
+            .reverse) {
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">
+                  <a class="govuk-link govuk-body" href="@routes.PreviousReturnController.onPageLoad(period)" id="period">@period.displayQuarterText</a>
+                </th>
+                <td class="govuk-table__cell">
+                @Html(currencyFormat(payment.amountOwed))
+                </td>
+                <td class="govuk-table__cell">
+                @if(PaymentState.fromPaymentStatus(payment.paymentStatus) == PaymentState.PaymentDue) {
+                  <a class="govuk-link" href="@routes.PaymentController.makePayment(period, (payment.amountOwed * 100).toLong)">
+                  @messages(PaymentState.fromPaymentStatus(payment.paymentStatus).toString)
+                  </a>
+                } else {
+                  @messages(PaymentState.fromPaymentStatus(payment.paymentStatus).toString)
                 }
+                </td>
+              </tr>
             }
+            </tbody>
+          </table>
         }
+      }
     }
+  }
 }
