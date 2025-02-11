@@ -250,7 +250,7 @@ trait SpecBase
       organisationName = Some("Company name"),
       singleMarketIndicator = Some(true),
       individualName = None,
-      deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate))
+      deregistrationDecisionDate = None
     )
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
