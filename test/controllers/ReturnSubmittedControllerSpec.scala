@@ -148,6 +148,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
 
           val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+            .configure("features.strategic-returns.enabled" -> false)
             .overrides(
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -195,6 +196,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             emptyUserAnswers.copy().set(EmailConfirmationQuery, false).success.value
 
           val app = applicationBuilder(Some(userAnswersWithoutEmail), clock = Some(stubClock))
+            .configure("features.strategic-returns.enabled" -> false)
             .overrides(
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -243,6 +245,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
 
           val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+            .configure("features.strategic-returns.enabled" -> false)
             .overrides(
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -283,6 +286,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         "must throw an exception when vat return connector returns NotFound" in {
 
           val app = applicationBuilder(Some(emptyUserAnswers))
+            .configure("features.strategic-returns.enabled" -> false)
             .overrides(
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -319,6 +323,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
               .set(CorrectPreviousReturnPage, true).success.value
 
           val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+            .configure("features.strategic-returns.enabled" -> false)
             .overrides(
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -368,6 +373,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
               .set(CorrectPreviousReturnPage, true).success.value
 
           val app = applicationBuilder(Some(userAnswersWithoutEmail), clock = Some(stubClock))
+            .configure("features.strategic-returns.enabled" -> false)
             .overrides(
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -418,6 +424,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
               .set(CorrectPreviousReturnPage, true).success.value
 
           val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+            .configure("features.strategic-returns.enabled" -> false)
             .overrides(
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -461,6 +468,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             .set(CorrectPreviousReturnPage, true).success.value
 
           val app = applicationBuilder(Some(userAnswers))
+            .configure("features.strategic-returns.enabled" -> false)
             .overrides(
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -497,6 +505,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         when(mockSessionRepository.clear(any())) thenReturn true.toFuture
 
         val app = applicationBuilder(userAnswers = Some(answers))
+          .configure("features.strategic-returns.enabled" -> false)
           .overrides(
             bind[UserAnswersRepository].toInstance(mockSessionRepository),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
@@ -523,8 +532,8 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
           emptyUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
 
         val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+          .configure("features.strategic-returns.enabled" -> false)
           .overrides(
-
             bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[CorrectionConnector].toInstance(correctionConnector)

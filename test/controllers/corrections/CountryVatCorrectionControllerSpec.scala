@@ -17,15 +17,14 @@
 package controllers.corrections
 
 import base.SpecBase
-import connectors.VatReturnConnector
 import forms.corrections.CountryVatCorrectionFormProvider
-import models.corrections.{CorrectionToCountry, ReturnCorrectionValue}
-import models.domain.*
 import models.{Country, NormalMode, PaymentReference, ReturnReference, VatOnSales, VatOnSalesChoice}
+import models.corrections.CorrectionToCountry
+import models.domain.*
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -34,9 +33,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import queries.corrections.PreviouslyDeclaredCorrectionAmount
-import repositories.UserAnswersRepository
 import services.VatReturnService
-import services.corrections.CorrectionService
 import views.html.corrections.CountryVatCorrectionView
 
 import java.time.Instant
@@ -44,10 +41,7 @@ import scala.concurrent.Future
 
 class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private val mockVatReturnConnector = mock[VatReturnConnector]
   private val mockService = mock[VatReturnService]
-  private val mockCorrectionService = mock[CorrectionService]
-  private val mockSessionRepository = mock[UserAnswersRepository]
 
   private val selectedCountry = arbitrary[Country].sample.value
 
@@ -55,7 +49,7 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
   private val form = formProvider(selectedCountry.name, BigDecimal(100.0), false)
   private val userAnswersWithCountryAndPeriod =
     emptyUserAnswers.set(CorrectionCountryPage(index, index), selectedCountry).success.value
-    .set(CorrectionReturnPeriodPage(index), period).success.value
+      .set(CorrectionReturnPeriodPage(index), period).success.value
 
   private val validAnswer = BigDecimal(10)
 
@@ -65,279 +59,508 @@ class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with
     ).url
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockVatReturnConnector)
     Mockito.reset(mockService)
-    Mockito.reset(mockCorrectionService)
-    Mockito.reset(mockSessionRepository)
   }
 
   "CountryVatCorrection Controller" - {
 
-    "must return OK and the correct view for a GET" in {
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
+    "with strategic toggle off" - {
 
-      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
-        .overrides(
-          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-          bind[VatReturnService].toInstance(mockService))
-        .build()
+      "must return OK and the correct view for a GET" in {
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn
+          Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
 
-      running(application) {
-        val request = FakeRequest(GET, countryVatCorrectionRoute)
-
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[CountryVatCorrectionView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form, NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = false
-        )(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and the correct view for a GET for undeclared country" in {
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
-
-      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
-        .overrides(
-          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-          bind[VatReturnService].toInstance(mockService))
-        .build()
-
-      running(application) {
-        val request = FakeRequest(
-          GET,
-          controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
-            NormalMode, period, index, index, true
-          ).url
-        )
-
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[CountryVatCorrectionView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form, NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = true
-        )(request, messages(application)).toString
-      }
-    }
-
-    "must populate the view correctly on a GET when the question has previously been answered" in {
-      val userAnswers =
-        userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
-
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers))
-        .overrides(
-          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-          bind[VatReturnService].toInstance(mockService)
-        )
-        .build()
-
-      running(application) {
-        val request = FakeRequest(GET, countryVatCorrectionRoute)
-
-        val view = application.injector.instanceOf[CountryVatCorrectionView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form.fill(validAnswer), NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = false
-        )(request, messages(application)).toString
-      }
-    }
-
-    "must save the answer and redirect to the next page when valid data is submitted" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockCorrectionService.getCorrectionsForPeriod(any())(any(), any())) thenReturn Future.successful(List.empty)
-      when(mockCorrectionService.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.successful(ReturnCorrectionValue(BigDecimal(0)))
-
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
-          .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
-          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
-          .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
+        val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService))
+          .configure("features.strategic-returns.enabled" -> false)
           .build()
 
-      running(application) {
-        val request =
-          FakeRequest(POST, countryVatCorrectionRoute)
-            .withFormUrlEncodedBody(("value", validAnswer.toString))
+        running(application) {
+          val request = FakeRequest(GET, countryVatCorrectionRoute)
 
-        val result = route(application, request).value
-        val expectedAnswers =
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            form, NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must return OK and the correct view for a GET for undeclared country" in {
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn
+          Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
+
+        val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService))
+          .configure("features.strategic-returns.enabled" -> false)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(
+            GET,
+            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+              NormalMode, period, index, index, true
+            ).url
+          )
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            form, NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = true
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must populate the view correctly on a GET when the question has previously been answered" in {
+        val userAnswers =
           userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CountryVatCorrectionPage(index, index).navigate(NormalMode, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService)
+          )
+          .configure("features.strategic-returns.enabled" -> false)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, countryVatCorrectionRoute)
+
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
+
+          val result = route(application, request).value
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            form.fill(validAnswer), NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must save the answer and redirect to the next page when valid data is submitted" in {
+
+        val previouslyDeclaredCorrectionAmount = PreviouslyDeclaredCorrectionAmount(true, 10)
+
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn
+          Future.successful(previouslyDeclaredCorrectionAmount)
+
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+            .overrides(bind[VatReturnService].toInstance(mockService))
+            .configure("features.strategic-returns.enabled" -> false)
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", validAnswer.toString))
+
+          val result = route(application, request).value
+          val expectedAnswers =
+            userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual CountryVatCorrectionPage(index, index).navigate(NormalMode, expectedAnswers).url
+        }
+      }
+
+      "must return a Bad Request and errors when invalid data is submitted" in {
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn
+          Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
+
+        val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService)
+          )
+          .configure("features.strategic-returns.enabled" -> false)
+          .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", "invalid value"))
+
+          val boundForm = form.bind(Map("value" -> "invalid value"))
+
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
+
+          val result = route(application, request).value
+
+          status(result) mustEqual BAD_REQUEST
+          contentAsString(result) mustEqual view(
+            boundForm, NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = false
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must return a Bad Request and errors when the total VAT owed is negative" in {
+
+        val previouslyDeclaredCorrectionAmount = PreviouslyDeclaredCorrectionAmount(true, 300)
+
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(previouslyDeclaredCorrectionAmount)
+
+
+        val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService)
+          )
+          .configure("features.strategic-returns.enabled" -> false)
+          .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", "-400.0"))
+
+          val form = formProvider(selectedCountry.name, BigDecimal(-300.0), false)
+          val boundForm = form.bind(Map("value" -> "-400.0"))
+
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
+
+          val result = route(application, request).value
+
+          status(result) mustEqual BAD_REQUEST
+
+          val responseString = contentAsString(result)
+          responseString mustEqual view(
+            boundForm, NormalMode, period, selectedCountry, period, index, index, BigDecimal(300), undeclaredCountry = false
+          )(request, messages(application)).toString
+          val doc = Jsoup.parse(responseString)
+
+          val error = doc.getElementsByClass("govuk-error-summary__body")
+          error.size() mustEqual 1
+          error.get(0).text() mustEqual "The correction value cannot be less than £-300"
+        }
+      }
+
+      "must redirect to Journey Recovery for a GET if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None)
+          .configure("features.strategic-returns.enabled" -> false)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, countryVatCorrectionRoute)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a GET if no correction period or country found in user answers" in {
+
+        val application = applicationBuilder(Some(emptyUserAnswers))
+          .configure("features.strategic-returns.enabled" -> false)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, countryVatCorrectionRoute)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a POST if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None)
+          .configure("features.strategic-returns.enabled" -> false)
+          .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", validAnswer.toString))
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a POST if no correction period or country found in user answers" in {
+
+        val application = applicationBuilder(Some(emptyUserAnswers))
+          .configure("features.strategic-returns.enabled" -> false)
+          .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", validAnswer.toString))
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
       }
     }
 
-    "must return a Bad Request and errors when invalid data is submitted" in {
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(emptyVatReturn))
-      when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
+    "with strategic toggle on" - {
 
-      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
-        .overrides(
-          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-          bind[VatReturnService].toInstance(mockService)
-        ).build()
+      "must return OK and the correct view for a GET" in {
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn
+          Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
 
-      running(application) {
-        val request =
-          FakeRequest(POST, countryVatCorrectionRoute)
-            .withFormUrlEncodedBody(("value", "invalid value"))
+        val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService))
+          .configure("features.strategic-returns.enabled" -> true)
+          .build()
 
-        val boundForm = form.bind(Map("value" -> "invalid value"))
+        running(application) {
+          val request = FakeRequest(GET, countryVatCorrectionRoute)
 
-        val view = application.injector.instanceOf[CountryVatCorrectionView]
+          val result = route(application, request).value
 
-        val result = route(application, request).value
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(
-          boundForm, NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = false
-        )(request, messages(application)).toString
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            form, NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = false
+          )(request, messages(application)).toString
+        }
       }
-    }
 
-    "must return a Bad Request and errors when the total VAT owed is negative" in {
-      val previousVatReturn = VatReturn(
-        vrn = vrn,
-        period = period,
-        reference = ReturnReference(vrn, period),
-        paymentReference = PaymentReference(vrn, period),
-        startDate = Some(period.firstDay),
-        endDate = Some(period.lastDay),
-        salesFromNi = List(SalesToCountry(
-          selectedCountry,
-          List(SalesDetails(
-            vatRate = VatRate(
-              rate = BigDecimal(20.0),
-              rateType = VatRateType.Standard),
-            BigDecimal(1000.0),
-            VatOnSales(
-              choice = VatOnSalesChoice.Standard,
-              amount = BigDecimal(200.0)
-            )))
-        )),
-        salesFromEu = List.empty,
-        submissionReceived = Instant.now(),
-        lastUpdated = Instant.now()
-      )
+      "must return OK and the correct view for a GET for undeclared country" in {
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn
+          Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
 
-      val previousCorrection = CorrectionToCountry(
-        selectedCountry,
-        Some(BigDecimal(100.0))
-      )
+        val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService))
+          .configure("features.strategic-returns.enabled" -> true)
+          .build()
 
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(previousVatReturn))
-      when(mockCorrectionService.getCorrectionsForPeriod(any())(any(), any()))
-        .thenReturn(Future.successful(List(previousCorrection)))
-      when(mockCorrectionService.getReturnCorrectionValue(any(), any())(any())) thenReturn Future.successful(ReturnCorrectionValue(BigDecimal(-300)))
+        running(application) {
+          val request = FakeRequest(
+            GET,
+            controllers.corrections.routes.CountryVatCorrectionController.onPageLoad(
+              NormalMode, period, index, index, true
+            ).url
+          )
 
-      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
-        .overrides(
-          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-          bind[CorrectionService].toInstance(mockCorrectionService)
-        )
-        .build()
+          val result = route(application, request).value
 
-      running(application) {
-        val request =
-          FakeRequest(POST, countryVatCorrectionRoute)
-            .withFormUrlEncodedBody(("value", "-400.0"))
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
 
-        val form = formProvider(selectedCountry.name, BigDecimal(-300.0), false)
-        val boundForm = form.bind(Map("value" -> "-400.0"))
-
-        val view = application.injector.instanceOf[CountryVatCorrectionView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual BAD_REQUEST
-
-        val responseString = contentAsString(result)
-        responseString mustEqual view(
-          boundForm, NormalMode, period, selectedCountry, period, index, index, BigDecimal(300), undeclaredCountry = false
-        )(request, messages(application)).toString
-        val doc = Jsoup.parse(responseString)
-
-        val error = doc.getElementsByClass("govuk-error-summary__body")
-        error.size() mustEqual 1
-        error.get(0).text() mustEqual "The correction value cannot be less than £-300"
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            form, NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = true
+          )(request, messages(application)).toString
+        }
       }
-    }
 
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
+      "must populate the view correctly on a GET when the question has previously been answered" in {
+        val userAnswers =
+          userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
 
-      val application = applicationBuilder(userAnswers = None).build()
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn
+          Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
 
-      running(application) {
-        val request = FakeRequest(GET, countryVatCorrectionRoute)
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService)
+          )
+          .configure("features.strategic-returns.enabled" -> true)
+          .build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request = FakeRequest(GET, countryVatCorrectionRoute)
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
+
+          val result = route(application, request).value
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            form.fill(validAnswer), NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = false
+          )(request, messages(application)).toString
+        }
       }
-    }
 
-    "must redirect to Journey Recovery for a GET if no correction period or country found in user answers" in {
+      "must save the answer and redirect to the next page when valid data is submitted" in {
 
-      val application = applicationBuilder(Some(emptyUserAnswers)).build()
+        val previouslyDeclaredCorrectionAmount = PreviouslyDeclaredCorrectionAmount(true, 10)
 
-      running(application) {
-        val request = FakeRequest(GET, countryVatCorrectionRoute)
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(previouslyDeclaredCorrectionAmount)
 
-        val result = route(application, request).value
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+            .overrides(bind[VatReturnService].toInstance(mockService))
+            .configure("features.strategic-returns.enabled" -> true)
+            .build()
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", validAnswer.toString))
+
+          val result = route(application, request).value
+          val expectedAnswers =
+            userAnswersWithCountryAndPeriod.set(CountryVatCorrectionPage(index, index), validAnswer).success.value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual CountryVatCorrectionPage(index, index).navigate(NormalMode, expectedAnswers).url
+        }
       }
-    }
 
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
+      "must return a Bad Request and errors when invalid data is submitted" in {
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(PreviouslyDeclaredCorrectionAmount(false, validAnswer))
 
-      val application = applicationBuilder(userAnswers = None).build()
+        val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService)
+          )
+          .configure("features.strategic-returns.enabled" -> true)
+          .build()
 
-      running(application) {
-        val request =
-          FakeRequest(POST, countryVatCorrectionRoute)
-            .withFormUrlEncodedBody(("value", validAnswer.toString))
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", "invalid value"))
 
-        val result = route(application, request).value
+          val boundForm = form.bind(Map("value" -> "invalid value"))
 
-        status(result) mustEqual SEE_OTHER
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
 
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+          val result = route(application, request).value
+
+          status(result) mustEqual BAD_REQUEST
+          contentAsString(result) mustEqual view(
+            boundForm, NormalMode, period, selectedCountry, period, index, index, validAnswer, undeclaredCountry = false
+          )(request, messages(application)).toString
+        }
       }
-    }
 
-    "must redirect to Journey Recovery for a POST if no correction period or country found in user answers" in {
+      "must return a Bad Request and errors when the total VAT owed is negative" in {
 
-      val application = applicationBuilder(Some(emptyUserAnswers)).build()
+        val previouslyDeclaredCorrectionAmount = PreviouslyDeclaredCorrectionAmount(true, 300)
 
-      running(application) {
-        val request =
-          FakeRequest(POST, countryVatCorrectionRoute)
-            .withFormUrlEncodedBody(("value", validAnswer.toString))
+        when(mockService.getLatestVatAmountForPeriodAndCountry(any(), any())(any(), any())) thenReturn Future.successful(previouslyDeclaredCorrectionAmount)
 
-        val result = route(application, request).value
+        val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+          .overrides(
+            bind[VatReturnService].toInstance(mockService)
+          )
+          .configure("features.strategic-returns.enabled" -> true)
+          .build()
 
-        status(result) mustEqual SEE_OTHER
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", "-400.0"))
 
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+          val form = formProvider(selectedCountry.name, BigDecimal(-300.0), false)
+          val boundForm = form.bind(Map("value" -> "-400.0"))
+
+          val view = application.injector.instanceOf[CountryVatCorrectionView]
+
+          val result = route(application, request).value
+
+          status(result) mustEqual BAD_REQUEST
+
+          val responseString = contentAsString(result)
+          responseString mustEqual view(
+            boundForm, NormalMode, period, selectedCountry, period, index, index, BigDecimal(300), undeclaredCountry = false
+          )(request, messages(application)).toString
+          val doc = Jsoup.parse(responseString)
+
+          val error = doc.getElementsByClass("govuk-error-summary__body")
+          error.size() mustEqual 1
+          error.get(0).text() mustEqual "The correction value cannot be less than £-300"
+        }
       }
+
+      "must redirect to Journey Recovery for a GET if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None)
+          .configure("features.strategic-returns.enabled" -> true)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, countryVatCorrectionRoute)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a GET if no correction period or country found in user answers" in {
+
+        val application = applicationBuilder(Some(emptyUserAnswers))
+          .configure("features.strategic-returns.enabled" -> true)
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, countryVatCorrectionRoute)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a POST if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None)
+          .configure("features.strategic-returns.enabled" -> true)
+          .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", validAnswer.toString))
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a POST if no correction period or country found in user answers" in {
+
+        val application = applicationBuilder(Some(emptyUserAnswers))
+          .configure("features.strategic-returns.enabled" -> true)
+          .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, countryVatCorrectionRoute)
+              .withFormUrlEncodedBody(("value", validAnswer.toString))
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
     }
   }
+
 }
+
