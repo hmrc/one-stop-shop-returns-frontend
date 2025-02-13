@@ -22,12 +22,12 @@ import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterCon
 import connectors.financialdata.FinancialDataConnector
 import generators.Generators
 import models.{Country, Period, StandardPeriod, SubmissionStatus}
-import models.Quarter._
+import models.Quarter.*
 import models.SubmissionStatus.{Due, Excluded, Next, Overdue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
-import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason}
+import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason, ExclusionViewType}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
-import models.registration._
+import models.registration.*
 import models.requests.RegistrationRequest
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
@@ -41,9 +41,10 @@ import pages.SavedProgressPage
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.UserAnswersRepository
 import services.VatReturnSalesService
+import services.exclusions.ExclusionService
 import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount.{CurrentReturns, PaymentsViewModel, Return, ReturnsViewModel}
 import views.html.IndexView
@@ -60,6 +61,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val save4LaterConnector = mock[SaveForLaterConnector]
   private val vatReturnConnector = mock[VatReturnConnector]
   private val registrationConnector = mock[RegistrationConnector]
+  private val mockExclusionService = mock[ExclusionService]
 
   private val periodQ2 = StandardPeriod(2022, Q2)
 
@@ -79,8 +81,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val amendRegistrationUrl = "http://localhost:10200/pay-vat-on-goods-sold-to-eu/northern-ireland-register/start-amend-journey"
 
   override def beforeEach(): Unit = {
-    Mockito.reset(vatReturnConnector)
-    Mockito.reset(registrationConnector)
+    Mockito.reset(
+      vatReturnConnector,
+      registrationConnector,
+      mockExclusionService
+    )
   }
 
   private val instant: Instant = Instant.parse("2021-10-11T12:00:00Z")
@@ -137,7 +142,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           implicit val msgs: Messages = messages(application)
 
           val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          
+
           val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
 
           val result = route(application, request).value
@@ -635,8 +640,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.vrn.vrn,
             ReturnsViewModel(
               Seq(
-              Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
-              Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false)
+                Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+                Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
             PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
@@ -899,8 +904,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               registration.registeredCompanyName,
               registration.vrn.vrn,
               ReturnsViewModel(Seq(Return.fromPeriod(period, Next, inProgress = false, isOldest = false)), Seq.empty)(messages(application), clock),
-              PaymentsViewModel(Seq.empty, Seq(overduePayment), Seq.empty, hasDueReturnThreeYearsOld = false )
-              (messages(application), clock, registrationRequest),
+              PaymentsViewModel(Seq.empty, Seq(overduePayment), Seq.empty, hasDueReturnThreeYearsOld = false)
+                (messages(application), clock, registrationRequest),
               paymentError = false,
               None,
               hasSubmittedFinalReturn = false,
@@ -1316,6 +1321,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.getLink(any())(any())) thenReturn None
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1327,7 +1335,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -1400,6 +1409,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1411,7 +1422,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -1432,6 +1444,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "rejoin-this-service",
             href = s"${config.rejoinThisService}"
           )
+
+          when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
 
           status(result) mustEqual OK
 
@@ -1496,6 +1510,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(deregisteredFromVat))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.getLink(any())(any())) thenReturn None
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1507,7 +1524,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -1529,7 +1547,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration.registeredCompanyName,
             registration.vrn.vrn,
             ReturnsViewModel(
-              Seq(//
+              Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ), Seq.empty
             )(messages(application), clock),
@@ -1557,9 +1575,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val nextPeriod = StandardPeriod(2024, Q4)
         val excludedPeriod = StandardPeriod(2019, Q2)
-        
+
         val deregisteredFromVat: VatCustomerInfo = vatCustomerInfo
-          .copy(deregistrationDecisionDate = Some(LocalDate.now(clock))) 
+          .copy(deregistrationDecisionDate = Some(LocalDate.now(clock)))
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -1597,6 +1615,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(deregisteredFromVat))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.getLink(any())(any())) thenReturn None
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1608,7 +1629,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -1631,12 +1653,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               returns = Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false),
-              ), excludedReturns =  Seq(
+              ), excludedReturns = Seq(
                 Return.fromPeriod(excludedPeriod, Excluded, inProgress = false, isOldest = false)
               )
             )(messages(application), clock),
             PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)
-            (messages(application), clock, registrationRequest),
+              (messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
@@ -1686,6 +1708,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1697,7 +1721,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -1714,13 +1739,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val config = application.injector.instanceOf[FrontendAppConfig]
 
-          status(result) mustEqual OK
-
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
             displayText = msgs("index.details.rejoinService"),
             id = "rejoin-this-service",
             href = s"${config.rejoinThisService}"
           )
+
+          when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+          status(result) mustEqual OK
 
           contentAsString(result) mustEqual view(
             registration.registeredCompanyName,
@@ -1732,7 +1759,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )
             )(messages(application), clock),
             PaymentsViewModel(Seq.empty, Seq.empty, excludedPayments = Seq.empty, hasDueReturnThreeYearsOld = true)
-            (messages(application), clock, registrationRequest),
+              (messages(application), clock, registrationRequest),
             paymentError = false,
             excludedTraderSelf,
             hasSubmittedFinalReturn = false,
@@ -1780,6 +1807,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1791,7 +1820,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -1812,6 +1842,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "rejoin-this-service",
             href = s"${config.rejoinThisService}"
           )
+
+          when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
 
           status(result) mustEqual OK
 
@@ -1874,6 +1906,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1885,7 +1919,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -1906,6 +1941,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "cancel-request-to-leave",
             href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
           )
+
+          when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
 
           status(result) mustEqual OK
 
@@ -1965,6 +2002,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1976,7 +2015,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -1997,6 +2037,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "cancel-request-to-leave",
             href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
           )
+
+          when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
 
           status(result) mustEqual OK
 
@@ -2070,6 +2112,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
             when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+            when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+            when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
             val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
               clock = Some(newClock),
@@ -2081,7 +2125,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
-                bind[RegistrationConnector].toInstance(registrationConnector)
+                bind[RegistrationConnector].toInstance(registrationConnector),
+                bind[ExclusionService].toInstance(mockExclusionService)
               )
               .build()
 
@@ -2102,6 +2147,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 id = "cancel-request-to-leave",
                 href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
               )
+
+              when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
 
               status(result) mustEqual OK
 
@@ -2171,6 +2218,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
             when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+            when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+            when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
             val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
               clock = Some(newClock),
@@ -2182,7 +2231,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
-                bind[RegistrationConnector].toInstance(registrationConnector)
+                bind[RegistrationConnector].toInstance(registrationConnector),
+                bind[ExclusionService].toInstance(mockExclusionService)
               )
               .build()
 
@@ -2203,6 +2253,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 id = "cancel-request-to-leave",
                 href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
               )
+
+              when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
 
               status(result) mustEqual OK
 
@@ -2275,6 +2327,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
             when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+            when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+            when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+            when(mockExclusionService.getLink(any())(any())) thenReturn None
 
             val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
               clock = Some(newClock),
@@ -2286,7 +2341,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
-                bind[RegistrationConnector].toInstance(registrationConnector)
+                bind[RegistrationConnector].toInstance(registrationConnector),
+                bind[ExclusionService].toInstance(mockExclusionService)
               )
               .build()
 
@@ -2361,7 +2417,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
 
           when(financialDataConnector.getFinancialData(any())(any())) thenReturn Future.
-              successful(Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+            successful(Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
@@ -2370,6 +2426,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+          when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+          when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
             clock = Some(newClock),
@@ -2381,7 +2439,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
-              bind[RegistrationConnector].toInstance(registrationConnector)
+              bind[RegistrationConnector].toInstance(registrationConnector),
+              bind[ExclusionService].toInstance(mockExclusionService)
             )
             .build()
 
@@ -2402,6 +2461,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "cancel-request-to-leave",
               href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
             )
+
+            when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
 
             status(result) mustEqual OK
 
@@ -2472,6 +2533,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+          when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
+          when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
             clock = Some(newClock),
@@ -2483,7 +2546,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
-              bind[RegistrationConnector].toInstance(registrationConnector)
+              bind[RegistrationConnector].toInstance(registrationConnector),
+              bind[ExclusionService].toInstance(mockExclusionService)
             )
             .build()
 
@@ -2504,6 +2568,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "cancel-request-to-leave",
               href = s"${config.leaveOneStopShopUrl}/cancel-leave-scheme"
             )
+
+            when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
 
             status(result) mustEqual OK
 
@@ -2567,6 +2633,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.getLink(any())(any())) thenReturn None
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -2578,7 +2647,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -2650,6 +2720,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -2661,7 +2733,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
@@ -2682,6 +2755,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "rejoin-this-service",
             href = s"${config.rejoinThisService}"
           )
+
+          when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
 
           status(result) mustEqual OK
 
@@ -2741,6 +2816,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.getLink(any())(any())) thenReturn None
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -2752,7 +2830,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[VatReturnConnector].toInstance(vatReturnConnector),
-            bind[RegistrationConnector].toInstance(registrationConnector)
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
           )
           .build()
 
