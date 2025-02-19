@@ -145,7 +145,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           contentAsString(result).contains("Corrections") mustBe true
           contentAsString(result).contains("VAT declared where no payment is due") mustBe false
           contentAsString(result).contains("VAT owed to EU countries") mustBe false
-          println(s"ContentAsString: ${contentAsString(result)}")
         }
       }
 
