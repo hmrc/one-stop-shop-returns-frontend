@@ -152,3 +152,7 @@ td.oss-vat {
 .corrections-no-border {
     border: 0;
 }
+
+.width-auto {
+    width: auto;
+}

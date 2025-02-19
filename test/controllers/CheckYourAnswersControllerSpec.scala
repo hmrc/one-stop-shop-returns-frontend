@@ -142,10 +142,10 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           contentAsString(result).contains(registration.vrn.vrn) mustBe true
           contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
           contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
-          contentAsString(result).contains("VAT declared to EU countries or Northern Ireland after corrections") mustBe true
           contentAsString(result).contains("Corrections") mustBe true
           contentAsString(result).contains("VAT declared where no payment is due") mustBe false
           contentAsString(result).contains("VAT owed to EU countries") mustBe false
+          println(s"ContentAsString: ${contentAsString(result)}")
         }
       }
 
@@ -170,7 +170,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           contentAsString(result).contains(registration.vrn.vrn) mustBe true
           contentAsString(result).contains("Sales from Northern Ireland to EU countries") mustBe true
           contentAsString(result).contains("Sales from EU countries to other EU countries") mustBe true
-          contentAsString(result).contains("VAT declared to EU countries or Northern Ireland after corrections") mustBe true
           contentAsString(result).contains("VAT declared where no payment is due") mustBe true
           contentAsString(result).contains("Corrections") mustBe true
           contentAsString(result).contains("VAT owed to EU countries") mustBe false
