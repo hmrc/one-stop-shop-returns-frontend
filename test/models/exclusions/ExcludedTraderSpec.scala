@@ -17,9 +17,12 @@
 package models.exclusions
 
 import base.SpecBase
-import models.Quarter._
+import models.Quarter.*
 import models.StandardPeriod
+import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.domain.Vrn
+
+import java.time.LocalDate
 
 class ExcludedTraderSpec extends SpecBase {
 
@@ -49,6 +52,29 @@ class ExcludedTraderSpec extends SpecBase {
       }
     }
 
+  }
+
+  "ExcludedTrader" - {
+    "must serialise and deserialise correctly" in {
+
+      val vrn: Vrn = Vrn("123456789")
+      val exclusionReason: ExclusionReason = ExclusionReason.Reversal
+      val effectiveDate: LocalDate = LocalDate.of(2021,2,2)
+      val quarantined: Boolean = true
+
+
+      val json = Json.obj(
+        "vrn" -> Vrn("123456789"),
+        "exclusionReason" -> ExclusionReason.Reversal.toString,
+        "effectiveDate" -> LocalDate.of(2021,2,2),
+        "quarantined" -> true
+      )
+
+      val expectedResult = ExcludedTrader(vrn, exclusionReason, effectiveDate, quarantined)
+
+      Json.toJson(expectedResult) mustBe json
+      json.validate[ExcludedTrader] mustBe JsSuccess(expectedResult)
+    }
   }
 
 }
