@@ -67,8 +67,8 @@
                     <dl class="govuk-summary-list">
                         @for(noPaymentDueCountry <- noPaymentDueCountries) {
                         <div class="govuk-summary-list__row">
-                            <dt class="govuk-table__cell">@noPaymentDueCountry.country.name</dt>
-                            <dd class="govuk-table__cell">@Html(currencyFormat(noPaymentDueCountry.totalVat))</dd>
+                            <dt class="govuk-summary-list__key">@noPaymentDueCountry.country.name</dt>
+                            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-padding-right-9">@Html(currencyFormat(noPaymentDueCountry.totalVat))</dd>
                         </div>
                         }
                     </dl>
