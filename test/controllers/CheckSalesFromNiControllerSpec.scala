@@ -20,8 +20,12 @@ import base.SpecBase
 import models.{Country, NormalMode}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.{CheckSalesFromNiPage, CountryOfConsumptionFromNiPage}
+import play.api.i18n.Messages
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
+import uk.gov.hmrc.govukfrontend.views.Aliases.Card
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.CardTitle
 import viewmodels.govuk.SummaryListFluency
 import views.html.CheckSalesFromNiView
 
@@ -33,17 +37,22 @@ class CheckSalesFromNiControllerSpec extends SpecBase with SummaryListFluency {
   "Check Your Answers Controller" - {
 
     "must return OK and the correct view for a GET" in {
-
+      
       val application = applicationBuilder(userAnswers = Some(baseAnswers))
         .configure("bootstrap.filters.csrf.enabled" -> false).build()
 
       running(application) {
+        implicit val msgs: Messages = messages(application)
+        
         val request = FakeRequest(GET, routes.CheckSalesFromNiController.onPageLoad(NormalMode, period, index).url)
 
         val result = route(application, request).value
 
         val view     = application.injector.instanceOf[CheckSalesFromNiView]
-        val mainList = SummaryListViewModel(Seq.empty)
+        val mainList = SummaryListViewModel(Seq.empty).withCard(card = Card(
+          title = Some(CardTitle(content = HtmlContent(msgs("vatRatesFromNi.checkYourAnswersLabel")))),
+          actions = None
+        ))
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(NormalMode, mainList, Seq.empty, period, index, country)(request, messages(application)).toString

@@ -22,11 +22,14 @@ import models.{Index, Mode, Period, VatRateAndSalesWithOptionalVat}
 import pages.{CheckSalesFromNiPage, VatRatesFromNiPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.govukfrontend.views.Aliases.Card
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.CardTitle
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CompletionChecks
 import viewmodels.TitledSummaryList
 import viewmodels.checkAnswers.{NetValueOfSalesFromNiSummary, VatOnSalesFromNiSummary, VatRatesFromNiSummary}
-import viewmodels.govuk.summarylist._
+import viewmodels.govuk.summarylist.*
 import views.html.CheckSalesFromNiView
 
 class CheckSalesFromNiController @Inject()(
@@ -46,6 +49,11 @@ class CheckSalesFromNiController @Inject()(
 
           val mainList = SummaryListViewModel(
             rows = Seq(VatRatesFromNiSummary.row(request.userAnswers, index, mode)).flatten
+          ).withCard(
+            card = Card(
+              title = Some(CardTitle(content = HtmlContent(messages("vatRatesFromNi.checkYourAnswersLabel")))),
+              actions = None
+            )
           )
 
           val vatRateLists: Seq[TitledSummaryList] =
@@ -53,12 +61,17 @@ class CheckSalesFromNiController @Inject()(
               case (vatRate, i) =>
 
                 TitledSummaryList(
-                  title = messages("checkSalesFromNi.vatRateTitle", vatRate.rateForDisplay),
+                  title = None,
                   list = SummaryListViewModel(
                     rows = Seq(
                       NetValueOfSalesFromNiSummary.row(request.userAnswers, index, Index(i), vatRate, mode),
                       VatOnSalesFromNiSummary.row(request.userAnswers, index, Index(i), vatRate, mode)
                     ).flatten
+                  ).withCard(
+                    card = Card(
+                      title = Some(CardTitle(content = HtmlContent(messages("checkSalesFromNi.vatRateTitle", vatRate.rateForDisplay)))),
+                      actions = None
+                    )
                   )
                 )
             }).getOrElse(Seq.empty)

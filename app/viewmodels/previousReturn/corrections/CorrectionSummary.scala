@@ -103,7 +103,7 @@ object CorrectionSummary {
     if (correctionsToCountry.nonEmpty) {
       Seq(
         TitledSummaryList(
-          title = messages("previousReturn.correction.vatDeclared.noPaymentDue.title"),
+          title = Some(messages("previousReturn.correction.vatDeclared.noPaymentDue.title")),
           list = SummaryListViewModel(
             rows = summaryRowsOfValues(correctionsToCountry)
           ),
@@ -147,7 +147,7 @@ object CorrectionSummary {
   private[this] def summaryRowsOfPositiveValues(correctionsToCountry: Map[Country, BigDecimal])(implicit messages: Messages): Seq[TitledSummaryList] = {
     if (correctionsToCountry.nonEmpty) {
       Seq(TitledSummaryList(
-        title = messages("previousReturn.correction.vatDeclared.paymentDue.title"),
+        title = Some(messages("previousReturn.correction.vatDeclared.paymentDue.title")),
         list = SummaryListViewModel(
           rows = summaryRowsOfValues(correctionsToCountry)
         )
