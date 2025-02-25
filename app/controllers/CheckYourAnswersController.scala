@@ -18,7 +18,7 @@ package controllers
 
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
-import connectors.{SavedUserAnswers, SaveForLaterConnector, VatReturnConnector}
+import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.{NormalMode, Period, StandardPeriod}
@@ -31,20 +31,22 @@ import models.responses.{ConflictFound, ErrorResponse, ReceivedErrorFromCore, Re
 import pages.{CheckYourAnswersPage, SavedProgressPage}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc._
-import queries._
+import play.api.mvc.*
+import queries.*
 import queries.corrections.AllCorrectionPeriodsQuery
 import repositories.CachedVatReturnRepository
-import services._
+import services.*
 import services.corrections.CorrectionService
 import services.exclusions.ExclusionService
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
+import uk.gov.hmrc.govukfrontend.views.Aliases.Card
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{CardTitle, SummaryList}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax._
-import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
-import viewmodels.govuk.summarylist._
+import utils.FutureSyntax.*
+import viewmodels.checkAnswers.*
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
+import viewmodels.govuk.summarylist.*
 import views.html.CheckYourAnswersView
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -118,12 +120,17 @@ class CheckYourAnswersController @Inject()(
           CorrectPreviousReturnSummary.row(request.userAnswers),
           CorrectionReturnPeriodSummary.getAllRows(request.userAnswers)
         ).flatten
-      ).withCssClass("govuk-!-margin-bottom-9")
+      ).withCard(
+        card = Card(
+          title = Some(CardTitle(content = HtmlContent(messages("checkYourAnswers.corrections.heading")))),
+          actions = None
+        )
+      )
       Seq(
         (None, businessSummaryList),
-        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
-        (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
+        (None, salesFromNiSummaryList),
+        (None, salesFromEuSummaryList),
+        (None, correctionsSummaryList)
       )
     } else {
       Seq(
@@ -140,7 +147,12 @@ class CheckYourAnswersController @Inject()(
         TotalEUNetValueOfSalesSummary.row(request.userAnswers, service.getEuTotalNetSales(request.userAnswers)),
         TotalEUVatOnSalesSummary.row(request.userAnswers, service.getEuTotalVatOnSales(request.userAnswers))
       ).flatten
-    ).withCssClass("govuk-!-margin-bottom-9")
+    ).withCard(
+      card = Card(
+        title = Some(CardTitle(content = HtmlContent(messages("checkYourAnswers.salesFromEU.heading")))),
+        actions = None
+      )
+    )
   }
 
   private def getSalesFromNiSummaryList(request: DataRequest[AnyContent])(implicit messages: Messages) = {
@@ -150,7 +162,12 @@ class CheckYourAnswersController @Inject()(
         TotalNINetValueOfSalesSummary.row(request.userAnswers, service.getNiTotalNetSales(request.userAnswers)),
         TotalNIVatOnSalesSummary.row(request.userAnswers, service.getNiTotalVatOnSales(request.userAnswers))
       ).flatten
-    ).withCssClass("govuk-!-margin-bottom-9")
+    ).withCard(
+      card = Card(
+        title = Some(CardTitle(content = HtmlContent(messages("checkYourAnswers.salesFromNi.heading")))),
+        actions = None
+      )
+    )
   }
 
   private def getBusinessSummaryList(request: DataRequest[AnyContent])(implicit messages: Messages) = {
@@ -160,7 +177,7 @@ class CheckYourAnswersController @Inject()(
         BusinessVRNSummary.row(request.registration),
         ReturnPeriodSummary.row(request.userAnswers)
       ).flatten
-    ).withCssClass("govuk-!-margin-bottom-9")
+    ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
   }
 
   def onSubmit(period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period).async {

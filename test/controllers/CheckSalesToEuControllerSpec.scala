@@ -19,10 +19,13 @@ package controllers
 import base.SpecBase
 import models.{Country, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
-import pages._
+import pages.*
 import play.api.i18n.Messages
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
+import uk.gov.hmrc.govukfrontend.views.Aliases.Card
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.CardTitle
 import viewmodels.TitledSummaryList
 import viewmodels.checkAnswers.{NetValueOfSalesFromEuSummary, VatOnSalesFromEuSummary, VatRatesFromEuSummary}
 import viewmodels.govuk.SummaryListFluency
@@ -58,18 +61,28 @@ class CheckSalesToEuControllerSpec extends SpecBase with SummaryListFluency {
         val view     = application.injector.instanceOf[CheckSalesToEuView]
         val ratesList = Seq(
           TitledSummaryList(
-            title = s"${vatRate.rateForDisplay} VAT rate",
+            title = None,
             list = SummaryListViewModel(
               rows = Seq(
                 NetValueOfSalesFromEuSummary.row(completeAnswers, index, index, index, vatRate, NormalMode),
                 VatOnSalesFromEuSummary.row(completeAnswers, index, index, index, vatRate, NormalMode)
               ).flatten
+            ).withCard(
+              card = Card(
+                title = Some(CardTitle(content = HtmlContent(msgs("checkSalesToEu.vatRateTitle", vatRate.rateForDisplay)))),
+                actions = None
+              )
             )
           )
         )
 
         val mainList = SummaryListViewModel(
           rows = Seq(VatRatesFromEuSummary.row(completeAnswers, index, index, NormalMode)).flatten
+        ).withCard(
+          card = Card(
+            title = Some(CardTitle(content = HtmlContent(msgs("vatRatesFromEu.checkYourAnswersLabel")))),
+            actions = None
+          )
         )
 
         status(result) mustEqual OK
