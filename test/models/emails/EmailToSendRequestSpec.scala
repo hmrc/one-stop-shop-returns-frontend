@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package models.emails
 
 import base.SpecBase
@@ -7,10 +23,10 @@ class EmailToSendRequestSpec extends SpecBase {
 
   "EmailToSendRequest" - {
 
-    "serialize correctly with RegistrationConfirmation" in {
+    "serialize correctly with ReturnsConfirmationEmailParameters" in {
       val emailRequest = EmailToSendRequest(
         to = List("recipient@example.com"),
-        templateId = "registration-template",
+        templateId = "returns-template",
         parameters = ReturnsConfirmationEmailParameters(
           recipientName_line1 = "John Doe",
           businessName = "XYZ Corp",
@@ -24,7 +40,7 @@ class EmailToSendRequestSpec extends SpecBase {
         """
             {
               "to": ["recipient@example.com"],
-              "templateId": "registration-template",
+              "templateId": "returns-template",
               "parameters": {
                "recipientName_line1": "John Doe",
                "businessName": "XYZ Corp",
@@ -39,12 +55,12 @@ class EmailToSendRequestSpec extends SpecBase {
       Json.toJson(emailRequest) mustBe expectedJson
     }
 
-    "deserialize correctly with RegistrationConfirmation" in {
+    "deserialize correctly with ReturnsConfirmationEmailParameters" in {
       val validJson = Json.parse(
         """
             {
               "to": ["recipient@example.com"],
-              "templateId": "registration-template",
+              "templateId": "returns-template",
               "parameters": {
                "recipientName_line1": "John Doe",
                "businessName": "XYZ Corp",
@@ -58,7 +74,7 @@ class EmailToSendRequestSpec extends SpecBase {
 
       val expectedEmailRequest = EmailToSendRequest(
         to = List("recipient@example.com"),
-        templateId = "registration-template",
+        templateId = "returns-template",
         parameters = ReturnsConfirmationEmailParameters(
           recipientName_line1 = "John Doe",
           businessName = "XYZ Corp",
@@ -71,7 +87,7 @@ class EmailToSendRequestSpec extends SpecBase {
       validJson.validate[EmailToSendRequest] mustBe JsSuccess(expectedEmailRequest)
     }
 
-    "serialize correctly with AmendRegistrationConfirmation" in {
+    "serialize correctly with ReturnsConfirmationEmailNoVatOwedParameters" in {
       val emailRequest = EmailToSendRequest(
         to = List("user@example.com"),
         templateId = "amend-template",
@@ -99,12 +115,12 @@ class EmailToSendRequestSpec extends SpecBase {
       Json.toJson(emailRequest) mustBe expectedJson
     }
 
-    "deserialize correctly with AmendRegistrationConfirmation" in {
+    "deserialize correctly with ReturnsConfirmationEmailNoVatOwedParameters" in {
       val validJson = Json.parse(
         """
                 {
                   "to": ["recipient@example.com"],
-                  "templateId": "registration-template",
+                  "templateId": "returns-template",
                   "parameters": {
                     "recipientName_line1": "Alice Smith",
                     "period": "Period"
@@ -116,7 +132,7 @@ class EmailToSendRequestSpec extends SpecBase {
 
       val expectedEmailRequest = EmailToSendRequest(
         to = List("recipient@example.com"),
-        templateId = "registration-template",
+        templateId = "returns-template",
         parameters = ReturnsConfirmationEmailNoVatOwedParameters(
           recipientName_line1 = "Alice Smith",
           period = "Period"
@@ -131,7 +147,7 @@ class EmailToSendRequestSpec extends SpecBase {
       val invalidJson = Json.parse(
         """
             {
-              "templateId": "registration-template",
+              "templateId": "returns-template",
               "parameters": {
                 "recipientName_line1": "John Doe",
                 "businessName": "XYZ Corp",
@@ -151,7 +167,7 @@ class EmailToSendRequestSpec extends SpecBase {
         """
             {
               "to": ["recipient@example.com"],
-              "templateId": "registration-template",
+              "templateId": "returns-template",
               "parameters": {
                 "unknownField": "invalid data"
               },
@@ -166,7 +182,7 @@ class EmailToSendRequestSpec extends SpecBase {
     "fail to deserialize when parameters field is null" in {
       val invalidJson = Json.obj(
         "to" -> JsNull,
-        "templateId" -> "registration-template",
+        "templateId" -> "returns-template",
         "parameters" -> Json.obj(
           "unknownField" -> "invalid data"
         ),
@@ -182,7 +198,7 @@ class EmailToSendRequestSpec extends SpecBase {
         """
             {
               "to": ["recipient@example.com"],
-              "templateId": "registration-template",
+              "templateId": "returns-template",
               "parameters": {
                 "unknownField": "invalid data"
               },

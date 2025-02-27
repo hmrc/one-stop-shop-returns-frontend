@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package models.emails
 
 import base.SpecBase
@@ -5,7 +21,7 @@ import play.api.libs.json.{JsError, JsSuccess, Json}
 
 class EmailParametersSpec extends SpecBase{
 
-  "RegistrationConfirmation" - {
+  "ReturnsConfirmation" - {
 
     "serialize and deserialize correctly" in {
       val registration = ReturnsConfirmationEmailParameters(
@@ -45,7 +61,7 @@ class EmailParametersSpec extends SpecBase{
     }
   }
 
-  "AmendRegistrationConfirmation" - {
+  "ReturnsConfirmationEmailParameters" - {
 
     "serialize and deserialize correctly" in {
       val amendment = ReturnsConfirmationEmailNoVatOwedParameters(
@@ -82,7 +98,7 @@ class EmailParametersSpec extends SpecBase{
 
   "EmailParameters" - {
 
-    "serialize and deserialize RegistrationConfirmation correctly as EmailParameters" in {
+    "serialize and deserialize ReturnsConfirmationEmailParameters correctly as EmailParameters" in {
       val registration = ReturnsConfirmationEmailParameters(
         recipientName_line1 = "John Doe",
         businessName = "ABC Ltd",
@@ -96,7 +112,7 @@ class EmailParametersSpec extends SpecBase{
       deserialized mustBe registration
     }
 
-    "serialize and deserialize AmendRegistrationConfirmation correctly as EmailParameters" in {
+    "serialize and deserialize ReturnsConfirmationEmailNoVatOwedParameters correctly as EmailParameters" in {
       val amendment = ReturnsConfirmationEmailNoVatOwedParameters(
         recipientName_line1 = "Jane Doe",
         period = "period"
@@ -160,7 +176,7 @@ class EmailParametersSpec extends SpecBase{
       deserialized mustBe a[JsError]
     }
 
-    "serialize RegistrationConfirmation correctly via EmailParameters writes" in {
+    "serialize ReturnsConfirmationEmailParameters correctly via EmailParameters writes" in {
       val registration = ReturnsConfirmationEmailParameters(
         recipientName_line1 = "John Doe",
         businessName = "XYZ Corp",
@@ -183,7 +199,7 @@ class EmailParametersSpec extends SpecBase{
       json mustBe expectedJson
     }
 
-    "deserialize RegistrationConfirmation correctly via RegistrationConfirmation reads" in {
+    "deserialize ReturnsConfirmationEmailParameters correctly via RegistrationConfirmation reads" in {
       val json = Json.parse(
         """
       {
