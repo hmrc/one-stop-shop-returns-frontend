@@ -18,10 +18,12 @@ package controllers.external
 
 import base.SpecBase
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import views.html.NoMoreWelshTranslationsView
+import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 
-class NoMoreWelshControllerSpec extends SpecBase {
+class NoMoreWelshControllerSpec extends SpecBase with MockitoSugar{
 
 
   ".onPageLoad" - {
@@ -38,5 +40,51 @@ class NoMoreWelshControllerSpec extends SpecBase {
           contentAsString(result) mustBe view()(request, messages(application)).toString
         }
       }
+  }
+
+  "NoMoreWelsh Controller" - {
+
+    "must return OK and the correct view for a GET with no RedirectUrl" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NoMoreWelshController.onPageLoad().url)
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[NoMoreWelshTranslationsView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(None)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET with a valid redirectUrl" in {
+      val redirectUrl = RedirectUrl("/relative-url")
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NoMoreWelshController.onPageLoad(Some(redirectUrl)).url)
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[NoMoreWelshTranslationsView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(Some("/relative-url"))(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view when given an invalid redirectUrl" in {
+      val invalidRedirectUrl = RedirectUrl("http://malicious-site.com")
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NoMoreWelshController.onPageLoad(Some(invalidRedirectUrl)).url)
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[NoMoreWelshTranslationsView]
+
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(None)(request, messages(application)).toString
+      }
+    }
   }
 }

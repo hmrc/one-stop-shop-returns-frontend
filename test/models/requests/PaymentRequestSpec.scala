@@ -17,8 +17,12 @@
 package models.requests
 
 import base.SpecBase
-import models.Quarter._
+import models.Quarter.*
 import models.StandardPeriod
+import play.api.libs.json.{JsSuccess, Json}
+import uk.gov.hmrc.domain.Vrn
+
+import java.time.LocalDate
 
 class PaymentRequestSpec extends SpecBase {
 
@@ -53,6 +57,28 @@ class PaymentRequestSpec extends SpecBase {
 
         PaymentPeriod(period) mustBe expected
       }
+    }
+  }
+
+  "PaymentRequest" - {
+    "must serialise and deserialise correctly" in {
+
+      val vrn: Vrn = Vrn("vrn")
+      val period: PaymentPeriod = PaymentPeriod(2024,"Q4")
+      val amountInPence: Int = 102332
+      val dueDate: Option[LocalDate] = Some(LocalDate.of(2024,12,9))
+
+      val json = Json.obj(
+        "vrn" -> Vrn("vrn"),
+        "period" -> PaymentPeriod(2024,"Q4"),
+        "amountInPence" -> 102332,
+        "dueDate" -> Some(LocalDate.of(2024,12,9))
+      )
+
+      val expectedResult = PaymentRequest(vrn, period, amountInPence, dueDate)
+
+      Json.toJson(expectedResult) mustBe json
+      json.validate[PaymentRequest] mustBe JsSuccess(expectedResult)
     }
   }
 }
