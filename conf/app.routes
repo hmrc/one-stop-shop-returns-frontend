@@ -338,3 +338,5 @@ GET         /no-longer-able-to-view-return                                      
 GET         /start-return                                                                                           controllers.StartDueReturnController.onPageLoad()
 
 GET         /no-returns-due                                                                                         controllers.NoReturnsDueController.onPageLoad()
+
+GET         /intercept-unusable-email                                                                               controllers.InterceptUnusableEmailController.onPageLoad()

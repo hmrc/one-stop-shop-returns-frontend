@@ -642,3 +642,10 @@ newPreviousReturn.totalVat.title = Total VAT payable
 
 noReturnsDue.title = You do not have any One Stop Shop returns to complete
 noReturnsDue.heading = You do not have any One Stop Shop returns to complete
+
+interceptUnusableEmail.title = We''re having trouble sending you emails
+interceptUnusableEmail.heading = We''re having trouble sending you emails
+interceptUnusableEmail.p1 = The address you gave us, {0}, is not receiving our emails.
+interceptUnusableEmail.p2 = Your mailbox could be full or the email account may not be active.
+interceptUnusableEmail.p3 = You must have a valid email address to use this service.
+interceptUnusableEmail.confirm = Confirm email address

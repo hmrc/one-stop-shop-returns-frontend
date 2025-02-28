@@ -16,11 +16,11 @@
 
 package controllers.actions
 
-import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest, RegistrationRequest}
 import models.Period
+import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest, RegistrationRequest}
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
-import play.api.mvc._
+import play.api.mvc.*
 import repositories.UserAnswersRepository
 
 import javax.inject.Inject
@@ -54,11 +54,19 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def checkVatGroupFixedEstablishment: CheckVatGroupFixedEstablishmentFilterProvider
 
+  def checkBouncedEmail: CheckBouncedEmailFilterProvider
+
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
-  def authAndGetRegistration: ActionBuilder[RegistrationRequest, AnyContent] =
-    auth andThen getRegistration andThen checkVatGroupFixedEstablishment()
+  def authAndGetRegistrationWithoutCheckBouncedEmail(): ActionBuilder[RegistrationRequest, AnyContent] = {
+    auth andThen getRegistration
+  }
+
+  def authAndGetRegistration: ActionBuilder[RegistrationRequest, AnyContent] = {
+    authAndGetRegistrationWithoutCheckBouncedEmail() andThen checkVatGroupFixedEstablishment() andThen
+      checkBouncedEmail()
+  }
 
   def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] =
     authAndGetRegistration andThen getData(period) andThen checkCommencementDate() andThen
@@ -95,5 +103,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                checkMostOverdueReturn: CheckMostOverdueReturnFilterProvider,
                                                                withSavedAnswers: SavedAnswersRetrievalActionProvider,
                                                                checkExcludedTrader: CheckExcludedTraderFilterProvider,
-                                                               checkVatGroupFixedEstablishment: CheckVatGroupFixedEstablishmentFilterProvider
+                                                               checkVatGroupFixedEstablishment: CheckVatGroupFixedEstablishmentFilterProvider,
+                                                               checkBouncedEmail: CheckBouncedEmailFilterProvider
                                                              ) extends AuthenticatedControllerComponents

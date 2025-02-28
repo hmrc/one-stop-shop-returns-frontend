@@ -18,18 +18,18 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import connectors.financialdata.FinancialDataConnector
+import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
 import generators.Generators
-import models.{Country, Period, StandardPeriod, SubmissionStatus}
 import models.Quarter.*
 import models.SubmissionStatus.{Due, Excluded, Next, Overdue}
 import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
-import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason, ExclusionViewType}
+import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration.*
 import models.requests.RegistrationRequest
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
+import models.{Country, Period, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -2889,6 +2889,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         contactDetails = ContactDetails("name", "0123 456789", "email@example.com"),
         commencementDate = LocalDate.now,
         isOnlineMarketplace = false,
+        None,
         None,
         None
       )

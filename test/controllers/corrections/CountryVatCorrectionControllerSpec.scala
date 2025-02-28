@@ -18,9 +18,7 @@ package controllers.corrections
 
 import base.SpecBase
 import forms.corrections.CountryVatCorrectionFormProvider
-import models.{Country, NormalMode, PaymentReference, ReturnReference, VatOnSales, VatOnSalesChoice}
-import models.corrections.CorrectionToCountry
-import models.domain.*
+import models.{Country, NormalMode}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -36,7 +34,6 @@ import queries.corrections.PreviouslyDeclaredCorrectionAmount
 import services.VatReturnService
 import views.html.corrections.CountryVatCorrectionView
 
-import java.time.Instant
 import scala.concurrent.Future
 
 class CountryVatCorrectionControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
