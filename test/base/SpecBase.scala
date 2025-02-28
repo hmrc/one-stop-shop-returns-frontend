@@ -75,7 +75,8 @@ trait SpecBase
     commencementDate      = LocalDate.now,
     isOnlineMarketplace   = false,
     None,
-    None // TODO
+    None, // TODO
+    unusableStatus = None
   )
 
   val twentyPercentVatRate = VatRate(20, VatRateType.Reduced, arbitraryDate)
@@ -275,8 +276,9 @@ trait SpecBase
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider()),
         bind[CheckMostOverdueReturnFilterProvider].toInstance(new FakeCheckMostOverdueReturnFilterProvider()),
         bind[SavedAnswersRetrievalAction].toInstance(new FakeSavedAnswersRetrievalAction(userAnswers)),
-        bind[CheckExcludedTraderFilterProvider].toInstance(new FakeCheckExcludedTraderFilterProvider())
+        bind[CheckExcludedTraderFilterProvider].toInstance(new FakeCheckExcludedTraderFilterProvider()),
+        bind[CheckBouncedEmailFilterProvider].toInstance(new FakeCheckBouncedEmailFilterProvider())
       )
   }
-
 }
+
