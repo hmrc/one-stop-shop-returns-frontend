@@ -114,5 +114,4 @@ class IdentityVerificationResponseSpec extends SpecBase with Matchers {
       json.validate[IdentityVerificationProgress] mustBe a[JsError]
     }
   }
-
 }
