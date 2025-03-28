@@ -31,7 +31,7 @@ object Country {
     Country("BE", "Belgium"),
     Country("BG", "Bulgaria"),
     Country("HR", "Croatia"),
-    Country("CY", "Republic of Cyprus"),
+    Country("CY", "Cyprus"),
     Country("CZ", "Czech Republic"),
     Country("DK", "Denmark"),
     Country("EE", "Estonia"),
