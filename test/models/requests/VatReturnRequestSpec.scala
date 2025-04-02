@@ -20,7 +20,7 @@ import base.SpecBase
 import models.Quarter.Q4
 import models.domain.VatRateType.{Reduced, Standard}
 import models.domain.{SalesDetails, SalesFromEuCountry, SalesToCountry, VatRate}
-import models.{Country, SalesToEu, StandardPeriod, VatOnSales, VatOnSalesChoice}
+import models.{Country, StandardPeriod, VatOnSales, VatOnSalesChoice}
 import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.domain.Vrn
 
@@ -29,6 +29,7 @@ import java.time.LocalDate
 class VatReturnRequestSpec extends SpecBase {
 
   "SaveForLaterRequest" - {
+
     "must serialise and deserialise correctly" in {
 
       val vrn: Vrn = Vrn("vrn")
@@ -115,5 +116,5 @@ class VatReturnRequestSpec extends SpecBase {
       json.validate[VatReturnRequest] mustBe JsSuccess(expectedResult)
     }
   }
-
 }
+

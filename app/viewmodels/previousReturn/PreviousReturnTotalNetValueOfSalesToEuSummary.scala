@@ -18,25 +18,25 @@ package viewmodels.previousReturn
 
 import models.Country
 import models.Country.getCountryName
-import models.etmp.EtmpVatReturnGoodsSupplied
+import models.etmp.EtmpVatReturnGoodsDispatched
 import play.api.i18n.Messages
 import viewmodels.govuk.all.currencyFormat
 
-object PreviousReturnTotalNetValueOfSalesSummary {
+object PreviousReturnTotalNetValueOfSalesToEuSummary {
 
-  case class SalesToCountryRow(
+  case class SalesToEuCountryRow(
                                 country: String,
                                 salesAmount: String,
                                 vatAmount: String
                               )
 
-  def rows(goodsSupplied: Seq[EtmpVatReturnGoodsSupplied])(implicit messages: Messages): Map[String, Seq[SalesToCountryRow]] = {
+  def rows(goodsSupplied: Seq[EtmpVatReturnGoodsDispatched])(implicit messages: Messages): Map[String, Seq[SalesToEuCountryRow]] = {
 
     goodsSupplied.groupBy(_.msOfEstablishment).flatMap {
       case (country, goodsSuppliedFromCountry) =>
 
         val countryRows = goodsSuppliedFromCountry.map { singleGoodsSupplied =>
-          SalesToCountryRow(
+          SalesToEuCountryRow(
             country = messages("newPreviousReturn.salesToEu.toCountry", getCountryName(singleGoodsSupplied.msOfConsumption)),
             salesAmount = currencyFormat(singleGoodsSupplied.taxableAmountGBP),
             vatAmount = currencyFormat(singleGoodsSupplied.vatAmountGBP)
@@ -44,9 +44,7 @@ object PreviousReturnTotalNetValueOfSalesSummary {
         }
 
         Map(getCountryName(country) -> countryRows)
-    }.toSeq.sortWith { (c1, c2) =>
-      c1._1.matches(Country.northernIreland.name)
-    }.toMap
+    }
   }
 }
 

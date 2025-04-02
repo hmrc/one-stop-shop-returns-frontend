@@ -107,7 +107,8 @@ class PreviousReturnController @Inject()(
             Ok(newView(
               period = determinedPeriod,
               mainSummaryList = mainSummaryList,
-              allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(etmpVatReturn.goodsSupplied),
+              allNiSales = PreviousReturnTotalNetValueOfSalesFromNiSummary.rows(etmpVatReturn.goodsSupplied),
+              allEuSales = PreviousReturnTotalNetValueOfSalesToEuSummary.rows(etmpVatReturn.goodsDispatched),
               corrections = PreviousReturnCorrectionsSummary.correctionRows(etmpVatReturn.correctionPreviousVATReturn),
               negativeAndZeroBalanceCorrectionCountries = PreviousReturnDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn),
               vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn),

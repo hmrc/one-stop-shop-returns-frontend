@@ -15,7 +15,8 @@
  *@
 
 @import viewmodels.previousReturn.PreviousReturnCorrectionsSummary.CorrectionRow
-@import viewmodels.previousReturn.PreviousReturnTotalNetValueOfSalesSummary.SalesToCountryRow
+@import viewmodels.previousReturn.PreviousReturnTotalNetValueOfSalesToEuSummary.SalesToEuCountryRow
+@import viewmodels.previousReturn.PreviousReturnTotalNetValueOfSalesFromNiSummary.SalesFromNiCountryRow
 
 @this(
         layout: templates.Layout,
@@ -25,7 +26,8 @@
 @(
         period: Period,
         mainSummaryList: SummaryList,
-        allEuSales: Map[String, Seq[SalesToCountryRow]],
+        allNiSales: Seq[SalesFromNiCountryRow],
+        allEuSales: Map[String, Seq[SalesToEuCountryRow]],
         corrections: Seq[CorrectionRow],
         negativeAndZeroBalanceCorrectionCountries: Seq[SummaryListRow],
         vatOwedSummaryList: SummaryList,
@@ -62,6 +64,38 @@
   }
 
   <h2 class="govuk-heading-m">@messages("newPreviousReturn.details")</h2>
+
+  <div class="govuk-summary-card">
+    <div class="govuk-summary-card__title-wrapper">
+      <h2 class="govuk-summary-card__title">@messages("newPreviousReturn.salesFromNi.title")</h2>
+    </div>
+    <div class="govuk-summary-card__content">
+      <dl class="govuk-summary-list">
+      @for(countrySales <- allNiSales) {
+        <div class="govuk-summary-list__row corrections-no-border">
+          <dt class="govuk-summary-list__key">
+          @countrySales.country
+          </dt>
+          <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+          @messages("newPreviousReturn.salesFromNi.allNetSales")
+          </dd>
+          <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+          @Html(countrySales.salesAmount)
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__row--no-actions"></dt>
+          <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+          @messages("newPreviousReturn.salesFromNi.allVatSales")
+          </dd>
+          <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+          @Html(countrySales.vatAmount)
+          </dd>
+        </div>
+      }
+      </dl>
+    </div>
+  </div>
 
   @for((country, goods) <- allEuSales) {
     <div class="govuk-summary-card">
