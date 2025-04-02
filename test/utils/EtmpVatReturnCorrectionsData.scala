@@ -19,6 +19,7 @@ package utils
 import base.SpecBase
 import formats.Format.etmpDateTimeFormatter
 import models.etmp.*
+import models.etmp.EtmpVatRateType.StandardVatRate
 import org.scalacheck.Arbitrary.arbitrary
 
 import java.time.{LocalDate, LocalDateTime}
@@ -34,20 +35,35 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     goodsSupplied = Seq(
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "DE",
-        msOfEstablishment = "NI",
         vatRateType = EtmpVatRateType.StandardVatRate,
         taxableAmountGBP = BigDecimal(1000),
         vatAmountGBP = BigDecimal(100)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "FR",
-        msOfEstablishment = "DE",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(10000),
         vatAmountGBP = BigDecimal(1000)
       )
     ),
     totalVATGoodsSuppliedGBP = BigDecimal(1100),
+    goodsDispatched = Seq(
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "ES",
+        msOfConsumption = "FR",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(10000),
+        vatAmountGBP = BigDecimal(100),
+      ),
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "DE",
+        msOfConsumption = "IT",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(1234),
+        vatAmountGBP = BigDecimal(123),
+      )
+    ),
+    totalVatAmtDispatchedGBP = BigDecimal(100),
     totalVATAmountPayable = BigDecimal(0),
     totalVATAmountPayableAllSpplied = BigDecimal(1100),
     correctionPreviousVATReturn = Seq(
@@ -102,20 +118,35 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     goodsSupplied = Seq(
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "IT",
-        msOfEstablishment = "ES",
         vatRateType = EtmpVatRateType.StandardVatRate,
         taxableAmountGBP = BigDecimal(1500),
         vatAmountGBP = BigDecimal(150)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "LT",
-        msOfEstablishment = "DE",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(9500),
         vatAmountGBP = BigDecimal(950)
       )
     ),
     totalVATGoodsSuppliedGBP = BigDecimal(1100),
+    goodsDispatched = Seq(
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "LT",
+        msOfConsumption = "FR",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(10000),
+        vatAmountGBP = BigDecimal(100),
+      ),
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "DE",
+        msOfConsumption = "ES",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(1234),
+        vatAmountGBP = BigDecimal(123),
+      )
+    ),
+    totalVatAmtDispatchedGBP = BigDecimal(1000),
     totalVATAmountPayable = BigDecimal(0),
     totalVATAmountPayableAllSpplied = BigDecimal(1100),
     correctionPreviousVATReturn = Seq(
@@ -186,27 +217,41 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     goodsSupplied = Seq(
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "EE",
-        msOfEstablishment = "DE",
         vatRateType = EtmpVatRateType.StandardVatRate,
         taxableAmountGBP = BigDecimal(2500),
         vatAmountGBP = BigDecimal(250)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "PL",
-        msOfEstablishment = "LT",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(23000),
         vatAmountGBP = BigDecimal(2300)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "LV",
-        msOfEstablishment = "ES",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(7000),
         vatAmountGBP = BigDecimal(700)
       )
     ),
     totalVATGoodsSuppliedGBP = BigDecimal(3250),
+    goodsDispatched = Seq(
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "IT",
+        msOfConsumption = "ES",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(10000),
+        vatAmountGBP = BigDecimal(100),
+      ),
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "DE",
+        msOfConsumption = "IT",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(1234),
+        vatAmountGBP = BigDecimal(123),
+      )
+    ),
+    totalVatAmtDispatchedGBP = BigDecimal(1234),
     totalVATAmountPayable = BigDecimal(0),
     totalVATAmountPayableAllSpplied = BigDecimal(3250),
     correctionPreviousVATReturn = Seq(
@@ -274,20 +319,35 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     goodsSupplied = Seq(
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "AT",
-        msOfEstablishment = "DE",
         vatRateType = EtmpVatRateType.StandardVatRate,
         taxableAmountGBP = BigDecimal(1500),
         vatAmountGBP = BigDecimal(150)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "HR",
-        msOfEstablishment = "ES",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(10000),
         vatAmountGBP = BigDecimal(1000)
       )
     ),
     totalVATGoodsSuppliedGBP = BigDecimal(1150),
+    goodsDispatched = Seq(
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "BE",
+        msOfConsumption = "DE",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(10000),
+        vatAmountGBP = BigDecimal(100),
+      ),
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "ES",
+        msOfConsumption = "IT",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(1234),
+        vatAmountGBP = BigDecimal(123),
+      )
+    ),
+    totalVatAmtDispatchedGBP = BigDecimal(500),
     totalVATAmountPayable = BigDecimal(0),
     totalVATAmountPayableAllSpplied = BigDecimal(1150),
     correctionPreviousVATReturn = Seq(

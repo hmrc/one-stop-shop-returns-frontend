@@ -390,13 +390,29 @@ trait ModelGenerators {
     Arbitrary {
       for {
         msOfConsumption <- arbitraryCountry.arbitrary.map(_.code)
-        msOfEstablishment <- arbitraryCountry.arbitrary.map(_.code)
         vatRateType <- Gen.oneOf(EtmpVatRateType.values)
         taxableAmountGBP <- arbitrary[BigDecimal]
         vatAmountGBP <- arbitrary[BigDecimal]
       } yield EtmpVatReturnGoodsSupplied(
         msOfConsumption = msOfConsumption,
+        vatRateType = vatRateType,
+        taxableAmountGBP = taxableAmountGBP,
+        vatAmountGBP = vatAmountGBP
+      )
+    }
+  }
+
+  implicit lazy val arbitraryEtmpVatReturnGoodsDispatched: Arbitrary[EtmpVatReturnGoodsDispatched] = {
+    Arbitrary {
+      for {
+        msOfEstablishment <- arbitraryCountry.arbitrary.map(_.code)
+        msOfConsumption <- arbitraryCountry.arbitrary.map(_.code)
+        vatRateType <- Gen.oneOf(EtmpVatRateType.values)
+        taxableAmountGBP <- arbitrary[BigDecimal]
+        vatAmountGBP <- arbitrary[BigDecimal]
+      } yield EtmpVatReturnGoodsDispatched(
         msOfEstablishment = msOfEstablishment,
+        msOfConsumption = msOfConsumption,
         vatRateType = vatRateType,
         taxableAmountGBP = taxableAmountGBP,
         vatAmountGBP = vatAmountGBP
@@ -457,6 +473,9 @@ trait ModelGenerators {
         totalVATGoodsSuppliedGBP <- arbitrary[BigDecimal]
         totalVATAmountPayable <- arbitrary[BigDecimal]
         totalVATAmountPayableAllSpplied <- arbitrary[BigDecimal]
+        amountOfGoodsDispatched <- Gen.oneOf(List(1, 2, 3))
+        goodsDispatched <- Gen.listOfN(amountOfGoodsDispatched, arbitrary[EtmpVatReturnGoodsDispatched])
+        totalVatAmtDispatchedGBP <- arbitrary[BigDecimal]
         amountOfCorrections <- Gen.oneOf(List(1, 2, 3))
         correctionPreviousVATReturn <- Gen.listOfN(amountOfCorrections, arbitrary[EtmpVatReturnCorrection])
         totalVATAmountFromCorrectionGBP <- arbitrary[BigDecimal]
@@ -472,6 +491,8 @@ trait ModelGenerators {
         returnPeriodTo = fromEtmpPeriodKey(periodKey).lastDay,
         goodsSupplied = goodsSupplied,
         totalVATGoodsSuppliedGBP = totalVATGoodsSuppliedGBP,
+        goodsDispatched = goodsDispatched,
+        totalVatAmtDispatchedGBP = totalVatAmtDispatchedGBP,
         totalVATAmountPayable = totalVATAmountPayable,
         totalVATAmountPayableAllSpplied = totalVATAmountPayableAllSpplied,
         correctionPreviousVATReturn = correctionPreviousVATReturn,
