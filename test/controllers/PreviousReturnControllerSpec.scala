@@ -757,8 +757,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 periodFrom = arbitrary[String].sample.value,
                 periodTo = arbitrary[String].sample.value,
                 msOfConsumption = arbitraryCountry.arbitrary.sample.value.code,
-                totalVATAmountCorrectionGBP = BigDecimal(200.56),
-                totalVATAmountCorrectionEUR = BigDecimal(200.56)
+                totalVATAmountCorrectionGBP = BigDecimal(200.56)
               )))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))

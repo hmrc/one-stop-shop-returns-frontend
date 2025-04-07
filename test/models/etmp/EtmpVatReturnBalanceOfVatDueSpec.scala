@@ -29,14 +29,12 @@ class EtmpVatReturnBalanceOfVatDueSpec extends SpecBase {
 
       val json = Json.obj(
         "msOfConsumption" -> etmpVatReturnBalanceOfVatDue.msOfConsumption,
-        "totalVATDueGBP" -> etmpVatReturnBalanceOfVatDue.totalVATDueGBP,
-        "totalVATEUR" -> etmpVatReturnBalanceOfVatDue.totalVATEUR
+        "totalVATDueGBP" -> etmpVatReturnBalanceOfVatDue.totalVATDueGBP
       )
 
       val expectedResult = EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = etmpVatReturnBalanceOfVatDue.msOfConsumption,
-        totalVATDueGBP = etmpVatReturnBalanceOfVatDue.totalVATDueGBP,
-        totalVATEUR = etmpVatReturnBalanceOfVatDue.totalVATEUR
+        totalVATDueGBP = etmpVatReturnBalanceOfVatDue.totalVATDueGBP
       )
 
       Json.toJson(expectedResult) mustBe json
