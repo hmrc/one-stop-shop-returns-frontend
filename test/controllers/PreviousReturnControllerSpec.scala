@@ -110,8 +110,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.NoLongerAbleToViewReturnController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.NoLongerAbleToViewReturnController.onPageLoad().url
         }
       }
 
@@ -140,16 +140,16 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         val charge = Charge(StandardPeriod(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
 
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(Some(charge)))
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
+        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
         when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
         when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
         when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
         when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
-        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSalesBeforeCorrection
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSalesAfterCorrection
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         running(application) {
           val request = FakeRequest(GET, previousReturnRoute)
@@ -166,8 +166,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection, hasCorrections = true))
           val displayPayNow = true
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             vatReturn = vatReturn,
             mainList = summaryList,
             niSalesList = niSalesList,
@@ -200,16 +200,16 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val vatOnSalesFromEu = BigDecimal(44)
         val totalVatOnSales = vatOnSalesFromNi + vatOnSalesFromEu
 
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
+        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
         when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
         when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
         when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
         when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
-        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(correctionConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         running(application) {
           val request = FakeRequest(GET, previousReturnRoute)
@@ -226,8 +226,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSales, hasCorrections = false))
           val displayPayNow = true
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             vatReturn = vatReturn,
             mainList = summaryList,
             niSalesList = niSalesList,
@@ -255,16 +255,16 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           .build()
 
         val zero = BigDecimal(0)
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
+        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
         when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn zero
         when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn zero
         when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn zero
-        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(correctionConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         running(application) {
           val request = FakeRequest(GET, previousReturnRoute)
@@ -281,8 +281,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           val displayPayNow = false
           val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(zero, hasCorrections = false))
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             vatReturn = vatReturn,
             mainList = summaryList,
             niSalesList = niSalesList,
@@ -315,16 +315,16 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val vatOnSalesFromEu = BigDecimal(44)
         val totalVatOnSales = vatOnSalesFromNi + vatOnSalesFromEu
 
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
+        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Left(NotFoundResponse).toFuture
         when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
         when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
         when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
         when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
-        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(correctionConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         running(application) {
           val request = FakeRequest(GET, previousReturnRoute)
@@ -341,8 +341,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           val displayPayNow = true
           val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSales, hasCorrections = false))
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             vatReturn = vatReturn,
             mainList = summaryList,
             niSalesList = niSalesList,
@@ -372,16 +372,16 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val zero = BigDecimal(0)
         val correctionAmount = BigDecimal(100)
 
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
+        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
         when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn zero
         when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn zero
         when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
-        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         running(application) {
           val request = FakeRequest(GET, previousReturnRoute)
@@ -400,8 +400,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             rows = PreviousReturnSummary.totalVatSummaryRows(correctionAmount, hasCorrections = true))
           val displayPayNow = true
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             vatReturn = vatReturn,
             mainList = summaryList,
             niSalesList = niSalesList,
@@ -430,19 +430,19 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         val correctionAmount = BigDecimal(100)
 
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFoundResponse))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
+        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
-        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         running(application) {
           val request = FakeRequest(GET, previousReturnRoute)
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.YourAccountController.onPageLoad().url
         }
       }
 
@@ -460,19 +460,19 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         val correctionAmount = BigDecimal(100)
 
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")).toFuture
+        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
-        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         running(application) {
           val request = FakeRequest(GET, previousReturnRoute)
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
         }
       }
 
@@ -491,18 +491,18 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val correctionAmount = BigDecimal(100)
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Future.failed(new Exception("Some exception"))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(None))
+        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
-        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         running(application) {
           val request = FakeRequest(GET, previousReturnRoute)
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
         }
       }
 
@@ -531,16 +531,16 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         val charge = Charge(StandardPeriod(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
 
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Future.successful(Right(Some(charge)))
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
+        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
         when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
         when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
         when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
         when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
-        when(correctionConnector.get(any())(any())) thenReturn Future.successful(Right(correctionPayload))
+        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSalesBeforeCorrection
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSalesAfterCorrection
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(Some("example"))).toFuture
 
         running(application) {
           val request = FakeRequest(GET, previousReturnRoute)
@@ -557,8 +557,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection, hasCorrections = true))
           val displayPayNow = true
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             vatReturn = vatReturn,
             mainList = summaryList,
             niSalesList = niSalesList,
@@ -593,8 +593,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.NoLongerAbleToViewReturnController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.NoLongerAbleToViewReturnController.onPageLoad().url
         }
       }
 
@@ -635,7 +635,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               ).flatten
             )
 
-            val allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(etmpVatReturn.goodsSupplied)
+            val allNiSales = PreviousReturnTotalNetValueOfSalesFromNiSummary.rows(etmpVatReturn.goodsSupplied)
+
+            val allEuSales = PreviousReturnTotalNetValueOfSalesToEuSummary.rows(etmpVatReturn.goodsDispatched)
 
             val correctionRowsSummaryList = PreviousReturnCorrectionsSummary.correctionRows(etmpVatReturn.correctionPreviousVATReturn)
 
@@ -653,11 +655,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = etmpVatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 determinedPeriod,
                 mainSummaryList,
+                allNiSales,
                 allEuSales,
                 correctionRowsSummaryList,
                 negativeAndZeroBalanceCorrectionCountriesSummaryList,
@@ -707,7 +710,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               ).flatten
             )
 
-            val allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(etmpVatReturn.goodsSupplied)
+            val allNiSales = PreviousReturnTotalNetValueOfSalesFromNiSummary.rows(etmpVatReturnNoCorrections.goodsSupplied)
+
+            val allEuSales = PreviousReturnTotalNetValueOfSalesToEuSummary.rows(etmpVatReturnNoCorrections.goodsDispatched)
 
             val correctionRowsSummaryList = PreviousReturnCorrectionsSummary.correctionRows(etmpVatReturnNoCorrections.correctionPreviousVATReturn)
 
@@ -725,11 +730,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = etmpVatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 determinedPeriod,
                 mainSummaryList,
+                allNiSales,
                 allEuSales,
                 correctionRowsSummaryList,
                 negativeAndZeroBalanceCorrectionCountriesSummaryList,
@@ -751,8 +757,7 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 periodFrom = arbitrary[String].sample.value,
                 periodTo = arbitrary[String].sample.value,
                 msOfConsumption = arbitraryCountry.arbitrary.sample.value.code,
-                totalVATAmountCorrectionGBP = BigDecimal(200.56),
-                totalVATAmountCorrectionEUR = BigDecimal(200.56)
+                totalVATAmountCorrectionGBP = BigDecimal(200.56)
               )))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -788,7 +793,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               ).flatten
             )
 
-            val allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(etmpVatReturn.goodsSupplied)
+            val allNiSales = PreviousReturnTotalNetValueOfSalesFromNiSummary.rows(etmpVatReturnPositiveCorrections.goodsSupplied)
+
+            val allEuSales = PreviousReturnTotalNetValueOfSalesToEuSummary.rows(etmpVatReturnPositiveCorrections.goodsDispatched)
 
             val correctionRowsSummaryList = PreviousReturnCorrectionsSummary
               .correctionRows(etmpVatReturnPositiveCorrections.correctionPreviousVATReturn)
@@ -807,11 +814,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = etmpVatReturnPositiveCorrections.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 determinedPeriod,
                 mainSummaryList,
+                allNiSales,
                 allEuSales,
                 correctionRowsSummaryList,
                 negativeAndZeroBalanceCorrectionCountriesSummaryList,
@@ -870,7 +878,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               ).flatten
             )
 
-            val allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(nilEtmpVatReturn.goodsSupplied)
+            val allNiSales = PreviousReturnTotalNetValueOfSalesFromNiSummary.rows(nilEtmpVatReturn.goodsSupplied)
+
+            val allEuSales = PreviousReturnTotalNetValueOfSalesToEuSummary.rows(nilEtmpVatReturn.goodsDispatched)
 
             val correctionRowsSummaryList = PreviousReturnCorrectionsSummary
               .correctionRows(nilEtmpVatReturn.correctionPreviousVATReturn)
@@ -885,11 +895,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             val outstandingAmount: BigDecimal = BigDecimal(0)
             val vatDeclared = nilEtmpVatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 determinedPeriod,
                 mainSummaryList,
+                allNiSales,
                 allEuSales,
                 correctionRowsSummaryList,
                 negativeAndZeroBalanceCorrectionCountriesSummaryList,
@@ -937,7 +948,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               ).flatten
             )
 
-            val allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(etmpVatReturn.goodsSupplied)
+            val allNiSales = PreviousReturnTotalNetValueOfSalesFromNiSummary.rows(etmpVatReturn.goodsSupplied)
+
+            val allEuSales = PreviousReturnTotalNetValueOfSalesToEuSummary.rows(etmpVatReturn.goodsDispatched)
 
             val correctionRowsSummaryList = PreviousReturnCorrectionsSummary.correctionRows(etmpVatReturn.correctionPreviousVATReturn)
 
@@ -955,11 +968,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             val outstandingAmount: BigDecimal = etmpVatReturn.totalVATAmountPayable
             val vatDeclared = etmpVatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 determinedPeriod,
                 mainSummaryList,
+                allNiSales,
                 allEuSales,
                 correctionRowsSummaryList,
                 negativeAndZeroBalanceCorrectionCountriesSummaryList,
@@ -1029,7 +1043,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 ).flatten
               )
 
-              val allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(vatReturnNoCorrections.goodsSupplied)
+              val allNiSales = PreviousReturnTotalNetValueOfSalesFromNiSummary.rows(vatReturnNoCorrections.goodsSupplied)
+
+              val allEuSales = PreviousReturnTotalNetValueOfSalesToEuSummary.rows(vatReturnNoCorrections.goodsDispatched)
 
               val correctionRowsSummaryList = PreviousReturnCorrectionsSummary
                 .correctionRows(vatReturnNoCorrections.correctionPreviousVATReturn)
@@ -1048,11 +1064,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               val outstandingAmount: BigDecimal = nilCharge.outstandingAmount
               val vatDeclared: BigDecimal = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
-              status(result) mustBe OK
-              contentAsString(result) mustBe
+              status(result) `mustBe` OK
+              contentAsString(result) `mustBe`
                 view(
                   exceededPeriod,
                   mainSummaryList,
+                  allNiSales,
                   allEuSales,
                   correctionRowsSummaryList,
                   negativeAndZeroBalanceCorrectionCountriesSummaryList,
@@ -1101,7 +1118,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
                 ).flatten
               )
 
-              val allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(vatReturnNoCorrections.goodsSupplied)
+              val allNiSales = PreviousReturnTotalNetValueOfSalesFromNiSummary.rows(vatReturnNoCorrections.goodsSupplied)
+
+              val allEuSales = PreviousReturnTotalNetValueOfSalesToEuSummary.rows(vatReturnNoCorrections.goodsDispatched)
 
               val correctionRowsSummaryList = PreviousReturnCorrectionsSummary
                 .correctionRows(vatReturnNoCorrections.correctionPreviousVATReturn)
@@ -1120,11 +1139,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               val outstandingAmount: BigDecimal = outstandingCharge.outstandingAmount
               val vatDeclared: BigDecimal = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
-              status(result) mustBe OK
-              contentAsString(result) mustBe
+              status(result) `mustBe` OK
+              contentAsString(result) `mustBe`
                 view(
                   exceededPeriod,
                   mainSummaryList,
+                  allNiSales,
                   allEuSales,
                   correctionRowsSummaryList,
                   negativeAndZeroBalanceCorrectionCountriesSummaryList,
@@ -1181,7 +1201,9 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
               ).flatten
             )
 
-            val allEuSales = PreviousReturnTotalNetValueOfSalesSummary.rows(partialReturn.goodsSupplied)
+            val allNiSales = PreviousReturnTotalNetValueOfSalesFromNiSummary.rows(partialReturn.goodsSupplied)
+
+            val allEuSales = PreviousReturnTotalNetValueOfSalesToEuSummary.rows(partialReturn.goodsDispatched)
 
             val correctionRowsSummaryList = PreviousReturnCorrectionsSummary.correctionRows(partialReturn.correctionPreviousVATReturn)
 
@@ -1199,11 +1221,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = partialReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 partialReturnPeriod,
                 mainSummaryList,
+                allNiSales,
                 allEuSales,
                 correctionRowsSummaryList,
                 negativeAndZeroBalanceCorrectionCountriesSummaryList,
@@ -1237,8 +1260,8 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           val result = route(application, request).value
 
           whenReady(result.failed) { e =>
-            e mustBe a[Exception]
-            e.getMessage mustBe message
+            e `mustBe` a[Exception]
+            e.getMessage `mustBe` message
           }
         }
       }

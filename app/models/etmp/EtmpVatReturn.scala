@@ -28,6 +28,7 @@ case class EtmpVatReturn(
                           returnPeriodTo: LocalDate,
                           goodsSupplied: Seq[EtmpVatReturnGoodsSupplied],
                           totalVATGoodsSuppliedGBP: BigDecimal,
+                          goodsDispatched: Seq[EtmpVatReturnGoodsDispatched],
                           totalVATAmountPayable: BigDecimal,
                           totalVATAmountPayableAllSpplied: BigDecimal,
                           correctionPreviousVATReturn: Seq[EtmpVatReturnCorrection],

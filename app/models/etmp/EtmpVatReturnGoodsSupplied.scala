@@ -20,7 +20,6 @@ import play.api.libs.json.{Format, Json}
 
 case class EtmpVatReturnGoodsSupplied(
                                        msOfConsumption: String,
-                                       msOfEstablishment: String,
                                        vatRateType: EtmpVatRateType,
                                        taxableAmountGBP: BigDecimal,
                                        vatAmountGBP: BigDecimal

@@ -20,8 +20,6 @@ import base.SpecBase
 import models.Quarter.Q1
 import models.StandardPeriod
 
-import java.time.Month
-
 class ExternalTargetPageSpec extends SpecBase {
 
   "ExternalTargetPage" - {

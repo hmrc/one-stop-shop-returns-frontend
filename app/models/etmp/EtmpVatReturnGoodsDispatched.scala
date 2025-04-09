@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@ package models.etmp
 
 import play.api.libs.json.{Format, Json}
 
-case class EtmpVatReturnCorrection(
-                                    periodKey: String,
-                                    periodFrom: String,
-                                    periodTo: String,
-                                    msOfConsumption: String,
-                                    totalVATAmountCorrectionGBP: BigDecimal
-                                  )
+case class EtmpVatReturnGoodsDispatched(
+                                         msOfEstablishment: String,
+                                         msOfConsumption: String,
+                                         vatRateType: EtmpVatRateType,
+                                         taxableAmountGBP: BigDecimal,
+                                         vatAmountGBP: BigDecimal
+                                       )
 
-object EtmpVatReturnCorrection {
+object EtmpVatReturnGoodsDispatched {
 
-  implicit val format: Format[EtmpVatReturnCorrection] = Json.format[EtmpVatReturnCorrection]
+  implicit val format: Format[EtmpVatReturnGoodsDispatched] = Json.format[EtmpVatReturnGoodsDispatched]
 }

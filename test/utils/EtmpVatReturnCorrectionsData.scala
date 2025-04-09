@@ -19,6 +19,7 @@ package utils
 import base.SpecBase
 import formats.Format.etmpDateTimeFormatter
 import models.etmp.*
+import models.etmp.EtmpVatRateType.StandardVatRate
 import org.scalacheck.Arbitrary.arbitrary
 
 import java.time.{LocalDate, LocalDateTime}
@@ -34,20 +35,34 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     goodsSupplied = Seq(
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "DE",
-        msOfEstablishment = "NI",
         vatRateType = EtmpVatRateType.StandardVatRate,
         taxableAmountGBP = BigDecimal(1000),
         vatAmountGBP = BigDecimal(100)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "FR",
-        msOfEstablishment = "DE",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(10000),
         vatAmountGBP = BigDecimal(1000)
       )
     ),
     totalVATGoodsSuppliedGBP = BigDecimal(1100),
+    goodsDispatched = Seq(
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "ES",
+        msOfConsumption = "FR",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(10000),
+        vatAmountGBP = BigDecimal(100),
+      ),
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "DE",
+        msOfConsumption = "IT",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(1234),
+        vatAmountGBP = BigDecimal(123),
+      )
+    ),
     totalVATAmountPayable = BigDecimal(0),
     totalVATAmountPayableAllSpplied = BigDecimal(1100),
     correctionPreviousVATReturn = Seq(
@@ -56,37 +71,32 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         periodFrom = LocalDate.of(2023, 8, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 8, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "DE",
-        totalVATAmountCorrectionGBP = BigDecimal(-1000),
-        totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
+        totalVATAmountCorrectionGBP = BigDecimal(-1000)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "DE",
-        totalVATAmountCorrectionGBP = BigDecimal(-1000),
-        totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
+        totalVATAmountCorrectionGBP = BigDecimal(-1000)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "DE",
-        totalVATAmountCorrectionGBP = BigDecimal(-1000),
-        totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
+        totalVATAmountCorrectionGBP = BigDecimal(-1000)
       ),
     ),
     totalVATAmountFromCorrectionGBP = BigDecimal(-3000),
     balanceOfVATDueForMS = Seq(
       EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = "DE",
-        totalVATDueGBP = BigDecimal(0),
-        totalVATEUR = BigDecimal(0)
+        totalVATDueGBP = BigDecimal(0)
       ),
       EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = "FR",
-        totalVATDueGBP = BigDecimal(1000),
-        totalVATEUR = BigDecimal(1100)
+        totalVATDueGBP = BigDecimal(1000)
       )
     ),
     totalVATAmountDueForAllMSGBP = BigDecimal(1000),
@@ -102,20 +112,34 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     goodsSupplied = Seq(
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "IT",
-        msOfEstablishment = "ES",
         vatRateType = EtmpVatRateType.StandardVatRate,
         taxableAmountGBP = BigDecimal(1500),
         vatAmountGBP = BigDecimal(150)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "LT",
-        msOfEstablishment = "DE",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(9500),
         vatAmountGBP = BigDecimal(950)
       )
     ),
     totalVATGoodsSuppliedGBP = BigDecimal(1100),
+    goodsDispatched = Seq(
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "LT",
+        msOfConsumption = "FR",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(10000),
+        vatAmountGBP = BigDecimal(100),
+      ),
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "DE",
+        msOfConsumption = "ES",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(1234),
+        vatAmountGBP = BigDecimal(123),
+      )
+    ),
     totalVATAmountPayable = BigDecimal(0),
     totalVATAmountPayableAllSpplied = BigDecimal(1100),
     correctionPreviousVATReturn = Seq(
@@ -124,53 +148,46 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         periodFrom = LocalDate.of(2023, 8, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 8, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "IT",
-        totalVATAmountCorrectionGBP = BigDecimal(-1000),
-        totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
+        totalVATAmountCorrectionGBP = BigDecimal(-1000)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "IT",
-        totalVATAmountCorrectionGBP = BigDecimal(-1000),
-        totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
+        totalVATAmountCorrectionGBP = BigDecimal(-1000)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "IT",
-        totalVATAmountCorrectionGBP = BigDecimal(-500),
-        totalVATAmountCorrectionEUR = BigDecimal(-510.40)
+        totalVATAmountCorrectionGBP = BigDecimal(-500)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "LT",
-        totalVATAmountCorrectionGBP = BigDecimal(-1000),
-        totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
+        totalVATAmountCorrectionGBP = BigDecimal(-1000)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "LT",
-        totalVATAmountCorrectionGBP = BigDecimal(-1000),
-        totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
+        totalVATAmountCorrectionGBP = BigDecimal(-1000)
       ),
     ),
     totalVATAmountFromCorrectionGBP = BigDecimal(-4500),
     balanceOfVATDueForMS = Seq(
       EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = "IT",
-        totalVATDueGBP = BigDecimal(0),
-        totalVATEUR = BigDecimal(0)
+        totalVATDueGBP = BigDecimal(0)
       ),
       EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = "LT",
-        totalVATDueGBP = BigDecimal(0),
-        totalVATEUR = BigDecimal(0)
+        totalVATDueGBP = BigDecimal(0)
       )
     ),
     totalVATAmountDueForAllMSGBP = BigDecimal(0),
@@ -186,27 +203,40 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     goodsSupplied = Seq(
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "EE",
-        msOfEstablishment = "DE",
         vatRateType = EtmpVatRateType.StandardVatRate,
         taxableAmountGBP = BigDecimal(2500),
         vatAmountGBP = BigDecimal(250)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "PL",
-        msOfEstablishment = "LT",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(23000),
         vatAmountGBP = BigDecimal(2300)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "LV",
-        msOfEstablishment = "ES",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(7000),
         vatAmountGBP = BigDecimal(700)
       )
     ),
     totalVATGoodsSuppliedGBP = BigDecimal(3250),
+    goodsDispatched = Seq(
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "IT",
+        msOfConsumption = "ES",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(10000),
+        vatAmountGBP = BigDecimal(100),
+      ),
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "DE",
+        msOfConsumption = "IT",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(1234),
+        vatAmountGBP = BigDecimal(123),
+      )
+    ),
     totalVATAmountPayable = BigDecimal(0),
     totalVATAmountPayableAllSpplied = BigDecimal(3250),
     correctionPreviousVATReturn = Seq(
@@ -215,50 +245,43 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         periodFrom = LocalDate.of(2023, 8, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 8, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "EE",
-        totalVATAmountCorrectionGBP = BigDecimal(-250),
-        totalVATAmountCorrectionEUR = BigDecimal(-275.10)
+        totalVATAmountCorrectionGBP = BigDecimal(-250)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "PL",
-        totalVATAmountCorrectionGBP = BigDecimal(-1000),
-        totalVATAmountCorrectionEUR = BigDecimal(-1100.41)
+        totalVATAmountCorrectionGBP = BigDecimal(-1000)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "PL",
-        totalVATAmountCorrectionGBP = BigDecimal(-500),
-        totalVATAmountCorrectionEUR = BigDecimal(-510.40)
+        totalVATAmountCorrectionGBP = BigDecimal(-500)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "PL",
-        totalVATAmountCorrectionGBP = BigDecimal(-800),
-        totalVATAmountCorrectionEUR = BigDecimal(-880.33)
+        totalVATAmountCorrectionGBP = BigDecimal(-800)
       ),
     ),
     totalVATAmountFromCorrectionGBP = BigDecimal(-2550),
     balanceOfVATDueForMS = Seq(
       EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = "EE",
-        totalVATDueGBP = BigDecimal(0),
-        totalVATEUR = BigDecimal(0)
+        totalVATDueGBP = BigDecimal(0)
       ),
       EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = "PL",
-        totalVATDueGBP = BigDecimal(0),
-        totalVATEUR = BigDecimal(0)
+        totalVATDueGBP = BigDecimal(0)
       ),
       EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = "LV",
-        totalVATDueGBP = BigDecimal(700),
-        totalVATEUR = BigDecimal(770.29)
+        totalVATDueGBP = BigDecimal(700)
       ),
     ),
     totalVATAmountDueForAllMSGBP = BigDecimal(700),
@@ -274,20 +297,34 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
     goodsSupplied = Seq(
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "AT",
-        msOfEstablishment = "DE",
         vatRateType = EtmpVatRateType.StandardVatRate,
         taxableAmountGBP = BigDecimal(1500),
         vatAmountGBP = BigDecimal(150)
       ),
       EtmpVatReturnGoodsSupplied(
         msOfConsumption = "HR",
-        msOfEstablishment = "ES",
         vatRateType = EtmpVatRateType.ReducedVatRate,
         taxableAmountGBP = BigDecimal(10000),
         vatAmountGBP = BigDecimal(1000)
       )
     ),
     totalVATGoodsSuppliedGBP = BigDecimal(1150),
+    goodsDispatched = Seq(
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "BE",
+        msOfConsumption = "DE",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(10000),
+        vatAmountGBP = BigDecimal(100),
+      ),
+      EtmpVatReturnGoodsDispatched(
+        msOfEstablishment = "ES",
+        msOfConsumption = "IT",
+        vatRateType = StandardVatRate,
+        taxableAmountGBP = BigDecimal(1234),
+        vatAmountGBP = BigDecimal(123),
+      )
+    ),
     totalVATAmountPayable = BigDecimal(0),
     totalVATAmountPayableAllSpplied = BigDecimal(1150),
     correctionPreviousVATReturn = Seq(
@@ -296,61 +333,53 @@ object EtmpVatReturnCorrectionsData extends SpecBase {
         periodFrom = LocalDate.of(2023, 8, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 8, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "AT",
-        totalVATAmountCorrectionGBP = BigDecimal(-250),
-        totalVATAmountCorrectionEUR = BigDecimal(-275.10)
+        totalVATAmountCorrectionGBP = BigDecimal(-250)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "AT",
-        totalVATAmountCorrectionGBP = BigDecimal(500),
-        totalVATAmountCorrectionEUR = BigDecimal(550.21)
+        totalVATAmountCorrectionGBP = BigDecimal(500)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "AT",
-        totalVATAmountCorrectionGBP = BigDecimal(-750),
-        totalVATAmountCorrectionEUR = BigDecimal(-825.31)
+        totalVATAmountCorrectionGBP = BigDecimal(-750)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C3",
         periodFrom = LocalDate.of(2023, 9, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 9, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "HR",
-        totalVATAmountCorrectionGBP = BigDecimal(-800),
-        totalVATAmountCorrectionEUR = BigDecimal(-880.33)
+        totalVATAmountCorrectionGBP = BigDecimal(-800)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 10, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 10, 31).format(etmpDateTimeFormatter),
         msOfConsumption = "HR",
-        totalVATAmountCorrectionGBP = BigDecimal(-500),
-        totalVATAmountCorrectionEUR = BigDecimal(-550.21)
+        totalVATAmountCorrectionGBP = BigDecimal(-500)
       ),
       EtmpVatReturnCorrection(
         periodKey = "23C4",
         periodFrom = LocalDate.of(2023, 11, 1).format(etmpDateTimeFormatter),
         periodTo = LocalDate.of(2023, 11, 30).format(etmpDateTimeFormatter),
         msOfConsumption = "HR",
-        totalVATAmountCorrectionGBP = BigDecimal(250),
-        totalVATAmountCorrectionEUR = BigDecimal(275.10)
+        totalVATAmountCorrectionGBP = BigDecimal(250)
       ),
     ),
     totalVATAmountFromCorrectionGBP = BigDecimal(-1550),
     balanceOfVATDueForMS = Seq(
       EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = "AT",
-        totalVATDueGBP = BigDecimal(0),
-        totalVATEUR = BigDecimal(0)
+        totalVATDueGBP = BigDecimal(0)
       ),
       EtmpVatReturnBalanceOfVatDue(
         msOfConsumption = "HR",
-        totalVATDueGBP = BigDecimal(0),
-        totalVATEUR = BigDecimal(0)
+        totalVATDueGBP = BigDecimal(0)
       )
     ),
     totalVATAmountDueForAllMSGBP = BigDecimal(0),

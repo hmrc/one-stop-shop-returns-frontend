@@ -625,6 +625,11 @@ newPreviousReturn.payNow = Pay now
 newPreviousReturn.details = Details
 newPreviousReturn.otherCountryVatOwed = You must pay any outstanding VAT from this return directly to the countries where you made your sales.
 
+newPreviousReturn.salesFromNi.title = Sales from Northern Ireland
+newPreviousReturn.salesFromNi.allNetSales = Sales excluding VAT
+newPreviousReturn.salesFromNi.allVatSales = VAT
+newPreviousReturn.salesFromNi.toCountry = To {0}
+
 newPreviousReturn.salesToEu.title = Sales from {0}
 newPreviousReturn.salesToEu.allNetSales = Sales excluding VAT
 newPreviousReturn.salesToEu.allVatSales = VAT

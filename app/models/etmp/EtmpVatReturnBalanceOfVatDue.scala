@@ -20,8 +20,7 @@ import play.api.libs.json.{Format, Json}
 
 case class EtmpVatReturnBalanceOfVatDue(
                                          msOfConsumption: String,
-                                         totalVATDueGBP: BigDecimal,
-                                         totalVATEUR: BigDecimal
+                                         totalVATDueGBP: BigDecimal
                                        )
 
 object EtmpVatReturnBalanceOfVatDue {
