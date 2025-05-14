@@ -128,38 +128,6 @@
             @maybeExcludedTrader match {
                 case Some(excludedTrader) => {
                     @(excludedTrader.exclusionReason, hasRequestedToLeave) match {
-                        case (_, _) if hasDueReturnThreeYearsOld && hasDueReturnsLessThanThreeYearsOld => {
-                            <div class="govuk-warning-text">
-                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                <strong class="govuk-warning-text__text">
-                                    <span class="govuk-warning-text__assistive">Warning:</span>
-                                    @if(hasDeregisteredFromVat) {
-                                        <p class="govuk-body govuk-!-font-weight-bold">
-                                            @messages("yourAccount.warning.exclusion.trader") <br>
-                                            @messages("yourAccount.warning.deregisteredTrader")
-                                        </p>
-                                    } else {
-                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.trader")</p>
-                                    }
-                                </strong>
-                            </div>
-                        }
-                        case (_, _) if hasDueReturnThreeYearsOld => {
-                            <div class="govuk-warning-text">
-                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                <strong class="govuk-warning-text__text">
-                                    <span class="govuk-warning-text__assistive">Warning:</span>
-                                    @if(hasDeregisteredFromVat) {
-                                        <p class="govuk-body govuk-!-font-weight-bold">
-                                            @messages("yourAccount.warning.leftService") <br>
-                                            @messages("yourAccount.warning.deregisteredTrader")
-                                        </p>
-                                    } else {
-                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.leftService")</p>
-                                    }
-                                </strong>
-                            </div>
-                        }
                         case (FailsToComply, _) => {
                             <div class="govuk-warning-text">
                                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
@@ -219,134 +187,166 @@
                                 content = Text(messages("yourAccount.warning.requestedToLeave.outstandingReturns"))
                             ))
                         }
+                        case (_, _) if hasDueReturnThreeYearsOld && hasDueReturnsLessThanThreeYearsOld => {
+                            <div class="govuk-warning-text">
+                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                <strong class="govuk-warning-text__text">
+                                    <span class="govuk-warning-text__assistive">Warning:</span>
+                                    @if(hasDeregisteredFromVat) {
+                                        <p class="govuk-body govuk-!-font-weight-bold">
+                                            @messages("yourAccount.warning.exclusion.trader") <br>
+                                        @messages("yourAccount.warning.deregisteredTrader")
+                                        </p>
+                                    } else {
+                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.exclusion.trader")</p>
+                                    }
+                                </strong>
+                            </div>
+                        }
+                        case (_, _) if hasDueReturnThreeYearsOld => {
+                            <div class="govuk-warning-text">
+                                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                <strong class="govuk-warning-text__text">
+                                    <span class="govuk-warning-text__assistive">Warning:</span>
+                                    @if(hasDeregisteredFromVat) {
+                                        <p class="govuk-body govuk-!-font-weight-bold">
+                                            @messages("yourAccount.warning.leftService") <br>
+                                        @messages("yourAccount.warning.deregisteredTrader")
+                                        </p>
+                                    } else {
+                                        <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.leftService")</p>
+                                    }
+                                </strong>
+                            </div>
+                        }
                         case (_) => {}
                     }
                 }
                 case _ => {}
             }
-            }
+        }
 
-            @maybeExcludedTrader match {
-                case Some(excludedTrader) if excludedTrader.exclusionReason != Reversal => {
-                    @((hasSubmittedFinalReturn, hasDueReturnsLessThanThreeYearsOld)) match {
-                        case (true, _) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
-                        case (false, true) => {<p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>}
-                        case (false, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
-                    }
-                }
-                case Some(_) => {}
-                case _ => {
-                    <p class="govuk-body">@messages("index.paragraph")</p>
+        @maybeExcludedTrader match {
+            case Some(excludedTrader) if excludedTrader.exclusionReason != Reversal => {
+                @((hasSubmittedFinalReturn, hasDueReturnsLessThanThreeYearsOld)) match {
+                    case (true, _) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
+                    case (false, true) => {<p class="govuk-body">@messages("yourAccount.previousCorrectReturn.finalReturn")</p>}
+                    case (false, false) => {<p class="govuk-body">@messages("yourAccount.previous.return.correct")</p>}
                 }
             }
+            case Some(_) => {}
+            case _ => {
+                <p class="govuk-body">@messages("index.paragraph")</p>
+            }
+        }
 
-            <div class="flex-container govuk-grid-row">
-                <div class="tile tile-no-border">
-                    <div id="next-return" class="tile-body">
-                        <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
-                        @if(hasSubmittedFinalReturn) {
-                            <p class="govuk-body">@messages("yourAccount.finalReturn.completed")</p>
-                        } else {
-                            @maybeExcludedTrader match {
-                                case Some(excludedTrader) if excludedTrader.isExcludedNotReversed && currentReturnIsFinal => {
-                                    <p class="govuk-body">@messages("yourAccount.finalReturn.message")</p>
+        <div class="flex-container govuk-grid-row">
+            <div class="tile tile-no-border">
+                <div id="next-return" class="tile-body">
+                    <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
+                    @if(hasSubmittedFinalReturn) {
+                        <p class="govuk-body">@messages("yourAccount.finalReturn.completed")</p>
+                    } else {
+                        @maybeExcludedTrader match {
+                            case Some(excludedTrader) if excludedTrader.isExcludedNotReversed && currentReturnIsFinal => {
+                                <p class="govuk-body">@messages("yourAccount.finalReturn.message")</p>
+                            }
+                            case _ => {}
+                        }
+                        @for(paragraph <- returnsViewModel.contents) {
+                            @paragraph match {
+                                case simple: ParagraphSimple => {
+                                    <p class="govuk-body">
+                                    @Html(simple.content)
+                                    </p>
                                 }
-                                case _ => {}
-                            }
-                            @for(paragraph <- returnsViewModel.contents) {
-                                @paragraph match {
-                                    case simple: ParagraphSimple => {
-                                        <p class="govuk-body">
-                                        @Html(simple.content)
-                                        </p>
-                                    }
-                                    case pWithId: ParagraphWithId => {
-                                        <p class="govuk-body" id="@pWithId.id">
-                                        @Html(pWithId.content)
-                                        </p>
-                                    }
+                                case pWithId: ParagraphWithId => {
+                                    <p class="govuk-body" id="@pWithId.id">
+                                    @Html(pWithId.content)
+                                    </p>
                                 }
                             }
-                            @for(link <- returnsViewModel.linkToStart) {
-                                <p class="govuk-body">
-                                    <a class="govuk-link" href="@{
-                                        link.url
-                                    }" id="@{
-                                        link.id
-                                    }">
-                                    @link.linkText
-                                    </a>
-                                </p>
-                            }
                         }
-                    </div>
-                </div>
-
-                <div class="tile tile-no-border">
-                    <div id="payments" class="tile-body">
-                        <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
-                        @for(warningText <- paymentsViewModel.warning) {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(warningText)
-                            ))
-                        }
-                        @for(section <- paymentsViewModel.sections) {
-                            @for(sectionHeading <- section.heading) {
-                                <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
-                            }
-
-                            @for(paragraph <- section.contents) {
-                                <p class="govuk-body">
-                                @Html(paragraph)
-                                </p>
-                            }
-                        }
-                        @for(link <- paymentsViewModel.link) {
+                        @for(link <- returnsViewModel.linkToStart) {
                             <p class="govuk-body">
-                                <a class="govuk-link"
-                                href="@link.url" id="@link.id">
+                                <a class="govuk-link" href="@{
+                                    link.url
+                                }" id="@{
+                                    link.id
+                                }">
                                 @link.linkText
                                 </a>
                             </p>
                         }
-                    </div>
+                    }
                 </div>
+            </div>
 
-                <div class="tile tile-no-border">
-                    <div id="details" class="tile-body">
-                        <h2 class="govuk-heading-m">@messages("index.details")</h2>
+            <div class="tile tile-no-border">
+                <div id="payments" class="tile-body">
+                    <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
+                    @for(warningText <- paymentsViewModel.warning) {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(warningText)
+                        ))
+                    }
+                    @for(section <- paymentsViewModel.sections) {
+                        @for(sectionHeading <- section.heading) {
+                            <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
+                        }
 
+                        @for(paragraph <- section.contents) {
+                            <p class="govuk-body">
+                            @Html(paragraph)
+                            </p>
+                        }
+                    }
+                    @for(link <- paymentsViewModel.link) {
                         <p class="govuk-body">
-                            <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url"
-                            id="view-past-returns">
-                            @messages("index.details.previousReturns")
+                            <a class="govuk-link"
+                            href="@link.url" id="@link.id">
+                            @link.linkText
                             </a>
                         </p>
-
-                        @if(amendRegistrationLinkEnabled) {
-                            <p class="govuk-body">
-                                <a class="govuk-link" href="@changeYourRegistrationUrl"
-                                id="change-your-registration">
-                                @messages("index.details.changeYourRegistration")
-                                </a>
-                            </p>
-                        }
-
-                        @maybeExclusionLinkView.map { exclusionLinkView =>
-                            <p class="govuk-body">
-                                <a class="govuk-link"
-                                href="@exclusionLinkView.href"
-                                id="@exclusionLinkView.id">
-                                @exclusionLinkView.displayText
-                                </a>
-                            </p>
-                        }
-
-                    </div>
+                    }
                 </div>
-                @if(maybeExcludedTrader.isDefined) {
-                    <p class="govuk-body">@Html(messages("yourAccount.oss.account.message"))</p>
-                }
-</div>
+            </div>
+
+            <div class="tile tile-no-border">
+                <div id="details" class="tile-body">
+                    <h2 class="govuk-heading-m">@messages("index.details")</h2>
+
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url"
+                        id="view-past-returns">
+                        @messages("index.details.previousReturns")
+                        </a>
+                    </p>
+
+                    @if(amendRegistrationLinkEnabled) {
+                        <p class="govuk-body">
+                            <a class="govuk-link" href="@changeYourRegistrationUrl"
+                            id="change-your-registration">
+                            @messages("index.details.changeYourRegistration")
+                            </a>
+                        </p>
+                    }
+
+                    @maybeExclusionLinkView.map { exclusionLinkView =>
+                        <p class="govuk-body">
+                            <a class="govuk-link"
+                            href="@exclusionLinkView.href"
+                            id="@exclusionLinkView.id">
+                            @exclusionLinkView.displayText
+                            </a>
+                        </p>
+                    }
+
+                </div>
+            </div>
+            @if(maybeExcludedTrader.isDefined) {
+                <p class="govuk-body">@Html(messages("yourAccount.oss.account.message"))</p>
+            }
+        </div>
     }
