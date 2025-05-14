@@ -173,6 +173,24 @@
                             ))
                         }
                         case (_, false) if hasDueReturnsLessThanThreeYearsOld && hasDeregisteredFromVat => {
+                          @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = HtmlContent(
+                              messages("yourAccount.warning.exclusion.trader") ++ "<br>" ++
+                                      messages("yourAccount.warning.deregisteredTrader")
+                            )
+                          ))
+                        }
+                        case (_, false) if hasDueReturnsLessThanThreeYearsOld => {
+                          @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(
+                              messages("yourAccount.warning.exclusion.trader")
+                            )
+                          ))
+
+                        }
+                        case (_, false) if hasDeregisteredFromVat => {
                             @govukWarningText(WarningText(
                                 iconFallbackText = Option(messages("site.warning")),
                                 content = HtmlContent(
@@ -181,29 +199,11 @@
                                 )
                             ))
                         }
-                        case (_, false) if hasDueReturnsLessThanThreeYearsOld => {
+                        case (_, false) => {
                             @govukWarningText(WarningText(
                                 iconFallbackText = Option(messages("site.warning")),
                                 content = Text(messages("yourAccount.warning.leftService"))
                             ))
-                        }
-                        case (_, false) if hasDueReturnsLessThanThreeYearsOld && hasDeregisteredFromVat => {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = HtmlContent(
-                                    messages("yourAccount.warning.exclusion.trader") ++ "<br>" ++
-                                            messages("yourAccount.warning.deregisteredTrader")
-                                )
-                            ))
-                        }
-                        case (_, false) if hasDueReturnsLessThanThreeYearsOld => {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(
-                                    messages("yourAccount.warning.exclusion.trader")
-                                )
-                            ))
-
                         }
                         case (_, true) => {
                             @govukWarningText(WarningText(
