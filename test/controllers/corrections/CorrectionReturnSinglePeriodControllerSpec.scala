@@ -58,8 +58,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
       when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
         .thenReturn((
-          Seq(PeriodWithStatus(period, Complete)),
-          Seq(PeriodWithStatus(period, Complete))
+          Seq(period),
+          Seq(period)
         ).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -84,8 +84,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
       when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
         .thenReturn((
-          Seq(PeriodWithStatus(period, Complete), PeriodWithStatus(StandardPeriod(2021, Q4), Complete)),
-          Seq(PeriodWithStatus(period, Complete), PeriodWithStatus(StandardPeriod(2021, Q4), Complete))
+          Seq(period, StandardPeriod(2021, Q4)),
+          Seq(period, StandardPeriod(2021, Q4))
         ).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -128,8 +128,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
       when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
         .thenReturn((
-          Seq(PeriodWithStatus(period, Complete)),
-          Seq(PeriodWithStatus(period, Complete))
+          Seq(period),
+          Seq(period)
         ).toFuture)
 
       val application =
@@ -156,8 +156,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
       when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
         .thenReturn((
-          Seq(PeriodWithStatus(period, Complete)),
-          Seq(PeriodWithStatus(period, Complete))
+          Seq(period),
+          Seq(period)
         ).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -184,13 +184,10 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
     "must redirect to CorrectionReturnPeriodController when invalid data is submitted and connector returns more than 1 returns period" in {
 
       when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
-        .thenReturn((Seq(
-          PeriodWithStatus(period, Complete),
-          PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
-        ), Seq(
-          PeriodWithStatus(period, Complete),
-          PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
-        )).toFuture)
+        .thenReturn((
+          Seq(period, StandardPeriod(2021, Q4)),
+          Seq(period, StandardPeriod(2021, Q4))
+        ).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[CorrectionService].toInstance(correctionService))

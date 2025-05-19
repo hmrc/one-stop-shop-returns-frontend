@@ -20,10 +20,10 @@ import base.SpecBase
 import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.{Index, NormalMode, PeriodWithStatus, StandardPeriod, SubmissionStatus}
-import models.Quarter._
+import models.Quarter.*
 import models.SubmissionStatus.Complete
 import models.responses.UnexpectedResponseStatus
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
@@ -31,8 +31,10 @@ import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.UserAnswersRepository
+import services.corrections.CorrectionService
+import utils.FutureSyntax.*
 import views.html.corrections.CorrectionReturnPeriodView
 
 import scala.concurrent.Future
@@ -44,25 +46,30 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
   private val formProvider = new CorrectionReturnPeriodFormProvider()
   private val form = formProvider(index, testPeriodsList, Seq.empty)
 
-  private val mockReturnStatusConnector = mock[ReturnStatusConnector]
+  private val mockCorrectionService = mock[CorrectionService]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    Mockito.reset(mockReturnStatusConnector)
+    Mockito.reset(mockCorrectionService)
   }
 
   "CorrectionReturnPeriod Controller" - {
 
     "must return OK and the correct view for a GET with multiple completed returns" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
         .build()
 
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(StandardPeriod(2021, Q3), Complete),
-          PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
-        ))))
+      when(mockCorrectionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(
+            StandardPeriod(2021, Q3),
+            StandardPeriod(2021, Q4)
+          ),
+          Seq(
+            StandardPeriod(2021, Q3),
+            StandardPeriod(2021, Q4)
+          )).toFuture)
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -80,13 +87,14 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
 
     "must redirect to CorrectionReturnSinglePeriodController when less than 2 periods" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
         .build()
 
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(StandardPeriod(2021, Q3), Complete)
-        ))))
+      when(mockCorrectionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(StandardPeriod(2021, Q3)),
+          Seq(StandardPeriod(2021, Q3))
+        ).toFuture)
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -105,15 +113,14 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
       val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), StandardPeriod(2021, Q3)).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
-        .overrides(
-          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
-        ).build()
+        .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
+        .build()
 
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(StandardPeriod(2021, Q3), Complete),
-          PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
-        ))))
+      when(mockCorrectionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(StandardPeriod(2021, Q3), StandardPeriod(2021, Q4)),
+          Seq(StandardPeriod(2021, Q3), StandardPeriod(2021, Q4))
+        ).toFuture)
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -132,11 +139,11 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
     "must throw and Exception for a GET when Return Status Connector returns an error" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
         .build()
 
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Left(UnexpectedResponseStatus(1, "Some error"))))
+      when(mockCorrectionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn(Future.failed(new Exception("Some error")))
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -152,11 +159,15 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
       val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn (Future.successful(Right(Seq(PeriodWithStatus(StandardPeriod(2021, Q3), SubmissionStatus.Complete)))))
+      when(mockCorrectionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(StandardPeriod(2021, Q3)),
+          Seq(StandardPeriod(2021, Q3))
+          ).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
-          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
+          bind[CorrectionService].toInstance(mockCorrectionService),
           bind[UserAnswersRepository].toInstance(mockSessionRepository)
         ).build()
 
@@ -177,15 +188,14 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
     "must return a Bad Request and errors when invalid data is submitted with multiple previous returns" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
-        ).build()
+        .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
+        .build()
 
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(StandardPeriod(2021, Q3), Complete),
-          PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
-        ))))
+      when(mockCorrectionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(StandardPeriod(2021, Q3), StandardPeriod(2021, Q4)),
+          Seq(StandardPeriod(2021, Q3), StandardPeriod(2021, Q4))
+        ).toFuture)
 
       running(application) {
         val request =
@@ -208,14 +218,14 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
     "must redirect to CorrectionReturnSinglePeriodController when invalid data is submitted with < 2 previous returns" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector)
-        ).build()
+        .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
+        .build()
 
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(StandardPeriod(2021, Q3), Complete)
-        ))))
+      when(mockCorrectionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(StandardPeriod(2021, Q3)),
+          Seq(StandardPeriod(2021, Q3))
+        ).toFuture)
 
       running(application) {
         val request =
@@ -265,11 +275,11 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar wi
     "must throw and Exception for a POST when Return Status Connector returns an error" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(mockCorrectionService))
         .build()
 
-      when(mockReturnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Left(UnexpectedResponseStatus(1, "Some error"))))
+      when(mockCorrectionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn(Future.failed(new Exception("Some error")))
 
       running(application) {
         val request = FakeRequest(POST, correctionReturnPeriodRoute)
