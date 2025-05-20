@@ -18,21 +18,29 @@ package services.corrections
 
 import cats.implicits.*
 import connectors.corrections.CorrectionConnector
+import connectors.ReturnStatusConnector
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
 import models.requests.corrections.CorrectionRequest
 import models.{Country, DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult}
+import models.requests.DataRequest
+import models.SubmissionStatus.Complete
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.Lang.logger
-import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
+import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery, DeriveCompletedCorrectionPeriods}
 import services.PeriodService
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDate
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CorrectionService @Inject()(periodService: PeriodService, connector: CorrectionConnector) {
+class CorrectionService @Inject()(
+                                   periodService: PeriodService,
+                                   correctionConnector: CorrectionConnector,
+                                   returnStatusConnector: ReturnStatusConnector,
+                                   clock: Clock
+                                 ) {
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, commencementDate: LocalDate): ValidationResult[CorrectionRequest] = {
     if (firstPeriod(period, commencementDate)) {
@@ -101,7 +109,7 @@ class CorrectionService @Inject()(periodService: PeriodService, connector: Corre
   }
 
   def getCorrectionsForPeriod(period: Period)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Seq[CorrectionToCountry]] = {
-    connector.getForCorrectionPeriod(period).map {
+    correctionConnector.getForCorrectionPeriod(period).map {
       case Right(payloads) =>
         payloads.flatMap(payload => payload.corrections.flatMap(_.correctionsToCountry.getOrElse(List.empty)))
       case Left(error) =>
@@ -109,9 +117,31 @@ class CorrectionService @Inject()(periodService: PeriodService, connector: Corre
         throw new Exception(error.toString)
     }
   }
-  
-  def getReturnCorrectionValue(country: Country, period: Period)(implicit hc: HeaderCarrier): Future[ReturnCorrectionValue] =
-    connector.getReturnCorrectionValue(country.code, period)
 
+  def getReturnCorrectionValue(country: Country, period: Period)(implicit hc: HeaderCarrier): Future[ReturnCorrectionValue] =
+    correctionConnector.getReturnCorrectionValue(country.code, period)
+
+  def getCorrectionPeriodsAndUncompleted()
+                                        (
+                                          implicit request: DataRequest[_],
+                                          hc: HeaderCarrier,
+                                          ec: ExecutionContext
+                                        ): Future[(Seq[StandardPeriod], Seq[StandardPeriod])] = {
+    returnStatusConnector.listStatuses(request.registration.commencementDate).map {
+      case Right(returnStatuses) =>
+
+        val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
+        val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+        val threeYearsAgo = LocalDate.now(clock).minusYears(3)
+        val allPeriodWithin3years = allPeriods.filter(_.paymentDeadline.isAfter(threeYearsAgo))
+
+        val uncompletedCorrectionPeriods = allPeriodWithin3years.diff(completedCorrectionPeriods).distinct
+        (allPeriodWithin3years, uncompletedCorrectionPeriods)
+      case Left(value) =>
+        logger.error(s"There was an error with getting correction periods and uncompleted $value")
+        throw new Exception(value.toString)
+    }
+  }
 
 }

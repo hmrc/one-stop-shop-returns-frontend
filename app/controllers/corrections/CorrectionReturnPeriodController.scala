@@ -16,97 +16,82 @@
 
 package controllers.corrections
 
-import connectors.ReturnStatusConnector
-import controllers.actions._
+import controllers.actions.*
 import forms.corrections.CorrectionReturnPeriodFormProvider
-import models.SubmissionStatus.Complete
-import models.{Index, Mode, Period, StandardPeriod}
+import models.{Index, Mode, Period}
 import pages.corrections.CorrectionReturnPeriodPage
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.corrections.{AllCorrectionPeriodsQuery, DeriveCompletedCorrectionPeriods}
+import queries.corrections.AllCorrectionPeriodsQuery
+import services.corrections.CorrectionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.*
 import views.html.corrections.CorrectionReturnPeriodView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionReturnPeriodController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       formProvider: CorrectionReturnPeriodFormProvider,
-                                       returnStatusConnector: ReturnStatusConnector,
-                                       view: CorrectionReturnPeriodView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                                  cc: AuthenticatedControllerComponents,
+                                                  formProvider: CorrectionReturnPeriodFormProvider,
+                                                  correctionService: CorrectionService,
+                                                  view: CorrectionReturnPeriodView
+                                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
-      returnStatusConnector.listStatuses(request.registration.commencementDate).map {
-          case Right(returnStatuses) =>
+      correctionService.getCorrectionPeriodsAndUncompleted().map { (allPeriodWithin3years, uncompletedCorrectionPeriods) =>
 
-            val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+        if (uncompletedCorrectionPeriods.size < 2) {
+          Redirect(
+            controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, period, index)
+          )
+        } else {
+          val form = formProvider(index, allPeriodWithin3years, request.userAnswers
+            .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
 
-            val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
-
-            val uncompletedCorrectionPeriods = allPeriods.diff(completedCorrectionPeriods).distinct
-
-            if(uncompletedCorrectionPeriods.size < 2) {
-              Redirect(
-                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, period, index)
-              )
-            } else {
-              val form = formProvider(index, allPeriods, request.userAnswers
-                .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
-
-              val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
-                case None => form
-                case Some(value) => form.fill(value)
-              }
-              Ok(view(preparedForm, mode, period, uncompletedCorrectionPeriods, index))
-            }
-          case Left(value) =>
-            logger.error(s"there was an error $value")
-            throw new Exception(value.toString)
+          val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+          Ok(view(preparedForm, mode, period, uncompletedCorrectionPeriods, index))
+        }
       }
   }
 
   def onSubmit(mode: Mode, period: Period, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(period).async {
     implicit request =>
 
-      returnStatusConnector.listStatuses(request.registration.commencementDate).flatMap {
-        case Right(returnStatuses) =>
-          val periods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
+      correctionService.getCorrectionPeriodsAndUncompleted().flatMap { (allPeriodWithin3years, uncompletedCorrectionPeriods) =>
 
-          val form = formProvider(index, periods, request.userAnswers
-            .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
+        val form = formProvider(index, allPeriodWithin3years, request.userAnswers
+          .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
 
-          form.bindFromRequest().fold(
-            formWithErrors => {
-              if (periods.size < 2) {
-                Future.successful(Redirect(
-                  controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, period, index)
-                ))
-              } else {
-                Future.successful(BadRequest(view(
-                  formWithErrors, mode, period, returnStatuses.filter(_.status.equals(Complete)).map(_.period), index
-                )))
-              }
-            },
-            value =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), value))
-                _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield {
-                Redirect(CorrectionReturnPeriodPage(index).navigate(mode, updatedAnswers))
-              }
-          )
+        form.bindFromRequest().fold(
+          formWithErrors => {
+            if (allPeriodWithin3years.size < 2) {
+              Redirect(
+                controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(mode, period, index)
+              ).toFuture
+            } else {
+              BadRequest(view(
+                formWithErrors, mode, period, uncompletedCorrectionPeriods, index
+              )).toFuture
+            }
+          },
+          value =>
+            for {
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), value))
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield {
+              Redirect(CorrectionReturnPeriodPage(index).navigate(mode, updatedAnswers))
+            }
+        )
 
-        case Left(value) =>
-          logger.error(s"there was an error $value")
-          throw new Exception(value.toString)
       }
   }
 }

@@ -31,14 +31,16 @@ import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
+import services.corrections.CorrectionService
+import utils.FutureSyntax.*
 import views.html.corrections.CorrectionReturnSinglePeriodView
 
 import scala.concurrent.Future
 
 class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private val returnStatusConnector = mock[ReturnStatusConnector]
+  private val correctionService = mock[CorrectionService]
 
   private val formProvider = new CorrectionReturnSinglePeriodFormProvider()
   private val form = formProvider()
@@ -47,21 +49,22 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    Mockito.reset(returnStatusConnector)
+    Mockito.reset(correctionService)
   }
 
   "CorrectionReturnSinglePeriod Controller" - {
 
     "must return OK and the correct view for a GET with 1 returns period" in {
 
-      when(returnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(period, Complete)
-        ))))
+      when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(period),
+          Seq(period)
+        ).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .configure("bootstrap.filters.csrf.enabled" -> false)
-        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(correctionService))
         .build()
 
       running(application) {
@@ -79,14 +82,14 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must redirect to CorrectionReturnPeriodController for a GET with more than 1 returns period" in {
 
-      when(returnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(period, Complete),
-          PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
-        ))))
+      when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(period, StandardPeriod(2021, Q4)),
+          Seq(period, StandardPeriod(2021, Q4))
+        ).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(correctionService))
         .build()
 
       running(application) {
@@ -102,10 +105,11 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must redirect to JourneyRecoveryController for a GET with 0 previous returns periods" in {
 
-      when(returnStatusConnector.listStatuses(any())(any())).thenReturn(Future.successful(Right(Seq.empty)))
+      when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((Seq.empty, Seq.empty).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(correctionService))
         .build()
 
       running(application) {
@@ -122,14 +126,15 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
     "must redirect to the next page when valid data is submitted" in {
 
 
-      when(returnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(period, Complete)
-        ))))
+      when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(period),
+          Seq(period)
+        ).toFuture)
 
       val application =
         applicationBuilder(userAnswers = Some(completeUserAnswers))
-          .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+          .overrides(bind[CorrectionService].toInstance(correctionService))
           .build()
 
       running(application) {
@@ -149,13 +154,14 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(returnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(period, Complete)
-        ))))
+      when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(period),
+          Seq(period)
+        ).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(correctionService))
         .build()
 
       running(application) {
@@ -177,14 +183,14 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must redirect to CorrectionReturnPeriodController when invalid data is submitted and connector returns more than 1 returns period" in {
 
-      when(returnStatusConnector.listStatuses(any())(any()))
-        .thenReturn(Future.successful(Right(Seq(
-          PeriodWithStatus(period, Complete),
-          PeriodWithStatus(StandardPeriod(2021, Q4), Complete)
-        ))))
+      when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((
+          Seq(period, StandardPeriod(2021, Q4)),
+          Seq(period, StandardPeriod(2021, Q4))
+        ).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(correctionService))
         .build()
 
       running(application) {
@@ -203,10 +209,11 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must redirect to JourneyRecoveryController when invalid data is submitted and connector returns more than 0 returns periods" in {
 
-      when(returnStatusConnector.listStatuses(any())(any())).thenReturn(Future.successful(Right(Seq.empty)))
+      when(correctionService.getCorrectionPeriodsAndUncompleted()(any(), any(), any()))
+        .thenReturn((Seq.empty, Seq.empty).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[ReturnStatusConnector].toInstance(returnStatusConnector))
+        .overrides(bind[CorrectionService].toInstance(correctionService))
         .build()
 
       running(application) {
