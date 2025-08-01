@@ -64,44 +64,44 @@ class RedirectService @Inject()(
   def getRedirect(errors: List[ValidationError], period: Period): List[Call] = {
     errors.flatMap {
       case DataMissingError(AllSalesFromNiQuery) =>
-        logger.error(s"Data missing - no data provided for NI sales")
+        logger.warn(s"Data missing - no data provided for NI sales")
         Some(routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, period, Index(0)))
       case DataMissingError(VatRatesFromNiPage(index)) =>
-        logger.error(s"Data missing - vat rates with index ${index.position}")
+        logger.warn(s"Data missing - vat rates with index ${index.position}")
         Some(routes.VatRatesFromNiController.onPageLoad(CheckMode, period, index))
       case DataMissingError(NiSalesAtVatRateQuery(countryIndex, vatRateIndex)) =>
-        logger.error(s"Data missing - net value of sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
+        logger.warn(s"Data missing - net value of sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
         Some(routes.NetValueOfSalesFromNiController.onPageLoad(CheckMode, period, countryIndex, vatRateIndex))
       case DataMissingError(VatOnSalesFromNiQuery(countryIndex, vatRateIndex)) =>
-        logger.error(s"Data missing - vat charged on sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
+        logger.warn(s"Data missing - vat charged on sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
         Some(routes.VatOnSalesFromNiController.onPageLoad(CheckMode, period, countryIndex, vatRateIndex))
 
       case DataMissingError(AllSalesFromEuQuery) =>
-        logger.error(s"Data missing - no data provided for EU sales")
+        logger.warn(s"Data missing - no data provided for EU sales")
         Some(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, period, Index(0)))
       case DataMissingError(AllSalesToEuQuery(countryFromIndex)) =>
-        logger.error(s"Data missing - country of consumption from country ${countryFromIndex.position}")
+        logger.warn(s"Data missing - country of consumption from country ${countryFromIndex.position}")
         Some(routes.CountryOfConsumptionFromEuController.onPageLoad(CheckMode, period, countryFromIndex, Index(0)))
       case DataMissingError(VatRatesFromEuPage(countryFromIndex, countryToIndex)) =>
-        logger.error(s"Data missing - vat rates for sales from country ${countryFromIndex.position} to country ${countryToIndex.position}")
+        logger.warn(s"Data missing - vat rates for sales from country ${countryFromIndex.position} to country ${countryToIndex.position}")
         Some(routes.VatRatesFromEuController.onPageLoad(CheckMode, period, countryFromIndex, countryToIndex))
       case DataMissingError(EuSalesAtVatRateQuery(countryFromIndex, countryToIndex, vatRateIndex)) =>
-        logger.error(s"Data missing - net value of sales from country ${countryFromIndex.position} to country " +
+        logger.warn(s"Data missing - net value of sales from country ${countryFromIndex.position} to country " +
           s"${countryToIndex.position} at vat rate ${vatRateIndex.position} ")
         Some(routes.NetValueOfSalesFromEuController.onPageLoad(CheckMode, period, countryFromIndex, countryToIndex, vatRateIndex))
       case DataMissingError(VatOnSalesFromEuQuery(countryFromIndex, countryToIndex, vatRateIndex)) =>
-        logger.error(s"Data missing - vat charged on sales from country ${countryFromIndex.position} to country " +
+        logger.warn(s"Data missing - vat charged on sales from country ${countryFromIndex.position} to country " +
           s"${countryToIndex.position} at vat rate ${vatRateIndex.position} ")
         Some(routes.VatOnSalesFromEuController.onPageLoad(CheckMode, period, countryFromIndex, countryToIndex, vatRateIndex))
 
       case DataMissingError(AllCorrectionPeriodsQuery) =>
-        logger.error(s"Data missing - no data provided for corrections")
+        logger.warn(s"Data missing - no data provided for corrections")
         Some(correctionsRoutes.CorrectionReturnPeriodController.onPageLoad(CheckMode, period, Index(0)))
       case DataMissingError(AllCorrectionCountriesQuery(periodIndex)) =>
-        logger.error(s"Data missing - no countries found for corrections to period ${periodIndex.position}")
+        logger.warn(s"Data missing - no countries found for corrections to period ${periodIndex.position}")
         Some(correctionsRoutes.CorrectionCountryController.onPageLoad(CheckMode, period, periodIndex, Index(0)))
       case DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)) =>
-        logger.error(s"Data missing - correction to country ${countryIndex.position} in period ${periodIndex.position}")
+        logger.warn(s"Data missing - correction to country ${countryIndex.position} in period ${periodIndex.position}")
         Some(correctionsRoutes.CountryVatCorrectionController.onPageLoad(CheckMode, period, periodIndex, countryIndex, undeclaredCountry = false))
 
       case DataMissingError(_) =>
