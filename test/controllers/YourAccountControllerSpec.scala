@@ -90,6 +90,43 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   private val instant: Instant = Instant.parse("2021-10-11T12:00:00Z")
   private val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+  private val nextPeriod: StandardPeriod = StandardPeriod(2021, Q4)
+
+  private def stubCommonConnectors(
+                            returnStatusConnector: ReturnStatusConnector,
+                            financialDataConnector: FinancialDataConnector,
+                            sessionRepository: UserAnswersRepository,
+                            save4LaterConnector: SaveForLaterConnector,
+                            vatReturnConnector: VatReturnConnector,
+                            registrationConnector: RegistrationConnector,
+                            mockExclusionService: ExclusionService,
+                            registration: Registration
+                          ): Unit = {
+    when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+      Future.successful(Right(CurrentReturns(
+        Seq(Return(
+          nextPeriod,
+          nextPeriod.firstDay,
+          nextPeriod.lastDay,
+          nextPeriod.paymentDeadline,
+          SubmissionStatus.Next,
+          inProgress = false,
+          isOldest = false
+        ))
+      )))
+
+    when(financialDataConnector.getFinancialData(any())(any())) thenReturn
+      Future.successful(Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+    when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+    when(sessionRepository.set(any())) thenReturn Future.successful(true)
+    when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+    when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
+    when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+    when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+    when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
+    when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+  }
 
   "Your Account Controller" - {
 
@@ -100,32 +137,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val instant = Instant.parse("2021-10-11T12:00:00Z")
         val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-        val nextPeriod = StandardPeriod(2021, Q4)
-
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentReturns(
-              Seq(Return(
-                nextPeriod,
-                nextPeriod.firstDay,
-                nextPeriod.lastDay,
-                nextPeriod.paymentDeadline,
-                SubmissionStatus.Next,
-                inProgress = false,
-                isOldest = false
-              ))))
-          )
-
-        when(financialDataConnector.getFinancialData(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
-
-        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
-        when(sessionRepository.set(any())) thenReturn Future.successful(true)
-        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
+        stubCommonConnectors(
+          returnStatusConnector,
+          financialDataConnector,
+          sessionRepository,
+          save4LaterConnector,
+          vatReturnConnector,
+          registrationConnector,
+          mockExclusionService,
+          registration.copy(excludedTrader = excludedTraderHMRC)
+        )
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
           .overrides(
@@ -141,14 +162,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -156,6 +169,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "leave-this-service",
             href = config.leaveOneStopShopUrl
           )
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -222,13 +243,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -236,6 +250,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "leave-this-service",
               href = config.leaveOneStopShopUrl
             )
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -299,13 +320,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -313,6 +327,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "leave-this-service",
               href = config.leaveOneStopShopUrl
             )
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -377,13 +398,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -391,6 +405,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "leave-this-service",
               href = config.leaveOneStopShopUrl
             )
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -458,13 +479,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -472,6 +486,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "leave-this-service",
               href = config.leaveOneStopShopUrl
             )
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -537,13 +558,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -551,6 +565,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "leave-this-service",
             href = config.leaveOneStopShopUrl
           )
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -618,13 +639,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -632,6 +646,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "leave-this-service",
             href = config.leaveOneStopShopUrl
           )
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -704,13 +725,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -718,6 +732,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "leave-this-service",
               href = config.leaveOneStopShopUrl
             )
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -790,13 +811,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -804,6 +818,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "leave-this-service",
               href = config.leaveOneStopShopUrl
             )
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -883,13 +904,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -897,6 +911,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "leave-this-service",
               href = config.leaveOneStopShopUrl
             )
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -960,13 +981,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -974,6 +988,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "leave-this-service",
               href = config.leaveOneStopShopUrl
             )
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -1036,13 +1057,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -1050,6 +1064,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               id = "leave-this-service",
               href = config.leaveOneStopShopUrl
             )
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -1120,13 +1141,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -1134,6 +1148,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "leave-this-service",
             href = config.leaveOneStopShopUrl
           )
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -1200,13 +1221,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -1214,6 +1228,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             id = "leave-this-service",
             href = config.leaveOneStopShopUrl
           )
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -1385,32 +1406,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val nextPeriod = StandardPeriod(2021, Q4)
 
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentReturns(
-              Seq(Return(
-                nextPeriod,
-                nextPeriod.firstDay,
-                nextPeriod.lastDay,
-                nextPeriod.paymentDeadline,
-                SubmissionStatus.Next,
-                inProgress = false,
-                isOldest = false
-              ))))
-          )
-
-        when(financialDataConnector.getFinancialData(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
-
-        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
-        when(sessionRepository.set(any())) thenReturn Future.successful(true)
-        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
-        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
-        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+        stubCommonConnectors(
+          returnStatusConnector,
+          financialDataConnector,
+          sessionRepository,
+          save4LaterConnector,
+          vatReturnConnector,
+          registrationConnector,
+          mockExclusionService,
+          registration.copy(excludedTrader = excludedTraderHMRC)
+        )
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -1430,13 +1435,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -1446,6 +1444,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )
 
           when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -1730,13 +1735,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -1746,6 +1744,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )
 
           when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -1828,13 +1833,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -1844,6 +1842,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )
 
           when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -1978,32 +1983,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val nextPeriod = StandardPeriod(2021, Q4)
 
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentReturns(
-              Seq(Return(
-                nextPeriod,
-                nextPeriod.firstDay,
-                nextPeriod.lastDay,
-                nextPeriod.paymentDeadline,
-                SubmissionStatus.Next,
-                inProgress = false,
-                isOldest = false
-              ))))
-          )
-
-        when(financialDataConnector.getFinancialData(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
-
-        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
-        when(sessionRepository.set(any())) thenReturn Future.successful(true)
-        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
-        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
-        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+        stubCommonConnectors(
+          returnStatusConnector,
+          financialDataConnector,
+          sessionRepository,
+          save4LaterConnector,
+          vatReturnConnector,
+          registrationConnector,
+          mockExclusionService,
+          registration.copy(excludedTrader = excludedTraderHMRC)
+        )
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -2023,13 +2012,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -2039,6 +2021,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )
 
           when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -2239,13 +2228,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             running(application) {
               implicit val msgs: Messages = messages(application)
 
-              val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-              val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-              val result = route(application, request).value
-
-              val view = application.injector.instanceOf[IndexView]
-
               val config = application.injector.instanceOf[FrontendAppConfig]
 
               val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -2255,6 +2237,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )
 
               when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+              val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+              val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+              val result = route(application, request).value
+
+              val view = application.injector.instanceOf[IndexView]
 
               status(result) mustEqual OK
 
@@ -2447,13 +2436,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -2463,6 +2445,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
 
             when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
+
 
             status(result) mustEqual OK
 
@@ -2554,13 +2544,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-            val result = route(application, request).value
-
-            val view = application.injector.instanceOf[IndexView]
-
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -2570,6 +2553,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )
 
             when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+            val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+            val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[IndexView]
 
             status(result) mustEqual OK
 
@@ -2696,32 +2686,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val nextPeriod = StandardPeriod(2021, Q3)
 
-        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentReturns(
-              Seq(Return(
-                nextPeriod,
-                nextPeriod.firstDay,
-                nextPeriod.lastDay,
-                nextPeriod.paymentDeadline,
-                SubmissionStatus.Next,
-                inProgress = false,
-                isOldest = false
-              ))))
-          )
-
-        when(financialDataConnector.getFinancialData(any())(any())) thenReturn
-          Future.successful(
-            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
-
-        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
-        when(sessionRepository.set(any())) thenReturn Future.successful(true)
-        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
-        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
-        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
-        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+        stubCommonConnectors(
+          returnStatusConnector,
+          financialDataConnector,
+          sessionRepository,
+          save4LaterConnector,
+          vatReturnConnector,
+          registrationConnector,
+          mockExclusionService,
+          registration.copy(excludedTrader = excludedTraderHMRC)
+        )
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers),
           clock = Some(clock),
@@ -2741,13 +2715,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
@@ -2757,6 +2724,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )
 
           when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
