@@ -1927,15 +1927,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         running(application) {
           implicit val msgs: Messages = messages(application)
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[IndexView]
-
           val config = application.injector.instanceOf[FrontendAppConfig]
-
+          
           val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
             displayText = msgs("index.details.cancelRequestToLeave"),
             id = "cancel-request-to-leave",
@@ -1943,6 +1936,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )
 
           when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+          
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
 
           status(result) mustEqual OK
 
@@ -2132,16 +2132,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             running(application) {
               implicit val msgs: Messages = messages(application)
-
-              val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
-              val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
-
-              val result = route(application, request).value
-
-              val view = application.injector.instanceOf[IndexView]
-
+              
               val config = application.injector.instanceOf[FrontendAppConfig]
-
+              
               val exclusionLinkView: ExclusionLinkView = ExclusionLinkView(
                 displayText = msgs("index.details.cancelRequestToLeave"),
                 id = "cancel-request-to-leave",
@@ -2149,6 +2142,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               )
 
               when(mockExclusionService.getLink(any())(any())) thenReturn Some(exclusionLinkView)
+
+              val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+              val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+              val result = route(application, request).value
+
+              val view = application.injector.instanceOf[IndexView]
 
               status(result) mustEqual OK
 
