@@ -134,7 +134,7 @@ class CorrectionService @Inject()(
 
         val allPeriods = returnStatuses.filter(_.status.equals(Complete)).map(_.period)
         val threeYearsAgo = LocalDate.now(clock).minusYears(3)
-        val allPeriodWithin3years = allPeriods.filter(_.paymentDeadline.isAfter(threeYearsAgo))
+        val allPeriodWithin3years = allPeriods.filter(p => !p.paymentDeadline.isBefore(threeYearsAgo))
 
         val uncompletedCorrectionPeriods = allPeriodWithin3years.diff(completedCorrectionPeriods).distinct
         (allPeriodWithin3years, uncompletedCorrectionPeriods)

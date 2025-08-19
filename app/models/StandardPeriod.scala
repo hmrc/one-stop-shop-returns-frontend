@@ -40,7 +40,8 @@ trait Period {
   protected val firstQuarterFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM")
   protected val lastQuarterFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
-  val paymentDeadline: LocalDate = LocalDate.of(year, quarter.startMonth, 1).plusMonths(4).minusDays(1)
+  private val quarterEnd: LocalDate = LocalDate.of(year, quarter.startMonth, 1).plusMonths(3).minusDays(1)
+  val paymentDeadline: LocalDate = quarterEnd.plusMonths(1).withDayOfMonth(quarterEnd.plusMonths(1).lengthOfMonth)
 
   val paymentDeadlineDisplay: String = paymentDeadline.format(lastDayFormatter)
 
