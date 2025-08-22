@@ -50,24 +50,26 @@ class VatReturnSalesService @Inject()() {
     }
   }
 
-  def getEuTotalVatOnSales(allSalesFromEu: List[SalesFromEuCountry]): BigDecimal = {
+  private def getEuTotalVatOnSales(allSalesFromEu: List[SalesFromEuCountry]): BigDecimal = {
     allSalesFromEu.map { salesFromAnEuCountry =>
       getTotalVatOnSalesToCountry(salesFromAnEuCountry.sales)
     }.sum
   }
 
-  def getTotalVatOnSalesToCountry(allSales: List[SalesToCountry]): BigDecimal = {
+  private def getTotalVatOnSalesToCountry(allSales: List[SalesToCountry]): BigDecimal = {
     allSales.map(salesToCountry =>
       salesToCountry.amounts.map(_.vatOnSales.amount).sum
     ).sum
   }
 
+  // TODO -> Remove???
   def getEuTotalNetSales(allSalesFromEu: List[SalesFromEuCountry]): BigDecimal = {
     allSalesFromEu.map { salesFromAnEuCountry =>
       getTotalNetSalesToCountry(salesFromAnEuCountry.sales)
     }.sum
   }
 
+  // TODO -> Remove???
   def getTotalNetSalesToCountry(allSales: List[SalesToCountry]): BigDecimal = {
     allSales.map(salesToCountry =>
       salesToCountry.amounts.map(_.netValueOfSales).sum

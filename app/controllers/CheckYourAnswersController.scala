@@ -21,15 +21,16 @@ import com.google.inject.Inject
 import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.{NormalMode, Period, StandardPeriod}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
+import models.corrections.CorrectionPayload
 import models.domain.VatReturn
 import models.emails.EmailSendingResult.EMAIL_ACCEPTED
-import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.requests.corrections.CorrectionRequest
+import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, ErrorResponse, ReceivedErrorFromCore, RegistrationNotFound}
-import pages.{CheckYourAnswersPage, SavedProgressPage}
+import models.{NormalMode, Period, StandardPeriod}
 import pages.corrections.CorrectPreviousReturnPage
+import pages.{CheckYourAnswersPage, SavedProgressPage}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.*
 import queries.*
@@ -57,6 +58,7 @@ class CheckYourAnswersController @Inject()(
                                             exclusionService: ExclusionService,
                                             view: CheckYourAnswersView,
                                             vatReturnService: VatReturnService,
+                                            vatReturnSalesService: VatReturnSalesService,
                                             redirectService: RedirectService,
                                             correctionService: CorrectionService,
                                             auditService: AuditService,
@@ -222,8 +224,12 @@ class CheckYourAnswersController @Inject()(
       }
   }
 
-  def submitReturn(vatReturnRequest: VatReturnRequest, correctionRequest: Option[CorrectionRequest], period: Period)
-                  (implicit request: DataRequest[AnyContent]): Future[Result] = {
+  private def submitReturn(
+                            vatReturnRequest: VatReturnRequest,
+                            correctionRequest: Option[CorrectionRequest],
+                            period: Period
+                          )
+                          (implicit request: DataRequest[AnyContent]): Future[Result] = {
 
     val submission: Future[Either[ErrorResponse, Product]] = correctionRequest match {
       case Some(cr) => vatReturnConnector.submitWithCorrections(VatReturnWithCorrectionRequest(vatReturnRequest, cr))
@@ -232,9 +238,9 @@ class CheckYourAnswersController @Inject()(
 
     submission.flatMap {
       case Right(vatReturn: VatReturn) =>
-        auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period)
-      case Right((vatReturn: VatReturn, _)) =>
-        auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period)
+        auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period, None)
+      case Right((vatReturn: VatReturn, correctionPayload: CorrectionPayload)) =>
+        auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period, Some(correctionPayload))
       case Left(RegistrationNotFound) =>
         auditService.audit(ReturnsAuditModel.build(
           vatReturnRequest, correctionRequest, SubmissionResult.NotYetRegistered, None, None, request
@@ -250,17 +256,17 @@ class CheckYourAnswersController @Inject()(
           vatReturnRequest, correctionRequest, SubmissionResult.Duplicate, None, None, request
         ))
         Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-    case Left(e) =>
-      logger.error(s"Unexpected result on submit: ${e.toString}")
-      auditService.audit(ReturnsAuditModel.build(
-        vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
-      ))
-      Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-    case Right(_) | Right((_, _)) =>
-      auditService.audit(ReturnsAuditModel.build(
-        vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
-      ))
-      Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+      case Left(e) =>
+        logger.error(s"Unexpected result on submit: ${e.toString}")
+        auditService.audit(ReturnsAuditModel.build(
+          vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
+        ))
+        Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+      case Right(_) | Right((_, _)) =>
+        auditService.audit(ReturnsAuditModel.build(
+          vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
+        ))
+        Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
     }
   }
 
@@ -268,8 +274,12 @@ class CheckYourAnswersController @Inject()(
                                      returnRequest: VatReturnRequest,
                                      correctionRequest: Option[CorrectionRequest],
                                      vatReturn: VatReturn,
-                                     period: Period
+                                     period: Period,
+                                     maybeCorrectionPayload: Option[CorrectionPayload]
                                    )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
+    
+    val vatOwed: BigDecimal = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
+    
     auditService.audit(
       ReturnsAuditModel.build(
         returnRequest,
@@ -302,35 +312,36 @@ class CheckYourAnswersController @Inject()(
 
         for {
           updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
-          _ <- cc.sessionRepository.set(updatedAnswers)
+          updatedAnswersWithVatOwed <- Future.fromTry(updatedAnswers.set(TotalAmountVatDueGBPQuery, vatOwed))
+          _ <- cc.sessionRepository.set(updatedAnswersWithVatOwed)
           _ <- cachedVatReturnRepository.clear(request.userId, StandardPeriod.fromPeriod(period))
           _ <- saveForLaterConnector.delete(period)
         } yield {
-          Redirect(CheckYourAnswersPage.navigate(NormalMode, request.userAnswers))
+          Redirect(CheckYourAnswersPage.navigate(NormalMode, updatedAnswersWithVatOwed))
         }
     }
   }
 
   private def saveUserAnswersOnCoreError(period: Period, redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] =
     Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad(period).url)).flatMap {
-    updatedAnswers =>
-      val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, StandardPeriod.fromPeriod(period))
+      updatedAnswers =>
+        val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, StandardPeriod.fromPeriod(period))
 
-      saveForLaterConnector.submit(s4LRequest).flatMap {
-        case Right(Some(_: SavedUserAnswers)) =>
-          for {
-            _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield {
-            Redirect(redirectLocation)
-          }
-        case Left(ConflictFound) =>
-          Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
-        case Left(e) =>
-          logger.error(s"Unexpected result on submit: ${e.toString}")
-          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
-        case Right(None) =>
-          logger.error(s"Unexpected result on submit")
-          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
-      }
-  }
+        saveForLaterConnector.submit(s4LRequest).flatMap {
+          case Right(Some(_: SavedUserAnswers)) =>
+            for {
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield {
+              Redirect(redirectLocation)
+            }
+          case Left(ConflictFound) =>
+            Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
+          case Left(e) =>
+            logger.error(s"Unexpected result on submit: ${e.toString}")
+            Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+          case Right(None) =>
+            logger.error(s"Unexpected result on submit")
+            Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+        }
+    }
 }
