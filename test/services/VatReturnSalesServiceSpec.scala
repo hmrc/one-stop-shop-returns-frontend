@@ -19,10 +19,11 @@ package services
 import base.SpecBase
 import models.VatOnSalesChoice.Standard
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
-import models.domain._
+import models.domain.*
 import models.{Country, VatOnSales}
+import org.scalatest.PrivateMethodTester
 
-class VatReturnSalesServiceSpec extends SpecBase {
+class VatReturnSalesServiceSpec extends SpecBase with PrivateMethodTester {
 
   val service = new VatReturnSalesService()
 
@@ -31,33 +32,25 @@ class VatReturnSalesServiceSpec extends SpecBase {
     "getNiTotalVatOnSales" - {
 
       "must show correct vat total for multiple countries with vat rates" in {
-        service.getTotalVatOnSalesToCountry(completeVatReturn.salesFromNi) mustBe BigDecimal(741806.8)
+        
+        val getTotalVatOnSalesToCountryMethod = PrivateMethod[BigDecimal](Symbol("getTotalVatOnSalesToCountry"))
+        
+        val result = service invokePrivate getTotalVatOnSalesToCountryMethod(completeVatReturn.salesFromNi)
+        
+        result `mustBe` BigDecimal(741806.8)
       }
-
-    }
-
-    "getNiTotalNetSales" - {
-
-      "must show correct net total sales for one country with one vat rate" in {
-        service.getTotalNetSalesToCountry(completeVatReturn.salesFromNi) mustBe BigDecimal(960197.21)
-      }
-
     }
 
     "getEuTotalVatOnSales" - {
 
       "must show correct total vat from one country, to one country, with one vat rate" in {
-        service.getEuTotalVatOnSales(completeVatReturn.salesFromEu) mustBe BigDecimal(1379807.43)
+        
+        val getEuTotalVatOnSalesMethod = PrivateMethod[BigDecimal](Symbol("getEuTotalVatOnSales"))
+        
+        val result = service invokePrivate getEuTotalVatOnSalesMethod(completeVatReturn.salesFromEu)
+        
+        result `mustBe` BigDecimal(1379807.43)
       }
-
-    }
-
-    "getEuTotalNetSales" - {
-
-      "must show correct net total sales for one country from, one country to with one vat rate" in {
-        service.getEuTotalNetSales(completeVatReturn.salesFromEu) mustBe BigDecimal(1022804.90)
-      }
-
     }
 
     "getTotalVatOnSalesBeforeCorrection" - {

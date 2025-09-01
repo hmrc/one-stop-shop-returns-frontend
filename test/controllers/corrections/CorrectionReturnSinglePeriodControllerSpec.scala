@@ -17,11 +17,9 @@
 package controllers.corrections
 
 import base.SpecBase
-import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
-import models.{Index, NormalMode, PeriodWithStatus, StandardPeriod}
 import models.Quarter.Q4
-import models.SubmissionStatus.Complete
+import models.{Index, NormalMode, StandardPeriod}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -36,8 +34,6 @@ import services.corrections.CorrectionService
 import utils.FutureSyntax.*
 import views.html.corrections.CorrectionReturnSinglePeriodView
 
-import scala.concurrent.Future
-
 class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private val correctionService = mock[CorrectionService]
@@ -45,7 +41,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
   private val formProvider = new CorrectionReturnSinglePeriodFormProvider()
   private val form = formProvider()
 
-  private lazy val correctionReturnSinglePeriodRoute = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period, Index(0)).url
+  private lazy val correctionReturnSinglePeriodRoute: String =
+    controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(NormalMode, period, Index(0)).url
 
   override def beforeEach(): Unit = {
     super.beforeEach()

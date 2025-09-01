@@ -43,7 +43,7 @@ class VatReturnSalesService @Inject()() {
       case _ => getTotalVatOnSalesBeforeCorrection(vatReturn)
     }
 
-    if(runningTotal < 0) {
+    if (runningTotal < 0) {
       BigDecimal(0)
     } else {
       runningTotal
@@ -59,20 +59,6 @@ class VatReturnSalesService @Inject()() {
   private def getTotalVatOnSalesToCountry(allSales: List[SalesToCountry]): BigDecimal = {
     allSales.map(salesToCountry =>
       salesToCountry.amounts.map(_.vatOnSales.amount).sum
-    ).sum
-  }
-
-  // TODO -> Remove???
-  def getEuTotalNetSales(allSalesFromEu: List[SalesFromEuCountry]): BigDecimal = {
-    allSalesFromEu.map { salesFromAnEuCountry =>
-      getTotalNetSalesToCountry(salesFromAnEuCountry.sales)
-    }.sum
-  }
-
-  // TODO -> Remove???
-  def getTotalNetSalesToCountry(allSales: List[SalesToCountry]): BigDecimal = {
-    allSales.map(salesToCountry =>
-      salesToCountry.amounts.map(_.netValueOfSales).sum
     ).sum
   }
 }

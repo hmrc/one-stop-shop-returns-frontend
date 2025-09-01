@@ -17,12 +17,9 @@
 package controllers.corrections
 
 import base.SpecBase
-import connectors.ReturnStatusConnector
 import forms.corrections.CorrectionReturnPeriodFormProvider
-import models.{Index, NormalMode, PeriodWithStatus, StandardPeriod, SubmissionStatus}
 import models.Quarter.*
-import models.SubmissionStatus.Complete
-import models.responses.UnexpectedResponseStatus
+import models.{Index, NormalMode, StandardPeriod}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}

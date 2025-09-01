@@ -19,10 +19,10 @@ package controllers
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
-import connectors.{SavedUserAnswers, SaveForLaterConnector, VatReturnConnector}
+import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
 import connectors.corrections.CorrectionConnector
-import controllers.corrections.{routes => correctionsRoutes}
-import models.{CheckMode, Country, DataMissingError, Index, NormalMode, StandardPeriod, TotalVatToCountry, VatRate, VatRateType}
+import controllers.corrections.routes as correctionsRoutes
+import models.{CheckMode, Country, DataMissingError, Index, NormalMode, StandardPeriod, TotalVatToCountry, UserAnswers, VatRate, VatRateType}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
@@ -30,20 +30,20 @@ import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, ReceivedErrorFromCore, RegistrationNotFound, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.{eq => eqTo}
+import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages._
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectPreviousReturnPage, CountryVatCorrectionPage}
+import pages.*
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CountryVatCorrectionPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import queries.EmailConfirmationQuery
+import play.api.test.Helpers.*
+import queries.{EmailConfirmationQuery, TotalAmountVatDueGBPQuery}
 import repositories.{CachedVatReturnRepository, UserAnswersRepository}
-import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnService}
+import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnSalesService, VatReturnService}
 import services.corrections.CorrectionService
 import viewmodels.govuk.SummaryListFluency
 
@@ -52,19 +52,21 @@ import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with SummaryListFluency with BeforeAndAfterEach {
 
-  private val vatReturnConnector = mock[VatReturnConnector]
-  private val correctionConnector = mock[CorrectionConnector]
-  private val vatReturnService = mock[VatReturnService]
-  private val correctionService = mock[CorrectionService]
-  private val auditService = mock[AuditService]
-  private val salesAtVatRateService = mock[SalesAtVatRateService]
-  private val emailService =  mock[EmailService]
-  private val s4lConnector = mock[SaveForLaterConnector]
+  private val vatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
+  private val correctionConnector: CorrectionConnector = mock[CorrectionConnector]
+  private val vatReturnService: VatReturnService = mock[VatReturnService]
+  private val vatReturnSalesService: VatReturnSalesService = mock[VatReturnSalesService]
+  private val correctionService: CorrectionService = mock[CorrectionService]
+  private val auditService: AuditService = mock[AuditService]
+  private val salesAtVatRateService: SalesAtVatRateService = mock[SalesAtVatRateService]
+  private val emailService: EmailService = mock[EmailService]
+  private val s4lConnector: SaveForLaterConnector = mock[SaveForLaterConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(vatReturnConnector)
     Mockito.reset(correctionConnector)
     Mockito.reset(vatReturnService)
+    Mockito.reset(vatReturnSalesService)
     Mockito.reset(auditService)
     Mockito.reset(salesAtVatRateService)
     Mockito.reset(emailService)
@@ -234,24 +236,31 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         }
 
         "must audit the event and redirect to the next page and successfully send email confirmation" in {
+
           val mockSessionRepository = mock[UserAnswersRepository]
 
-          val answers = completeUserAnswers
+          val totalVatOnSales: BigDecimal = BigDecimal(100)
+
+          val userAnswersWithEmailConfirmation = completeUserAnswers
+            .copy()
+            .set(TotalAmountVatDueGBPQuery, totalVatOnSales).success.value
+            .set(EmailConfirmationQuery, true).success.value
 
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn totalVatOnSales
           when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
-          val totalVatOnSales = BigDecimal(100)
           when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
           doNothing().when(auditService).audit(any())(any(), any())
 
-          val application = applicationBuilder(userAnswers = Some(answers))
+          val application = applicationBuilder(userAnswers = Some(userAnswersWithEmailConfirmation))
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
+              bind[VatReturnSalesService].toInstance(vatReturnSalesService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[CorrectionConnector].toInstance(correctionConnector),
               bind[SalesAtVatRateService].toInstance(salesAtVatRateService),
@@ -265,13 +274,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           running(application) {
             val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period, false).url)
             val result = route(application, request).value
-            val dataRequest = DataRequest(request, testCredentials, vrn, registration, answers)
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, userAnswersWithEmailConfirmation)
             val expectedAuditEvent = ReturnsAuditModel.build(
               vatReturnRequest, None, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
             )
-            val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, None, vatReturn.reference, vatReturn.paymentReference)
 
-            val userAnswersWithEmailConfirmation = completeUserAnswers.copy().set(EmailConfirmationQuery, true).success.value
+            val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, None, vatReturn.reference, vatReturn.paymentReference)
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswersWithEmailConfirmation).url
@@ -325,27 +333,32 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         }
 
         "must audit the event and redirect to the next page and successfully send email confirmation" in {
+
           val mockSessionRepository = mock[UserAnswersRepository]
 
-          val answers =
-            completeUserAnswersWithCorrections
+          val totalVatOnSales: BigDecimal = BigDecimal(100)
+
+          val userAnswersWithEmailConfirmation: UserAnswers = completeUserAnswersWithCorrections
+            .copy()
+            .set(TotalAmountVatDueGBPQuery, totalVatOnSales).success.value
+            .set(EmailConfirmationQuery, true).success.value
 
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
+          when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn totalVatOnSales
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
           when(vatReturnConnector.submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any()))
             .thenReturn(Future.successful(Right((vatReturn, correctionPayload))))
           when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
             .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
-
-          val totalVatOnSales = BigDecimal(100)
           when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
           doNothing().when(auditService).audit(any())(any(), any())
 
-          val application = applicationBuilder(userAnswers = Some(answers))
+          val application = applicationBuilder(userAnswers = Some(userAnswersWithEmailConfirmation))
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
+              bind[VatReturnSalesService].toInstance(vatReturnSalesService),
               bind[CorrectionService].toInstance(correctionService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[CorrectionConnector].toInstance(correctionConnector),
@@ -360,13 +373,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           running(application) {
             val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period, false).url)
             val result = route(application, request).value
-            val dataRequest = DataRequest(request, testCredentials, vrn, registration, answers)
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, userAnswersWithEmailConfirmation)
             val expectedAuditEvent = ReturnsAuditModel.build(
               vatReturnRequest, Some(correctionRequest), SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
             )
             val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, Some(correctionRequest), vatReturn.reference, vatReturn.paymentReference)
-
-            val userAnswersWithEmailConfirmation = answers.set(EmailConfirmationQuery, true).success.value
 
             status(result) mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswersWithEmailConfirmation).url
@@ -624,6 +635,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
     }
 
     "must display total sales sections from eu and ni" in {
+
       val salesAtVatRateService = mock[SalesAtVatRateService]
       val spain = Country("ES", "Spain")
 
@@ -655,6 +667,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
     }
 
     "must clear cached vat return when return submitted" in {
+
       val mockCachedVatReturnRepository = mock[CachedVatReturnRepository]
 
       val answers = completeUserAnswers
@@ -930,6 +943,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
     }
 
     "when submission fails due to registration not being present in core" - {
+
       "must not save the return, save answers for later and redirect to the No Registration Found In Core page" in {
 
         val answers =
@@ -962,6 +976,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
     }
 
     "when submission fails due to error received from core" - {
+
       "must not save the return, save answers for later and redirect to the Received Error From Core page" in {
 
         val answers =

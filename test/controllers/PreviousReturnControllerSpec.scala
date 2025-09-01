@@ -127,8 +127,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           )
           .build()
 
-        val netSalesFromNi = BigDecimal(4141)
-        val netSalesFromEu = BigDecimal(2333)
         val vatOnSalesFromNi = BigDecimal(55)
         val vatOnSalesFromEu = BigDecimal(44)
         val correctionAmount = BigDecimal(25)
@@ -142,10 +140,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
         when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
-        when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
-        when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
-        when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
-        when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
         when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSalesBeforeCorrection
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSalesAfterCorrection
@@ -194,18 +188,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           )
           .build()
 
-        val netSalesFromNi = BigDecimal(4141)
-        val netSalesFromEu = BigDecimal(2333)
         val vatOnSalesFromNi = BigDecimal(55)
         val vatOnSalesFromEu = BigDecimal(44)
         val totalVatOnSales = vatOnSalesFromNi + vatOnSalesFromEu
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
         when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-        when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
-        when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
-        when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
-        when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
@@ -257,10 +245,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
         val zero = BigDecimal(0)
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
         when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-        when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn zero
-        when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn zero
-        when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn zero
-        when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn zero
         when(correctionConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
@@ -309,18 +293,12 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           )
           .build()
 
-        val netSalesFromNi = BigDecimal(4141)
-        val netSalesFromEu = BigDecimal(2333)
         val vatOnSalesFromNi = BigDecimal(55)
         val vatOnSalesFromEu = BigDecimal(44)
         val totalVatOnSales = vatOnSalesFromNi + vatOnSalesFromEu
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
         when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Left(NotFoundResponse).toFuture
-        when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
-        when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
-        when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
-        when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
         when(correctionConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
@@ -374,10 +352,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
         when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-        when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn zero
-        when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn zero
-        when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn zero
-        when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
         when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
@@ -518,8 +492,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
           )
           .build()
 
-        val netSalesFromNi = BigDecimal(4141)
-        val netSalesFromEu = BigDecimal(2333)
         val vatOnSalesFromNi = BigDecimal(55)
         val vatOnSalesFromEu = BigDecimal(44)
         val correctionAmount = BigDecimal(25)
@@ -533,10 +505,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
         when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
-        when(vatReturnSalesService.getTotalNetSalesToCountry(any())) thenReturn netSalesFromNi
-        when(vatReturnSalesService.getEuTotalNetSales(any())) thenReturn netSalesFromEu
-        when(vatReturnSalesService.getTotalVatOnSalesToCountry(any())) thenReturn vatOnSalesFromNi
-        when(vatReturnSalesService.getEuTotalVatOnSales(any())) thenReturn vatOnSalesFromEu
         when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
         when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSalesBeforeCorrection
         when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSalesAfterCorrection
