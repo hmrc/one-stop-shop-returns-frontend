@@ -27,7 +27,8 @@
     displayPayNow: Boolean,
     amountInPence: Long,
     overdueReturn: Boolean,
-    externalUrl: Option[String] = None
+    externalUrl: Option[String] = None,
+    userResearchUrl: String
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("returnSubmitted.title")), showBackLink = false) {
@@ -70,6 +71,11 @@
 
         <p class="govuk-body">
             <a href="@{externalUrl.getOrElse(routes.YourAccountController.onPageLoad())}" class="govuk-link" id="back-to-your-account">@messages("returnSubmitted.backToAccount.link.text")</a>
+        </p>
+
+        <h2 class="govuk-heading-m">@messages("userResearch.heading")</h2>
+        <p class="govuk-body">
+            <a href="@userResearchUrl" class="govuk-link" target="_blank">@messages("userResearch.link.text")</a>
         </p>
     </div>
 }

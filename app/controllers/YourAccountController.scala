@@ -69,30 +69,32 @@ class YourAccountController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
+      val userResearchUrl = frontendAppConfig.userResearchUrl
+
       if (frontendAppConfig.amendRegistrationEnabled) {
         if (request.registration.vatDetails.partOfVatGroup && hasFixedEstablishment()) {
           Redirect(frontendAppConfig.deleteAllFixedEstablishmentUrl).toFuture
         } else {
-          normalView()
+          normalView(userResearchUrl)
         }
       } else {
-        normalView()
+        normalView(userResearchUrl)
       }
   }
 
-  private def normalView()(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+  private def normalView(userResearchUrl: String)(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     val results = getCurrentReturnsAndFinancialDataAndUserAnswers()
 
     results.flatMap {
       case (Right(availablePeriodsWithStatus), Right(vatReturnsWithFinancialData), answers) =>
         prepareViewWithFinancialData(
           availablePeriodsWithStatus.returns, availablePeriodsWithStatus.excludedReturns,
-          vatReturnsWithFinancialData, answers.map(_.period)
+          vatReturnsWithFinancialData, answers.map(_.period), userResearchUrl
         )
       case (Right(availablePeriodsWithStatus), Left(error), answers) =>
         logger.warn(s"There was an error with getting payment information $error")
         prepareViewWithNoFinancialData(availablePeriodsWithStatus.returns, availablePeriodsWithStatus.excludedReturns,
-          answers.map(_.period))
+          answers.map(_.period), userResearchUrl)
       case (Left(error), Left(error2), _) =>
         logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
         throw new Exception(error.toString)
@@ -141,7 +143,8 @@ class YourAccountController @Inject()(
   private def prepareViewWithFinancialData(nonExcludedReturns: Seq[Return],
                                            excludedReturns: Seq[Return],
                                            currentPayments: CurrentPayments,
-                                           periodInProgress: Option[Period])(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+                                           periodInProgress: Option[Period],
+                                           userResearchUrl: String)(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
     val excludedTraderOpt = request.registration.excludedTrader
     for {
@@ -182,14 +185,16 @@ class YourAccountController @Inject()(
         ),
         hasDueReturnThreeYearsOld,
         hasDueReturnsLessThanThreeYearsOld,
-        hasDeregisteredFromVat
+        hasDeregisteredFromVat,
+        userResearchUrl
       ))
     }
   }
 
   private def prepareViewWithNoFinancialData(returnsViewModel: Seq[Return],
                                              excludedReturns: Seq[Return],
-                                             periodInProgress: Option[Period])
+                                             periodInProgress: Option[Period],
+                                             userResearchUrl: String)
                                             (implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
 
     val excludedTraderOpt = request.registration.excludedTrader
@@ -231,7 +236,8 @@ class YourAccountController @Inject()(
         ),
         hasDueReturnThreeYearsOld,
         hasDueReturnsLessThanThreeYearsOld,
-        hasDeregisteredFromVat
+        hasDeregisteredFromVat,
+        userResearchUrl
       ))
     }
   }
