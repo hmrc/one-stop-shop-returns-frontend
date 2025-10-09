@@ -58,7 +58,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         .set(TotalAmountVatDueGBPQuery, vatOnSales).success.value
 
       val app = applicationBuilder(Some(answers), clock = Some(stubClock))
-        .configure("urls.userResearch" -> "https://test-url.com")
+        .configure("urls.userResearch2" -> "https://test-url.com")
         .overrides(
           bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
@@ -100,7 +100,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
       val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
       val app = applicationBuilder(Some(emptyUserAnswers), clock = Some(stubClock))
-        .configure("urls.userResearch" -> "https://test-url.com")
+        .configure("urls.userResearch2" -> "https://test-url.com")
         .overrides(
           bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()
@@ -132,7 +132,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
       when(mockSessionRepository.clear(any())) thenReturn true.toFuture
 
       val app = applicationBuilder(userAnswers = Some(answers))
-        .configure("urls.userResearch" -> "https://test-url.com")
+        .configure("urls.userResearch2" -> "https://test-url.com")
         .overrides(
           bind[UserAnswersRepository].toInstance(mockSessionRepository),
           bind[VatReturnConnector].toInstance(vatReturnConnector)
@@ -161,7 +161,7 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
         .set(TotalAmountVatDueGBPQuery, vatOnSales).success.value
 
       val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
-        .configure("urls.userResearch" -> "https://test-url.com")
+        .configure("urls.userResearch2" -> "https://test-url.com")
         .overrides(
           bind[VatReturnConnector].toInstance(vatReturnConnector)
         ).build()

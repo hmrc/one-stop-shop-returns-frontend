@@ -149,7 +149,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         )
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -233,7 +233,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -312,7 +312,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -392,7 +392,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -475,7 +475,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -556,7 +556,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -639,7 +639,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -726,7 +726,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -814,7 +814,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -910,7 +910,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -989,7 +989,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1066,7 +1066,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1152,7 +1152,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1235,7 +1235,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1299,7 +1299,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Left(UnexpectedResponseStatus(1, "error")))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .configure("urls.userResearch" -> "https://test-url.com")
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[FinancialDataConnector].toInstance(financialDataConnector)
@@ -1324,7 +1324,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .configure("urls.userResearch" -> "https://test-url.com")
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[FinancialDataConnector].toInstance(financialDataConnector)
@@ -1380,7 +1380,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderHMRC)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1453,7 +1453,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderHMRC)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1557,7 +1557,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelf)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1664,7 +1664,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelf)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1758,7 +1758,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelf)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1859,7 +1859,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelf)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1960,7 +1960,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeave)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2042,7 +2042,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeave)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2154,7 +2154,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               clock = Some(newClock),
               registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
             )
-              .configure("urls.userResearch" -> "https://test-url.com")
+              .configure("urls.userResearch1" -> "https://test-url.com")
               .overrides(
                 bind[ReturnStatusConnector].toInstance(returnStatusConnector),
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2262,7 +2262,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               clock = Some(newClock),
               registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
             )
-              .configure("urls.userResearch" -> "https://test-url.com")
+              .configure("urls.userResearch1" -> "https://test-url.com")
               .overrides(
                 bind[ReturnStatusConnector].toInstance(returnStatusConnector),
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2374,7 +2374,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               clock = Some(newClock),
               registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
             )
-              .configure("urls.userResearch" -> "https://test-url.com")
+              .configure("urls.userResearch1" -> "https://test-url.com")
               .overrides(
                 bind[ReturnStatusConnector].toInstance(returnStatusConnector),
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2475,7 +2475,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
           )
 
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2585,7 +2585,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             clock = Some(newClock),
             registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
           )
-            .configure("urls.userResearch" -> "https://test-url.com")
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2688,7 +2688,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderQuarantined)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2760,7 +2760,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderQuarantined)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2859,7 +2859,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderQuarantined)
         )
-          .configure("urls.userResearch" -> "https://test-url.com")
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2932,7 +2932,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       )
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = None, registration = newRegistration)
-        .configure("urls.userResearch" -> "https://test-url.com")
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .build()
 
       running(application) {

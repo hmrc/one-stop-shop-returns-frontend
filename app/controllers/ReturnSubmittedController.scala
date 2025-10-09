@@ -46,7 +46,7 @@ class ReturnSubmittedController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetDataSimple(period).async {
     implicit request =>
 
-      val userResearchUrl = frontendAppConfig.userResearchUrl
+      val userResearchUrl = frontendAppConfig.userResearchUrl2
 
       val vatOwed = request.userAnswers.get(TotalAmountVatDueGBPQuery)
         .getOrElse(throw new RuntimeException("VAT owed has not been set in answers"))

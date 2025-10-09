@@ -69,7 +69,7 @@ class YourAccountController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
-      val userResearchUrl = frontendAppConfig.userResearchUrl
+      val userResearchUrl = frontendAppConfig.userResearchUrl1
 
       if (frontendAppConfig.amendRegistrationEnabled) {
         if (request.registration.vatDetails.partOfVatGroup && hasFixedEstablishment()) {
