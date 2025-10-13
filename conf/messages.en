@@ -654,3 +654,6 @@ interceptUnusableEmail.p1 = The address you gave us, {0}, is not receiving our e
 interceptUnusableEmail.p2 = Your mailbox could be full or the email account may not be active.
 interceptUnusableEmail.p3 = You must have a valid email address to use this service.
 interceptUnusableEmail.confirm = Confirm email address
+
+userResearch.heading = Help us improve the service
+userResearch.link.text = Sign up to take part in research about the One Stop Shop service.

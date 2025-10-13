@@ -149,6 +149,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         )
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -199,7 +200,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual true
@@ -231,6 +233,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -279,7 +282,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
           }
         }
@@ -308,6 +312,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(clock))
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -356,7 +361,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
           }
         }
@@ -386,6 +392,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -434,7 +441,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
           }
         }
@@ -467,6 +475,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -516,7 +525,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
           }
         }
@@ -546,6 +556,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -593,7 +604,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
         }
       }
@@ -627,6 +639,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -676,7 +689,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
         }
       }
@@ -712,6 +726,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -762,7 +777,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
           }
         }
@@ -798,6 +814,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -848,7 +865,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
 
           }
@@ -892,6 +910,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -938,7 +957,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
           }
         }
@@ -969,6 +989,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1013,7 +1034,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
           }
         }
@@ -1044,6 +1066,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1095,7 +1118,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
           }
         }
@@ -1128,6 +1152,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1179,7 +1204,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
         }
       }
@@ -1209,6 +1235,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(clock))
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1254,7 +1281,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
 
         }
@@ -1271,6 +1299,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Left(UnexpectedResponseStatus(1, "error")))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[FinancialDataConnector].toInstance(financialDataConnector)
@@ -1295,6 +1324,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[FinancialDataConnector].toInstance(financialDataConnector)
@@ -1350,6 +1380,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderHMRC)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1392,7 +1423,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = true,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual false
@@ -1421,6 +1453,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderHMRC)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1473,7 +1506,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1523,6 +1557,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelf)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1567,7 +1602,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = true,
-            hasDeregisteredFromVat = true
+            hasDeregisteredFromVat = true,
+            "https://test-url.com"
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1628,6 +1664,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelf)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1674,7 +1711,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasDueReturnThreeYearsOld = true,
             hasDueReturnsLessThanThreeYearsOld = true,
-            hasDeregisteredFromVat = true
+            hasDeregisteredFromVat = true,
+            "https://test-url.com"
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1720,6 +1758,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelf)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1775,7 +1814,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = true,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1819,6 +1859,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelf)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1871,7 +1912,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1918,6 +1960,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeave)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -1970,7 +2013,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = true,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -1998,6 +2042,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeave)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2050,7 +2095,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -2108,6 +2154,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               clock = Some(newClock),
               registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
             )
+              .configure("urls.userResearch1" -> "https://test-url.com")
               .overrides(
                 bind[ReturnStatusConnector].toInstance(returnStatusConnector),
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2160,7 +2207,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Some(exclusionLinkView),
                 hasDueReturnThreeYearsOld = false,
                 hasDueReturnsLessThanThreeYearsOld = true,
-                hasDeregisteredFromVat = false
+                hasDeregisteredFromVat = false,
+                "https://test-url.com"
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2214,6 +2262,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               clock = Some(newClock),
               registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
             )
+              .configure("urls.userResearch1" -> "https://test-url.com")
               .overrides(
                 bind[ReturnStatusConnector].toInstance(returnStatusConnector),
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2266,7 +2315,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Some(exclusionLinkView),
                 hasDueReturnThreeYearsOld = false,
                 hasDueReturnsLessThanThreeYearsOld = true,
-                hasDeregisteredFromVat = false
+                hasDeregisteredFromVat = false,
+                "https://test-url.com"
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2324,6 +2374,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               clock = Some(newClock),
               registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
             )
+              .configure("urls.userResearch1" -> "https://test-url.com")
               .overrides(
                 bind[ReturnStatusConnector].toInstance(returnStatusConnector),
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2368,7 +2419,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 None,
                 hasDueReturnThreeYearsOld = false,
                 hasDueReturnsLessThanThreeYearsOld = true,
-                hasDeregisteredFromVat = false
+                hasDeregisteredFromVat = false,
+                "https://test-url.com"
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual false
             }
@@ -2422,6 +2474,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             clock = Some(newClock),
             registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
           )
+
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2475,7 +2529,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = true,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2530,6 +2585,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             clock = Some(newClock),
             registration = registration.copy(excludedTrader = excludedTraderSelfRequestedToLeaveTransferringMSID)
           )
+            .configure("urls.userResearch1" -> "https://test-url.com")
             .overrides(
               bind[ReturnStatusConnector].toInstance(returnStatusConnector),
               bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2582,7 +2638,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Some(exclusionLinkView),
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
-              hasDeregisteredFromVat = false
+              hasDeregisteredFromVat = false,
+              "https://test-url.com"
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2631,6 +2688,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderQuarantined)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2673,7 +2731,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = true,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2701,6 +2760,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderQuarantined)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2753,7 +2813,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Some(exclusionLinkView),
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2798,6 +2859,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           clock = Some(clock),
           registration = registration.copy(excludedTrader = excludedTraderQuarantined)
         )
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
@@ -2842,7 +2904,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             None,
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2869,6 +2932,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       )
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = None, registration = newRegistration)
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .build()
 
       running(application) {

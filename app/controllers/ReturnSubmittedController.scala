@@ -17,6 +17,7 @@
 package controllers
 
 import connectors.VatReturnConnector
+import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.{Period, ReturnReference}
@@ -35,6 +36,7 @@ class ReturnSubmittedController @Inject()(
                                            cc: AuthenticatedControllerComponents,
                                            view: ReturnSubmittedView,
                                            vatReturnConnector: VatReturnConnector,
+                                           frontendAppConfig: FrontendAppConfig,
                                            clock: Clock
                                          )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
@@ -43,6 +45,8 @@ class ReturnSubmittedController @Inject()(
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetDataSimple(period).async {
     implicit request =>
+
+      val userResearchUrl = frontendAppConfig.userResearchUrl2
 
       val vatOwed = request.userAnswers.get(TotalAmountVatDueGBPQuery)
         .getOrElse(throw new RuntimeException("VAT owed has not been set in answers"))
@@ -72,7 +76,8 @@ class ReturnSubmittedController @Inject()(
             displayPayNow,
             amountToPayInPence,
             overdueReturn,
-            maybeExternalUrl
+            maybeExternalUrl,
+            userResearchUrl
           ))
         }
       }
