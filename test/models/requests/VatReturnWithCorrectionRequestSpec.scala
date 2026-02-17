@@ -33,7 +33,7 @@ class VatReturnWithCorrectionRequestSpec extends SpecBase {
   "VatReturnWithCorrectionRequest" - {
     "must serialise and deserialise correctly" in {
 
-      val vrn:Vrn = Vrn("vrn")
+      val vrn:Vrn = Vrn("123456789")
       val period:StandardPeriod = StandardPeriod(2021,Q4)
 
       val salesFromNi = List(
@@ -56,7 +56,7 @@ class VatReturnWithCorrectionRequestSpec extends SpecBase {
 
       val json = Json.obj(
         "vatReturnRequest" -> Json.obj(
-          "vrn" -> "vrn",
+          "vrn" -> "1234567489",
           "period" -> Json.obj(
             "year" -> 2021,
             "quarter" -> "Q4"

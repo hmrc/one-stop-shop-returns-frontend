@@ -32,7 +32,7 @@ class VatReturnRequestSpec extends SpecBase {
 
     "must serialise and deserialise correctly" in {
 
-      val vrn: Vrn = Vrn("vrn")
+      val vrn: Vrn = Vrn("123456789")
       val period: StandardPeriod = StandardPeriod(2021, Q4)
       val startDate = Some(LocalDate.of(2021, 12, 8))
       val endDate = Some(LocalDate.of(2021, 12, 9))
@@ -71,7 +71,7 @@ class VatReturnRequestSpec extends SpecBase {
             )
           )
         ),
-        "vrn" -> "vrn",
+        "vrn" -> "123456789",
         "startDate" -> "2021-12-08",
         "period" -> Json.obj(
           "year" -> 2021,
