@@ -32,7 +32,8 @@ class CheckExcludedTraderFilterImpl(
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     request.registration.excludedTrader match {
-      case Some(excludedTrader) if startReturnPeriod.lastDay.isAfter(excludedTrader.finalReturnPeriod.getNextPeriod.firstDay) =>
+      case Some(excludedTrader) if excludedTrader.isExcludedNotReversed &&
+        startReturnPeriod.lastDay.isAfter(excludedTrader.finalReturnPeriod.getNextPeriod.firstDay) =>
         Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
       case _ =>
         Future.successful(None)

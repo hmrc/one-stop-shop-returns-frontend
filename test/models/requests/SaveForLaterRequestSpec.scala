@@ -28,12 +28,12 @@ class SaveForLaterRequestSpec extends SpecBase {
   "SaveForLaterRequest" - {
     "must serialise and deserialise correctly" in {
 
-      val vrn: Vrn = Vrn("vrn")
+      val vrn: Vrn = Vrn("123456789")
       val period: StandardPeriod = StandardPeriod(2021,Q4)
       val data: JsValue = Json.toJson("data")
 
       val json = Json.obj(
-        "vrn" -> Vrn("vrn"),
+        "vrn" -> Vrn("123456789"),
         "period" -> StandardPeriod(2021,Q4),
         "data" -> Json.toJson("data")
       )

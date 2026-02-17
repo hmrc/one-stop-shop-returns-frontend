@@ -32,12 +32,12 @@ class CorrectionRequestSpec extends SpecBase
   "CorrectionRequest" - {
     "must serialise and deserialise correctly" in {
 
-      val vrn = Vrn("vrn")
+      val vrn = Vrn("123456789")
       val period = StandardPeriod(2021,Q4)
       val corrections = List(PeriodWithCorrections(StandardPeriod(2021,Q4),None))
 
       val json = Json.obj(
-        "vrn" -> Vrn("vrn"),
+        "vrn" -> Vrn("123456789"),
         "period" -> StandardPeriod(2021,Q4),
         "corrections" -> List(PeriodWithCorrections(StandardPeriod(2021,Q4),None))
       )

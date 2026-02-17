@@ -63,13 +63,13 @@ class PaymentRequestSpec extends SpecBase {
   "PaymentRequest" - {
     "must serialise and deserialise correctly" in {
 
-      val vrn: Vrn = Vrn("vrn")
+      val vrn: Vrn = Vrn("123456789")
       val period: PaymentPeriod = PaymentPeriod(2024,"Q4")
       val amountInPence: Int = 102332
       val dueDate: Option[LocalDate] = Some(LocalDate.of(2024,12,9))
 
       val json = Json.obj(
-        "vrn" -> Vrn("vrn"),
+        "vrn" -> Vrn("123456789"),
         "period" -> PaymentPeriod(2024,"Q4"),
         "amountInPence" -> 102332,
         "dueDate" -> Some(LocalDate.of(2024,12,9))
