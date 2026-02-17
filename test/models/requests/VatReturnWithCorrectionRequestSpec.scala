@@ -56,7 +56,7 @@ class VatReturnWithCorrectionRequestSpec extends SpecBase {
 
       val json = Json.obj(
         "vatReturnRequest" -> Json.obj(
-          "vrn" -> "1234567489",
+          "vrn" -> "123456789",
           "period" -> Json.obj(
             "year" -> 2021,
             "quarter" -> "Q4"
@@ -113,7 +113,7 @@ class VatReturnWithCorrectionRequestSpec extends SpecBase {
           )
         ),
         "correctionRequest" -> Json.obj(
-          "vrn" -> "vrn",
+          "vrn" -> "123456789",
           "period" -> Json.obj(
             "year" -> 2021,
             "quarter" -> "Q4"
