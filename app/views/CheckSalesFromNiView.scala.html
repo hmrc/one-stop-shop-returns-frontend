@@ -48,10 +48,6 @@
         @govukSummaryList(mainList)
 
         @for(list <- vatRateLists) {
-            <h2 class="govuk-heading-m">@{
-                list.title
-            }</h2>
-
             @govukSummaryList(list.list)
         }
 
