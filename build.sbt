@@ -18,7 +18,7 @@ lazy val root = (project in file("."))
     RoutesKeys.routesImport += "uk.gov.hmrc.play.bootstrap.binders.RedirectUrl"
   )
   .settings(
-    scalaVersion := "3.3.4",
+    scalaVersion := "3.3.6",
     name := appName,
     RoutesKeys.routesImport ++= Seq(
       "models._",
