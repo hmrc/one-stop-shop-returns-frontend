@@ -20,7 +20,6 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
-import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 
 import java.net.URI
 
@@ -35,7 +34,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   private val contactFormServiceIdentifier = "one-stop-shop-returns-frontend"
 
   def feedbackUrl(implicit request: RequestHeader): String =
-    s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${SafeRedirectUrl(host + request.uri).encodedUrl}"
+    s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${host + request.uri}"
 
   val loginUrl: String         = configuration.get[String]("urls.login")
   val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
