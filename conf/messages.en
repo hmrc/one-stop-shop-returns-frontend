@@ -380,8 +380,8 @@ cannotStartReturn.heading = You cannot start this return yet
 cannotStartReturn.label = You must complete a previous return first.
 cannotStartReturn.submit = Back to your account
 
-correctPreviousReturn.title = Do you want to correct a previous return?
-correctPreviousReturn.heading = Do you want to correct a previous return?
+correctPreviousReturn.title = Do you want to use this return to correct a previous one?
+correctPreviousReturn.heading = Do you want to use this return to correct a previous one?
 correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
