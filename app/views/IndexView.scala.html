@@ -234,9 +234,11 @@
         }
 
         <div class="flex-container govuk-grid-row">
-            <div class="tile tile-no-border">
+            <div class="govuk-summary-card tile">
                 <div id="next-return" class="tile-body">
                     <h2 class="govuk-heading-m">@messages("index.yourReturns")</h2>
+                </div>
+                <div class="govuk-summary-card__content">
                     @if(hasSubmittedFinalReturn) {
                         <p class="govuk-body">@messages("yourAccount.finalReturn.completed")</p>
                     } else {
@@ -275,9 +277,11 @@
                 </div>
             </div>
 
-            <div class="tile tile-no-border">
+            <div class="govuk-summary-card tile">
                 <div id="payments" class="tile-body">
                     <h2 class="govuk-heading-m push--top">@messages("index.payment.heading")</h2>
+                </div>
+                <div class="govuk-summary-card__content">
                     @for(warningText <- paymentsViewModel.warning) {
                         @govukWarningText(WarningText(
                             iconFallbackText = Option(messages("site.warning")),
@@ -306,9 +310,11 @@
                 </div>
             </div>
 
-            <div class="tile tile-no-border">
+            <div class="govuk-summary-card tile">
                 <div id="details" class="tile-body">
                     <h2 class="govuk-heading-m">@messages("index.details")</h2>
+                </div>
+                <div class="govuk-summary-card__content">
 
                     <p class="govuk-body">
                         <a class="govuk-link" href="@routes.SubmittedReturnsHistoryController.onPageLoad().url"
