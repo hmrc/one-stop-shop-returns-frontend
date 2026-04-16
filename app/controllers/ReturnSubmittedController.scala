@@ -16,14 +16,14 @@
 
 package controllers
 
-import connectors.VatReturnConnector
 import config.FrontendAppConfig
+import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.{Period, ReturnReference}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.{EmailConfirmationQuery, TotalAmountVatDueGBPQuery}
+import queries.TotalAmountVatDueGBPQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CurrencyFormatter.*
 import views.html.ReturnSubmittedView
@@ -58,8 +58,6 @@ class ReturnSubmittedController @Inject()(
         )
 
         val returnReference = ReturnReference(request.vrn, period)
-        val email = request.registration.contactDetails.emailAddress
-        val showEmailConfirmation = request.userAnswers.get(EmailConfirmationQuery)
         val displayPayNow = vatOwed > 0
         val amountToPayInPence: Long = (vatOwed * 100).toLong
         val overdueReturn = period.paymentDeadline.isBefore(LocalDate.now(clock))
@@ -71,8 +69,6 @@ class ReturnSubmittedController @Inject()(
             request.userAnswers.period,
             returnReference,
             currencyFormat(vatOwed),
-            showEmailConfirmation.getOrElse(false),
-            email,
             displayPayNow,
             amountToPayInPence,
             overdueReturn,

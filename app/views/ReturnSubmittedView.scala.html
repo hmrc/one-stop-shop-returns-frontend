@@ -22,8 +22,6 @@
     period: Period,
     returnReference: ReturnReference,
     vatOwed: String,
-    showEmailConfirmation: Boolean,
-    email: String,
     displayPayNow: Boolean,
     amountInPence: Long,
     overdueReturn: Boolean,
@@ -40,10 +38,6 @@
                 <strong>@returnReference.value</strong>
             </div>
         </div>
-
-        @if(showEmailConfirmation) {
-            <p class="govuk-body">@Html(messages("returnSubmitted.sentConfirmation", email))</p>
-        }
 
         @if(displayPayNow) {
             <h2 class="govuk-heading-m">@messages("returnSubmitted.payVatOwed")</h2>

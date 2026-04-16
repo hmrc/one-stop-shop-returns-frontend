@@ -28,7 +28,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import queries.{EmailConfirmationQuery, TotalAmountVatDueGBPQuery}
+import queries.TotalAmountVatDueGBPQuery
 import repositories.UserAnswersRepository
 import utils.CurrencyFormatter.*
 import utils.FutureSyntax.FutureOps
@@ -83,8 +83,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             period,
             returnReference,
             vatOwed,
-            false,
-            registration.contactDetails.emailAddress,
             displayPayNow,
             (vatOnSales * 100).toLong,
             false,
@@ -156,11 +154,10 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
 
       val vatOnSales: BigDecimal = BigDecimal(0)
 
-      val userAnswersWithEmail = emptyUserAnswers
-        .set(EmailConfirmationQuery, true).success.value
+      val userAnswers = emptyUserAnswers
         .set(TotalAmountVatDueGBPQuery, vatOnSales).success.value
 
-      val app = applicationBuilder(Some(userAnswersWithEmail), clock = Some(stubClock))
+      val app = applicationBuilder(Some(userAnswers), clock = Some(stubClock))
         .configure("urls.userResearch2" -> "https://test-url.com")
         .overrides(
           bind[VatReturnConnector].toInstance(vatReturnConnector)
@@ -184,8 +181,6 @@ class ReturnSubmittedControllerSpec extends SpecBase with MockitoSugar with Befo
             period,
             returnReference,
             vatOwed.toString(),
-            true,
-            registration.contactDetails.emailAddress,
             false,
             (vatOnSales * 100).toLong,
             false,

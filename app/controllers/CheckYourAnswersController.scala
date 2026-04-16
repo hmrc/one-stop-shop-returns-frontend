@@ -24,7 +24,6 @@ import logging.Logging
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
-import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.corrections.CorrectionRequest
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, ErrorResponse, ReceivedErrorFromCore, RegistrationNotFound}
@@ -62,7 +61,6 @@ class CheckYourAnswersController @Inject()(
                                             redirectService: RedirectService,
                                             correctionService: CorrectionService,
                                             auditService: AuditService,
-                                            emailService: EmailService,
                                             vatReturnConnector: VatReturnConnector,
                                             cachedVatReturnRepository: CachedVatReturnRepository,
                                             saveForLaterConnector: SaveForLaterConnector
@@ -238,9 +236,9 @@ class CheckYourAnswersController @Inject()(
 
     submission.flatMap {
       case Right(vatReturn: VatReturn) =>
-        auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period, None)
+        auditAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period, None)
       case Right((vatReturn: VatReturn, correctionPayload: CorrectionPayload)) =>
-        auditEmailAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period, Some(correctionPayload))
+        auditAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period, Some(correctionPayload))
       case Left(RegistrationNotFound) =>
         auditService.audit(ReturnsAuditModel.build(
           vatReturnRequest, correctionRequest, SubmissionResult.NotYetRegistered, None, None, request
@@ -270,16 +268,16 @@ class CheckYourAnswersController @Inject()(
     }
   }
 
-  private def auditEmailAndRedirect(
+  private def auditAndRedirect(
                                      returnRequest: VatReturnRequest,
                                      correctionRequest: Option[CorrectionRequest],
                                      vatReturn: VatReturn,
                                      period: Period,
                                      maybeCorrectionPayload: Option[CorrectionPayload]
                                    )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]): Future[Result] = {
-    
+
     val vatOwed: BigDecimal = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
-    
+
     auditService.audit(
       ReturnsAuditModel.build(
         returnRequest,
@@ -300,25 +298,13 @@ class CheckYourAnswersController @Inject()(
       )
     )
 
-    emailService.sendConfirmationEmail(
-      request.registration.contactDetails.fullName,
-      request.registration.registeredCompanyName,
-      request.registration.contactDetails.emailAddress,
-      service.getTotalVatOwedAfterCorrections(request.userAnswers),
-      period
-    ) flatMap {
-      emailConfirmationResult =>
-        val emailSent = EMAIL_ACCEPTED == emailConfirmationResult
-
-        for {
-          updatedAnswers <- Future.fromTry(request.userAnswers.set(EmailConfirmationQuery, emailSent))
-          updatedAnswersWithVatOwed <- Future.fromTry(updatedAnswers.set(TotalAmountVatDueGBPQuery, vatOwed))
-          _ <- cc.sessionRepository.set(updatedAnswersWithVatOwed)
-          _ <- cachedVatReturnRepository.clear(request.userId, StandardPeriod.fromPeriod(period))
-          _ <- saveForLaterConnector.delete(period)
-        } yield {
-          Redirect(CheckYourAnswersPage.navigate(NormalMode, updatedAnswersWithVatOwed))
-        }
+    for {
+      updatedAnswers <- Future.fromTry(request.userAnswers.set(TotalAmountVatDueGBPQuery, vatOwed))
+      _ <- cc.sessionRepository.set(updatedAnswers)
+      _ <- cachedVatReturnRepository.clear(request.userId, StandardPeriod.fromPeriod(period))
+      _ <- saveForLaterConnector.delete(period)
+    } yield {
+      Redirect(CheckYourAnswersPage.navigate(NormalMode, updatedAnswers))
     }
   }
 

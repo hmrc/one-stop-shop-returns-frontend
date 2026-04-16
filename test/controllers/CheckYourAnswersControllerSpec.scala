@@ -19,18 +19,16 @@ package controllers
 import base.SpecBase
 import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
-import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
 import connectors.corrections.CorrectionConnector
+import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
 import controllers.corrections.routes as correctionsRoutes
-import models.{CheckMode, Country, DataMissingError, Index, NormalMode, StandardPeriod, TotalVatToCountry, UserAnswers, VatRate, VatRateType}
 import models.audit.{ReturnForDataEntryAuditModel, ReturnsAuditModel, SubmissionResult}
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
-import models.emails.EmailSendingResult.EMAIL_ACCEPTED
 import models.requests.{DataRequest, SaveForLaterRequest, VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses.{ConflictFound, ReceivedErrorFromCore, RegistrationNotFound, UnexpectedResponseStatus}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.eq as eqTo
+import models.{CheckMode, Country, DataMissingError, Index, NormalMode, StandardPeriod, TotalVatToCountry, UserAnswers, VatRate, VatRateType}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
@@ -41,10 +39,10 @@ import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, Corr
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import queries.{EmailConfirmationQuery, TotalAmountVatDueGBPQuery}
+import queries.TotalAmountVatDueGBPQuery
 import repositories.{CachedVatReturnRepository, UserAnswersRepository}
-import services.{AuditService, EmailService, SalesAtVatRateService, VatReturnSalesService, VatReturnService}
 import services.corrections.CorrectionService
+import services.{AuditService, SalesAtVatRateService, VatReturnSalesService, VatReturnService}
 import viewmodels.govuk.SummaryListFluency
 
 import java.time.LocalDate
@@ -59,7 +57,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val correctionService: CorrectionService = mock[CorrectionService]
   private val auditService: AuditService = mock[AuditService]
   private val salesAtVatRateService: SalesAtVatRateService = mock[SalesAtVatRateService]
-  private val emailService: EmailService = mock[EmailService]
   private val s4lConnector: SaveForLaterConnector = mock[SaveForLaterConnector]
 
   override def beforeEach(): Unit = {
@@ -69,7 +66,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
     Mockito.reset(vatReturnSalesService)
     Mockito.reset(auditService)
     Mockito.reset(salesAtVatRateService)
-    Mockito.reset(emailService)
     Mockito.reset(s4lConnector)
     super.beforeEach()
   }
@@ -210,8 +206,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .set(SoldGoodsFromEuPage, false).success.value
 
           when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
-          when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
-            .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
 
@@ -220,7 +214,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .overrides(
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[CorrectionConnector].toInstance(correctionConnector),
-                bind[EmailService].toInstance(emailService),
                 bind[SaveForLaterConnector].toInstance(s4lConnector)
               )
               .build()
@@ -235,29 +228,26 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           }
         }
 
-        "must audit the event and redirect to the next page and successfully send email confirmation" in {
+        "must audit the event and redirect to the next page" in {
 
           val mockSessionRepository = mock[UserAnswersRepository]
 
           val totalVatOnSales: BigDecimal = BigDecimal(100)
 
-          val userAnswersWithEmailConfirmation = completeUserAnswers
+          val userAnswers = completeUserAnswers
             .copy()
             .set(TotalAmountVatDueGBPQuery, totalVatOnSales).success.value
-            .set(EmailConfirmationQuery, true).success.value
 
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
           when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), any())) thenReturn totalVatOnSales
           when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
-          when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
-            .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
           when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
           doNothing().when(auditService).audit(any())(any(), any())
 
-          val application = applicationBuilder(userAnswers = Some(userAnswersWithEmailConfirmation))
+          val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -265,7 +255,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               bind[CorrectionConnector].toInstance(correctionConnector),
               bind[SalesAtVatRateService].toInstance(salesAtVatRateService),
               bind[AuditService].toInstance(auditService),
-              bind[EmailService].toInstance(emailService),
               bind[UserAnswersRepository].toInstance(mockSessionRepository),
               bind[SaveForLaterConnector].toInstance(s4lConnector)
             )
@@ -274,7 +263,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           running(application) {
             val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period, false).url)
             val result = route(application, request).value
-            val dataRequest = DataRequest(request, testCredentials, vrn, registration, userAnswersWithEmailConfirmation)
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, userAnswers)
             val expectedAuditEvent = ReturnsAuditModel.build(
               vatReturnRequest, None, SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
             )
@@ -282,18 +271,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, None, vatReturn.reference, vatReturn.paymentReference)
 
             status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswersWithEmailConfirmation).url
+            redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswers).url
 
             verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
             verify(auditService, times(1)).audit(eqTo(expectedAuditEventForDataEntry))(any(), any())
-            verify(emailService, times(1))
-              .sendConfirmationEmail(eqTo(registration.contactDetails.fullName),
-                eqTo(registration.registeredCompanyName),
-                eqTo(registration.contactDetails.emailAddress),
-                eqTo(totalVatOnSales),
-                eqTo(vatReturnRequest.period)
-              )(any(), any())
-            verify(mockSessionRepository, times(1)).set(eqTo(userAnswersWithEmailConfirmation))
+            verify(mockSessionRepository, times(1)).set(eqTo(userAnswers))
           }
         }
       }
@@ -309,8 +291,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           when(vatReturnConnector.submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any()))
             .thenReturn(Future.successful(Right((vatReturn, correctionPayload))))
-          when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
-            .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
           val app =
@@ -318,7 +298,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .overrides(
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[CorrectionConnector].toInstance(correctionConnector),
-                bind[EmailService].toInstance(emailService),
                 bind[SaveForLaterConnector].toInstance(s4lConnector)
               ).build()
 
@@ -332,16 +311,15 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           }
         }
 
-        "must audit the event and redirect to the next page and successfully send email confirmation" in {
+        "must audit the event and redirect to the next page" in {
 
           val mockSessionRepository = mock[UserAnswersRepository]
 
           val totalVatOnSales: BigDecimal = BigDecimal(100)
 
-          val userAnswersWithEmailConfirmation: UserAnswers = completeUserAnswersWithCorrections
+          val userAnswers: UserAnswers = completeUserAnswersWithCorrections
             .copy()
             .set(TotalAmountVatDueGBPQuery, totalVatOnSales).success.value
-            .set(EmailConfirmationQuery, true).success.value
 
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
@@ -349,13 +327,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
           when(vatReturnConnector.submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any()))
             .thenReturn(Future.successful(Right((vatReturn, correctionPayload))))
-          when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
-            .thenReturn(Future.successful(EMAIL_ACCEPTED))
           when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
           when(salesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn totalVatOnSales
           doNothing().when(auditService).audit(any())(any(), any())
 
-          val application = applicationBuilder(userAnswers = Some(userAnswersWithEmailConfirmation))
+          val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
@@ -364,7 +340,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               bind[CorrectionConnector].toInstance(correctionConnector),
               bind[SalesAtVatRateService].toInstance(salesAtVatRateService),
               bind[AuditService].toInstance(auditService),
-              bind[EmailService].toInstance(emailService),
               bind[UserAnswersRepository].toInstance(mockSessionRepository),
               bind[SaveForLaterConnector].toInstance(s4lConnector)
             )
@@ -373,25 +348,18 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           running(application) {
             val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(vatReturnRequest.period, false).url)
             val result = route(application, request).value
-            val dataRequest = DataRequest(request, testCredentials, vrn, registration, userAnswersWithEmailConfirmation)
+            val dataRequest = DataRequest(request, testCredentials, vrn, registration, userAnswers)
             val expectedAuditEvent = ReturnsAuditModel.build(
               vatReturnRequest, Some(correctionRequest), SubmissionResult.Success, Some(vatReturn.reference), Some(vatReturn.paymentReference), dataRequest
             )
             val expectedAuditEventForDataEntry = ReturnForDataEntryAuditModel(vatReturnRequest, Some(correctionRequest), vatReturn.reference, vatReturn.paymentReference)
 
             status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswersWithEmailConfirmation).url
+            redirectLocation(result).value mustEqual CheckYourAnswersPage.navigate(NormalMode, userAnswers).url
 
             verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
             verify(auditService, times(1)).audit(eqTo(expectedAuditEventForDataEntry))(any(), any())
-            verify(emailService, times(1))
-              .sendConfirmationEmail(eqTo(registration.contactDetails.fullName),
-                eqTo(registration.registeredCompanyName),
-                eqTo(registration.contactDetails.emailAddress),
-                eqTo(totalVatOnSales),
-                eqTo(vatReturnRequest.period)
-              )(any(), any())
-            verify(mockSessionRepository, times(1)).set(eqTo(userAnswersWithEmailConfirmation))
+            verify(mockSessionRepository, times(1)).set(eqTo(userAnswers))
           }
         }
       }
@@ -593,7 +561,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[AuditService].toInstance(auditService)
               ).build()
-          
+
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
           when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
           doNothing().when(auditService).audit(any())(any(), any())
@@ -673,8 +641,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       val answers = completeUserAnswers
 
       when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Right(vatReturn))
-      when(emailService.sendConfirmationEmail(any(), any(), any(), any(), any())(any(), any()))
-        .thenReturn(Future.successful(EMAIL_ACCEPTED))
       when(mockCachedVatReturnRepository.clear(any(), any())) thenReturn Future.successful(true)
       when(s4lConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
 
@@ -682,7 +648,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         .overrides(
           bind[CachedVatReturnRepository].toInstance(mockCachedVatReturnRepository),
           bind[VatReturnConnector].toInstance(vatReturnConnector),
-          bind[EmailService].toInstance(emailService),
           bind[SaveForLaterConnector].toInstance(s4lConnector)
         ).build()
 
@@ -721,8 +686,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       "country of consumption from NI must redirect to CountryOfConsumptionFromNiController" in {
 
         val answers = emptyUserAnswers
-            .set(SoldGoodsFromNiPage, true).success.value
-            .set(SoldGoodsFromEuPage, false).success.value
+          .set(SoldGoodsFromNiPage, true).success.value
+          .set(SoldGoodsFromEuPage, false).success.value
 
         val app = applicationBuilder(Some(answers)).build()
 
@@ -758,7 +723,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         val answers = emptyUserAnswers
           .set(SoldGoodsFromNiPage, true).success.value
           .set(CountryOfConsumptionFromNiPage(Index(0)), Country.euCountries.head).success.value
-          .set(VatRatesFromNiPage(Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now() ))).success.value
+          .set(VatRatesFromNiPage(Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now()))).success.value
           .set(SoldGoodsFromEuPage, false).success.value
 
         val app = applicationBuilder(Some(answers)).build()
@@ -777,7 +742,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         val answers = emptyUserAnswers
           .set(SoldGoodsFromNiPage, true).success.value
           .set(CountryOfConsumptionFromNiPage(Index(0)), Country.euCountries.head).success.value
-          .set(VatRatesFromNiPage(Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now() ))).success.value
+          .set(VatRatesFromNiPage(Index(0)), List(VatRate(BigDecimal(20.0), VatRateType.Standard, LocalDate.now()))).success.value
           .set(NetValueOfSalesFromNiPage(Index(0), Index(0)), BigDecimal(2000.0)).success.value
           .set(SoldGoodsFromEuPage, false).success.value
 
