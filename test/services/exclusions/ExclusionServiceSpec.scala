@@ -18,15 +18,12 @@ package services.exclusions
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.VatReturnConnector
 import models.Quarter.{Q2, Q3}
 import models.StandardPeriod
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason, ExclusionViewType}
 import models.registration.Registration
 import models.requests.RegistrationRequest
-import models.responses.NotFound
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -49,10 +46,9 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
   private val mockRegistrationRequest: RegistrationRequest[AnyContent] = mock[RegistrationRequest[AnyContent]]
   private val mockRegistration: Registration = mock[Registration]
-  private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
   private val mockFrontendAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
   private val mockObligationService: ObligationsService = mock[ObligationsService]
-  private val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, mockObligationService, stubClockAtArbitraryDate)
+  private val exclusionService = new ExclusionService(mockFrontendAppConfig, mockObligationService, stubClockAtArbitraryDate)
 
   private val exclusionReason = Gen.oneOf(ExclusionReason.values.filterNot(x => Seq(ExclusionReason.TransferringMSID, ExclusionReason.Reversal).contains(x))).sample.value
   private val finalReturnPeriod = StandardPeriod(2022, Q2)
@@ -66,7 +62,6 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
   ".hasSubmittedFinalReturn" - {
 
     "must return true if final return period is in the obligations" in {
-      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn true
 
       val excludedTrader = ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false)
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
@@ -82,7 +77,6 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     }
 
     "must return false if final return period is not in the obligations" in {
-      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn true
 
       val excludedTrader = ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false)
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
@@ -96,29 +90,9 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       exclusionService.hasSubmittedFinalReturn(mockRegistrationRequest.registration)(hc, ec).futureValue mustBe false
     }
 
-
-    "must return true if final return completed" in {
-      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn false
-
+    "must return false when there is no excluded trader" in {
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
-
-      when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false))
-
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(completeVatReturn))
-
-      exclusionService.hasSubmittedFinalReturn(mockRegistrationRequest.registration)(hc, ec).futureValue mustBe true
-    }
-
-    "must return false if final return not completed" in {
-      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn false
-
-      when(mockRegistrationRequest.registration) thenReturn mockRegistration
-
-      when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false))
-
-      when(mockVatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
+      when(mockRegistration.excludedTrader) thenReturn None
 
       exclusionService.hasSubmittedFinalReturn(mockRegistrationRequest.registration)(hc, ec).futureValue mustBe false
     }
@@ -126,15 +100,15 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
   ".currentReturnIsFinal" - {
 
-    "must return true if current return is final" in {
-      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn false
+    "must return true if current return is final and final return has not yet been submitted" in {
 
+      val excludedTrader = ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false)
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
-      when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false))
+      when(mockRegistration.excludedTrader) thenReturn Some(excludedTrader)
 
-      when(mockVatReturnConnector.get(eqTo(finalReturnPeriod))(any())) thenReturn Future.successful(Left(NotFound))
+      when(mockObligationService.getFulfilledObligations(excludedTrader.vrn)(hc))
+        .thenReturn(Future.successful(Seq.empty))
 
       exclusionService.currentReturnIsFinal(
         mockRegistrationRequest.registration,
@@ -144,14 +118,21 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
     "must return false if the current return is not final for excluded trader" in {
 
-      when(mockFrontendAppConfig.strategicReturnApiEnabled) thenReturn false
+      val excludedTrader = ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false)
 
       when(mockRegistrationRequest.registration) thenReturn mockRegistration
 
-      when(mockRegistration.excludedTrader) thenReturn
-        Some(ExcludedTrader(Vrn("123456789"), exclusionReason, effectiveDate, quarantined = false))
+      when(mockRegistration.excludedTrader) thenReturn Some(excludedTrader)
 
-      when(mockVatReturnConnector.get(eqTo(finalReturnPeriod))(any())) thenReturn Future.successful(Right(completeVatReturn))
+      val fulfilledObligations = Seq(
+        EtmpObligationDetails(
+          EtmpObligationsFulfilmentStatus.Fulfilled,
+          excludedTrader.finalReturnPeriod.toEtmpPeriodString
+        )
+      )
+
+      when(mockObligationService.getFulfilledObligations(excludedTrader.vrn)(hc))
+        .thenReturn(Future.successful(fulfilledObligations))
 
       exclusionService.currentReturnIsFinal(
         mockRegistrationRequest.registration,
@@ -236,7 +217,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       val instant = Instant.parse("2024-03-31T12:00:00Z")
       val newClock: Clock = Clock.fixed(instant, ZoneId.systemDefault())
 
-      val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, mockObligationService, newClock)
+      val exclusionService = new ExclusionService(mockFrontendAppConfig, mockObligationService, newClock)
 
       val effectiveDate = StandardPeriod(2022, Q2).firstDay
 
@@ -271,7 +252,7 @@ class ExclusionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       val instant = Instant.parse("2024-04-01T12:00:00Z")
       val newClock: Clock = Clock.fixed(instant, ZoneId.systemDefault())
 
-      val exclusionService = new ExclusionService(mockVatReturnConnector, mockFrontendAppConfig, mockObligationService, newClock)
+      val exclusionService = new ExclusionService(mockFrontendAppConfig, mockObligationService, newClock)
 
       val effectiveDate = StandardPeriod(2022, Q2).firstDay
 

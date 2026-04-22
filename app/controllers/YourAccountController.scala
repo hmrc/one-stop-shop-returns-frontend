@@ -19,7 +19,7 @@ package controllers
 import config.Constants.{exclusionCodeSixFollowingMonth, exclusionCodeSixTenthOfMonth}
 import config.FrontendAppConfig
 import connectors.financialdata.FinancialDataConnector
-import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
+import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.Period.getPeriod
@@ -52,7 +52,6 @@ class YourAccountController @Inject()(
                                        returnStatusConnector: ReturnStatusConnector,
                                        financialDataConnector: FinancialDataConnector,
                                        saveForLaterConnector: SaveForLaterConnector,
-                                       vatReturnConnector: VatReturnConnector,
                                        registrationConnector: RegistrationConnector,
                                        obligationsService: ObligationsService,
                                        view: IndexView,
@@ -283,17 +282,9 @@ class YourAccountController @Inject()(
   }
 
   private def checkVatReturnSubmissionStatus(excludedTrader: ExcludedTrader)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    if (frontendAppConfig.strategicReturnApiEnabled) {
-      obligationsService.getFulfilledObligations(excludedTrader.vrn).map { obligations =>
-        val periods = obligations.map(obligation => Period.fromEtmpPeriodKey(obligation.periodKey))
-        !periods.contains(excludedTrader.finalReturnPeriod)
-      }
-    } else {
-      vatReturnConnector.getSubmittedVatReturns().map { submittedVatReturnsResponse =>
-        val periods = submittedVatReturnsResponse.map(_.period)
-
-        !periods.contains(excludedTrader.finalReturnPeriod)
-      }
+    obligationsService.getFulfilledObligations(excludedTrader.vrn).map { obligations =>
+      val periods = obligations.map(obligation => Period.fromEtmpPeriodKey(obligation.periodKey))
+      !periods.contains(excludedTrader.finalReturnPeriod)
     }
   }
 

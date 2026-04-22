@@ -26,7 +26,6 @@ import models.requests.corrections.CorrectionRequest
 import models.requests.{VatReturnRequest, VatReturnWithCorrectionRequest}
 import models.responses._
 import models.{PaymentReference, ReturnReference}
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatest.EitherValues
 import play.api.Application
@@ -273,42 +272,6 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
     }
   }
 
-  ".get" - {
-
-    val vatReturn = arbitrary[VatReturn].sample.value
-    val responseJson = Json.toJson(vatReturn)
-
-    "must return Right(VatReturn) when the server responds with OK" in {
-
-      running(application) {
-        val connector = application.injector.instanceOf[VatReturnConnector]
-
-        server.stubFor(
-          get(urlEqualTo(s"$url/period/${period.toString}"))
-            .willReturn(
-              aResponse().withStatus(OK).withBody(responseJson.toString())
-            ))
-
-        connector.get(period).futureValue mustBe Right(vatReturn)
-      }
-    }
-
-    "must return Left(NotFound) when the server responds with NOT_FOUND" in {
-
-      running(application) {
-        val connector = application.injector.instanceOf[VatReturnConnector]
-
-        server.stubFor(
-          get(urlEqualTo(s"$url/period/${period.toString}"))
-            .willReturn(
-              aResponse().withStatus(NOT_FOUND)
-            ))
-
-        connector.get(period).futureValue mustBe Left(NotFound)
-      }
-    }
-  }
-
   "getSavedExternalEntry" - {
 
     val url = s"/one-stop-shop-returns/external-entry"
@@ -370,84 +333,6 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
         val result = connector.getSavedExternalEntry().futureValue
 
         result mustBe Left(UnexpectedResponseStatus(status, s"Received unexpected response code $status with body "))
-      }
-    }
-  }
-
-  ".getSubmittedVatReturns" - {
-
-    "must return Seq(VatReturn) when connector returns a successful payload" in {
-
-      val vatReturns: Seq[VatReturn] = Gen.listOfN(4, arbitraryVatReturn.arbitrary).sample.value
-
-      running(application) {
-        val connector = application.injector.instanceOf[VatReturnConnector]
-
-        val responseBody = Json.toJson(vatReturns).toString()
-
-        server.stubFor(get(urlEqualTo(url)).willReturn(
-          aResponse()
-            .withStatus(OK)
-            .withBody(responseBody)
-        ))
-
-        val result = connector.getSubmittedVatReturns().futureValue
-
-        result mustBe vatReturns
-      }
-    }
-
-    "must return Seq.empty when JSON cannot be parsed correctly" in {
-
-      running(application) {
-        val connector = application.injector.instanceOf[VatReturnConnector]
-
-        val responseBody: String = """{ "foo": "bar" }"""
-
-        server.stubFor(get(urlEqualTo(url)).willReturn(
-          aResponse()
-            .withStatus(OK)
-            .withBody(responseBody)
-        ))
-
-        val result = connector.getSubmittedVatReturns().futureValue
-
-        result mustBe Seq.empty
-      }
-    }
-
-    "must return Seq.empty when connector returns a NotFound" in {
-
-      running(application) {
-        val connector = application.injector.instanceOf[VatReturnConnector]
-
-        server.stubFor(get(urlEqualTo(url)).willReturn(
-          aResponse()
-            .withStatus(NOT_FOUND)
-        ))
-
-        val result = connector.getSubmittedVatReturns().futureValue
-
-        result mustBe Seq.empty
-      }
-    }
-
-    "must throw an Exception when connector returns an error" in {
-
-      val error: Int = INTERNAL_SERVER_ERROR
-
-      running(application) {
-        val connector = application.injector.instanceOf[VatReturnConnector]
-
-        server.stubFor(get(urlEqualTo(url)).willReturn(
-          aResponse()
-            .withStatus(error)
-        ))
-
-        whenReady(connector.getSubmittedVatReturns().failed) { exp =>
-          exp mustBe a[Exception]
-          exp.getMessage mustBe s"Received unexpected error from vat returns with status: $error"
-        }
       }
     }
   }

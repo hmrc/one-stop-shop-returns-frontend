@@ -17,20 +17,16 @@
 package controllers
 
 import config.Constants.submittedReturnsPeriodsLimit
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
-import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.etmp.EtmpVatReturn
 import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.requests.RegistrationRequest
-import models.responses.NotFound as NotFoundResponse
 import models.{PartialReturnPeriod, Period}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import services.VatReturnSalesService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -38,8 +34,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import viewmodels.govuk.summarylist.*
 import viewmodels.previousReturn.*
-import viewmodels.previousReturn.corrections.CorrectionSummary
-import views.html.{NewPreviousReturnView, PreviousReturnView}
+import views.html.NewPreviousReturnView
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
@@ -48,13 +43,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class PreviousReturnController @Inject()(
                                           override val messagesApi: MessagesApi,
                                           cc: AuthenticatedControllerComponents,
-                                          view: PreviousReturnView,
                                           newView: NewPreviousReturnView,
                                           vatReturnConnector: VatReturnConnector,
                                           financialDataConnector: FinancialDataConnector,
-                                          correctionConnector: CorrectionConnector,
-                                          vatReturnSalesService: VatReturnSalesService,
-                                          frontendAppConfig: FrontendAppConfig,
                                           clock: Clock
                                         )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with Logging {
@@ -63,12 +54,7 @@ class PreviousReturnController @Inject()(
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request => {
-
-      if (frontendAppConfig.strategicReturnApiEnabled) {
-        newOnPageLoad(period)
-      } else {
-        legacyOnPageLoad(period)
-      }
+      newOnPageLoad(period)
     }
   }
 
@@ -127,80 +113,7 @@ class PreviousReturnController @Inject()(
       }
     }
   }
-
-  private def legacyOnPageLoad(period: Period)(implicit hc: HeaderCarrier, request: RegistrationRequest[_]): Future[Result] = {
-    if (isPeriodOlderThanSixYears(period)) {
-      Redirect(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad()).toFuture
-    } else {
-
-      for {
-        vatReturnResult <- vatReturnConnector.get(period)
-        getChargeResult <- financialDataConnector.getCharge(period)
-        correctionPayload <- correctionConnector.get(period)
-        maybeExternalUrl <- vatReturnConnector.getSavedExternalEntry()
-      } yield (vatReturnResult, getChargeResult, correctionPayload, maybeExternalUrl)
-    }.map {
-      case (Right(vatReturn), chargeResponse, correctionPayload, maybeExternalUrl) =>
-        val maybeCorrectionPayload =
-          correctionPayload match {
-            case Right(correction) => Some(correction)
-            case _ => None
-          }
-
-        val totalVatOwed = vatReturnSalesService.getTotalVatOnSalesAfterCorrection(vatReturn, maybeCorrectionPayload)
-
-        val (charge, displayBanner) = chargeResponse match {
-          case Right(chargeOption) =>
-            val hasVatOwed = totalVatOwed > 0
-            (chargeOption, chargeOption.isEmpty && hasVatOwed)
-          case _ => (None, true)
-        }
-
-        val amountOutstanding = charge.map(_.outstandingAmount)
-
-        val mainList =
-          SummaryListViewModel(rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOwed, amountOutstanding))
-        val displayPayNow =
-          if (request.registration.excludedTrader.exists(_.isExcludedNotReversed) && period.isInExpiredPeriod(clock)) {
-            false
-          } else {
-            totalVatOwed > 0 && amountOutstanding.forall(outstanding => outstanding > 0)
-          }
-        val vatOwedInPence: Long = (amountOutstanding.getOrElse(totalVatOwed) * 100).toLong
-
-        val hasCorrections = maybeCorrectionPayload.exists(_.corrections.nonEmpty)
-        val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOwed, hasCorrections))
-        val externalUrl = maybeExternalUrl.fold(_ => None, _.url)
-        Ok(view(
-          vatReturn = vatReturn,
-          mainList = mainList,
-          niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn),
-          euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn),
-          correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(maybeCorrectionPayload),
-          declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(maybeCorrectionPayload, vatReturn),
-          totalVatList = Some(totalVatList),
-          displayPayNow = displayPayNow,
-          vatOwedInPence = vatOwedInPence,
-          displayBanner = displayBanner,
-          externalUrl = externalUrl
-        ))
-
-      case (Left(NotFoundResponse), _, _, maybeExternalUrl) =>
-        val externalUrl = maybeExternalUrl.fold(_ => None, _.url)
-        Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url))
-      case (Left(e), _, _, _) =>
-        logger.error(s"Unexpected result from api while getting return: $e")
-        Redirect(routes.JourneyRecoveryController.onPageLoad())
-
-      case _ => Redirect(routes.JourneyRecoveryController.onPageLoad())
-    }.recover {
-
-      case e: Exception =>
-        logger.error(s"Error while getting previous return: ${e.getMessage}", e)
-        Redirect(routes.JourneyRecoveryController.onPageLoad())
-    }
-  }
-
+  
   private def isPeriodOlderThanSixYears(period: Period): Boolean = {
     val sixYearsOld = LocalDate.now(clock).minusYears(submittedReturnsPeriodsLimit)
     period.lastDay.isBefore(sixYearsOld)

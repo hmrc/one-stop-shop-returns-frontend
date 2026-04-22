@@ -23,9 +23,8 @@ import connectors.corrections.CorrectionConnector
 import connectors.ReturnStatusConnector
 import models.{Country, DataMissingError, Index, StandardPeriod}
 import models.Quarter.{Q1, Q2}
-import models.corrections.{CorrectionPayload, CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
+import models.corrections.{CorrectionToCountry, PeriodWithCorrections, ReturnCorrectionValue}
 import models.requests.corrections.CorrectionRequest
-import models.responses.UnexpectedResponseStatus
 import org.mockito.Mockito.*
 import org.scalacheck.Arbitrary.arbitrary
 import org.mockito.ArgumentMatchers.any
@@ -36,7 +35,7 @@ import queries.corrections.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQue
 import services.PeriodService
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
@@ -209,21 +208,7 @@ class CorrectionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAft
       }
     }
   }
-
-  ".getCorrectionsForPeriod" - {
-    "must return list of corrections" in new Fixture {
-      val correctionPayload = arbitrary[CorrectionPayload].sample.value
-      when(correctionConnector.getForCorrectionPeriod(any())(any())) thenReturn Future.successful(Right(Seq(correctionPayload)))
-      service.getCorrectionsForPeriod(period)(ExecutionContext.global, hc).futureValue mustBe correctionPayload.corrections.flatMap(_.correctionsToCountry.value)
-    }
-
-    "must throw if connector returns an error" in new Fixture {
-      when(correctionConnector.getForCorrectionPeriod(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
-      val result = service.getCorrectionsForPeriod(period)(ExecutionContext.global, hc)
-      whenReady(result.failed) { exp => exp mustBe a[Exception] }
-    }
-  }
-
+  
   ".getReturnCorrectionValue" - {
     val country1 = arbitrary[Country].sample.value
 

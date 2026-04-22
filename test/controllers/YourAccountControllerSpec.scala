@@ -19,22 +19,21 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.financialdata.FinancialDataConnector
-import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector, VatReturnConnector}
+import connectors.{RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector}
 import generators.Generators
 import models.Quarter.*
 import models.SubmissionStatus.{Due, Excluded, Next, Overdue}
-import models.domain.{EuTaxIdentifier, EuTaxIdentifierType, VatReturn}
+import models.domain.{EuTaxIdentifier, EuTaxIdentifierType}
 import models.exclusions.{ExcludedTrader, ExclusionLinkView, ExclusionReason}
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.registration.*
 import models.requests.RegistrationRequest
 import models.responses.{InvalidJson, NotFound, UnexpectedResponseStatus}
-import models.{Country, Period, StandardPeriod, SubmissionStatus}
+import models.{Country, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.SavedProgressPage
@@ -45,7 +44,6 @@ import play.api.test.Helpers.*
 import repositories.UserAnswersRepository
 import services.VatReturnSalesService
 import services.exclusions.ExclusionService
-import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount.{CurrentReturns, PaymentsViewModel, Return, ReturnsViewModel}
 import views.html.IndexView
 
@@ -59,13 +57,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val vatReturnSalesService = mock[VatReturnSalesService]
   private val sessionRepository = mock[UserAnswersRepository]
   private val save4LaterConnector = mock[SaveForLaterConnector]
-  private val vatReturnConnector = mock[VatReturnConnector]
   private val registrationConnector = mock[RegistrationConnector]
   private val mockExclusionService = mock[ExclusionService]
 
   private val periodQ2 = StandardPeriod(2022, Q2)
 
-  private val vatReturn = arbitrary[VatReturn].sample.value
   private val excludedTraderHMRC: Option[ExcludedTrader] = Some(ExcludedTrader(
     registration.vrn, ExclusionReason.CeasedTrade, periodQ2.firstDay, quarantined = false))
 
@@ -82,7 +78,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   override def beforeEach(): Unit = {
     Mockito.reset(
-      vatReturnConnector,
       registrationConnector,
       mockExclusionService
     )
@@ -97,7 +92,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                             financialDataConnector: FinancialDataConnector,
                             sessionRepository: UserAnswersRepository,
                             save4LaterConnector: SaveForLaterConnector,
-                            vatReturnConnector: VatReturnConnector,
                             registrationConnector: RegistrationConnector,
                             mockExclusionService: ExclusionService,
                             registration: Registration
@@ -121,7 +115,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
     when(sessionRepository.set(any())) thenReturn Future.successful(true)
     when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-    when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
     when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
     when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
     when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
@@ -142,7 +135,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           financialDataConnector,
           sessionRepository,
           save4LaterConnector,
-          vatReturnConnector,
           registrationConnector,
           mockExclusionService,
           registration.copy(excludedTrader = excludedTraderHMRC)
@@ -155,7 +147,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector)
           )
           .build()
@@ -228,7 +219,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
 
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -239,7 +229,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
@@ -307,7 +296,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq(userAnswers))
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -318,7 +306,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
@@ -387,7 +374,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -398,7 +384,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
@@ -470,7 +455,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -481,7 +465,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
@@ -551,7 +534,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -562,7 +544,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
@@ -634,7 +615,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -645,7 +625,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
@@ -721,7 +700,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -732,7 +710,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
@@ -809,7 +786,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -821,7 +797,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
@@ -905,7 +880,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -916,7 +890,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
@@ -984,7 +957,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -995,7 +967,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
@@ -1061,7 +1032,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -1073,7 +1043,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[VatReturnSalesService].toInstance(vatReturnSalesService),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector)
             ).build()
 
@@ -1147,7 +1116,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -1159,7 +1127,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[VatReturnSalesService].toInstance(vatReturnSalesService),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
@@ -1230,7 +1197,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(Some(answers)))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
@@ -1241,7 +1207,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
@@ -1369,7 +1334,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -1386,7 +1350,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -1443,7 +1406,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           financialDataConnector,
           sessionRepository,
           save4LaterConnector,
-          vatReturnConnector,
           registrationConnector,
           mockExclusionService,
           registration.copy(excludedTrader = excludedTraderHMRC)
@@ -1459,7 +1421,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -1546,7 +1507,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(deregisteredFromVat))
         when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -1563,7 +1523,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -1653,7 +1612,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(deregisteredFromVat))
         when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -1670,7 +1628,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -1748,7 +1705,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
         when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -1764,7 +1720,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -1849,7 +1804,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
         when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
@@ -1865,7 +1819,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -1950,7 +1903,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -1966,7 +1918,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -2032,7 +1983,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           financialDataConnector,
           sessionRepository,
           save4LaterConnector,
-          vatReturnConnector,
           registrationConnector,
           mockExclusionService,
           registration.copy(excludedTrader = excludedTraderHMRC)
@@ -2048,7 +1998,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -2110,12 +2059,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val today: LocalDate = LocalDate.of(2024, 5, 10)
 
-            val finalReturnPeriod: Period = StandardPeriod(2024, Q2)
-
             val newClock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant, ZoneId.systemDefault())
-
-            val submittedVatReturnsWithoutEffectivePeriod: Seq[VatReturn] =
-              Gen.listOfN(4, arbitraryVatReturn.arbitrary.suchThat(vr => vr.period != finalReturnPeriod)).sample.value
 
             val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
               registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 4, 10), quarantined = false))
@@ -2143,8 +2087,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
             when(sessionRepository.set(any())) thenReturn Future.successful(true)
             when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-            when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
-            when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
             when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
             when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -2160,7 +2102,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-                bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[RegistrationConnector].toInstance(registrationConnector),
                 bind[ExclusionService].toInstance(mockExclusionService)
               )
@@ -2218,12 +2159,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val today: LocalDate = LocalDate.of(2024, 5, 9)
 
-            val finalReturnPeriod: Period = StandardPeriod(2024, Q2)
-
             val newClock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant, ZoneId.systemDefault())
-
-            val submittedVatReturnsWithoutEffectivePeriod: Seq[VatReturn] =
-              Gen.listOfN(4, arbitraryVatReturn.arbitrary.suchThat(vr => vr.period != finalReturnPeriod)).sample.value
 
             val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
               registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 4, 10), quarantined = false))
@@ -2251,8 +2187,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
             when(sessionRepository.set(any())) thenReturn Future.successful(true)
             when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-            when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
-            when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
             when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
             when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -2268,7 +2202,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-                bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[RegistrationConnector].toInstance(registrationConnector),
                 bind[ExclusionService].toInstance(mockExclusionService)
               )
@@ -2329,12 +2262,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
             val today: LocalDate = LocalDate.of(2024, 5, 11)
 
-            val finalReturnPeriod: Period = StandardPeriod(2024, Q2)
-
             val newClock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant, ZoneId.systemDefault())
-
-            val submittedVatReturnsWithoutEffectivePeriod: Seq[VatReturn] =
-              Gen.listOfN(4, arbitraryVatReturn.arbitrary.suchThat(vr => vr.period != finalReturnPeriod)).sample.value
 
             val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
               registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 4, 10), quarantined = false))
@@ -2362,8 +2290,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
             when(sessionRepository.set(any())) thenReturn Future.successful(true)
             when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-            when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
-            when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
             when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
             when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
             when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -2380,7 +2306,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 bind[FinancialDataConnector].toInstance(financialDataConnector),
                 bind[UserAnswersRepository].toInstance(sessionRepository),
                 bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-                bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[RegistrationConnector].toInstance(registrationConnector),
                 bind[ExclusionService].toInstance(mockExclusionService)
               )
@@ -2431,12 +2356,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val today: LocalDate = LocalDate.of(2024, 5, 28)
 
-          val finalReturnPeriod: Period = StandardPeriod(2024, Q2)
-
           val newClock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant, ZoneId.systemDefault())
-
-          val submittedVatReturnsWithoutEffectivePeriod: Seq[VatReturn] =
-            Gen.listOfN(4, arbitraryVatReturn.arbitrary.suchThat(vr => vr.period != finalReturnPeriod)).sample.value
 
           val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
             registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 6, 9), quarantined = false))
@@ -2463,8 +2383,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
-          when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
           when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -2481,7 +2399,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector),
               bind[ExclusionService].toInstance(mockExclusionService)
             )
@@ -2540,13 +2457,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val today: LocalDate = LocalDate.of(2024, 5, 28)
 
-          val finalReturnPeriod: Period = StandardPeriod(2024, Q2)
-
           val newClock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant, ZoneId.systemDefault())
-
-          val finalVatReturn: VatReturn = arbitraryVatReturn.arbitrary.sample.value.copy(period = finalReturnPeriod)
-          val submittedVatReturnsWithoutEffectivePeriod: Seq[VatReturn] =
-            Gen.listOfN(4, arbitraryVatReturn.arbitrary).sample.value ++ Seq(finalVatReturn)
 
           val excludedTraderSelfRequestedToLeaveTransferringMSID: Option[ExcludedTrader] = Some(ExcludedTrader(
             registration.vrn, ExclusionReason.TransferringMSID, LocalDate.of(2024, 6, 9), quarantined = false))
@@ -2574,8 +2485,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
           when(sessionRepository.set(any())) thenReturn Future.successful(true)
           when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-          when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(finalVatReturn))
-          when(vatReturnConnector.getSubmittedVatReturns()(any())) thenReturn submittedVatReturnsWithoutEffectivePeriod.toFuture
           when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
           when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
           when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
@@ -2591,7 +2500,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               bind[FinancialDataConnector].toInstance(financialDataConnector),
               bind[UserAnswersRepository].toInstance(sessionRepository),
               bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-              bind[VatReturnConnector].toInstance(vatReturnConnector),
               bind[RegistrationConnector].toInstance(registrationConnector),
               bind[ExclusionService].toInstance(mockExclusionService)
             )
@@ -2677,7 +2585,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Left(NotFound))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(false)
@@ -2694,7 +2601,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -2750,7 +2656,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           financialDataConnector,
           sessionRepository,
           save4LaterConnector,
-          vatReturnConnector,
           registrationConnector,
           mockExclusionService,
           registration.copy(excludedTrader = excludedTraderHMRC)
@@ -2766,7 +2671,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )
@@ -2848,7 +2752,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
         when(sessionRepository.set(any())) thenReturn Future.successful(true)
         when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(vatReturnConnector.get(any())(any())) thenReturn Future.successful(Right(vatReturn))
         when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
         when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
         when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
@@ -2865,7 +2768,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[FinancialDataConnector].toInstance(financialDataConnector),
             bind[UserAnswersRepository].toInstance(sessionRepository),
             bind[SaveForLaterConnector].toInstance(save4LaterConnector),
-            bind[VatReturnConnector].toInstance(vatReturnConnector),
             bind[RegistrationConnector].toInstance(registrationConnector),
             bind[ExclusionService].toInstance(mockExclusionService)
           )

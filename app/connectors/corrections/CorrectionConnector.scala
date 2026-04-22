@@ -17,7 +17,6 @@
 package connectors.corrections
 
 import config.Service
-import connectors.corrections.CorrectionHttpParser._
 import models.Period
 import models.corrections.ReturnCorrectionValue
 import play.api.Configuration
@@ -32,12 +31,6 @@ class CorrectionConnector @Inject()(config: Configuration, httpClientV2: HttpCli
                                    (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.one-stop-shop-returns")
-
-  def get(period: Period)(implicit hc: HeaderCarrier): Future[CorrectionResponse] =
-    httpClientV2.get(url"$baseUrl/corrections/$period").execute[CorrectionResponse]
-
-  def getForCorrectionPeriod(period: Period)(implicit hc: HeaderCarrier): Future[CorrectionsForPeriodResponse] =
-    httpClientV2.get(url"$baseUrl/corrections-for-period/$period").execute[CorrectionsForPeriodResponse]
 
   def getReturnCorrectionValue(countryCode: String, period: Period)(implicit hc: HeaderCarrier): Future[ReturnCorrectionValue] =
     httpClientV2.get(url"$baseUrl/max-correction-value/$countryCode/$period").execute[ReturnCorrectionValue]

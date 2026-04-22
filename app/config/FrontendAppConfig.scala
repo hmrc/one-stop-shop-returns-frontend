@@ -91,8 +91,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val internalAuthToken: String = configuration.get[String]("internal-auth.token")
 
-  val strategicReturnApiEnabled: Boolean = configuration.get[Boolean]("features.strategic-returns.enabled")
-
   lazy val userResearchUrl1: String = configuration.get[String]("urls.userResearch1")
   lazy val userResearchUrl2: String = configuration.get[String]("urls.userResearch2")
 

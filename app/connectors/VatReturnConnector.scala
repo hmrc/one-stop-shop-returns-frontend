@@ -44,15 +44,8 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
   def submitWithCorrections(vatReturnRequest: VatReturnWithCorrectionRequest)(implicit hc: HeaderCarrier): Future[VatReturnWithCorrectionResponse] =
     httpClientV2.post(url"$baseUrl/vat-return-with-corrections").withBody(Json.toJson(vatReturnRequest)).execute[VatReturnWithCorrectionResponse]
 
-  def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] =
-    httpClientV2.get(url"$baseUrl/vat-returns/period/$period").execute[VatReturnResponse]
-
   def getSavedExternalEntry()(implicit hc: HeaderCarrier): Future[ExternalEntryUrlResponse] =
     httpClientV2.get(url"$baseUrl/external-entry").execute[ExternalEntryUrlResponse]
-
-  def getSubmittedVatReturns()(implicit hc: HeaderCarrier): Future[VatReturnMultipleResponse] = {
-    httpClientV2.get(url"$baseUrl/vat-returns").execute[VatReturnMultipleResponse]
-  }
 
   def getObligations(vrn: Vrn)(implicit hc: HeaderCarrier): Future[EtmpObligations] =
     httpClientV2.get(url"$baseUrl/obligations/$vrn").execute[EtmpObligations]

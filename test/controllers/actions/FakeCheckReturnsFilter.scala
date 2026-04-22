@@ -16,23 +16,17 @@
 
 package controllers.actions
 
-import config.FrontendAppConfig
-import connectors.VatReturnConnector
 import models.requests.OptionalDataRequest
 import models.{Period, StandardPeriod}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
-import repositories.CachedVatReturnRepository
 import services.ObligationsService
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeCheckReturnsFilter() extends CheckReturnsFilterImpl(
   mock[StandardPeriod],
-  mock[CachedVatReturnRepository],
-  mock[VatReturnConnector],
-  mock[ObligationsService],
-  mock[FrontendAppConfig]
+  mock[ObligationsService]
 )(ExecutionContext.Implicits.global) {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
@@ -42,10 +36,7 @@ class FakeCheckReturnsFilter() extends CheckReturnsFilterImpl(
 
 class FakeCheckReturnsFilterProvider()
   extends CheckReturnsFilterProvider(
-    mock[CachedVatReturnRepository],
-    mock[VatReturnConnector],
-    mock[ObligationsService],
-    mock[FrontendAppConfig]
+    mock[ObligationsService]
   )(ExecutionContext.Implicits.global) {
 
   override def apply(period: Period): CheckReturnsFilterImpl = new FakeCheckReturnsFilter()

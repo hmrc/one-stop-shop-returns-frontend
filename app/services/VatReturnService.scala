@@ -24,7 +24,6 @@ import models.domain.{EuTaxIdentifier, SalesDetails, SalesFromEuCountry, SalesTo
 import models.registration.{EuVatRegistration, Registration, RegistrationWithFixedEstablishment}
 import models.requests.VatReturnRequest
 import pages.*
-import play.api.i18n.Lang.logger
 import queries.*
 import queries.corrections.PreviouslyDeclaredCorrectionAmount
 import services.corrections.CorrectionService
@@ -202,46 +201,11 @@ trait VatReturnService {
   }
 }
 
-class VatReturnServiceRepoImpl @Inject()(connector: VatReturnConnector, correctionService: CorrectionService) extends VatReturnService {
-
-  private def getVatOwedToCountryOnReturn(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[BigDecimal] = {
-    connector.get(period).map {
-      case Right(vatReturn) =>
-        val sumFromNiToSelectedCountry = vatReturn.salesFromNi.filter(_.countryOfConsumption.code == country.code)
-          .flatMap(sales => sales.amounts.map(_.vatOnSales.amount)).sum
-        val salesFromEU = vatReturn.salesFromEu.flatMap(_.sales)
-        val sumFromEUToSelectedCountry = salesFromEU.filter(_.countryOfConsumption.code == country.code)
-          .flatMap(sales => sales.amounts.map(_.vatOnSales.amount)).sum
-        val vatOwedToCountryOnPrevReturn = sumFromEUToSelectedCountry + sumFromNiToSelectedCountry
-        vatOwedToCountryOnPrevReturn
-      case Left(value) =>
-        logger.error(s"there was an error getting the vat return: $value")
-        throw new Exception(value.toString)
-    }
-  }
-
-  override def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[PreviouslyDeclaredCorrectionAmount] =
-    for {
-      vatOwedToCountryOnPrevReturn <- getVatOwedToCountryOnReturn(country, period)
-      correctionsForPeriod <- correctionService.getCorrectionsForPeriod(period)
-    } yield {
-      val correctionsToCountry = correctionsForPeriod.filter(_.correctionCountry.code == country.code)
-      val sumOfCorrectionsToCountry = correctionsToCountry.map {
-        _.countryVatCorrection.getOrElse(BigDecimal(0))
-      }.sum
-      val previouslyDeclaredAmount = vatOwedToCountryOnPrevReturn + sumOfCorrectionsToCountry
-      val isPreviouslyDeclared = correctionsToCountry.nonEmpty || previouslyDeclaredAmount != 0
-      PreviouslyDeclaredCorrectionAmount(isPreviouslyDeclared, previouslyDeclaredAmount)
-    }
-
-}
-
 class VatReturnServiceEtmpImpl @Inject()(correctionService: CorrectionService, vatReturnConnector: VatReturnConnector) extends VatReturnService {
 
   override def getLatestVatAmountForPeriodAndCountry(country: Country, period: Period)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[PreviouslyDeclaredCorrectionAmount] =
     for {
       returnCorrectionValue <- correctionService.getReturnCorrectionValue(country, period)
-      correctionsForPeriod <- correctionService.getReturnCorrectionValue(country, period)
       vatReturn <- vatReturnConnector.getEtmpVatReturn(period)
     } yield
       val isDeclared = vatReturn match {
@@ -251,5 +215,5 @@ class VatReturnServiceEtmpImpl @Inject()(correctionService: CorrectionService, v
         case Left(error) => throw new IllegalStateException(s"Unable to get vat return for accumulating correction total $error")
       }
 
-      PreviouslyDeclaredCorrectionAmount(isDeclared, correctionsForPeriod.maximumCorrectionValue)
+      PreviouslyDeclaredCorrectionAmount(isDeclared, returnCorrectionValue.maximumCorrectionValue)
 }

@@ -25,7 +25,7 @@ import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus, Etmp
 import models.external.ExternalEntryUrl
 import models.financialdata.{CurrentPayments, Payment, PaymentStatus}
 import models.responses.UnexpectedResponseStatus
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
@@ -95,446 +95,234 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   }
 
   "SubmittedReturnsHistory Controller" - {
+    
+    "must return OK and correct view with the current period when a return for this period exists" in {
 
-    "when strategicReturnApiEnabled is true" - {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("features.strategic-returns.enabled" -> true)
+        .overrides(
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[ObligationsService].toInstance(mockObligationsService)
+        ).build()
 
-      "must return OK and correct view with the current period when a return for this period exists" in {
+      when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(currentPayments).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(etmpVatReturn).toFuture
+      when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> true)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[ObligationsService].toInstance(mockObligationsService)
-          ).build()
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(currentPayments).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-        when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(etmpVatReturn).toFuture
-        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-          val result = route(application, request).value
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map(period3 -> payment3),
-            displayBanner = false
-          )(request, messages(application)).toString
-        }
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          Map(period3 -> payment3),
+          displayBanner = false
+        )(request, messages(application)).toString
       }
+    }
 
-      "must return OK and correct view with no-returns message when no returns exist" in {
+    "must return OK and correct view with no-returns message when no returns exist" in {
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> true)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[ObligationsService].toInstance(mockObligationsService)
-          ).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("features.strategic-returns.enabled" -> true)
+        .overrides(
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[ObligationsService].toInstance(mockObligationsService)
+        ).build()
 
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(emptyPayments).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-        when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq.empty.toFuture
-        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq.empty.toFuture
+      when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(emptyPayments).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq.empty.toFuture
+      when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq.empty.toFuture
 
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
-          val result = route(application, request).value
+        val result = route(application, request).value
 
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map.empty,
-            displayBanner = false
-          )(request, messages(application)).toString
-        }
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          Map.empty,
+          displayBanner = false
+        )(request, messages(application)).toString
       }
+    }
 
-      "must throw an exception when an unexpected result is returned" in {
+    "must throw an exception when an unexpected result is returned" in {
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> true)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[ObligationsService].toInstance(mockObligationsService)
-          ).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("features.strategic-returns.enabled" -> true)
+        .overrides(
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[ObligationsService].toInstance(mockObligationsService)
+        ).build()
 
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
+      when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+      when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
 
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
-          val result = route(application, request).value
+        val result = route(application, request).value
 
-          whenReady(result.failed) { exp => exp mustBe a[Exception] }
-        }
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
       }
+    }
 
-      "must throw an exception when the connector returns Left(ErrorResponse)" in {
+    "must throw an exception when the connector returns Left(ErrorResponse)" in {
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> true)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-          ).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("features.strategic-returns.enabled" -> true)
+        .overrides(
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector)
+        ).build()
 
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Left(UnexpectedResponseStatus(123, "error")).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+      when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Left(UnexpectedResponseStatus(123, "error")).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
-          val result = route(application, request).value
+        val result = route(application, request).value
 
-          whenReady(result.failed) { exp => exp mustBe a[Exception] }
-        }
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
       }
+    }
 
-      "must return OK and correct view when a vat return exists but no charge is found" in {
+    "must return OK and correct view when a vat return exists but no charge is found" in {
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> true)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[ObligationsService].toInstance(mockObligationsService)
-          ).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("features.strategic-returns.enabled" -> true)
+        .overrides(
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[ObligationsService].toInstance(mockObligationsService)
+        ).build()
 
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(unknownPayment).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-        when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(emptyVatReturn).toFuture
-        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
+      when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(unknownPayment).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(emptyVatReturn).toFuture
+      when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
 
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
-          val result = route(application, request).value
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map(period3 -> unknownPaymentAmount),
-            displayBanner = true
-          )(request, messages(application)).toString
-        }
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          Map(period3 -> unknownPaymentAmount),
+          displayBanner = true
+        )(request, messages(application)).toString
       }
+    }
 
-      "must throw an Illegal State Exception when a nil vat return exists and no charge is found" in {
+    "must throw an Illegal State Exception when a nil vat return exists and no charge is found" in {
 
-        val nilEtmpVatReturn: EtmpVatReturn = etmpVatReturn.copy(
-          periodKey = "21C3",
-          goodsSupplied = Seq.empty,
-          totalVATGoodsSuppliedGBP = BigDecimal(0),
-          totalVATAmountPayable = BigDecimal(0),
-          totalVATAmountPayableAllSpplied = BigDecimal(0),
-          correctionPreviousVATReturn = Seq.empty,
-          totalVATAmountFromCorrectionGBP = BigDecimal(0),
-          balanceOfVATDueForMS = Seq.empty,
-          totalVATAmountDueForAllMSGBP = BigDecimal(0)
-        )
+      val nilEtmpVatReturn: EtmpVatReturn = etmpVatReturn.copy(
+        periodKey = "21C3",
+        goodsSupplied = Seq.empty,
+        totalVATGoodsSuppliedGBP = BigDecimal(0),
+        totalVATAmountPayable = BigDecimal(0),
+        totalVATAmountPayableAllSpplied = BigDecimal(0),
+        correctionPreviousVATReturn = Seq.empty,
+        totalVATAmountFromCorrectionGBP = BigDecimal(0),
+        balanceOfVATDueForMS = Seq.empty,
+        totalVATAmountDueForAllMSGBP = BigDecimal(0)
+      )
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> true)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[ObligationsService].toInstance(mockObligationsService)
-          ).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("features.strategic-returns.enabled" -> true)
+        .overrides(
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[ObligationsService].toInstance(mockObligationsService)
+        ).build()
 
-        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(emptyPayments).toFuture
-        when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(nilEtmpVatReturn).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+      when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
+      when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(emptyPayments).toFuture
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(nilEtmpVatReturn).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
-          val result = route(application, request).value
+        val result = route(application, request).value
 
-          whenReady(result.failed) { exp =>
-            exp mustBe a[IllegalStateException]
-            exp.getMessage mustBe "Unable to find period in financial data for expected period 2021-Q3"
-          }
-        }
-      }
-
-      "must return OK and correct view when a correction exists" in {
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> true)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[ObligationsService].toInstance(mockObligationsService)
-          ).build()
-
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(currentPayments).toFuture
-        when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(etmpVatReturn).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-          val result = route(application, request).value
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map(period3 -> payment3),
-            displayBanner = false
-          )(request, messages(application)).toString
-        }
-      }
-
-      "must return OK and correct view and add the external backToYourAccount url that has been saved" in {
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> true)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[ObligationsService].toInstance(mockObligationsService)
-          ).build()
-
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(currentPayments).toFuture
-        when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(etmpVatReturn).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(Some("example"))).toFuture
-        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-          val result = route(application, request).value
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map(period3 -> payment3),
-            displayBanner = false,
-            Some("example")
-          )(request, messages(application)).toString
+        whenReady(result.failed) { exp =>
+          exp mustBe a[IllegalStateException]
+          exp.getMessage mustBe "Unable to find period in financial data for expected period 2021-Q3"
         }
       }
     }
 
-    "when strategicReturnApiEnabled is false" - {
+    "must return OK and correct view when a correction exists" in {
 
-      "must return OK and correct view with the current period when a return for this period exists" in {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("features.strategic-returns.enabled" -> true)
+        .overrides(
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[ObligationsService].toInstance(mockObligationsService)
+        ).build()
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-          ).build()
+      when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(currentPayments).toFuture
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(etmpVatReturn).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+      when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
 
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-        when(mockVatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-          val result = route(application, request).value
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map(period3 -> payment3),
-            displayBanner = false
-          )(request, messages(application)).toString
-        }
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          Map(period3 -> payment3),
+          displayBanner = false
+        )(request, messages(application)).toString
       }
+    }
 
-      "must return OK and correct view with no-returns message when no returns exist" in {
+    "must return OK and correct view and add the external backToYourAccount url that has been saved" in {
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-          ).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .configure("features.strategic-returns.enabled" -> true)
+        .overrides(
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[ObligationsService].toInstance(mockObligationsService)
+        ).build()
 
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(emptyPayments))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-        when(mockVatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq.empty)
+      when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Right(currentPayments).toFuture
+      when(mockVatReturnConnector.getEtmpVatReturn(any())(any())) thenReturn Seq(etmpVatReturn).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(Some("example"))).toFuture
+      when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq(etmpObligationDetails).toFuture
 
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+      running(application) {
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
-          val result = route(application, request).value
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map.empty,
-            displayBanner = false
-          )(request, messages(application)).toString
-        }
-      }
-
-      "must throw an exception when an unexpected result is returned" in {
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-          ).build()
-
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Future.failed(new Exception("Some Exception"))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          whenReady(result.failed) { exp => exp mustBe a[Exception] }
-        }
-      }
-
-      "must throw an exception when the connector returns Left(ErrorResponse)" in {
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-          ).build()
-
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(123, "error")))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          whenReady(result.failed) { exp => exp mustBe a[Exception] }
-        }
-      }
-
-      "must return OK and correct view when a vat return exists but no charge is found" in {
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-          ).build()
-
-        when(mockFinancialDataConnector.getFinancialData(any())(any()))
-          .thenReturn(Future.successful(Right(unknownPayment)))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-        when(mockVatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(completeVatReturn))
-
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-          val result = route(application, request).value
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map(period3 -> unknownPaymentAmount),
-            displayBanner = true
-          )(request, messages(application)).toString
-        }
-      }
-
-      "must throw an IllegalStateException when a nil vat return exists and no charge is found" in {
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-          ).build()
-
-        when(mockFinancialDataConnector.getFinancialData(any())(any()))
-          .thenReturn(Future.successful(Right(emptyPayments)))
-        when(mockVatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-        when(mockVatReturnConnector.get(eqTo(period3))(any())) thenReturn Future.successful(Right(emptyVatReturn))
-
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-          val result = route(application, request).value
-
-          whenReady(result.failed) { exp =>
-            exp mustBe a[IllegalStateException]
-            exp.getMessage mustBe "Unable to find period in financial data for expected period 2021-Q3"
-          }
-        }
-      }
-
-      "must return OK and correct view when a correction exists" in {
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-          ).build()
-
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
-        when(mockVatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-          val result = route(application, request).value
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map(period3 -> payment3),
-            displayBanner = false
-          )(request, messages(application)).toString
-        }
-      }
-
-      "must return OK and correct view and add the external backToYourAccount url that has been saved" in {
-
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-          ).build()
-
-        when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn Future.successful(Right(currentPayments))
-        when(mockVatReturnConnector.getSubmittedVatReturns()(any())) thenReturn Future.successful(Seq(emptyVatReturn))
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
-
-        running(application) {
-          val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
-
-          val result = route(application, request).value
-          val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
-
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            Map(period3 -> payment3),
-            displayBanner = false,
-            Some("example")
-          )(request, messages(application)).toString
-        }
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          Map(period3 -> payment3),
+          displayBanner = false,
+          Some("example")
+        )(request, messages(application)).toString
       }
     }
   }
