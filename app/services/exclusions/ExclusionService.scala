@@ -41,11 +41,7 @@ class ExclusionService @Inject()(
       case Some(excludedTrader) =>
         obligationsService.getFulfilledObligations(excludedTrader.vrn).map { obligations =>
           val periods = obligations.map(obligation => Period.fromEtmpPeriodKey(obligation.periodKey))
-          if (periods.contains(excludedTrader.finalReturnPeriod)) {
-            true
-          } else {
-            false
-          }
+          periods.contains(excludedTrader.finalReturnPeriod)
         }
       case _ => Future.successful(false)
     }
