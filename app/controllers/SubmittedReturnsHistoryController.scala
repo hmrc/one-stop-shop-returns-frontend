@@ -17,7 +17,6 @@
 package controllers
 
 import config.Constants.submittedReturnsPeriodsLimit
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import connectors.financialdata.FinancialDataConnector
 import controllers.actions.*
@@ -37,7 +36,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class SubmittedReturnsHistoryController @Inject()(
                                                    cc: AuthenticatedControllerComponents,
-                                                   config: FrontendAppConfig,
                                                    view: SubmittedReturnsHistoryView,
                                                    financialDataConnector: FinancialDataConnector,
                                                    vatReturnConnector: VatReturnConnector,
@@ -50,13 +48,11 @@ class SubmittedReturnsHistoryController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      val submittedVatReturnsFuture = if (config.strategicReturnApiEnabled) {
+      val submittedVatReturnsFuture = {
         obligationService.getFulfilledObligations(request.vrn).map { obligations =>
           obligations.map(obligation =>
             Period.fromEtmpPeriodKey(obligation.periodKey))
         }
-      } else {
-        vatReturnConnector.getSubmittedVatReturns().map(_.map(_.period))
       }
       for {
         maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()

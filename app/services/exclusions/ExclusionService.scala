@@ -17,7 +17,6 @@
 package services.exclusions
 
 import config.FrontendAppConfig
-import connectors.VatReturnConnector
 import logging.Logging
 import models.Period
 import models.exclusions.ExclusionViewType.*
@@ -32,7 +31,6 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ExclusionService @Inject()(
-                                  connector: VatReturnConnector,
                                   frontendAppConfig: FrontendAppConfig,
                                   obligationsService: ObligationsService,
                                   clock: Clock
@@ -41,20 +39,9 @@ class ExclusionService @Inject()(
   def hasSubmittedFinalReturn(registration: Registration)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     registration.excludedTrader match {
       case Some(excludedTrader) =>
-        if (frontendAppConfig.strategicReturnApiEnabled) {
-          obligationsService.getFulfilledObligations(excludedTrader.vrn).map { obligations =>
-            val periods = obligations.map(obligation => Period.fromEtmpPeriodKey(obligation.periodKey))
-            if (periods.contains(excludedTrader.finalReturnPeriod)) {
-              true
-            } else {
-              false
-            }
-          }
-        } else {
-          connector.get(excludedTrader.finalReturnPeriod).map {
-            case Right(_) => true
-            case _ => false
-          }
+        obligationsService.getFulfilledObligations(excludedTrader.vrn).map { obligations =>
+          val periods = obligations.map(obligation => Period.fromEtmpPeriodKey(obligation.periodKey))
+          periods.contains(excludedTrader.finalReturnPeriod)
         }
       case _ => Future.successful(false)
     }

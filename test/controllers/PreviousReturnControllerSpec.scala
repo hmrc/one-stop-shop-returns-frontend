@@ -18,19 +18,16 @@ package controllers
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import connectors.corrections.CorrectionConnector
 import connectors.financialdata.FinancialDataConnector
 import models.Period.{fromEtmpPeriodKey, getPeriod}
-import models.Quarter.{Q1, Q3}
-import models.corrections.CorrectionPayload
-import models.domain.VatReturn
+import models.Quarter.Q1
 import models.etmp.{EtmpVatReturn, EtmpVatReturnCorrection}
 import models.exclusions.{ExcludedTrader, ExclusionReason}
 import models.external.ExternalEntryUrl
 import models.financialdata.Charge
-import models.responses.{UnexpectedResponseStatus, NotFound as NotFoundResponse}
+import models.responses.UnexpectedResponseStatus
 import models.{Country, PartialReturnPeriod, Period, StandardPeriod}
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
@@ -41,40 +38,29 @@ import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.VatReturnSalesService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle}
 import utils.FutureSyntax.FutureOps
 import viewmodels.govuk.summarylist.*
 import viewmodels.previousReturn.*
-import viewmodels.previousReturn.corrections.CorrectionSummary
-import views.html.{NewPreviousReturnView, PreviousReturnView}
+import views.html.NewPreviousReturnView
 
 import java.time.LocalDate
-import scala.concurrent.Future
 
 class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private val mockVatReturnConnector = mock[VatReturnConnector]
-  private val vatReturnSalesService = mock[VatReturnSalesService]
   private val mockFinancialDataConnector = mock[FinancialDataConnector]
-  private val correctionConnector = mock[CorrectionConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockVatReturnConnector)
-    Mockito.reset(vatReturnSalesService)
     Mockito.reset(mockFinancialDataConnector)
-    Mockito.reset(correctionConnector)
     super.beforeEach()
   }
-
-  private lazy val previousReturnRoute = routes.PreviousReturnController.onPageLoad(period).url
 
   private val countryFrom = arbitrary[Country].sample.value
   private val countryTo = arbitrary[Country].sample.value
 
-  private val vatReturn = arbitrary[VatReturn].sample.value
-  private val correctionPayload = arbitrary[CorrectionPayload].sample.value
   private val year = 2015
 
   private val baseAnswers = {
@@ -88,460 +74,6 @@ class PreviousReturnControllerSpec extends SpecBase with MockitoSugar with Befor
 
 
   "Previous Return Controller" - {
-
-    "legacy" - {
-
-      "must redirect to NoLongerAbleToViewReturnController when the return period is older than six years" in {
-
-        val period = StandardPeriod(year, Q1)
-
-        val application = applicationBuilder(Some(baseAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
-          )
-          .build()
-
-        running(application) {
-          val request = FakeRequest(GET, routes.PreviousReturnController.onPageLoad(period).url)
-
-          val result = route(application, request).value
-
-          status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.NoLongerAbleToViewReturnController.onPageLoad().url
-        }
-      }
-
-      "must return OK and the correct view for a GET with no banner" in {
-
-        val application = applicationBuilder(Some(baseAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector),
-          )
-          .build()
-
-        val vatOnSalesFromNi = BigDecimal(55)
-        val vatOnSalesFromEu = BigDecimal(44)
-        val correctionAmount = BigDecimal(25)
-        val totalVatOnSalesBeforeCorrection = vatOnSalesFromNi + vatOnSalesFromEu
-        val totalVatOnSalesAfterCorrection = totalVatOnSalesBeforeCorrection + correctionAmount
-
-        val clearedAmount = BigDecimal(3333.33)
-        val outstandingAmount = BigDecimal(2247.22)
-
-        val charge = Charge(StandardPeriod(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
-
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
-        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
-        when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSalesBeforeCorrection
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSalesAfterCorrection
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, previousReturnRoute)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[PreviousReturnView]
-          implicit val msgs: Messages = messages(application)
-          val summaryList = SummaryListViewModel(
-            rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSalesAfterCorrection, Some(outstandingAmount)))
-          val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-          val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-          val totalVatSummaryList = SummaryListViewModel(
-            rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection, hasCorrections = true))
-          val displayPayNow = true
-
-          status(result) `mustBe` OK
-          contentAsString(result) `mustBe` view(
-            vatReturn = vatReturn,
-            mainList = summaryList,
-            niSalesList = niSalesList,
-            euSalesList = euSalesList,
-            correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(Some(correctionPayload)),
-            declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(Some(correctionPayload), vatReturn),
-            totalVatList = Some(totalVatSummaryList),
-            displayPayNow = displayPayNow,
-            vatOwedInPence = (charge.outstandingAmount * 100).toLong,
-            displayBanner = false
-          )(request, implicitly).toString
-        }
-      }
-
-      "must return OK and the correct view for a GET with banner when charge is empty but expected" in {
-
-        val application = applicationBuilder(Some(baseAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
-          )
-          .build()
-
-        val vatOnSalesFromNi = BigDecimal(55)
-        val vatOnSalesFromEu = BigDecimal(44)
-        val totalVatOnSales = vatOnSalesFromNi + vatOnSalesFromEu
-
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-        when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
-        when(correctionConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, previousReturnRoute)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[PreviousReturnView]
-          implicit val msgs: Messages = messages(application)
-          val summaryList = SummaryListViewModel(
-            rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSales, None))
-          val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-          val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-          val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(None, vatReturn)
-          val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSales, hasCorrections = false))
-          val displayPayNow = true
-
-          status(result) `mustBe` OK
-          contentAsString(result) `mustBe` view(
-            vatReturn = vatReturn,
-            mainList = summaryList,
-            niSalesList = niSalesList,
-            euSalesList = euSalesList,
-            correctionsForPeriodList = None,
-            declaredVatAfterCorrections = declaredVatAfterCorrections,
-            totalVatList = Some(totalVatList),
-            displayPayNow = displayPayNow,
-            vatOwedInPence = (totalVatOnSales * 100).toLong,
-            displayBanner = true
-          )(request, implicitly).toString
-        }
-      }
-
-      "must return OK and the correct view for a GET without banner for nil return" in {
-
-        val application = applicationBuilder(Some(baseAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
-          )
-          .build()
-
-        val zero = BigDecimal(0)
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-        when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn zero
-        when(correctionConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, previousReturnRoute)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[PreviousReturnView]
-          implicit val msgs: Messages = messages(application)
-          val summaryList = SummaryListViewModel(
-            rows = PreviousReturnSummary.mainListRows(vatReturn, zero, None))
-          val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-          val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-          val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(None, vatReturn)
-          val displayPayNow = false
-          val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(zero, hasCorrections = false))
-
-          status(result) `mustBe` OK
-          contentAsString(result) `mustBe` view(
-            vatReturn = vatReturn,
-            mainList = summaryList,
-            niSalesList = niSalesList,
-            euSalesList = euSalesList,
-            correctionsForPeriodList = None,
-            declaredVatAfterCorrections = declaredVatAfterCorrections,
-            totalVatList = Some(totalVatList),
-            displayPayNow = displayPayNow,
-            vatOwedInPence = zero.toLong,
-            displayBanner = false
-          )(request, implicitly).toString
-        }
-      }
-
-      "must return OK and view without charge elements when unsuccessful ChargeResponse" in {
-
-        val application = applicationBuilder(Some(baseAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
-          )
-          .build()
-
-        val vatOnSalesFromNi = BigDecimal(55)
-        val vatOnSalesFromEu = BigDecimal(44)
-        val totalVatOnSales = vatOnSalesFromNi + vatOnSalesFromEu
-
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Left(NotFoundResponse).toFuture
-        when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSales
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(None))) thenReturn totalVatOnSales
-        when(correctionConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, previousReturnRoute)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[PreviousReturnView]
-          implicit val msgs: Messages = messages(application)
-          val summaryList = SummaryListViewModel(
-            rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSales, None))
-          val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-          val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-          val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(None, vatReturn)
-          val displayPayNow = true
-          val totalVatList = SummaryListViewModel(rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSales, hasCorrections = false))
-
-          status(result) `mustBe` OK
-          contentAsString(result) `mustBe` view(
-            vatReturn = vatReturn,
-            mainList = summaryList,
-            niSalesList = niSalesList,
-            euSalesList = euSalesList,
-            correctionsForPeriodList = None,
-            declaredVatAfterCorrections = declaredVatAfterCorrections,
-            totalVatList = Some(totalVatList),
-            displayPayNow = displayPayNow,
-            vatOwedInPence = (totalVatOnSales * 100).toLong,
-            displayBanner = true
-          )(request, implicitly).toString
-        }
-      }
-
-      "must return OK and correct view with nil return and a correction" in {
-
-        val application = applicationBuilder(Some(baseAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
-          )
-          .build()
-
-        val zero = BigDecimal(0)
-        val correctionAmount = BigDecimal(100)
-
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-        when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn zero
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
-        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, previousReturnRoute)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[PreviousReturnView]
-          implicit val msgs: Messages = messages(application)
-          val summaryList = SummaryListViewModel(
-            rows = PreviousReturnSummary.mainListRows(vatReturn, correctionAmount, None))
-          val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-          val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-          val correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(Some(correctionPayload))
-          val declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(Some(correctionPayload), vatReturn)
-          val totalVatSummaryList = SummaryListViewModel(
-            rows = PreviousReturnSummary.totalVatSummaryRows(correctionAmount, hasCorrections = true))
-          val displayPayNow = true
-
-          status(result) `mustBe` OK
-          contentAsString(result) `mustBe` view(
-            vatReturn = vatReturn,
-            mainList = summaryList,
-            niSalesList = niSalesList,
-            euSalesList = euSalesList,
-            correctionsForPeriodList = correctionsForPeriodList,
-            declaredVatAfterCorrections = declaredVatAfterCorrections,
-            totalVatList = Some(totalVatSummaryList),
-            displayPayNow = displayPayNow,
-            vatOwedInPence = (correctionAmount * 100).toLong,
-            displayBanner = true
-          )(request, implicitly).toString
-        }
-      }
-
-      "must redirect to Your Account for a GET if vatReturnResult NotFound" in {
-
-        val application = applicationBuilder(Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
-          )
-          .build()
-
-        val correctionAmount = BigDecimal(100)
-
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Left(NotFoundResponse).toFuture
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
-        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, previousReturnRoute)
-
-          val result = route(application, request).value
-
-          status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.YourAccountController.onPageLoad().url
-        }
-      }
-
-      "must redirect to Journey Recovery when an unexpected error received from vat return" in {
-
-        val application = applicationBuilder(Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
-          )
-          .build()
-
-        val correctionAmount = BigDecimal(100)
-
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")).toFuture
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
-        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, previousReturnRoute)
-
-          val result = route(application, request).value
-
-          status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
-        }
-      }
-
-      "must redirect to Journey Recovery and throw an exception when an unexpected result is returned" in {
-
-        val application = applicationBuilder(Some(emptyUserAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
-          )
-          .build()
-
-        val correctionAmount = BigDecimal(100)
-
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Future.failed(new Exception("Some exception"))
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn correctionAmount
-        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, previousReturnRoute)
-
-          val result = route(application, request).value
-
-          status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
-        }
-      }
-
-      "must return OK and the correct view for a GET with no banner and add the external backToYourAccount url that has been saved" in {
-
-        val application = applicationBuilder(Some(baseAnswers))
-          .configure("features.strategic-returns.enabled" -> false)
-          .overrides(
-            bind[VatReturnConnector].toInstance(mockVatReturnConnector),
-            bind[VatReturnSalesService].toInstance(vatReturnSalesService),
-            bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[CorrectionConnector].toInstance(correctionConnector)
-          )
-          .build()
-
-        val vatOnSalesFromNi = BigDecimal(55)
-        val vatOnSalesFromEu = BigDecimal(44)
-        val correctionAmount = BigDecimal(25)
-        val totalVatOnSalesBeforeCorrection = vatOnSalesFromNi + vatOnSalesFromEu
-        val totalVatOnSalesAfterCorrection = totalVatOnSalesBeforeCorrection + correctionAmount
-
-        val clearedAmount = BigDecimal(3333.33)
-        val outstandingAmount = BigDecimal(2247.22)
-
-        val charge = Charge(StandardPeriod(2021, Q3), BigDecimal(7777.77), outstandingAmount, clearedAmount)
-
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
-        when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
-        when(correctionConnector.get(any())(any())) thenReturn Right(correctionPayload).toFuture
-        when(vatReturnSalesService.getTotalVatOnSalesBeforeCorrection(any())) thenReturn totalVatOnSalesBeforeCorrection
-        when(vatReturnSalesService.getTotalVatOnSalesAfterCorrection(any(), eqTo(Some(correctionPayload)))) thenReturn totalVatOnSalesAfterCorrection
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(Some("example"))).toFuture
-
-        running(application) {
-          val request = FakeRequest(GET, previousReturnRoute)
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[PreviousReturnView]
-          implicit val msgs: Messages = messages(application)
-          val summaryList = SummaryListViewModel(
-            rows = PreviousReturnSummary.mainListRows(vatReturn, totalVatOnSalesAfterCorrection, Some(outstandingAmount)))
-          val niSalesList = SaleAtVatRateSummary.getAllNiSales(vatReturn)
-          val euSalesList = SaleAtVatRateSummary.getAllEuSales(vatReturn)
-          val totalVatSummaryList = SummaryListViewModel(
-            rows = PreviousReturnSummary.totalVatSummaryRows(totalVatOnSalesAfterCorrection, hasCorrections = true))
-          val displayPayNow = true
-
-          status(result) `mustBe` OK
-          contentAsString(result) `mustBe` view(
-            vatReturn = vatReturn,
-            mainList = summaryList,
-            niSalesList = niSalesList,
-            euSalesList = euSalesList,
-            correctionsForPeriodList = CorrectionSummary.getCorrectionPeriods(Some(correctionPayload)),
-            declaredVatAfterCorrections = CorrectionSummary.getDeclaredVat(Some(correctionPayload), vatReturn),
-            totalVatList = Some(totalVatSummaryList),
-            displayPayNow = displayPayNow,
-            vatOwedInPence = (charge.outstandingAmount * 100).toLong,
-            displayBanner = false,
-            Some("example")
-          )(request, implicitly).toString
-        }
-      }
-    }
 
     "new" - {
 
