@@ -17,11 +17,9 @@
 package models
 
 import play.api.libs.json.*
-import queries.{Derivable, Gettable, Settable}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
-import scala.util.{Failure, Success, Try}
 
 case class EncryptedUserAnswers(
                               userId: String,
