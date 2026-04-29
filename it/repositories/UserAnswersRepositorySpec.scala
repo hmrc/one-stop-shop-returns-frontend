@@ -1,9 +1,12 @@
 package repositories
 
+import com.typesafe.config.Config
 import config.FrontendAppConfig
+import crypto.UserAnswersEncryptor
 import generators.Generators
-import models.{StandardPeriod, UserAnswers}
+import models.{EncryptedUserAnswers, StandardPeriod, UserAnswers}
 import models.Quarter.{Q3, Q4}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues
@@ -11,6 +14,8 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.Configuration
+import services.crypto.EncryptionService
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.{Clock, Instant, ZoneId}
@@ -20,7 +25,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class UserAnswersRepositorySpec
   extends AnyFreeSpec
     with Matchers
-    with DefaultPlayMongoRepositorySupport[UserAnswers]
+    with DefaultPlayMongoRepositorySupport[EncryptedUserAnswers]
     with ScalaFutures
     with IntegrationPatience
     with OptionValues
@@ -33,11 +38,22 @@ class UserAnswersRepositorySpec
   private val mockAppConfig = mock[FrontendAppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L
 
+  private val mockConfiguration = mock[Configuration]
+  private val mockConfig = mock[Config]
+  private val mockEncryptionService: EncryptionService = new EncryptionService(mockConfiguration)
+  private val encryptor = new UserAnswersEncryptor(mockAppConfig, mockEncryptionService)
+  private val secretKey: String = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
+
   protected override val repository: UserAnswersRepository = new UserAnswersRepository(
     mongoComponent = mongoComponent,
     appConfig = mockAppConfig,
+    encryptor = encryptor,
     clock = stubClock
   )
+
+  when(mockConfiguration.underlying) thenReturn mockConfig
+  when(mockConfig.getString(any())) thenReturn secretKey
+  when(mockAppConfig.encryptionKey) thenReturn secretKey
 
   ".set" - {
 
@@ -45,12 +61,13 @@ class UserAnswersRepositorySpec
 
       val answers = UserAnswers("id", StandardPeriod(2021, Q3))
       val expectedResult = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
+      val encryptedExpectedResult = encryptor.encryptUserAnswers(expectedResult)
 
       val setResult     = repository.set(answers).futureValue
       val updatedRecord = find(Filters.equal("userId", answers.userId)).futureValue.headOption.value
 
       setResult mustEqual true
-      updatedRecord mustEqual expectedResult
+      updatedRecord mustEqual encryptedExpectedResult
     }
   }
 
@@ -62,8 +79,8 @@ class UserAnswersRepositorySpec
 
         val answers = UserAnswers("id", StandardPeriod(2021, Q3))
         val otherAnswers = UserAnswers("id", StandardPeriod(2021, Q4))
-        insert(answers).futureValue
-        insert(otherAnswers).futureValue
+        insert(encryptor.encryptUserAnswers(answers)).futureValue
+        insert(encryptor.encryptUserAnswers(otherAnswers)).futureValue
 
         val result         = repository.get(answers.userId, StandardPeriod(2021, Q3)).futureValue
         val expectedResult = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
@@ -77,7 +94,7 @@ class UserAnswersRepositorySpec
       "must return None" in {
 
         val answers = UserAnswers("id", StandardPeriod(2021, Q3))
-        insert(answers).futureValue
+        insert(encryptor.encryptUserAnswers(answers)).futureValue
 
         repository.get("id", StandardPeriod(2021, Q4)).futureValue must not be defined
       }
@@ -92,7 +109,7 @@ class UserAnswersRepositorySpec
 
       val answers = UserAnswers("id", period)
 
-      insert(answers).futureValue
+      insert(encryptor.encryptUserAnswers(answers)).futureValue
 
       val result = repository.clear(answers.userId).futureValue
 
@@ -115,8 +132,8 @@ class UserAnswersRepositorySpec
 
         val answers = UserAnswers("id", StandardPeriod(2021, Q3))
         val otherAnswers = UserAnswers("id", StandardPeriod(2021, Q4))
-        insert(answers).futureValue
-        insert(otherAnswers).futureValue
+        insert(encryptor.encryptUserAnswers(answers)).futureValue
+        insert(encryptor.encryptUserAnswers(otherAnswers)).futureValue
 
         val result = repository.keepAlive("id").futureValue
 
@@ -125,9 +142,11 @@ class UserAnswersRepositorySpec
           otherAnswers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
         )
 
+        val encryptedExpectedUpdatedAnswers = expectedUpdatedAnswers.map(encryptor.encryptUserAnswers)
+
         result mustEqual true
         val updatedAnswers = find(Filters.equal("userId", "id")).futureValue
-        updatedAnswers must contain theSameElementsAs expectedUpdatedAnswers
+        updatedAnswers must contain theSameElementsAs encryptedExpectedUpdatedAnswers
       }
     }
 

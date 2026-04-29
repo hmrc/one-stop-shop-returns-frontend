@@ -32,6 +32,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val appName: String = configuration.get[String]("appName")
   val origin: String  = configuration.get[String]("origin")
 
+  val encryptionKey: String = configuration.get[String]("mongodb.encryption.key")
+
   private val contactHost = configuration.get[String]("contact-frontend.host")
   private val contactFormServiceIdentifier = "one-stop-shop-returns-frontend"
 
