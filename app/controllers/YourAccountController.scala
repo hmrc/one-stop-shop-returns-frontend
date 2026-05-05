@@ -159,6 +159,7 @@ class YourAccountController @Inject()(
     } yield {
       val hasDueReturnThreeYearsOld = ReturnsUtils.hasReturnThreeYearsOld(excludedReturns)
       val hasDueReturnsLessThanThreeYearsOld = ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
+      val rejoinDateIsBeforeToday: Boolean = excludedTraderOpt.exists(_.rejoinDate.isBefore(LocalDate.now(clock)))
 
       Ok(view(
         request.registration.registeredCompanyName,
@@ -185,7 +186,8 @@ class YourAccountController @Inject()(
         hasDueReturnThreeYearsOld,
         hasDueReturnsLessThanThreeYearsOld,
         hasDeregisteredFromVat,
-        userResearchUrl
+        userResearchUrl,
+        rejoinDateIsBeforeToday
       ))
     }
   }
@@ -212,6 +214,7 @@ class YourAccountController @Inject()(
     } yield {
       val hasDueReturnThreeYearsOld = ReturnsUtils.hasReturnThreeYearsOld(excludedReturns)
       val hasDueReturnsLessThanThreeYearsOld = ReturnsUtils.hasDueReturnsLessThanThreeYearsOld(returns)
+      val rejoinDateIsBeforeToday: Boolean = excludedTraderOpt.exists(_.rejoinDate.isBefore(LocalDate.now(clock)))
 
       Ok(view(
         request.registration.registeredCompanyName,
@@ -236,7 +239,8 @@ class YourAccountController @Inject()(
         hasDueReturnThreeYearsOld,
         hasDueReturnsLessThanThreeYearsOld,
         hasDeregisteredFromVat,
-        userResearchUrl
+        userResearchUrl,
+        rejoinDateIsBeforeToday
       ))
     }
   }

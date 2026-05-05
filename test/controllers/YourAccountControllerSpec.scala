@@ -192,7 +192,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual true
@@ -272,7 +273,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
           }
         }
@@ -349,7 +351,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
           }
         }
@@ -427,7 +430,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
           }
         }
@@ -509,7 +513,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
           }
         }
@@ -586,7 +591,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
         }
       }
@@ -669,7 +675,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
         }
       }
@@ -755,7 +762,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
           }
         }
@@ -841,7 +849,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
 
           }
@@ -931,7 +940,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
           }
         }
@@ -1006,7 +1016,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
           }
         }
@@ -1088,7 +1099,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
           }
         }
@@ -1172,7 +1184,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
         }
       }
@@ -1247,7 +1260,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, messages(application)).toString
 
         }
@@ -1387,7 +1401,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = true,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, messages(application)).toString
 
           contentAsString(result).contains("leave-this-service") mustEqual false
@@ -1468,7 +1483,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1562,7 +1578,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = true,
             hasDeregisteredFromVat = true,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1669,7 +1686,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = true,
             hasDueReturnsLessThanThreeYearsOld = true,
             hasDeregisteredFromVat = true,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1770,7 +1788,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = true,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1866,7 +1885,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -1965,7 +1985,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = true,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -2045,7 +2066,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
           contentAsString(result).contains("cancel-request-to-leave") mustEqual true
         }
@@ -2149,7 +2171,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasDueReturnThreeYearsOld = false,
                 hasDueReturnsLessThanThreeYearsOld = true,
                 hasDeregisteredFromVat = false,
-                "https://test-url.com"
+                "https://test-url.com",
+                rejoinDateIsBeforeToday = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2249,7 +2272,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasDueReturnThreeYearsOld = false,
                 hasDueReturnsLessThanThreeYearsOld = true,
                 hasDeregisteredFromVat = false,
-                "https://test-url.com"
+                "https://test-url.com",
+                rejoinDateIsBeforeToday = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual true
             }
@@ -2345,7 +2369,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 hasDueReturnThreeYearsOld = false,
                 hasDueReturnsLessThanThreeYearsOld = true,
                 hasDeregisteredFromVat = false,
-                "https://test-url.com"
+                "https://test-url.com",
+                rejoinDateIsBeforeToday = false
               )(request, msgs).toString
               contentAsString(result).contains("cancel-request-to-leave") mustEqual false
             }
@@ -2447,7 +2472,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = true,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2547,7 +2573,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               hasDueReturnThreeYearsOld = false,
               hasDueReturnsLessThanThreeYearsOld = false,
               hasDeregisteredFromVat = false,
-              "https://test-url.com"
+              "https://test-url.com",
+              rejoinDateIsBeforeToday = false
             )(request, msgs).toString
             contentAsString(result).contains("cancel-request-to-leave") mustEqual true
           }
@@ -2638,7 +2665,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = true,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, messages(application)).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2718,7 +2746,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
@@ -2807,9 +2836,98 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnThreeYearsOld = false,
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
-            "https://test-url.com"
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = false
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
+        }
+      }
+
+      "has submitted final return and shows removed from service message when rejoin date is before today" in {
+
+        val instant = Instant.parse("2024-04-02T12:00:00Z")
+        val clock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+        val nextPeriod = StandardPeriod(2021, Q4)
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                inProgress = false,
+                isOldest = false
+              ))))
+          )
+
+        when(financialDataConnector.getFinancialData(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentPayments(Seq.empty, Seq.empty, Seq.empty, Seq.empty, BigDecimal(0), BigDecimal(0))))
+
+        when(sessionRepository.get(any())) thenReturn Future.successful(Seq())
+        when(sessionRepository.set(any())) thenReturn Future.successful(true)
+        when(save4LaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+        when(registrationConnector.get()(any())) thenReturn Future.successful(Some(registration))
+        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
+        when(mockExclusionService.hasSubmittedFinalReturn(any())(any(), any())) thenReturn Future.successful(true)
+        when(mockExclusionService.currentReturnIsFinal(any(), any())(any(), any())) thenReturn Future.successful(false)
+        when(mockExclusionService.getLink(any())(any())) thenReturn None
+
+        val application = applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          clock = Some(clock),
+          registration = registration.copy(excludedTrader = excludedTraderQuarantined)
+        )
+          .configure("urls.userResearch1" -> "https://test-url.com")
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[UserAnswersRepository].toInstance(sessionRepository),
+            bind[SaveForLaterConnector].toInstance(save4LaterConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector),
+            bind[ExclusionService].toInstance(mockExclusionService)
+          )
+          .build()
+
+        running(application) {
+          implicit val msgs: Messages = messages(application)
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad().url)
+          val registrationRequest = RegistrationRequest(request, credentials = testCredentials, vrn = vrn, registration = registration)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[IndexView]
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+
+          contentAsString(result) mustEqual view(
+            registration.registeredCompanyName,
+            registration.vrn.vrn,
+            ReturnsViewModel(
+              Seq(Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)),
+              Seq.empty
+            )(messages(application), clock),
+            PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, hasDueReturnThreeYearsOld = false)(messages(application), clock, registrationRequest),
+            paymentError = false,
+            excludedTraderQuarantined,
+            hasSubmittedFinalReturn = true,
+            currentReturnIsFinal = false,
+            config.amendRegistrationEnabled,
+            amendRegistrationUrl,
+            hasRequestedToLeave = false,
+            None,
+            hasDueReturnThreeYearsOld = false,
+            hasDueReturnsLessThanThreeYearsOld = false,
+            hasDeregisteredFromVat = false,
+            "https://test-url.com",
+            rejoinDateIsBeforeToday = true
+          )(request, msgs).toString
         }
       }
     }
