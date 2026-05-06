@@ -40,7 +40,8 @@
         hasDueReturnThreeYearsOld: Boolean,
         hasDueReturnsLessThanThreeYearsOld: Boolean,
         hasDeregisteredFromVat: Boolean,
-        userResearchUrl: String
+        userResearchUrl: String,
+        rejoinDateIsBeforeToday: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(
@@ -84,6 +85,10 @@
                                         <p class="govuk-body govuk-!-font-weight-bold">
                                             @messages("yourAccount.warning.removedFromService") <br>
                                             @messages("yourAccount.warning.deregisteredTrader")
+                                        </p>
+                                    } else if(rejoinDateIsBeforeToday) {
+                                        <p class="govuk-body govuk-!-font-weight-bold">
+                                            @messages("yourAccount.warning.removedFromService")
                                         </p>
                                     } else {
                                         <p class="govuk-body govuk-!-font-weight-bold">@messages("yourAccount.warning.quarantineUser", excludedTrader.displayRejoinDate)</p>
@@ -132,9 +137,20 @@
                         case (FailsToComply, _) if hasDeregisteredFromVat => {
                             @govukWarningText(WarningText(
                                 iconFallbackText = Option(messages("site.warning")),
-                                content = HtmlContent(messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate) ++ "<br>" ++
-                                        messages("yourAccount.warning.deregisteredTrader")
+                                content = HtmlContent(if(rejoinDateIsBeforeToday) {
+                                        messages("yourAccount.warning.exclusion.hmrc") ++ "<br>" ++
+                                            messages("yourAccount.warning.deregisteredTrader")
+                                    } else {
+                                        messages("yourAccount.warning.exclusion.quarantineUser", excludedTrader.displayRejoinDate) ++ "<br>" ++
+                                            messages("yourAccount.warning.deregisteredTrader")
+                                    }
                                 )
+                            ))
+                        }
+                        case (FailsToComply, _) if(rejoinDateIsBeforeToday) => {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.warning.exclusion.hmrc"))
                             ))
                         }
                         case (FailsToComply, _) => {
