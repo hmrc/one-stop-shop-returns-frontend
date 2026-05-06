@@ -2747,7 +2747,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasDueReturnsLessThanThreeYearsOld = false,
             hasDeregisteredFromVat = false,
             "https://test-url.com",
-            rejoinDateIsBeforeToday = false
+            rejoinDateIsBeforeToday = true
           )(request, msgs).toString
           contentAsString(result).contains("leave-this-service") mustEqual false
         }
