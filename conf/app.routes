@@ -340,3 +340,8 @@ GET         /start-return                                                       
 GET         /no-returns-due                                                                                         controllers.NoReturnsDueController.onPageLoad()
 
 GET         /intercept-unusable-email                                                                               controllers.InterceptUnusableEmailController.onPageLoad()
+
+GET        /:period/want-to-upload-file                                                                             controllers.fileUpload.WantToUploadFileController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/want-to-upload-file                                                                             controllers.fileUpload.WantToUploadFileController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/changeWantToUploadFile                                                                          controllers.fileUpload.WantToUploadFileController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/changeWantToUploadFile                                                                          controllers.fileUpload.WantToUploadFileController.onSubmit(mode: Mode = CheckMode, period: Period)
