@@ -656,3 +656,11 @@ interceptUnusableEmail.confirm = Confirm email address
 
 userResearch.heading = Help us improve the service
 userResearch.link.text = Sign up to take part in research about the One Stop Shop service.
+
+wantToUploadFile.title = Do you want to upload a file with these return details?
+wantToUploadFile.heading = Do you want to upload a file with these return details?
+wantToUploadFile.yes = Yes
+wantToUploadFile.no = No, enter them myself
+wantToUploadFile.checkYourAnswersLabel = Want to upload a file
+wantToUploadFile.error.required = Select yes if you want to upload a file
+wantToUploadFile.change.hidden = WantToUploadFile
