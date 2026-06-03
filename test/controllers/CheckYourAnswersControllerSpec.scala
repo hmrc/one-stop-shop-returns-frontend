@@ -379,11 +379,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .overrides(
               bind[VatReturnService].toInstance(vatReturnService),
               bind[VatReturnConnector].toInstance(vatReturnConnector),
-              bind[AuditService].toInstance(auditService)
+              bind[AuditService].toInstance(auditService),
+              bind[SaveForLaterConnector].toInstance(s4lConnector)
             ).build()
 
         when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
         when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(ConflictFound))
+        when(s4lConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(SavedUserAnswers(vrn, period, answers.data, answers.lastUpdated))))
         doNothing().when(auditService).audit(any())(any(), any())
 
         running(app) {
@@ -394,7 +396,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Duplicate, None, None, dataRequest)
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.ReceivedErrorFromCoreController.onPageLoad().url
           verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
@@ -415,11 +417,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .overrides(
                 bind[VatReturnService].toInstance(vatReturnService),
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
-                bind[AuditService].toInstance(auditService)
+                bind[AuditService].toInstance(auditService),
+                bind[SaveForLaterConnector].toInstance(s4lConnector)
               ).build()
 
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
           when(vatReturnConnector.submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(s4lConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(SavedUserAnswers(vrn, period, answers.data, answers.lastUpdated))))
           doNothing().when(auditService).audit(any())(any(), any())
 
           running(app) {
@@ -430,7 +434,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               ReturnsAuditModel.build(vatReturnRequest, Some(correctionRequest), SubmissionResult.Failure, None, None, dataRequest)
 
             status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+            redirectLocation(result).value mustEqual routes.ReceivedErrorFromCoreController.onPageLoad().url
             verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
           }
         }
@@ -528,12 +532,15 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
                 bind[VatReturnService].toInstance(vatReturnService),
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
                 bind[AuditService].toInstance(auditService),
-                bind[CorrectionService].toInstance(correctionService)
+                bind[CorrectionService].toInstance(correctionService),
+                bind[SaveForLaterConnector].toInstance(s4lConnector)
               ).build()
 
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
           when(vatReturnConnector.submitWithCorrections(any[VatReturnWithCorrectionRequest]())(any())) thenReturn Future.successful(Left(ConflictFound))
           when(correctionService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(correctionRequest)
+          when(s4lConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(SavedUserAnswers(vrn, period, answers.data, answers.lastUpdated))))
+
           doNothing().when(auditService).audit(any())(any(), any())
 
           running(app) {
@@ -544,7 +551,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               ReturnsAuditModel.build(vatReturnRequest, Some(correctionRequest), SubmissionResult.Duplicate, None, None, dataRequest)
 
             status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+            redirectLocation(result).value mustEqual routes.ReceivedErrorFromCoreController.onPageLoad().url
             verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
           }
         }
@@ -559,11 +566,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               .overrides(
                 bind[VatReturnService].toInstance(vatReturnService),
                 bind[VatReturnConnector].toInstance(vatReturnConnector),
-                bind[AuditService].toInstance(auditService)
+                bind[AuditService].toInstance(auditService),
+                bind[SaveForLaterConnector].toInstance(s4lConnector)
               ).build()
 
           when(vatReturnService.fromUserAnswers(any(), any(), any(), any())) thenReturn Valid(vatReturnRequest)
           when(vatReturnConnector.submit(any[VatReturnRequest]())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "foo")))
+          when(s4lConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(SavedUserAnswers(vrn, period, emptyUserAnswers.data, emptyUserAnswers.lastUpdated))))
           doNothing().when(auditService).audit(any())(any(), any())
 
           running(app) {
@@ -573,7 +582,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val expectedAuditEvent = ReturnsAuditModel.build(vatReturnRequest, None, SubmissionResult.Failure, None, None, dataRequest)
 
             status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+            redirectLocation(result).value mustEqual routes.ReceivedErrorFromCoreController.onPageLoad().url
             verify(auditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
           }
         }
