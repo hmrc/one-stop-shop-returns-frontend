@@ -52,7 +52,7 @@ object VatReturnWithCorrectionHttpParser extends Logging {
         case status if response.json.validate[CoreErrorResponse].isSuccess =>
           logger.warn(s"Received error when submitting to core with status $status and body ${response.body}")
           Left(ReceivedErrorFromCore)
-        case status   =>
+        case status =>
           logger.warn("Received unexpected error from vat return")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }
