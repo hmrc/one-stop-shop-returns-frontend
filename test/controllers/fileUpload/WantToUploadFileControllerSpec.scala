@@ -27,6 +27,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.UserAnswersRepository
+import services.PartialReturnPeriodService
 import views.html.fileUpload.WantToUploadFileView
 
 import scala.concurrent.Future
@@ -35,6 +36,8 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new WantToUploadFileFormProvider()
   private val form = formProvider()
+
+  private val mockPartialReturnPeriodService = mock[PartialReturnPeriodService]
 
   private lazy val wantToUploadFileRoute = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period).url
 
@@ -79,10 +82,12 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
       val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
           .build()
 
       running(application) {
@@ -104,10 +109,12 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
       val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
           .build()
 
       running(application) {
