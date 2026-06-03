@@ -20,8 +20,8 @@ import base.SpecBase
 import controllers.routes
 import forms.FileUploadFormProvider
 import models.NormalMode
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import pages.fileUpload.FileUploadPage
 import play.api.inject.bind
@@ -172,7 +172,7 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "Redirect to journey recovery with no answers" in {
-      
+
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
@@ -181,7 +181,7 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        
+
         redirectLocation(result).value `mustBe` controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
