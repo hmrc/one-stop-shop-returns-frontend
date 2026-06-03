@@ -150,4 +150,40 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
       }
     }
   }
+
+  "downloadTemplate" - {
+
+    "return OK" in {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, controllers.fileUpload.routes.FileUploadController.downloadTemplate(period).url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+
+        whenReady(result) { response =>
+          val headers: Option[String] = response.header.headers.get("Content-Disposition")
+
+          headers mustBe Some("""attachment; filename="OSS return template.ods"""")
+        }
+      }
+    }
+
+    "Redirect to journey recovery with no answers" in {
+      
+      val application = applicationBuilder(userAnswers = None).build()
+
+      running(application) {
+        val request = FakeRequest(GET, controllers.fileUpload.routes.FileUploadController.downloadTemplate(period).url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        
+        redirectLocation(result).value `mustBe` controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+  }
 }
