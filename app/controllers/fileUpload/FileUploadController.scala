@@ -22,6 +22,7 @@ import models.{Mode, Period}
 import pages.fileUpload.{FileUploadPage, FileUploadedPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.Environment
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.fileUpload.FileUploadView
 
@@ -31,7 +32,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class FileUploadController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: FileUploadFormProvider,
-                                       view: FileUploadView
+                                       view: FileUploadView,
+                                       environment: Environment
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
@@ -61,5 +63,14 @@ class FileUploadController @Inject()(
             _              <- cc.sessionRepository.set(cleanup)
           } yield Redirect(FileUploadPage.navigate(mode, cleanup))
       )
+  }
+  
+  def downloadTemplate(period: Period): Action[AnyContent] = cc.authAndGetData(period).async { _=>
+    Future.successful(
+      Ok.sendFile(
+        content = environment.getFile("conf/template/OSS return template.ods"),
+        inline = false
+      )
+    )
   }
 }

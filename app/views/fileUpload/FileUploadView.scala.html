@@ -47,7 +47,7 @@
         <p class="govuk-body">@messages("fileUpload.paragraph")</p>
 
         <ol class="govuk-list govuk-list--number">
-            <li>@Html(messages("fileUpload.bullet1"))</li>
+            <li>@Html(messages("fileUpload.bullet1", controllers.fileUpload.routes.FileUploadController.downloadTemplate(period)))</li>
             <li>@messages("fileUpload.bullet2")</li>
             <li>@messages("fileUpload.bullet3")</li>
 
