@@ -23,13 +23,15 @@ import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.TryValues
 import pages.*
 import pages.corrections.*
-import pages.fileUpload.WantToUploadFilePage
+import pages.fileUpload.{FileUploadPage, FileUploadedPage, WantToUploadFilePage}
 import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersGenerator extends TryValues {
   self: Generators =>
 
   val generators: Seq[Gen[(QuestionPage[_], JsValue)]] =
+    arbitrary[(FileUploadedPage.type, JsValue)] ::
+    arbitrary[(FileUploadPage.type, JsValue)] ::
     arbitrary[(WantToUploadFilePage.type, JsValue)] ::
     arbitrary[(UndeclaredCountryCorrectionPage, JsValue)] ::
     arbitrary[(CountryVatCorrectionPage, JsValue)] ::

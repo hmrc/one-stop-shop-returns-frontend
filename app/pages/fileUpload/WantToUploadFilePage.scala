@@ -30,15 +30,15 @@ case object WantToUploadFilePage extends QuestionPage[Boolean] {
 
   override def navigateInNormalMode(answers: UserAnswers): Call = {
     answers.get(WantToUploadFilePage) match {
-      case Some(true) =>  controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period) //fileUploadPage
+      case Some(true) =>  controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
       case Some(false) => routes.SoldGoodsFromNiController.onPageLoad(NormalMode, answers.period)
-      case _          => routes.JourneyRecoveryController.onPageLoad()
+      case _ => routes.JourneyRecoveryController.onPageLoad()
     }
   }
 
   override def navigateInCheckMode(answers: UserAnswers): Call = {
     answers.get(WantToUploadFilePage) match {
-      case Some(true) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period) //fileUploadPage
+      case Some(true) => controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
       case Some(false) => routes.SoldGoodsFromNiController.onPageLoad(CheckMode, answers.period)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }

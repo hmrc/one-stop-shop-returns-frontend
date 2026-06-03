@@ -345,3 +345,13 @@ GET        /:period/want-to-upload-file                                         
 POST       /:period/want-to-upload-file                                                                             controllers.fileUpload.WantToUploadFileController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET        /:period/changeWantToUploadFile                                                                          controllers.fileUpload.WantToUploadFileController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST       /:period/changeWantToUploadFile                                                                          controllers.fileUpload.WantToUploadFileController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/file-upload                                                                                     controllers.fileUpload.FileUploadController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/file-upload                                                                                     controllers.fileUpload.FileUploadController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/change-file-upload                                                                              controllers.fileUpload.FileUploadController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/change-file-upload                                                                              controllers.fileUpload.FileUploadController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/file-uploaded                                                                                   controllers.fileUpload.FileUploadedController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /:period/file-uploaded                                                                                   controllers.fileUpload.FileUploadedController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /:period/change-file-uploaded                                                                            controllers.fileUpload.FileUploadedController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /:period/change-file-uploaded                                                                            controllers.fileUpload.FileUploadedController.onSubmit(mode: Mode = CheckMode, period: Period)

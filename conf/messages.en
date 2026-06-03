@@ -664,3 +664,33 @@ wantToUploadFile.no = No, enter them myself
 wantToUploadFile.checkYourAnswersLabel = Want to upload a file
 wantToUploadFile.error.required = Select yes if you want to upload a file
 wantToUploadFile.change.hidden = WantToUploadFile
+
+fileUpload.title = Upload the {0} return
+fileUpload.heading = Upload the {0} return
+fileUpload.caption = {0}
+fileUpload.paragraph = To upload the file:
+fileUpload.bullet1 = download the <a class="govuk-link" href="{0}">latest ODS version of the template</a>
+fileUpload.bullet2 = complete the VAT details and save the document as a CSV file
+fileUpload.bullet3 = upload the CSV file
+fileUpload.button = Upload
+fileUpload.checkYourAnswersLabel = file upload
+fileUpload.error.required = No file selected
+fileUpload.change.hidden = Upload a file
+
+fileUploaded.title = Submit your uploaded return for {0}
+fileUploaded.heading = Submit your uploaded return for {0}
+fileUploaded.caption = {0}
+fileUploaded.status.uploading = Uploading
+fileUploaded.status.uploaded = Uploaded
+fileUploaded.status.failed = Failed
+fileUploaded.subheading = Do you want to submit this file?
+fileUploaded.yes = Yes
+fileUploaded.no = No, I want to upload a different file
+fileUploaded.button = Submit and continue
+fileUploaded.failed.no = No, enter the return manually
+fileUploaded.checkYourAnswersLabel = file uploaded
+fileUploaded.error.required = Select yes if this is the correct file
+fileUploaded.failed.error.required = Select yes if you want to try uploading it again
+fileUploaded.change.hidden = File uploaded
+fileUploaded.uploading = Your file is uploading. This page will update automatically.
+

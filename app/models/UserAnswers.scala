@@ -52,6 +52,11 @@ final case class UserAnswers(
     }
   }
 
+  def isDefined(gettable: Gettable[_]): Boolean =
+    Reads.optionNoError(Reads.at[JsValue](gettable.path)).reads(data)
+      .map(_.isDefined)
+      .getOrElse(false)
+
   def remove[A](page: Settable[A]): Try[UserAnswers] = {
 
     val updatedData = data.removeObject(page.path) match {
