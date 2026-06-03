@@ -46,12 +46,12 @@ object VatReturnWithCorrectionHttpParser extends Logging {
             logger.warn("Received NotFound from vat return")
             Left(NotFound)
           }
-        case SERVICE_UNAVAILABLE if(response.json.validate[CoreErrorResponse].isSuccess) =>
-          logger.warn("Received error when submitting to core")
-          Left(ReceivedErrorFromCore)
         case CONFLICT =>
           logger.warn("Received Conflict from vat return")
           Left(ConflictFound)
+        case status if response.json.validate[CoreErrorResponse].isSuccess =>
+          logger.warn(s"Received error when submitting to core with status $status and body ${response.body}")
+          Left(ReceivedErrorFromCore)
         case status   =>
           logger.warn("Received unexpected error from vat return")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
