@@ -130,14 +130,33 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
       }
     }
 
-    "must return Left(UnexpectedResponseStatus) when the server response with an error code" in {
+    "must return Left(UnexpectedResponseStatus) when the server response with an core error code" in {
 
       running(application) {
         val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
 
         val connector = application.injector.instanceOf[VatReturnConnector]
 
-        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse()
+          .withStatus(INTERNAL_SERVER_ERROR)
+          .withBody("""{"different": "json"}""")))
+
+        val result = connector.submit(vatReturnRequest).futureValue
+
+        result.left.value mustBe an[UnexpectedResponseStatus]
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with an error with non-json" in {
+
+      running(application) {
+        val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse()
+          .withStatus(INTERNAL_SERVER_ERROR)
+          .withBody("Non-JsonBody")))
 
         val result = connector.submit(vatReturnRequest).futureValue
 
@@ -263,7 +282,28 @@ class VatReturnConnectorSpec extends SpecBase with WireMockHelper with EitherVal
 
         val connector = application.injector.instanceOf[VatReturnConnector]
 
-        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse()
+          .withStatus(INTERNAL_SERVER_ERROR)
+          .withBody("""{"different": "json"}""")))
+
+        val result = connector.submitWithCorrections(vatReturnWithCorrectionRequest).futureValue
+
+        result.left.value mustBe an[UnexpectedResponseStatus]
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with an error with non-json" in {
+
+      running(application) {
+        val vatReturnRequest = VatReturnRequest(vrn, period, None, None, List.empty, List.empty)
+        val correctionRequest = CorrectionRequest(vrn, period, List.empty)
+        val vatReturnWithCorrectionRequest = VatReturnWithCorrectionRequest(vatReturnRequest, correctionRequest)
+
+        val connector = application.injector.instanceOf[VatReturnConnector]
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse()
+          .withStatus(INTERNAL_SERVER_ERROR)
+          .withBody("Non-JsonBody")))
 
         val result = connector.submitWithCorrections(vatReturnWithCorrectionRequest).futureValue
 

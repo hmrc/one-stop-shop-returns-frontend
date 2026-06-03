@@ -240,32 +240,60 @@ class CheckYourAnswersController @Inject()(
       case Right((vatReturn: VatReturn, correctionPayload: CorrectionPayload)) =>
         auditAndRedirect(vatReturnRequest, correctionRequest, vatReturn, period, Some(correctionPayload))
       case Left(RegistrationNotFound) =>
-        auditService.audit(ReturnsAuditModel.build(
-          vatReturnRequest, correctionRequest, SubmissionResult.NotYetRegistered, None, None, request
-        ))
-        saveUserAnswersOnCoreError(period, routes.NoRegistrationFoundInCoreController.onPageLoad())
+        auditFailureAndSaveAndComeBackAndRedirect(
+          vatReturnRequest,
+          correctionRequest,
+          period,
+          SubmissionResult.NotYetRegistered,
+          routes.NoRegistrationFoundInCoreController.onPageLoad()
+        )
       case Left(ReceivedErrorFromCore) =>
-        auditService.audit(ReturnsAuditModel.build(
-          vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
-        ))
-        saveUserAnswersOnCoreError(period, routes.ReceivedErrorFromCoreController.onPageLoad())
+        auditFailureAndSaveAndComeBackAndRedirect(
+          vatReturnRequest,
+          correctionRequest,
+          period,
+          SubmissionResult.Failure,
+          routes.ReceivedErrorFromCoreController.onPageLoad()
+        )
       case Left(ConflictFound) =>
-        auditService.audit(ReturnsAuditModel.build(
-          vatReturnRequest, correctionRequest, SubmissionResult.Duplicate, None, None, request
-        ))
-        Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+        auditFailureAndSaveAndComeBackAndRedirect(
+          vatReturnRequest,
+          correctionRequest,
+          period,
+          SubmissionResult.Duplicate,
+          routes.ReceivedErrorFromCoreController.onPageLoad()
+        )
       case Left(e) =>
         logger.error(s"Unexpected result on submit: ${e.toString}")
-        auditService.audit(ReturnsAuditModel.build(
-          vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
-        ))
-        Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+        auditFailureAndSaveAndComeBackAndRedirect(
+          vatReturnRequest,
+          correctionRequest,
+          period,
+          SubmissionResult.Failure,
+          routes.ReceivedErrorFromCoreController.onPageLoad()
+        )
       case Right(_) | Right((_, _)) =>
-        auditService.audit(ReturnsAuditModel.build(
-          vatReturnRequest, correctionRequest, SubmissionResult.Failure, None, None, request
-        ))
-        Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+        auditFailureAndSaveAndComeBackAndRedirect(
+          vatReturnRequest,
+          correctionRequest,
+          period,
+          SubmissionResult.Failure,
+          routes.ReceivedErrorFromCoreController.onPageLoad()
+        )
     }
+  }
+
+  private def auditFailureAndSaveAndComeBackAndRedirect(
+                                                         vatReturnRequest: VatReturnRequest,
+                                                         correctionRequest: Option[CorrectionRequest],
+                                                         period: Period,
+                                                         submissionResult: SubmissionResult,
+                                                         redirectLocation: Call
+                                                       )(implicit hc: HeaderCarrier, request: DataRequest[AnyContent]) = {
+    auditService.audit(ReturnsAuditModel.build(
+      vatReturnRequest, correctionRequest, submissionResult, None, None, request
+    ))
+    saveUserAnswersOnCoreError(period, redirectLocation)
   }
 
   private def auditAndRedirect(

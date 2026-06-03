@@ -16,13 +16,16 @@
 
 package connectors
 
+import connectors.VatReturnHttpParser.logger
 import logging.Logging
 import models.corrections.CorrectionPayload
 import models.domain.VatReturn
-import models.responses._
-import play.api.http.Status._
+import models.responses.*
+import play.api.http.Status.*
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
+
+import scala.util.{Failure, Success, Try}
 
 object VatReturnWithCorrectionHttpParser extends Logging {
 
@@ -49,12 +52,20 @@ object VatReturnWithCorrectionHttpParser extends Logging {
         case CONFLICT =>
           logger.warn("Received Conflict from vat return")
           Left(ConflictFound)
-        case status if response.json.validate[CoreErrorResponse].isSuccess =>
-          logger.warn(s"Received error when submitting to core with status $status and body ${response.body}")
-          Left(ReceivedErrorFromCore)
         case status =>
-          logger.warn("Received unexpected error from vat return")
-          Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
+          Try(response.json.validate[CoreErrorResponse] match {
+            case JsSuccess(value, path) =>
+              logger.warn("Received error when submitting to core")
+              Left(ReceivedErrorFromCore)
+            case JsError(errors) =>
+              logger.warn(s"Error parsing error ${response.body}")
+              Left(UnexpectedResponseStatus(response.status, s"Unexpected response, unable to parse json ${response.json}"))
+          }) match {
+            case Success(value) => value
+            case Failure(exception) =>
+              logger.warn(s"Error with json ${response.body}")
+              Left(UnexpectedResponseStatus(response.status, s"Unexpected response, unable to read json ${response.body}"))
+          }
       }
     }
   }
