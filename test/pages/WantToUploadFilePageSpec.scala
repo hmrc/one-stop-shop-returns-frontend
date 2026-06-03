@@ -40,7 +40,7 @@ class WantToUploadFilePageSpec extends PageBehaviours {
           val answers = emptyUserAnswers.set(WantToUploadFilePage, true).success.value
 
           WantToUploadFilePage.navigate(NormalMode, answers)
-            .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period))
+            .mustEqual(controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period))
 
         }
       }
@@ -66,7 +66,7 @@ class WantToUploadFilePageSpec extends PageBehaviours {
           val answers = emptyUserAnswers.set(WantToUploadFilePage, true).success.value
 
           WantToUploadFilePage.navigate(CheckMode, answers)
-            .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period))
+            .mustEqual(controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period))
         }
       }
 

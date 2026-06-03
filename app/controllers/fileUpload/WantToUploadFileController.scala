@@ -18,7 +18,7 @@ package controllers.fileUpload
 
 import controllers.actions.*
 import forms.WantToUploadFileFormProvider
-import models.{Mode, Period, StandardPeriod, UserAnswers}
+import models.{Mode, Period, UserAnswers}
 import pages.fileUpload.WantToUploadFilePage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}

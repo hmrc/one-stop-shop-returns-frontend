@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.fileUpload
 
 import base.SpecBase
 import forms.WantToUploadFileFormProvider
