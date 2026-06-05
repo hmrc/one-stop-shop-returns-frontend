@@ -166,7 +166,7 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
         whenReady(result) { response =>
           val headers: Option[String] = response.header.headers.get("Content-Disposition")
 
-          headers mustBe Some("""attachment; filename="OSS return template.ods"""")
+          headers mustBe Some("""attachment; filename="OSS return templateOld.ods"""")
         }
       }
     }
