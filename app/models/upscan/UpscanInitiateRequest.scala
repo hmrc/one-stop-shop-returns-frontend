@@ -39,7 +39,15 @@ object UpscanUploadRequest {
 
 final case class UpscanFileReference(reference: String)
 
+object UpscanFileReference {
+  implicit val format: Format[UpscanFileReference] = Json.format[UpscanFileReference]
+}
+
 final case class UpscanInitiateResponse(fileReference: UpscanFileReference, postTarget: String, formFields: Map[String, String])
+
+object UpscanInitiateResponse {
+  implicit val format: Format[UpscanInitiateResponse] = Json.format[UpscanInitiateResponse]
+}
 
 final case class FileUploadOutcome(fileName: Option[String], status: String, failureReason: Option[String] = None)
 

@@ -16,14 +16,17 @@
 
 package controllers.fileUpload
 
+import connectors.UpscanInitiateConnector
 import controllers.actions.*
 import forms.FileUploadFormProvider
+import models.upscan.UpscanRedirectError
 import models.{Mode, Period}
-import pages.fileUpload.{FileUploadPage, FileUploadedPage}
-import play.api.i18n.I18nSupport
+import pages.fileUpload.{FileReferencePage, FileUploadedPage}
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.Environment
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.fileUpload.FileUploadView
 
 import javax.inject.Inject
@@ -33,36 +36,57 @@ class FileUploadController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: FileUploadFormProvider,
                                        view: FileUploadView,
+                                       upscanInitiateConnector: UpscanInitiateConnector,
                                        environment: Environment
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
       val period = request.userAnswers.period
-      
-      Ok(view(form, mode, period))
-  }
+      val redirectError = UpscanRedirectError.fromQuery(request)
+      val successUrl =
+        routes.FileUploadedController
+          .onPageLoad(mode, period)
+          .absoluteURL()
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
-    implicit request =>
+      val errorUrl =
+        routes.FileUploadController
+          .onPageLoad(mode, period)
+          .absoluteURL()
 
-      val period = request.userAnswers.period
+      redirectError match {
+        case Some(redirectErr) =>
+          val msg = errorMessage(Some(redirectErr)).getOrElse("")
+          Redirect(routes.FileUploadController.onPageLoad(mode, period)).flashing("upscanError" -> msg).toFuture
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+        case None =>
+          val errorMsg: Option[String] = request.flash.get("upscanError"). filter(_.nonEmpty)
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadPage, value))
-            cleanup <- Future.fromTry(updatedAnswers.remove(FileUploadedPage))
-            _              <- cc.sessionRepository.set(cleanup)
-          } yield Redirect(FileUploadPage.navigate(mode, cleanup))
-      )
+          upscanInitiateConnector.initiateV2(
+            redirectOnSuccess = Some(successUrl),
+            redirectOnError = Some(errorUrl)
+          ).flatMap { initiateResponse =>
+
+            for {
+              cleanedAnswers <- Future.fromTry(request.userAnswers.remove(FileUploadedPage))
+              updatedAnswers <- Future.fromTry(cleanedAnswers.set(FileReferencePage(), initiateResponse.fileReference.reference))
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield {
+              Ok(view(
+                form,
+                mode,
+                period,
+                postTarget = initiateResponse.postTarget,
+                formFields = initiateResponse.formFields,
+                errorMessage = errorMsg
+              ))
+            }
+          }
+      }
   }
   
   def downloadTemplate(period: Period): Action[AnyContent] = cc.authAndGetData(period).async { _=>
@@ -73,4 +97,20 @@ class FileUploadController @Inject()(
       )
     )
   }
+
+  private def errorMessage(redirectError: Option[UpscanRedirectError])(implicit messages: Messages): Option[String] =
+    redirectError.map {
+
+      case UpscanRedirectError("EntityTooLarge", _) =>
+        messages("fileUploaded.redirectError.EntityTooLarge")
+
+      case UpscanRedirectError("InvalidArgument", Some(msg)) if msg.toLowerCase.contains("file") && msg.toLowerCase.contains("not found") =>
+        messages("fileUpload.redirectError.fileNotFound")
+
+      case UpscanRedirectError("InvalidArgument", _) =>
+        messages("fileUpload.redirectError.invalidType")
+
+      case _ =>
+        messages("fileUploaded.redirectError.default")
+    }
 }

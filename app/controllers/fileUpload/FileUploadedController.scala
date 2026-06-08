@@ -16,10 +16,12 @@
 
 package controllers.fileUpload
 
+import connectors.FileUploadOutcomeConnector
 import controllers.actions.*
 import forms.FileUploadedFormProvider
 import models.{Mode, Period}
-import pages.fileUpload.FileUploadedPage
+import pages.fileUpload.{FileReferencePage, FileUploadStatusPage, FileUploadedPage}
+import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -31,39 +33,64 @@ import scala.concurrent.{ExecutionContext, Future}
 class FileUploadedController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: FileUploadedFormProvider,
-                                       view: FileUploadedView
+                                       view: FileUploadedView,
+                                       fileUploadOutcomeConnector: FileUploadOutcomeConnector
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
-
-  private val form = formProvider()
+  
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
-      val fileName = "test.csv" //todo get fileName from upload
-
-      val preparedForm = request.userAnswers.get(FileUploadedPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
+      val fileReference = request.userAnswers.get(FileReferencePage())
+      
+      fileReference match {
+        case Some(ref) =>
+          fileUploadOutcomeConnector.getOutcome(ref).flatMap { maybeOutcome =>
+            val status = maybeOutcome.map(_.status).getOrElse("UPLOADING")
+            val form = formForStatus(status)
+            val preparedForm = request.userAnswers.get(FileUploadedPage).fold(form)(form.fill)
+            
+            for {
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadStatusPage(), status))
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield {
+              Ok(view(preparedForm, mode, period, maybeOutcome))
+            }
+          }
+        case None =>
+          Future.successful(BadRequest("No file reference found in session"))
       }
-
-      Ok(view(preparedForm, mode, period, Some(fileName)))
   }
 
   def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
-      val fileName = "test.csv" //todo get fileName from upload
+      val fileReference = request.userAnswers.get(FileReferencePage())
+      
+      fileReference match {
+        case Some(ref) =>
+          fileUploadOutcomeConnector.getOutcome(ref).flatMap { maybeOutcome =>
+            val status = maybeOutcome.map(_.status).getOrElse("UPLOADING")
+            val form = formForStatus(status)
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period, Some(fileName)))),
+            form.bindFromRequest().fold(
+              formWithErrors =>
+                Future.successful(BadRequest(view(formWithErrors, mode, period, maybeOutcome))),
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadedPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(FileUploadedPage.navigate(mode, updatedAnswers))
-      )
+              value =>
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadedPage, value))
+                  _              <- cc.sessionRepository.set(updatedAnswers)
+                } yield Redirect(FileUploadedPage.navigate(mode, updatedAnswers))
+            )
+          }
+        case None =>
+          Future.successful(BadRequest("No file reference found is session"))
+      }
+  }
+
+  private def formForStatus(status: String): Form[Boolean] = {
+    if (status == "FAILED") formProvider.failedForm else formProvider.successForm
   }
 }

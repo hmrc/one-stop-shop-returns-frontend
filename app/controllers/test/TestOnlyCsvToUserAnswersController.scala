@@ -37,7 +37,7 @@ class TestOnlyCsvToUserAnswersController @Inject()(
   private val inlineCsv: String =
 
     """"HM Revenue and Customs logo","","",""
-      |"Import One Stop Shop VAT return","","",""
+      |"One Stop Shop VAT return","","",""
       |"CountryFrom", "CountryTo","VAT % rate","Total eligible sales","Total VAT due"
       |"Northern Ireland","Germany","12.50%","£1200","£140"
       |"Northern Ireland","France","15","33,333","£4423"
