@@ -16,10 +16,18 @@
 
 package models.upscan
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.mvc.Request
 
-case class UploadForm(href: String, fields: Map[String, String])
+final case class UpscanRedirectError(code: String, message: Option[String])
 
-object UploadForm {
-  implicit val format: OFormat[UploadForm] = Json.format[UploadForm]
+object UpscanRedirectError {
+
+  def fromQuery(request: Request[_]): Option[UpscanRedirectError] = {
+    request.getQueryString("errorCode").map { code =>
+      UpscanRedirectError(
+        code = code,
+        message = request.getQueryString("errorMessage")
+      )
+    }
+  }
 }

@@ -348,9 +348,7 @@ POST       /:period/changeWantToUploadFile                                      
 
 GET        /:period/download-template                                                                               controllers.fileUpload.FileUploadController.downloadTemplate(period: Period)
 GET        /:period/file-upload                                                                                     controllers.fileUpload.FileUploadController.onPageLoad(mode: Mode = NormalMode, period: Period)
-POST       /:period/file-upload                                                                                     controllers.fileUpload.FileUploadController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET        /:period/change-file-upload                                                                              controllers.fileUpload.FileUploadController.onPageLoad(mode: Mode = CheckMode, period: Period)
-POST       /:period/change-file-upload                                                                              controllers.fileUpload.FileUploadController.onSubmit(mode: Mode = CheckMode, period: Period)
 
 GET        /:period/file-uploaded                                                                                   controllers.fileUpload.FileUploadedController.onPageLoad(mode: Mode = NormalMode, period: Period)
 POST       /:period/file-uploaded                                                                                   controllers.fileUpload.FileUploadedController.onSubmit(mode: Mode = NormalMode, period: Period)

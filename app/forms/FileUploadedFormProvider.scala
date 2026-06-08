@@ -23,8 +23,9 @@ import play.api.data.Form
 
 class FileUploadedFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
-    Form(
-      "value" -> boolean("fileUploaded.error.required")
-    )
+  def successForm: Form[Boolean] =
+    Form("value" -> boolean("fileUploaded.error.required"))
+
+  def failedForm: Form[Boolean] =
+    Form("value" -> boolean("fileUploaded.failed.error.required"))
 }

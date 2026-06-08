@@ -21,14 +21,33 @@ import play.api.data.FormError
 
 class FileUploadedFormProviderSpec extends BooleanFieldBehaviours {
 
-  val requiredKey = "fileUploaded.error.required"
+  val fieldName = "value"
   val invalidKey = "error.boolean"
 
-  val form = new FileUploadedFormProvider()()
+  ".successForm.value" - {
 
-  ".value" - {
+    val requiredKey = "fileUploaded.error.required"
+    val form = new FileUploadedFormProvider().successForm
 
-    val fieldName = "value"
+
+    behave like booleanField(
+      form,
+      fieldName,
+      invalidError = FormError(fieldName, invalidKey)
+    )
+
+    behave like mandatoryField(
+      form,
+      fieldName,
+      requiredError = FormError(fieldName, requiredKey)
+    )
+  }
+
+  ".failedForm.value" - {
+
+    val requiredKey = "fileUploaded.failed.error.required"
+    val form = new FileUploadedFormProvider().failedForm
+
 
     behave like booleanField(
       form,

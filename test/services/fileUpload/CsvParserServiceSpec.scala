@@ -32,7 +32,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
   "parse for a simple string of elements without quotes with multiple rows in the CSV with no quotes" in {
     val validCSVContent: String = {
       """"HM Revenue and Customs logo","","",""
-        |"Import One Stop Shop VAT return","","",""
+        |"One Stop Shop VAT return","","",""
         |"CountryFrom", "CountryTo","VAT % rate","Total eligible sales","Total VAT due"
         |"Northern Ireland","Germany","12.50%","£1200","£140"
         |"Northern Ireland","France","15","33,333","£4423"
@@ -44,7 +44,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
     val actual: Seq[Seq[String]] = CsvParserService.split(validCSVContent).map(_.toSeq)
     val expected: Seq[Seq[String]] = Seq(
       Seq("HM Revenue and Customs logo","","",""),
-      Seq("Import One Stop Shop VAT return", "", "", ""),
+      Seq("One Stop Shop VAT return", "", "", ""),
       Seq("CountryFrom", "CountryTo","VAT % rate","Total eligible sales","Total VAT due"),
       Seq("Northern Ireland","Germany","12.50%","£1200","£140"),
       Seq("Northern Ireland","France","15","33,333","£4423"),
@@ -59,7 +59,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
 
     val csv =
       """"HM Revenue and Customs logo","","",""
-        |"Import One Stop Shop VAT return","","",""
+        |"One Stop Shop VAT return","","",""
         |"CountryFrom", "CountryTo","VAT % rate","Total eligible sales","Total VAT due"
         |"Northern Ireland","Germany","12.50%","£1200","£140"
         |"Northern Ireland","France","15","33,333","£4423"
@@ -89,7 +89,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
 
     val csv =
       """"HM Revenue and Customs logo","","",""
-        |"Import One Stop Shop VAT return","","",""
+        |"One Stop Shop VAT return","","",""
         |"CountryFrom", "CountryTo","VAT % rate","Total eligible sales","Total VAT due"
         |"Austria","France","10%","150.01","£15"
         |"France","Austria","12.50%","£1200","£140"
@@ -120,7 +120,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
 
     val csv =
       """"HM Revenue and Customs logo","","",""
-        |"Import One Stop Shop VAT return","","",""
+        |"One Stop Shop VAT return","","",""
         |"CountryFrom", "CountryTo","VAT % rate","Total eligible sales","Total VAT due"
         |"Northern Ireland","Germany","12.50%","£1200","£140"
         |"Northern Ireland","France","15","33,333","£4423"
