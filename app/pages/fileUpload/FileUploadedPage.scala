@@ -30,30 +30,48 @@ case object FileUploadedPage extends QuestionPage[Boolean] {
   override def toString: String = "fileUploaded"
 
   override def navigateInNormalMode(answers: UserAnswers): Call = {
-    answers.get(FileUploadedPage) match {
-      case Some(true) =>
+    val status = answers.get(FileUploadStatusPage).map(_.toUpperCase)
+    (status, answers.get(FileUploadedPage)) match {
+
+      case (Some("UPLOADED"), Some(true)) =>
         if (answers.isDefined(CorrectPreviousReturnPage)) {
           routes.CheckYourAnswersController.onPageLoad(answers.period)
         } else {
           controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, answers.period)
         }
-      case Some(false) =>
+      case (Some("UPLOADED"), Some(false)) =>
         controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
+
+      case (Some("FAILED"), Some(true)) =>
+        controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
+
+      case (Some("FAILED"), Some(false)) =>
+        routes.SoldGoodsFromNiController.onPageLoad(NormalMode, answers.period)
+
       case _ =>
         routes.JourneyRecoveryController.onPageLoad()
     }
   }
 
   override def navigateInCheckMode(answers: UserAnswers): Call = {
-    answers.get(FileUploadedPage) match {
-      case Some(true) =>
+    val status = answers.get(FileUploadStatusPage).map(_.toUpperCase)
+    (status, answers.get(FileUploadedPage)) match {
+
+      case (Some("UPLOADED"), Some(true)) =>
         if (answers.isDefined(CorrectPreviousReturnPage)) {
           routes.CheckYourAnswersController.onPageLoad(answers.period)
         } else {
           controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(CheckMode, answers.period)
         }
-      case Some(false) =>
+      case (Some("UPLOADED"), Some(false)) =>
         controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period)
+
+      case (Some("FAILED"), Some(true)) =>
+        controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period)
+
+      case (Some("FAILED"), Some(false)) =>
+        routes.SoldGoodsFromNiController.onPageLoad(CheckMode, answers.period)
+
       case _ =>
         routes.JourneyRecoveryController.onPageLoad()
     }

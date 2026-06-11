@@ -708,3 +708,44 @@ fileUploaded.status.error.not_csv = The selected file must be a CSV
 fileUploaded.status.error.default = The selected file could not be uploaded – try again
 fileUploaded.status.error.too_large = The selected file must be smaller than 2MB
 fileUploaded.status.error.invalid_file_type = You must save your file as a CSV before uploading
+
+dataError.title = There is an error in the file you uploaded
+dataError.heading = There is an error in the file you uploaded
+dataError.title.plural = There are {0} errors in the file you uploaded
+dataError.heading.plural = There are {0} errors in the file you uploaded
+dataError.subheading = Do you want to upload it again?
+dataError.yes = Yes
+dataError.no = No, enter the return manually
+dataError.error.required = Select yes if you want to upload it again
+dataError.change.hidden = error in the file you uploaded
+
+dataError.errorMessage.incorrectCountry.p1 = The country in cell {0} has the wrong name.
+dataError.errorMessage.incorrectCountry.p2 = The country names must be the same as those in the notes section of the template document.
+dataError.errorMessage.invalidCharacter.p1 = Cell {0} contains an invalid character.
+dataError.errorMessage.invalidNumber.p1 = Cell {0} contains an amount in the wrong format.
+dataError.errorMessage.negativeNumber.p1 = Cell {0} has a negative amount.
+dataError.errorMessage.tooManyDecimals.p1 = Cell {0} has more than 2 decimal places.
+dataError.errorMessage.blankCell.p1 = Cell {0} is empty.
+dataError.errorMessage.incorrectVatRate.p1 = {0} has an incorrect VAT rate.
+dataError.errorMessage.duplicateVatRate.p1 = {0} to {1} has duplicate VAT rates. Only submit the totals at each VAT rate.
+dataError.errorMessage.tooManyColumns.p1 = Row {0} has more than 4 columns.
+dataError.errorMessage.tooManyColumns.p1.plural = Some rows have more than 4 columns.
+dataError.errorMessage.sameToAndFromCountry.p1 = You do not need to record sales from a country into the same country.
+
+dataError.errorMessage.incorrectCountry.p1.plural = There are {0} countries that have the wrong name.
+dataError.errorMessage.incorrectCountry.p2.plural = The countries names must be the same as those in the notes section of the template document.
+dataError.errorMessage.invalidCharacter.p1.plural = There are {0} cells containing invalid characters
+dataError.errorMessage.invalidNumber.p1.plural = There are {0} cells containing invalid values.
+dataError.errorMessage.negativeNumber.p1.plural = There are {0} cells containing negative amounts.
+dataError.errorMessage.tooManyDecimals.p1.plural = There are {0} cells with more than 2 decimal places.
+dataError.errorMessage.blankCell.p1.plural = There are {0} empty cells
+dataError.errorMessage.incorrectVatRate.p1.plural = There are {0} cells with incorrect VAT rates
+dataError.errorMessage.duplicateVatRate.p1.plural = There are {0} duplicate country and VAT rate entries. Only submit the totals at each VAT rate.
+
+dataError.errorMessage.genericError.p1 = We cannot process your file because there are multiple errors.
+dataError.errorMessage.genericErrors.p2 = Make sure the file:
+dataError.errorMessage.genericErrors.bullet1 = has country names in the correct format
+dataError.errorMessage.genericErrors.bullet2 = uses correct number formats for VAT rates and cash values
+dataError.errorMessage.genericErrors.bullet3 = only includes numbers, letters and the symbols £ , . %
+dataError.errorMessage.genericErrors.bullet4 = does not have any blank cells or rows between entries
+dataError.errorMessage.genericErrors.p3 = You can check the notes page on the template for more information.

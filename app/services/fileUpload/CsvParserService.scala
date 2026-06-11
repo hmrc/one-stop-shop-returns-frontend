@@ -135,7 +135,7 @@ class CsvParserService @Inject()() {
     val headerIndex = {
       rows.indexWhere(_.headOption.exists { c =>
         val cleaned = c.replace("\"", "").trim.toLowerCase
-        cleaned.startsWith("countryfrom")
+        cleaned.startsWith("country your goods sold from")
       })
     }
 

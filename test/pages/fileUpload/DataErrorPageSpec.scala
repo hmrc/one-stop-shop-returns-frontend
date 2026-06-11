@@ -16,22 +16,16 @@
 
 package pages.fileUpload
 
-import models.{CheckMode, NormalMode, UserAnswers}
-import pages.QuestionPage
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import pages.behaviours.PageBehaviours
 
-case object FileUploadStatusPage extends QuestionPage[String] {
+class DataErrorPageSpec extends PageBehaviours {
 
-  override def path: JsPath = JsPath \ toString
+  "DataErrorPage" - {
 
-  override def toString: String = "fileUploadStatus"
+    beRetrievable[Boolean](DataErrorPage)
 
-  override def navigateInNormalMode(answers: UserAnswers): Call = {
-    controllers.fileUpload.routes.FileUploadedController.onPageLoad(NormalMode, answers.period)
-  }
+    beSettable[Boolean](DataErrorPage)
 
-  override protected def navigateInCheckMode(answers: UserAnswers): Call = {
-    controllers.fileUpload.routes.FileUploadedController.onPageLoad(CheckMode, answers.period)
+    beRemovable[Boolean](DataErrorPage)
   }
 }

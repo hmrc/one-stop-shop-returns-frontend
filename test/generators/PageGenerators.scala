@@ -20,9 +20,12 @@ import models.Index
 import org.scalacheck.Arbitrary
 import pages.*
 import pages.corrections.*
-import pages.fileUpload.{FileUploadPage, FileUploadedPage, WantToUploadFilePage}
+import pages.fileUpload.{DataErrorPage, FileUploadPage, FileUploadedPage, WantToUploadFilePage}
 
 trait PageGenerators {
+
+  implicit lazy val arbitraryDataErrorPage: Arbitrary[DataErrorPage.type] =
+    Arbitrary(DataErrorPage)
 
   implicit lazy val arbitraryFileUploadedPage: Arbitrary[FileUploadedPage.type] =
     Arbitrary(FileUploadedPage)

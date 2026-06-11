@@ -16,24 +16,37 @@
 
 package pages.fileUpload
 
+import controllers.routes
 import models.{CheckMode, NormalMode, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object FileReferencePage extends QuestionPage[String] {
+case object DataErrorPage extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "fileReference"
-  
+  override def toString: String = "dataError"
+
   override def navigateInNormalMode(answers: UserAnswers): Call = {
-    controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
+    answers.get(this) match {
+      case Some(true) =>
+        controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
+      case Some(false) =>
+        routes.SoldGoodsFromNiController.onPageLoad(NormalMode, answers.period)
+      case _ =>
+        routes.JourneyRecoveryController.onPageLoad()
+    }
   }
 
-  override protected def navigateInCheckMode(answers: UserAnswers): Call = {
-    controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period)
+  override def navigateInCheckMode(answers: UserAnswers): Call = {
+    answers.get(this) match {
+      case Some(true) =>
+        controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period)
+      case Some(false) =>
+        routes.SoldGoodsFromNiController.onPageLoad(CheckMode, answers.period)
+      case _ =>
+        routes.JourneyRecoveryController.onPageLoad()
+    }
   }
-    
-
 }
