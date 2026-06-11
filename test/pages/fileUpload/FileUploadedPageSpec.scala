@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package pages
+package pages.fileUpload
 
 import pages.behaviours.PageBehaviours
-import pages.fileUpload.FileUploadedPage
 
 class FileUploadedPageSpec extends PageBehaviours {
 

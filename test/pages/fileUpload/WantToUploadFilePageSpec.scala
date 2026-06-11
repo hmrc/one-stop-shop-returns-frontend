@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package pages
+package pages.fileUpload
 
 import controllers.routes
 import models.{CheckMode, NormalMode}
 import pages.behaviours.PageBehaviours
-import pages.fileUpload.WantToUploadFilePage
 
 class WantToUploadFilePageSpec extends PageBehaviours {
 

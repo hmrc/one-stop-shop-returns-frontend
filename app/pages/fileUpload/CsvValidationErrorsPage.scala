@@ -16,24 +16,24 @@
 
 package pages.fileUpload
 
-import models.{CheckMode, NormalMode, UserAnswers}
+import models.{NormalMode, UserAnswers}
+import models.upscan.CsvError
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object FileReferencePage extends QuestionPage[String] {
+case object CsvValidationErrorsPage extends QuestionPage[Seq[CsvError]] {
 
-  override def path: JsPath = JsPath \ toString
+  override def path: JsPath = JsPath \ "fileUpload" \ "csvValidationErrors"
 
-  override def toString: String = "fileReference"
-  
+  override def toString: String = "dataError"
+
   override def navigateInNormalMode(answers: UserAnswers): Call = {
-    controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
+    controllers.fileUpload.routes.DataErrorController.onPageLoad(NormalMode, answers.period)
   }
 
-  override protected def navigateInCheckMode(answers: UserAnswers): Call = {
-    controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period)
+  override def navigateInCheckMode(answers: UserAnswers): Call = {
+    controllers.fileUpload.routes.DataErrorController.onPageLoad(NormalMode, answers.period)
   }
-    
 
 }

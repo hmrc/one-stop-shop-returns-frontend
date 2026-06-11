@@ -14,20 +14,32 @@
  * limitations under the License.
  */
 
-package pages
+package forms
 
-import pages.behaviours.PageBehaviours
-import pages.fileUpload.FileUploadPage
+import forms.behaviours.BooleanFieldBehaviours
+import play.api.data.FormError
 
-class FileUploadPageSpec extends PageBehaviours {
+class DataErrorFormProviderSpec extends BooleanFieldBehaviours {
 
-  "FileUploadPage" - {
+  val requiredKey = "dataError.error.required"
+  val invalidKey = "error.boolean"
 
-    beRetrievable[String](FileUploadPage)
+  val form = new DataErrorFormProvider()()
 
-    beSettable[String](FileUploadPage)
+  ".value" - {
 
-    beRemovable[String](FileUploadPage)
-    
+    val fieldName = "value"
+
+    behave like booleanField(
+      form,
+      fieldName,
+      invalidError = FormError(fieldName, invalidKey)
+    )
+
+    behave like mandatoryField(
+      form,
+      fieldName,
+      requiredError = FormError(fieldName, requiredKey)
+    )
   }
 }

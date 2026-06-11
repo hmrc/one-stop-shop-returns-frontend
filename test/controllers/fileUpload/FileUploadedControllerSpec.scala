@@ -52,7 +52,7 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
     status = "FAILED",
     failureReason = Some("REJECTED")
   )
-  private val userAnswersWithRef = emptyUserAnswers.set(FileReferencePage(), "fake-ref").success.value
+  private val userAnswersWithRef = emptyUserAnswers.set(FileReferencePage, "fake-ref").success.value
   private val mockOutcomeConnector = mock[FileUploadOutcomeConnector]
   val mockSessionRepository = mock[UserAnswersRepository]
 
