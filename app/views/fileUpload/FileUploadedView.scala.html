@@ -27,7 +27,7 @@
 
 @(form: Form[_], mode: Mode, period: Period, maybeOutcome: Option[FileUploadOutcome])(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("fileUploaded.title"))) {
+@layout(pageTitle = title(form, messages("fileUploaded.title", period.displayText))) {
 
     @if(!maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
         <meta http-equiv="refresh" content="1">
@@ -57,20 +57,21 @@
             } else if(maybeOutcome.map(_.status).contains("FAILED")) {
                 <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
                     <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
-                        @maybeOutcome.flatMap(_.fileName).getOrElse("")
+                        @if(maybeOutcome.flatMap(_.fileName).isDefined) {
+                            @maybeOutcome.flatMap(_.fileName).get
+                        } else {
+                            <p class="govuk-error-message">
+                                @messages(
+                                    maybeOutcome.flatMap(_.failureReason)
+                                        .map(r => s"fileUploaded.status.error.${r.toLowerCase}")
+                                        .getOrElse("fileUploaded.status.error.default")
+                                )
+                            </p>
+                        }
                     </dt>
                     <dd class="govuk-summary-list__value">
                         <strong class="govuk-tag govuk-tag--red">@messages("fileUploaded.status.failed")</strong>
                     </dd>
-                </div>
-                <div class="govuk-summary-list__row">
-                    <p class="govuk-error-message">
-                        @messages(
-                        maybeOutcome.flatMap(_.failureReason)
-                        .map(r => s"fileUploaded.status.error.${r.toLowerCase}")
-                        .getOrElse("fileUploaded.status.error.default")
-                        )
-                    </p>
                 </div>
             } else {
                 <div class="govuk-summary-list__row">
@@ -130,7 +131,7 @@
             )
 
             @govukButton(
-                ButtonViewModel(messages("fileUploaded.button"))
+                ButtonViewModel(messages("site.continue"))
                     .withAttribute(("id", "continue"))
             )
 

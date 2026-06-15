@@ -231,6 +231,30 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) `mustBe` OK
 
+        body must include("test.csv")
+
+        body must include(messages(application)("fileUploaded.status.failed"))
+      }
+    }
+
+    "must display failed status and correct error message when upload failed without a file name" in {
+
+      val failedOutcomeWithoutFileName = failedOutcome.copy(fileName = None)
+
+      when(mockOutcomeConnector.getOutcome(eqTo("fake-ref"))(any())) thenReturn Some(failedOutcomeWithoutFileName).toFuture
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithRef))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, fileUploadedRoute)
+
+        val result = route(application, request).value
+        val body = contentAsString(result)
+
+        status(result) `mustBe` OK
+
         body must include(messages(application)("fileUploaded.status.failed"))
 
         body must include(messages(application)("fileUploaded.status.error.rejected"))
