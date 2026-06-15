@@ -210,27 +210,30 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
   
   private def validateDuplicateCountryVatRate(dataRows: Seq[Array[String]], headerIndex: Int): Seq[CsvError] = {
     
-    type CountryWithRate = (String, BigDecimal)
+    type CountryWithRate = (String, String, BigDecimal)
     
     val (_, errors) = dataRows.zipWithIndex.foldLeft(Map.empty[CountryWithRate, Int] -> Vector.empty[CsvError]) {
       case ((seen, errs), (row, index0)) =>
         val csvRowNumber = (headerIndex +2) + index0
-        val countryRaw = cell(row, 1)
-        val aliasCountryName = aliasCountry(countryRaw)
+        val countryFromRaw = cell(row, 0)
+        val countryToRaw = cell(row, 1)
+        val aliasCountryFromName = aliasCountry(countryFromRaw)
+        val aliasCountryToName = aliasCountry(countryToRaw)
         val vatRateRaw = cell(row, 2)
-        val countryOpt = Country.euCountriesWithNI.find(_.name.equalsIgnoreCase(aliasCountryName)).map(_.name)
+        val countryFromOpt = Country.euCountriesWithNI.find(_.name.equalsIgnoreCase(aliasCountryFromName)).map(_.name)
+        val countryToOpt = Country.euCountriesWithNI.find(_.name.equalsIgnoreCase(aliasCountryToName)).map(_.name)
         val vatRateOpt = parseRate(vatRateRaw)
           .toOption
           .filter(_ >= 0)
           .map(_.bigDecimal.stripTrailingZeros())
           .map(BigDecimal(_))
 
-        (countryOpt, vatRateOpt) match {
-          case (Some(country), Some(vatRate)) =>
-            val countryRow: CountryWithRate = (country.toLowerCase, vatRate)
+        (countryFromOpt, countryToOpt, vatRateOpt) match {
+          case (Some(countryFrom), Some(countryTo), Some(vatRate)) =>
+            val countryRow: CountryWithRate = (countryFrom.toLowerCase, countryTo.toLowerCase, vatRate)
             
             if (seen.contains(countryRow)) {
-              seen -> (errs :+ DuplicateVatRate(csvRowNumber, CsvColumn.C, country, vatRateRaw))
+              seen -> (errs :+ DuplicateVatRate(csvRowNumber, CsvColumn.C, countryFrom, countryTo, vatRateRaw))
             } else {
               seen.updated(countryRow, csvRowNumber) -> errs
             }

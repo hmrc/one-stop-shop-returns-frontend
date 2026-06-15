@@ -38,7 +38,7 @@ object CsvError {
   final case class  TooMayDecimals(row: Int, column: CsvColumn, value: BigDecimal) extends CsvError
   final case class  BlankCell(row: Int, column: CsvColumn) extends CsvError
   final case class  VatRateNotAllowed(row: Int, column: CsvColumn, country: String, value: String) extends CsvError
-  final case class  DuplicateVatRate(row: Int, column: CsvColumn, country: String, value: String) extends CsvError
+  final case class  DuplicateVatRate(row: Int, column: CsvColumn, countryFrom: String, countryTo: String, value: String) extends CsvError
   final case class  TooManyColumns(row: Int, column: CsvColumn, actualColumns: Int) extends CsvError
   final case class  SameToAndFromCountry(row: Int, column: CsvColumn, countryFrom: String, countryTo: String, value: String) extends CsvError
 }

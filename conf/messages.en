@@ -731,6 +731,7 @@ dataError.errorMessage.duplicateVatRate.p1 = {0} to {1} has duplicate VAT rates.
 dataError.errorMessage.tooManyColumns.p1 = Row {0} has more than 5 columns.
 dataError.errorMessage.tooManyColumns.p1.plural = Some rows have more than 5 columns.
 dataError.errorMessage.sameToAndFromCountry.p1 = You do not need to record sales from a country into the same country.
+dataError.errorMessage.sameToAndFromCountry.p1.plural = You do not need to record sales from a country into the same country.
 
 dataError.errorMessage.incorrectCountry.p1.plural = There are {0} countries that have the wrong name.
 dataError.errorMessage.incorrectCountry.p2.plural = The countries names must be the same as those in the notes section of the template document.
