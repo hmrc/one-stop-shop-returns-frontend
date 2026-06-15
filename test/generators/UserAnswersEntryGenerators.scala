@@ -16,14 +16,47 @@
 
 package generators
 
-import models._
+import models.*
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
-import pages._
-import pages.corrections._
+import pages.*
+import pages.corrections.*
+import pages.fileUpload.{DataErrorPage, FileUploadPage, FileUploadedPage, WantToUploadFilePage}
 import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
+
+  implicit lazy val arbitraryDataErrorUserAnswersEntry: Arbitrary[(DataErrorPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[DataErrorPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryFileUploadedUserAnswersEntry: Arbitrary[(FileUploadedPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[FileUploadedPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryFileUploadUserAnswersEntry: Arbitrary[(FileUploadPage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[FileUploadPage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
+
+  implicit lazy val arbitraryWantToUploadFileUserAnswersEntry: Arbitrary[(WantToUploadFilePage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[WantToUploadFilePage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
 
   implicit lazy val arbitraryVatPeriodCorrectionsListUserAnswersEntry: Arbitrary[(VatPeriodCorrectionsListPage.type, JsValue)] =
     Arbitrary {

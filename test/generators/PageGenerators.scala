@@ -18,10 +18,23 @@ package generators
 
 import models.Index
 import org.scalacheck.Arbitrary
-import pages._
-import pages.corrections._
+import pages.*
+import pages.corrections.*
+import pages.fileUpload.{DataErrorPage, FileUploadPage, FileUploadedPage, WantToUploadFilePage}
 
 trait PageGenerators {
+
+  implicit lazy val arbitraryDataErrorPage: Arbitrary[DataErrorPage.type] =
+    Arbitrary(DataErrorPage)
+
+  implicit lazy val arbitraryFileUploadedPage: Arbitrary[FileUploadedPage.type] =
+    Arbitrary(FileUploadedPage)
+
+  implicit lazy val arbitraryFileUploadPage: Arbitrary[FileUploadPage.type] =
+    Arbitrary(FileUploadPage)
+
+  implicit lazy val arbitraryWantToUploadFilePage: Arbitrary[WantToUploadFilePage.type] =
+    Arbitrary(WantToUploadFilePage)
 
   implicit lazy val arbitraryVatPeriodCorrectionsListPage: Arbitrary[VatPeriodCorrectionsListPage.type] =
     Arbitrary(VatPeriodCorrectionsListPage)

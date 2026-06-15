@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,26 @@
  * limitations under the License.
  */
 
-package pages
+package pages.fileUpload
 
-import controllers.routes
-import models.{NormalMode, Period}
+import models.{CheckMode, NormalMode, UserAnswers}
+import pages.QuestionPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object StartReturnPage extends QuestionPage[Boolean] {
+case object FileReferencePage extends QuestionPage[String] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "startReturn"
+  override def toString: String = "fileReference"
+  
+  override def navigateInNormalMode(answers: UserAnswers): Call = {
+    controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
+  }
 
-  def navigate(period: Period, startReturn: Boolean): Call =
-    if (startReturn) {
-      controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period)
-    } else {
-      routes.NoOtherPeriodsAvailableController.onPageLoad()
-    }
+  override protected def navigateInCheckMode(answers: UserAnswers): Call = {
+    controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period)
+  }
+    
+
 }

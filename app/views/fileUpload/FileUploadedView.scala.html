@@ -1,0 +1,142 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import models.upscan.FileUploadOutcome
+@import models.upscan.UpscanRedirectError
+
+@this(
+    layout: templates.Layout,
+    formHelper: FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    govukRadios: GovukRadios,
+    govukButton: GovukButton
+)
+
+@(form: Form[_], mode: Mode, period: Period, maybeOutcome: Option[FileUploadOutcome])(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = title(form, messages("fileUploaded.title"))) {
+
+    @if(!maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
+        <meta http-equiv="refresh" content="1">
+    }
+
+    @formHelper(action = controllers.fileUpload.routes.FileUploadedController.onSubmit(mode, period), Symbol("autoComplete") -> "off") {
+
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
+        }
+
+        <header class="hmrc-page-heading">
+            <p class="govuk-caption-l hmrc-caption-l">@messages("fileUploaded.caption", period.displayText)</p>
+            <h1 class="govuk-heading-l">@messages("fileUploaded.heading", period.displayText)</h1>
+        </header>
+
+        <dl class="govuk-summary-list govuk-summary-list--long-key">
+            @if(maybeOutcome.map(_.status).contains("UPLOADED")) {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+                        @maybeOutcome.flatMap(_.fileName).getOrElse("")
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        <strong class="govuk-tag govuk-tag--green">@messages("fileUploaded.status.uploaded")</strong>
+                    </dd>
+                </div>
+            } else if(maybeOutcome.map(_.status).contains("FAILED")) {
+                <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
+                    <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+                        @maybeOutcome.flatMap(_.fileName).getOrElse("")
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        <strong class="govuk-tag govuk-tag--red">@messages("fileUploaded.status.failed")</strong>
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <p class="govuk-error-message">
+                        @messages(
+                        maybeOutcome.flatMap(_.failureReason)
+                        .map(r => s"fileUploaded.status.error.${r.toLowerCase}")
+                        .getOrElse("fileUploaded.status.error.default")
+                        )
+                    </p>
+                </div>
+            } else {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+                        @maybeOutcome.flatMap(_.fileName).getOrElse("")
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        <strong class="govuk-tag govuk-tag--yellow">@messages("fileUploaded.status.uploading")</strong>
+                    </dd>
+                </div>
+            }
+
+        </dl>
+
+        @if(maybeOutcome.map(_.status).contains("UPLOADED")) {
+
+            @govukRadios(
+                RadiosViewModel(
+                    field = form("value"),
+                    legend = LegendViewModel(messages("fileUploaded.subheading"))
+                        .withCssClass("govuk-fieldset__legend govuk-fieldset__legend--m"),
+                    items = Seq(
+                        RadioItem(
+                            value   = Some("true"),
+                            content = Text(messages("fileUploaded.yes"))
+                        ),
+                        RadioItem(
+                            value   = Some("false"),
+                            content = Text(messages("fileUploaded.no"))
+                        )
+                    )
+                )
+            )
+
+            @govukButton(
+                ButtonViewModel(messages("fileUploaded.button"))
+                    .withAttribute(("id", "continue"))
+            )
+
+        } else if(maybeOutcome.map(_.status).contains("FAILED")) {
+            @govukRadios(
+                RadiosViewModel(
+                    field = form("value"),
+                    legend = LegendViewModel(messages("fileUploaded.failed.subheading"))
+                        .withCssClass("govuk-fieldset__legend govuk-fieldset__legend--m"),
+                    items = Seq(
+                        RadioItem(
+                            value   = Some("true"),
+                            content = Text(messages("fileUploaded.yes"))
+                        ),
+                        RadioItem(
+                            value   = Some("false"),
+                            content = Text(messages("fileUploaded.failed.no"))
+                        )
+                    )
+                )
+            )
+
+            @govukButton(
+                ButtonViewModel(messages("fileUploaded.button"))
+                    .withAttribute(("id", "continue"))
+            )
+
+        } else {
+            <p class="govuk-body">@messages("fileUploaded.uploading")</p>
+        }
+
+    }
+}
