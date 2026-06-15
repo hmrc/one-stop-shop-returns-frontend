@@ -728,8 +728,8 @@ dataError.errorMessage.tooManyDecimals.p1 = Cell {0} has more than 2 decimal pla
 dataError.errorMessage.blankCell.p1 = Cell {0} is empty.
 dataError.errorMessage.incorrectVatRate.p1 = {0} has an incorrect VAT rate.
 dataError.errorMessage.duplicateVatRate.p1 = {0} to {1} has duplicate VAT rates. Only submit the totals at each VAT rate.
-dataError.errorMessage.tooManyColumns.p1 = Row {0} has more than 4 columns.
-dataError.errorMessage.tooManyColumns.p1.plural = Some rows have more than 4 columns.
+dataError.errorMessage.tooManyColumns.p1 = Row {0} has more than 5 columns.
+dataError.errorMessage.tooManyColumns.p1.plural = Some rows have more than 5 columns.
 dataError.errorMessage.sameToAndFromCountry.p1 = You do not need to record sales from a country into the same country.
 
 dataError.errorMessage.incorrectCountry.p1.plural = There are {0} countries that have the wrong name.
