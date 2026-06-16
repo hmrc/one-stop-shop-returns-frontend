@@ -55,7 +55,7 @@
                     </dd>
                 </div>
             } else if(maybeOutcome.map(_.status).contains("FAILED")) {
-                <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
+                <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
                         @if(maybeOutcome.flatMap(_.fileName).isDefined) {
                             @maybeOutcome.flatMap(_.fileName).get
