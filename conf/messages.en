@@ -691,7 +691,7 @@ fileUploaded.button = Submit and continue
 fileUploaded.failed.no = No, enter the return manually
 fileUploaded.checkYourAnswersLabel = file uploaded
 fileUploaded.error.required = Select yes if this is the correct file
-fileUploaded.failed.error.required = Select yes if you want to try uploading it again
+fileUploaded.failed.error.required = Select you want to go back and try again
 fileUploaded.change.hidden = File uploaded
 fileUploaded.uploading = Your file is uploading. This page will update automatically.
 
