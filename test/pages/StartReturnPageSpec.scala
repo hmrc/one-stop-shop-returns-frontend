@@ -27,11 +27,11 @@ class StartReturnPageSpec extends PageBehaviours {
 
     ".navigate" - {
 
-      "must go to Sold Goods From Unregistered Country when the answer is yes" in {
+      "must go to Want To Upload A File page when the answer is yes" in {
         forAll(arbitrary[StandardPeriod]) {
           period =>
             StartReturnPage.navigate(period, startReturn = true)
-              .mustEqual(routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period))
+              .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period))
         }
       }
 

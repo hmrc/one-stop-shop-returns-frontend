@@ -1,0 +1,79 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package pages.fileUpload
+
+import controllers.routes
+import models.{CheckMode, NormalMode, UserAnswers}
+import pages.QuestionPage
+import pages.corrections.CorrectPreviousReturnPage
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
+
+case object FileUploadedPage extends QuestionPage[Boolean] {
+
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "fileUploaded"
+
+  override def navigateInNormalMode(answers: UserAnswers): Call = {
+    val status = answers.get(FileUploadStatusPage).map(_.toUpperCase)
+    (status, answers.get(FileUploadedPage)) match {
+
+      case (Some("UPLOADED"), Some(true)) =>
+        if (answers.isDefined(CorrectPreviousReturnPage)) {
+          routes.CheckYourAnswersController.onPageLoad(answers.period)
+        } else {
+          controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(NormalMode, answers.period)
+        }
+      case (Some("UPLOADED"), Some(false)) =>
+        controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
+
+      case (Some("FAILED"), Some(true)) =>
+        controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
+
+      case (Some("FAILED"), Some(false)) =>
+        routes.SoldGoodsFromNiController.onPageLoad(NormalMode, answers.period)
+
+      case _ =>
+        routes.JourneyRecoveryController.onPageLoad()
+    }
+  }
+
+  override def navigateInCheckMode(answers: UserAnswers): Call = {
+    val status = answers.get(FileUploadStatusPage).map(_.toUpperCase)
+    (status, answers.get(FileUploadedPage)) match {
+
+      case (Some("UPLOADED"), Some(true)) =>
+        if (answers.isDefined(CorrectPreviousReturnPage)) {
+          routes.CheckYourAnswersController.onPageLoad(answers.period)
+        } else {
+          controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(CheckMode, answers.period)
+        }
+      case (Some("UPLOADED"), Some(false)) =>
+        controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period)
+
+      case (Some("FAILED"), Some(true)) =>
+        controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period)
+
+      case (Some("FAILED"), Some(false)) =>
+        routes.SoldGoodsFromNiController.onPageLoad(CheckMode, answers.period)
+
+      case _ =>
+        routes.JourneyRecoveryController.onPageLoad()
+    }
+  }
+}

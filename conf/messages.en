@@ -656,3 +656,97 @@ interceptUnusableEmail.confirm = Confirm email address
 
 userResearch.heading = Help us improve the service
 userResearch.link.text = Sign up to take part in research about the One Stop Shop service.
+
+wantToUploadFile.title = Do you want to upload a file with these return details?
+wantToUploadFile.heading = Do you want to upload a file with these return details?
+wantToUploadFile.yes = Yes
+wantToUploadFile.no = No, enter them myself
+wantToUploadFile.checkYourAnswersLabel = Want to upload a file
+wantToUploadFile.error.required = Select yes if you want to upload a file
+wantToUploadFile.change.hidden = WantToUploadFile
+
+fileUpload.title = Upload the {0} return
+fileUpload.heading = Upload the {0} return
+fileUpload.caption = {0}
+fileUpload.paragraph = To upload the file:
+fileUpload.bullet1 = download the <a class="govuk-link" href="{0}">latest ODS version of the template</a>
+fileUpload.bullet2 = complete the VAT details and save the document as a CSV file
+fileUpload.bullet3 = upload the CSV file
+fileUpload.button = Upload
+fileUpload.checkYourAnswersLabel = file upload
+fileUpload.error.required = No file selected
+fileUpload.change.hidden = Upload a file
+
+fileUploaded.title = Submit this uploaded return for {0}
+fileUploaded.heading = Submit this uploaded return for {0}
+fileUploaded.caption = {0}
+fileUploaded.status.uploading = Uploading
+fileUploaded.status.uploaded = Uploaded
+fileUploaded.status.failed = Failed
+fileUploaded.subheading = Do you want to submit this file?
+fileUploaded.failed.subheading = Do you want to go back and try again?
+fileUploaded.yes = Yes
+fileUploaded.no = No, I want to upload a different file
+fileUploaded.button = Submit and continue
+fileUploaded.failed.no = No, enter the return manually
+fileUploaded.checkYourAnswersLabel = file uploaded
+fileUploaded.error.required = Select yes if this is the correct file
+fileUploaded.failed.error.required = Select yes if you want to go back and try again
+fileUploaded.change.hidden = File uploaded
+fileUploaded.uploading = Your file is uploading. This page will update automatically.
+
+fileUploaded.redirectError.EntityTooLarge = The selected file must be smaller than 2MB
+fileUpload.redirectError.fileNotFound = No file selected
+fileUpload.redirectError.invalidType = The selected file must be a CSV
+fileUploaded.redirectError.default = The selected file could not be uploaded – try again
+
+fileUploaded.status.error.quarantine = The selected file you have uploaded has been flagged as malicious
+fileUploaded.status.error.rejected = The selected file could not be uploaded – try again
+fileUploaded.status.error.unknown = The selected file could not be uploaded – try again
+
+fileUploaded.status.error.not_csv = The selected file must be a CSV
+fileUploaded.status.error.default = The selected file could not be uploaded – try again
+fileUploaded.status.error.too_large = The selected file must be smaller than 2MB
+fileUploaded.status.error.invalid_file_type = You must save your file as a CSV before uploading
+
+dataError.title = There is an error in the file you uploaded
+dataError.heading = There is an error in the file you uploaded
+dataError.title.plural = There are {0} errors in the file you uploaded
+dataError.heading.plural = There are {0} errors in the file you uploaded
+dataError.subheading = Do you want to correct the file and upload it again?
+dataError.yes = Yes
+dataError.no = No, enter the return manually
+dataError.error.required = Select yes if you want to upload it again
+dataError.change.hidden = error in the file you uploaded
+
+dataError.errorMessage.incorrectCountry.p1 = The country in cell {0} has the wrong name.
+dataError.errorMessage.incorrectCountry.p2 = The country names must be the same as those in the notes section of the template document.
+dataError.errorMessage.invalidCharacter.p1 = Cell {0} contains an invalid character.
+dataError.errorMessage.invalidNumber.p1 = Cell {0} contains an amount in the wrong format.
+dataError.errorMessage.negativeNumber.p1 = Cell {0} has a negative amount.
+dataError.errorMessage.tooManyDecimals.p1 = Cell {0} has more than 2 decimal places.
+dataError.errorMessage.blankCell.p1 = Cell {0} is empty.
+dataError.errorMessage.incorrectVatRate.p1 = {0} has an incorrect VAT rate.
+dataError.errorMessage.duplicateVatRate.p1 = {0} to {1} has duplicate VAT rates. Only submit the totals at each VAT rate.
+dataError.errorMessage.tooManyColumns.p1 = Row {0} has more than 5 columns.
+dataError.errorMessage.tooManyColumns.p1.plural = Some rows have more than 5 columns.
+dataError.errorMessage.sameToAndFromCountry.p1 = You do not need to record sales from a country into the same country.
+dataError.errorMessage.sameToAndFromCountry.p1.plural = You do not need to record sales from a country into the same country.
+
+dataError.errorMessage.incorrectCountry.p1.plural = There are {0} countries that have the wrong name.
+dataError.errorMessage.incorrectCountry.p2.plural = The countries names must be the same as those in the notes section of the template document.
+dataError.errorMessage.invalidCharacter.p1.plural = There are {0} cells containing invalid characters
+dataError.errorMessage.invalidNumber.p1.plural = There are {0} cells containing invalid values.
+dataError.errorMessage.negativeNumber.p1.plural = There are {0} cells containing negative amounts.
+dataError.errorMessage.tooManyDecimals.p1.plural = There are {0} cells with more than 2 decimal places.
+dataError.errorMessage.blankCell.p1.plural = There are {0} empty cells
+dataError.errorMessage.incorrectVatRate.p1.plural = There are {0} cells with incorrect VAT rates
+dataError.errorMessage.duplicateVatRate.p1.plural = There are {0} duplicate country and VAT rate entries. Only submit the totals at each VAT rate.
+
+dataError.errorMessage.genericError.p1 = We cannot process your file because there are multiple errors.
+dataError.errorMessage.genericErrors.p2 = Make sure the file:
+dataError.errorMessage.genericErrors.bullet1 = has country names in the correct format
+dataError.errorMessage.genericErrors.bullet2 = uses correct number formats for VAT rates and cash values
+dataError.errorMessage.genericErrors.bullet3 = only includes numbers, letters and the symbols £ , . %
+dataError.errorMessage.genericErrors.bullet4 = does not have any blank cells or rows between entries
+dataError.errorMessage.genericErrors.p3 = You can check the notes page on the template for more information.

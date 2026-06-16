@@ -40,4 +40,8 @@ case object ConflictFound extends ErrorResponse {
   override val body = "Conflict"
 }
 
+case object InternalServerError extends ErrorResponse {
+  override val body: String = "Internal server error"
+}
+
 case class UnexpectedResponseStatus(status: Int, body: String) extends ErrorResponse
