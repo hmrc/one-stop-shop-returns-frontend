@@ -16,6 +16,7 @@
 
 package controllers.fileUpload
 
+import config.FrontendAppConfig
 import connectors.UpscanInitiateConnector
 import controllers.actions.*
 import forms.FileUploadFormProvider
@@ -37,6 +38,7 @@ class FileUploadController @Inject()(
                                        formProvider: FileUploadFormProvider,
                                        view: FileUploadView,
                                        upscanInitiateConnector: UpscanInitiateConnector,
+                                       appConfig: FrontendAppConfig,
                                        environment: Environment
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -48,15 +50,6 @@ class FileUploadController @Inject()(
 
       val period = request.userAnswers.period
       val redirectError = UpscanRedirectError.fromQuery(request)
-      val successUrl =
-        routes.FileUploadedController
-          .onPageLoad(mode, period)
-          .absoluteURL()
-
-      val errorUrl =
-        routes.FileUploadController
-          .onPageLoad(mode, period)
-          .absoluteURL()
 
       redirectError match {
         case Some(redirectErr) =>
@@ -67,8 +60,8 @@ class FileUploadController @Inject()(
           val errorMsg: Option[String] = request.flash.get("upscanError"). filter(_.nonEmpty)
 
           upscanInitiateConnector.initiateV2(
-            redirectOnSuccess = Some(successUrl),
-            redirectOnError = Some(errorUrl)
+            redirectOnSuccess = Some(appConfig.successEndPointTarget(period.toString)),
+            redirectOnError = Some(appConfig.errorEndPointTarget(period.toString))
           ).flatMap { initiateResponse =>
 
             for {
