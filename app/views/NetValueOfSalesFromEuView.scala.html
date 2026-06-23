@@ -53,7 +53,8 @@
                 field = form("value"),
                 label = HmrcPageHeadingLabel(
                     content = messages("netValueOfSalesFromEu.heading", vatRate.rateForDisplay),
-                    caption = messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name)
+                    caption = messages("caption.fromEu.periodAndCountries", period.displayText, countryFrom.name, countryTo.name),
+                    classes = "govuk-label--l"
                 )
             )
             .withWidth(Fixed10)

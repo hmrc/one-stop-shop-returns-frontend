@@ -51,7 +51,8 @@
                 field = form("value"),
                 legend = HmrcPageHeadingLegend(
                     content = messages("deleteSalesToEu.heading", countryFrom.name, countryTo.name),
-                    caption = period.displayText
+                    caption = period.displayText,
+                    classes = "govuk-fieldset__legend--l"
                 )
             )
         )

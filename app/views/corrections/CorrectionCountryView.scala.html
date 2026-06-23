@@ -44,7 +44,8 @@
         items = Country.euCountryWithNISelectItems,
         label = HmrcPageHeadingLabel(
           content = messages("correctionCountry.heading"),
-          caption = messages("correctionCountry.caption", correctionPeriod.displayText)
+          caption = messages("correctionCountry.caption", correctionPeriod.displayText),
+          classes = "govuk-label--l"
         )
       ).asAccessibleAutocomplete(Some(
         AccessibleAutocomplete(

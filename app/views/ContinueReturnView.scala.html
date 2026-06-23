@@ -37,7 +37,8 @@
                 field  = form("value"),
                 legend = HmrcPageHeadingLegend(
                         content = messages("continueReturn.heading"),
-                        caption = period.displayText
+                        caption = period.displayText,
+                        classes = "govuk-fieldset__legend--l"
                         ),
                 items  = ContinueReturn.options
             )

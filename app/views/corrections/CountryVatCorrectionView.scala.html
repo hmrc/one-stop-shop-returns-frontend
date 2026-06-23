@@ -52,7 +52,10 @@
                 field = form("value"),
                 label = HmrcPageHeadingLabel(
                     content = messages("countryVatCorrection.heading", country.name),
-                    caption = messages("countryVatCorrection.caption", correctionPeriod.displayText)))
+                    caption = messages("countryVatCorrection.caption", correctionPeriod.displayText),
+                    classes = "govuk-label--l"
+                )
+            )
             .withWidth(Fixed10)
             .withCssClass("govuk-currency-input__inner__input")
             .withPrefix(PrefixOrSuffix(content = Text("£")))
