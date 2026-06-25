@@ -42,7 +42,8 @@
         items = Country.euCountrySelectItems,
         label = HmrcPageHeadingLabel(
           content = messages("countryOfSaleFromEu.heading"),
-          caption = period.displayText
+          caption = period.displayText,
+          classes = "govuk-label--l"
         )
       ).asAccessibleAutocomplete(Some(
         AccessibleAutocomplete(

@@ -38,8 +38,11 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = HmrcPageHeadingLegend(content = HtmlContent(Html(messages("vatPayableForCountry.heading", selectedCountry.name, currencyFormat(newAmount)))),
-                                caption = messages("vatPayableForCountry.caption", correctionPeriod.displayText))
+                legend = HmrcPageHeadingLegend(
+                    content = HtmlContent(Html(messages("vatPayableForCountry.heading", selectedCountry.name, currencyFormat(newAmount)))),
+                    caption = messages("vatPayableForCountry.caption", correctionPeriod.displayText),
+                    classes = "govuk-fieldset__legend--l"
+                )
 
             ).withHint(HintViewModel(HtmlContent(Html(messages("vatPayableForCountry.hint")))))
         )

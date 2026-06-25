@@ -133,7 +133,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           val responseString = contentAsString(result)
           val doc = Jsoup.parse(responseString)
 
-          doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
+          doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
           doc.getElementsByClass("govuk-table__row").size() mustBe expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
@@ -178,7 +178,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
             val responseString = contentAsString(result)
             val doc = Jsoup.parse(responseString)
 
-            doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
+            doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
             doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
 
             val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
