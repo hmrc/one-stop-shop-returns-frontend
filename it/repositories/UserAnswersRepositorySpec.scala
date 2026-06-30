@@ -38,9 +38,12 @@ class UserAnswersRepositorySpec
   private val mockAppConfig = mock[FrontendAppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L
 
+  private val userAnswers = UserAnswers("id", StandardPeriod(2021, Q3))
+  private val otherUserAnswers = UserAnswers("id", StandardPeriod(2021, Q4))
+
   private val mockConfiguration = mock[Configuration]
   private val mockConfig = mock[Config]
-  private val mockEncryptionService: EncryptionService = new EncryptionService(mockConfiguration)
+  private val mockEncryptionService: EncryptionService = mock[EncryptionService]
   private val encryptor = new UserAnswersEncryptor(mockAppConfig, mockEncryptionService)
   private val secretKey: String = "VqmXp7yigDFxbCUdDdNZVIvbW6RgPNJsliv6swQNCL8="
 
@@ -55,16 +58,19 @@ class UserAnswersRepositorySpec
   when(mockConfig.getString(any())) thenReturn secretKey
   when(mockAppConfig.encryptionKey) thenReturn secretKey
 
+  private val encryptedUserAnswersData = "WovNVJUSKWKgpi/IrP3cgnx1COboOHM/0XqRS8XWpoD0Gj2Ng+DxqPUEXnEP"
+  when(mockEncryptionService.encryptField(any())) thenReturn encryptedUserAnswersData
+  when(mockEncryptionService.decryptField(any())) thenReturn userAnswers.data.toString
+
   ".set" - {
 
     "must set the last updated time on the supplied user answers to `now`, and save them" in {
 
-      val answers = UserAnswers("id", StandardPeriod(2021, Q3))
-      val expectedResult = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
+      val expectedResult = userAnswers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
       val encryptedExpectedResult = encryptor.encryptUserAnswers(expectedResult)
 
-      val setResult     = repository.set(answers).futureValue
-      val updatedRecord = find(Filters.equal("userId", answers.userId)).futureValue.headOption.value
+      val setResult     = repository.set(userAnswers).futureValue
+      val updatedRecord = find(Filters.equal("userId", userAnswers.userId)).futureValue.headOption.value
 
       setResult mustEqual true
       updatedRecord mustEqual encryptedExpectedResult
@@ -77,13 +83,11 @@ class UserAnswersRepositorySpec
 
       "must update the lastUpdated time and get the record" in {
 
-        val answers = UserAnswers("id", StandardPeriod(2021, Q3))
-        val otherAnswers = UserAnswers("id", StandardPeriod(2021, Q4))
-        insert(encryptor.encryptUserAnswers(answers)).futureValue
-        insert(encryptor.encryptUserAnswers(otherAnswers)).futureValue
+        insert(encryptor.encryptUserAnswers(userAnswers)).futureValue
+        insert(encryptor.encryptUserAnswers(otherUserAnswers)).futureValue
 
-        val result         = repository.get(answers.userId, StandardPeriod(2021, Q3)).futureValue
-        val expectedResult = answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
+        val result         = repository.get(userAnswers.userId, StandardPeriod(2021, Q3)).futureValue
+        val expectedResult = userAnswers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
 
         result.value mustEqual expectedResult
       }
@@ -93,8 +97,7 @@ class UserAnswersRepositorySpec
 
       "must return None" in {
 
-        val answers = UserAnswers("id", StandardPeriod(2021, Q3))
-        insert(encryptor.encryptUserAnswers(answers)).futureValue
+        insert(encryptor.encryptUserAnswers(userAnswers)).futureValue
 
         repository.get("id", StandardPeriod(2021, Q4)).futureValue must not be defined
       }
@@ -105,16 +108,12 @@ class UserAnswersRepositorySpec
 
     "must remove a record" in {
 
-      val period = StandardPeriod(2021, Q3)
+      insert(encryptor.encryptUserAnswers(userAnswers)).futureValue
 
-      val answers = UserAnswers("id", period)
-
-      insert(encryptor.encryptUserAnswers(answers)).futureValue
-
-      val result = repository.clear(answers.userId).futureValue
+      val result = repository.clear(userAnswers.userId).futureValue
 
       result mustEqual true
-      repository.get(answers.userId, period).futureValue must not be defined
+      repository.get(userAnswers.userId, StandardPeriod(2021, Q3)).futureValue must not be defined
     }
 
     "must return true when there is no record to remove" in {
@@ -130,16 +129,15 @@ class UserAnswersRepositorySpec
 
       "must update their lastUpdated to `now` and return true" in {
 
-        val answers = UserAnswers("id", StandardPeriod(2021, Q3))
-        val otherAnswers = UserAnswers("id", StandardPeriod(2021, Q4))
-        insert(encryptor.encryptUserAnswers(answers)).futureValue
-        insert(encryptor.encryptUserAnswers(otherAnswers)).futureValue
+
+        insert(encryptor.encryptUserAnswers(userAnswers)).futureValue
+        insert(encryptor.encryptUserAnswers(otherUserAnswers)).futureValue
 
         val result = repository.keepAlive("id").futureValue
 
         val expectedUpdatedAnswers = Seq(
-          answers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS)),
-          otherAnswers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
+          userAnswers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS)),
+          otherUserAnswers copy (lastUpdated = Instant.now(stubClock).truncatedTo(ChronoUnit.MILLIS))
         )
 
         val encryptedExpectedUpdatedAnswers = expectedUpdatedAnswers.map(encryptor.encryptUserAnswers)
