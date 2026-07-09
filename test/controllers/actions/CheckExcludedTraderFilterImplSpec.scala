@@ -41,7 +41,7 @@ class CheckExcludedTraderFilterImplSpec extends SpecBase with MockitoSugar {
   }
 
   private val periodYear = 2022
-  private val exclusionReason = Gen.oneOf(ExclusionReason.values).sample.value
+  private val exclusionReason = Gen.oneOf(ExclusionReason.values.filterNot(_ == ExclusionReason.Reversal)).sample.value
 
   ".filter" - {
 
