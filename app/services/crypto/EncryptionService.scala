@@ -23,12 +23,19 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class EncryptionService @Inject()(configuration: Configuration) {
-
-  protected lazy val crypto: Encrypter with Decrypter = SymmetricCryptoFactory.aesCryptoFromConfig(
+  
+  protected lazy val aesGcmCrypto: Encrypter with Decrypter = SymmetricCryptoFactory.aesGcmCryptoFromConfig(
     baseConfigKey = "mongodb.encryption",
     config = configuration.underlying
   )
 
+  protected lazy val aesCrypto: Encrypter with Decrypter = SymmetricCryptoFactory.aesCryptoFromConfig(
+    baseConfigKey = "mongodb.encryption",
+    config = configuration.underlying
+  )
+
+  protected lazy val crypto: Encrypter with Decrypter = SymmetricCryptoFactory.composeCrypto(aesGcmCrypto, Seq(aesCrypto))
+  
   def encryptField(rawValue: String): String = {
    crypto.encrypt(PlainText(rawValue)).value
   }
