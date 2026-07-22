@@ -78,7 +78,7 @@ class DataErrorController @Inject()(
     val hasMultipleTypes = errorType.size >= 2
     
     if (hasMultipleTypes) {
-      val groupedErrors: Seq[String] = 
+      val groupedErrors: Seq[String] =
         errors
           .groupBy {
             case _: CsvError.InvalidCountry => "incorrectCountry"
@@ -91,6 +91,7 @@ class DataErrorController @Inject()(
             case _: CsvError.DuplicateVatRate => "duplicateVatRate" 
             case _: CsvError.TooManyColumns => "tooManyColumns"
             case _: CsvError.SameToAndFromCountry => "sameToAndFromCountry"
+            case _: CsvError.GenericTooManyColumns => "genericTooManyColumns"
           }
           .toSeq
           .sortBy(_._1)
@@ -208,6 +209,9 @@ class DataErrorController @Inject()(
 
         case Some(_: CsvError.SameToAndFromCountry) =>
           Seq(messages("dataError.errorMessage.sameToAndFromCountry.p1"))
+
+        case Some(_: CsvError.GenericTooManyColumns) =>
+          Seq(messages("dataError.errorMessage.genericTooManyColumns.p1.plural"))
 
         case _ =>
           Seq(messages("dataError.errorMessage.genericError.p1"))

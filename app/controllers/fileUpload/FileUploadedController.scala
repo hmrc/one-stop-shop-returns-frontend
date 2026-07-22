@@ -16,6 +16,7 @@
 
 package controllers.fileUpload
 
+import com.univocity.parsers.common.TextParsingException
 import connectors.FileUploadOutcomeConnector
 import controllers.actions.*
 import forms.FileUploadedFormProvider
@@ -111,28 +112,43 @@ class FileUploadedController @Inject()(
 
     fileUploadOutcomeConnector.getCsv(reference).flatMap {
       case Right(csv) =>
-        val rows = CsvParserService.split(csv)
-        val period = answers.period
-        val isOnlineMarketPlace = request.registration.isOnlineMarketplace
+        CsvParserService.split(csv) match {
+          case Success(rows) =>
+            val period = answers.period
+            val isOnlineMarketPlace = request.registration.isOnlineMarketplace
 
-        csvValidator.validateOrThrow(rows, period, isOnlineMarketPlace).flatMap { _ =>
-          Try(csvParserService.populateUserAnswersFromCsv(answers, csv)).flatten match {
-            case Success(updatedAnswers) =>
-              cc.sessionRepository.set(updatedAnswers).map { _ =>
-                Redirect(FileUploadedPage.navigate(mode, updatedAnswers))
+            csvValidator.validateOrThrow(rows, period, isOnlineMarketPlace).flatMap { _ =>
+              Try(csvParserService.populateUserAnswersFromCsv(answers, rows)).flatten match {
+                case Success(updatedAnswers) =>
+                  cc.sessionRepository.set(updatedAnswers).map { _ =>
+                    Redirect(FileUploadedPage.navigate(mode, updatedAnswers))
+                  }
+                case Failure(e) =>
+                  logger.warn(s"Csv parsing failed", e)
+                  Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(mode, answers.period)).toFuture
               }
-            case Failure(e) =>
-              logger.warn(s"Csv parsing failed", e)
-              Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(mode, answers.period)).toFuture
-          }
-        }.recoverWith {
-          case CsvValidationException(errs) =>
-            val uaWithErrors = answers.set(CsvValidationErrorsPage, errs)
+            }.recoverWith {
+              case CsvValidationException(errs) =>
+                val uaWithErrors = answers.set(CsvValidationErrorsPage, errs)
+                Future.fromTry(uaWithErrors).flatMap { uaWithErrors =>
+                  cc.sessionRepository.set(uaWithErrors).map { _ =>
+                    Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(mode, answers.period))
+                  }
+                }
+            }
+          case Failure(exception: TextParsingException) =>
+            val errors = Seq(
+              CsvError.GenericTooManyColumns(0, CsvColumn.A)
+            )
+            val uaWithErrors = answers.set(CsvValidationErrorsPage, errors)
+
             Future.fromTry(uaWithErrors).flatMap { uaWithErrors =>
               cc.sessionRepository.set(uaWithErrors).map { _ =>
                 Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(mode, answers.period))
               }
             }
+          case Failure(exception) =>
+            Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(mode, answers.period)).toFuture
         }
       case Left(_) =>
         Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(mode, answers.period)).toFuture
