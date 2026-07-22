@@ -23,10 +23,12 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{CountryOfConsumptionFromEuPage, CountryOfConsumptionFromNiPage, CountryOfSaleFromEuPage, NetValueOfSalesFromEuPage, NetValueOfSalesFromNiPage, SoldGoodsFromEuPage, SoldGoodsFromNiPage, VatOnSalesFromEuPage, VatOnSalesFromNiPage}
 
+import scala.util.{Success, Try}
+
 class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with BeforeAndAfterEach {
 
   "CSV Parser must" - {
-    CsvParserService.split("") mustBe Seq()
+    CsvParserService.split("") mustBe Success(Seq())
   }
 
   "parse for a simple string of elements without quotes with multiple rows in the CSV with no quotes" in {
@@ -41,18 +43,18 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
         |""".stripMargin
     }
 
-    val actual: Seq[Seq[String]] = CsvParserService.split(validCSVContent).map(_.toSeq)
+    val actual: Try[Seq[Seq[String]]] = CsvParserService.split(validCSVContent).map(_.map(_.toSeq))
     val expected: Seq[Seq[String]] = Seq(
-      Seq("HM Revenue and Customs logo","","",""),
+      Seq("HM Revenue and Customs logo", "", "", ""),
       Seq("One Stop Shop VAT return", "", "", ""),
-      Seq("Country your goods sold from", "EU country you sold those goods to","VAT % rate","Total eligible sales","Total VAT due"),
-      Seq("Northern Ireland","Germany","12.50%","£1200","£140"),
-      Seq("Northern Ireland","France","15","33,333","£4423"),
-      Seq("Austria","France","10%","150.01","£15"),
-      Seq("France","Austria","12.50%","£1200","£140")
+      Seq("Country your goods sold from", "EU country you sold those goods to", "VAT % rate", "Total eligible sales", "Total VAT due"),
+      Seq("Northern Ireland", "Germany", "12.50%", "£1200", "£140"),
+      Seq("Northern Ireland", "France", "15", "33,333", "£4423"),
+      Seq("Austria", "France", "10%", "150.01", "£15"),
+      Seq("France", "Austria", "12.50%", "£1200", "£140")
     )
 
-    actual `mustBe` expected
+    actual `mustBe` Success(expected)
   }
 
   "populate user answers from CSV for NI to EU sales" in {
@@ -66,7 +68,9 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
         |""".stripMargin
 
     val service = new CsvParserService()
-    val result = service.populateUserAnswersFromCsv(emptyUserAnswers, csv)
+    val result = CsvParserService.split(csv).flatMap{ csvRows =>
+      service.populateUserAnswersFromCsv(emptyUserAnswers, csvRows)
+    }
 
     result.isSuccess mustBe true
 
@@ -96,7 +100,9 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
         |""".stripMargin
 
     val service = new CsvParserService()
-    val result = service.populateUserAnswersFromCsv(emptyUserAnswers, csv)
+    val result = CsvParserService.split(csv).flatMap{ csvRows =>
+      service.populateUserAnswersFromCsv(emptyUserAnswers, csvRows)
+    }
 
     result.isSuccess mustBe true
 
@@ -128,8 +134,10 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
         |"France","Austria","12.50%","£1200","£140"
         |""".stripMargin
 
-    val service = new CsvParserService()
-    val result = service.populateUserAnswersFromCsv(emptyUserAnswers, csv)
+    val result = CsvParserService.split(csv).flatMap { csvRows =>
+      val service = new CsvParserService()
+      service.populateUserAnswersFromCsv(emptyUserAnswers, csvRows)
+    }
 
     result.isSuccess mustBe true
 

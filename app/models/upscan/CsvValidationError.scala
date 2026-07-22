@@ -31,16 +31,17 @@ object CsvColumn {
 sealed trait CsvError { def row: Int; def column: CsvColumn; def cellRef: String = s"${column.letter}$row"}
 
 object CsvError {
-  final case class  InvalidCountry(row: Int, column: CsvColumn, value: String) extends CsvError
-  final case class  InvalidCharacter(row: Int, column: CsvColumn, value: String) extends CsvError
-  final case class  InvalidNumberFormat(row: Int, column: CsvColumn, value: String) extends CsvError
-  final case class  NegativeNumber(row: Int, column: CsvColumn, value: BigDecimal) extends CsvError
-  final case class  TooMayDecimals(row: Int, column: CsvColumn, value: BigDecimal) extends CsvError
-  final case class  BlankCell(row: Int, column: CsvColumn) extends CsvError
-  final case class  VatRateNotAllowed(row: Int, column: CsvColumn, country: String, value: String) extends CsvError
-  final case class  DuplicateVatRate(row: Int, column: CsvColumn, countryFrom: String, countryTo: String, value: String) extends CsvError
-  final case class  TooManyColumns(row: Int, column: CsvColumn, actualColumns: Int) extends CsvError
-  final case class  SameToAndFromCountry(row: Int, column: CsvColumn, countryFrom: String, countryTo: String, value: String) extends CsvError
+  final case class InvalidCountry(row: Int, column: CsvColumn, value: String) extends CsvError
+  final case class InvalidCharacter(row: Int, column: CsvColumn, value: String) extends CsvError
+  final case class InvalidNumberFormat(row: Int, column: CsvColumn, value: String) extends CsvError
+  final case class NegativeNumber(row: Int, column: CsvColumn, value: BigDecimal) extends CsvError
+  final case class TooMayDecimals(row: Int, column: CsvColumn, value: BigDecimal) extends CsvError
+  final case class BlankCell(row: Int, column: CsvColumn) extends CsvError
+  final case class VatRateNotAllowed(row: Int, column: CsvColumn, country: String, value: String) extends CsvError
+  final case class DuplicateVatRate(row: Int, column: CsvColumn, countryFrom: String, countryTo: String, value: String) extends CsvError
+  final case class TooManyColumns(row: Int, column: CsvColumn, actualColumns: Int) extends CsvError
+  final case class SameToAndFromCountry(row: Int, column: CsvColumn, countryFrom: String, countryTo: String, value: String) extends CsvError
+  final case class GenericTooManyColumns(row: Int, column: CsvColumn) extends CsvError
 }
 
 final case class CsvValidationException(errors: Seq[CsvError]) extends RuntimeException(s"CSV validation error at ${errors.map(_.cellRef).mkString(", ")}")
@@ -68,34 +69,37 @@ implicit val csvErrorFormat: Format[CsvError] = {
   val duplicateVatRate = Json.format[CsvError.DuplicateVatRate]
   val tooManyColumns = Json.format[CsvError.TooManyColumns]
   val sameToAndFromCountry = Json.format[CsvError.SameToAndFromCountry]
-  
+  val genericTooManyColumns = Json.format[CsvError.GenericTooManyColumns]
+
   new Format[CsvError] {
     
     def writes(o: CsvError): JsObject = o match {
-      case e: CsvError.InvalidCountry       => invalidCountry.writes(e) + ("type" -> JsString("InvalidCountry"))
-      case e: CsvError.InvalidCharacter     => invalidCharacter.writes(e) + ("type" -> JsString("InvalidCharacter"))
-      case e: CsvError.InvalidNumberFormat  => invalidNumberFormat.writes(e) + ("type" -> JsString("InvalidNumberFormat"))
-      case e: CsvError.NegativeNumber       => negativeNumber.writes(e) + ("type" -> JsString("NegativeNumber"))
-      case e: CsvError.TooMayDecimals       => tooMayDecimals.writes(e) + ("type" -> JsString("TooMayDecimals"))
-      case e: CsvError.BlankCell            => blankCell.writes(e) + ("type" -> JsString("BlankCell"))
-      case e: CsvError.VatRateNotAllowed    => vatRateNotAllowed.writes(e) + ("type" -> JsString("VatRateNotAllowed"))
-      case e: CsvError.DuplicateVatRate     => duplicateVatRate.writes(e) + ("type" -> JsString("DuplicateVatRate"))
-      case e: CsvError.TooManyColumns       => tooManyColumns.writes(e) + ("type" -> JsString("TooManyColumns"))
-      case e: CsvError.SameToAndFromCountry => sameToAndFromCountry.writes(e) + ("type" -> JsString("SameToAndFromCountry"))
+      case e: CsvError.InvalidCountry        => invalidCountry.writes(e) + ("type" -> JsString("InvalidCountry"))
+      case e: CsvError.InvalidCharacter      => invalidCharacter.writes(e) + ("type" -> JsString("InvalidCharacter"))
+      case e: CsvError.InvalidNumberFormat   => invalidNumberFormat.writes(e) + ("type" -> JsString("InvalidNumberFormat"))
+      case e: CsvError.NegativeNumber        => negativeNumber.writes(e) + ("type" -> JsString("NegativeNumber"))
+      case e: CsvError.TooMayDecimals        => tooMayDecimals.writes(e) + ("type" -> JsString("TooMayDecimals"))
+      case e: CsvError.BlankCell             => blankCell.writes(e) + ("type" -> JsString("BlankCell"))
+      case e: CsvError.VatRateNotAllowed     => vatRateNotAllowed.writes(e) + ("type" -> JsString("VatRateNotAllowed"))
+      case e: CsvError.DuplicateVatRate      => duplicateVatRate.writes(e) + ("type" -> JsString("DuplicateVatRate"))
+      case e: CsvError.TooManyColumns        => tooManyColumns.writes(e) + ("type" -> JsString("TooManyColumns"))
+      case e: CsvError.SameToAndFromCountry  => sameToAndFromCountry.writes(e) + ("type" -> JsString("SameToAndFromCountry"))
+      case e: CsvError.GenericTooManyColumns => genericTooManyColumns.writes(e) + ("type" -> JsString("GenericTooManyColumns"))
     }
     
     def reads(json: JsValue): JsResult[CsvError] = (json \ "type").validate[String].flatMap {
-      case "InvalidCountry"       => invalidCountry.reads(json)
-      case "InvalidCharacter"     => invalidCharacter.reads(json)
-      case "InvalidNumberFormat"  => invalidNumberFormat.reads(json)
-      case "NegativeNumber"       => negativeNumber.reads(json)
-      case "TooMayDecimals"       => tooMayDecimals.reads(json)
-      case "BlankCell"            => blankCell.reads(json)
-      case "VatRateNotAllowed"    => vatRateNotAllowed.reads(json)
-      case "DuplicateVatRate"     => duplicateVatRate.reads(json)
-      case "TooManyColumns"       => tooManyColumns.reads(json)
-      case "SameToAndFromCountry" => sameToAndFromCountry.reads(json)
-      case other                  => JsError(s"Unknown type $other")
+      case "InvalidCountry"        => invalidCountry.reads(json)
+      case "InvalidCharacter"      => invalidCharacter.reads(json)
+      case "InvalidNumberFormat"   => invalidNumberFormat.reads(json)
+      case "NegativeNumber"        => negativeNumber.reads(json)
+      case "TooMayDecimals"        => tooMayDecimals.reads(json)
+      case "BlankCell"             => blankCell.reads(json)
+      case "VatRateNotAllowed"     => vatRateNotAllowed.reads(json)
+      case "DuplicateVatRate"      => duplicateVatRate.reads(json)
+      case "TooManyColumns"        => tooManyColumns.reads(json)
+      case "SameToAndFromCountry"  => sameToAndFromCountry.reads(json)
+      case "GenericTooManyColumns" => genericTooManyColumns.reads(json)
+      case other                   => JsError(s"Unknown type $other")
     }
   }
 }

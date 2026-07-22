@@ -23,6 +23,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.fileUpload.CsvParserService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import scala.util.{Failure, Success}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,9 +32,9 @@ class TestOnlyCsvToUserAnswersController @Inject()(
                                                     cc: AuthenticatedControllerComponents,
                                                     csvParser: CsvParserService
                                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
-  
+
   protected val controllerComponents: MessagesControllerComponents = cc
-  
+
   private val inlineCsv: String =
 
     """"HM Revenue and Customs logo","","",""
@@ -48,15 +49,23 @@ class TestOnlyCsvToUserAnswersController @Inject()(
   def populateUserAnswersFromCsv(period: Period): Action[AnyContent] = cc.authAndGetData(period).async {
     implicit request =>
 
-      Future.fromTry(csvParser.populateUserAnswersFromCsv(request.userAnswers, inlineCsv))
-        .flatMap { updatedAnswers =>
-          cc.sessionRepository.set(updatedAnswers).map { _ =>
-            Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url)
-          }
+      CsvParserService.split(inlineCsv) match {
+        case Success(csvRows) => {
+          Future.fromTry(csvParser.populateUserAnswersFromCsv(request.userAnswers, csvRows))
+            .flatMap { updatedAnswers =>
+              cc.sessionRepository.set(updatedAnswers).map { _ =>
+                Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(period).url)
+              }
+            }
+            .recover { case _ =>
+              logger.error("Failed to populate user answers from CSV")
+              InternalServerError
+            }
         }
-        .recover { case _ =>
-          logger.error("Failed to populate user answers from CSV")
-          InternalServerError
-        }
+        case Failure(exception) =>
+          throw exception
+      }
+
+
   }
 }
