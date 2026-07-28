@@ -16,7 +16,8 @@
 
 package controllers
 
-import controllers.actions._
+import config.FrontendAppConfig
+import controllers.actions.*
 import forms.StartReturnFormProvider
 import models.Period
 import pages.StartReturnPage
@@ -24,8 +25,10 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.PartialReturnPeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.BiennialRegistrationCheck.changeDateMoreThanTwoYears
 import views.html.StartReturnView
 
+import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,6 +36,8 @@ class StartReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
                                        partialReturnPeriodService: PartialReturnPeriodService,
+                                       frontendAppConfig: FrontendAppConfig,
+                                       clock: Clock,
                                        view: StartReturnView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -50,6 +55,12 @@ class StartReturnController @Inject()(
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
     implicit request =>
 
+      val registrationReviewDue: Boolean = if (frontendAppConfig.registrationReviewEnabled) {
+        request.registration.adminUse.changeDate.exists(changeDate => changeDateMoreThanTwoYears(changeDate, clock))
+      } else {
+        false
+      }
+
       val form = formProvider(period)
 
       form.bindFromRequest().fold(
@@ -63,7 +74,7 @@ class StartReturnController @Inject()(
           if (!value) {
             cc.sessionRepository.clear(request.userId)
           }
-          Future.successful(Redirect(StartReturnPage.navigate(period, value)))
+          Future.successful(Redirect(StartReturnPage(registrationReviewDue).navigate(period, value)))
         }
       )
   }

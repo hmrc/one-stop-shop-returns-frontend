@@ -359,3 +359,6 @@ GET        /:period/csv-data-error                                              
 POST       /:period/csv-data-error                                                                                  controllers.fileUpload.DataErrorController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET        /:period/change-csv-data-error                                                                           controllers.fileUpload.DataErrorController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST       /:period/change-csv-data-error                                                                           controllers.fileUpload.DataErrorController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /:period/review-registration                                                                             controllers.CheckRegistrationUptoDateController.onPageLoad(period: Period)
+POST       /:period/review-registration                                                                             controllers.CheckRegistrationUptoDateController.onSubmit(period: Period)

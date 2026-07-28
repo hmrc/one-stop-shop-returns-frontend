@@ -2947,8 +2947,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         commencementDate = LocalDate.now,
         isOnlineMarketplace = false,
         None,
+        None, 
         None,
-        None
+        adminUse = AdminUse(changeDate = None)
       )
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = None, registration = newRegistration)

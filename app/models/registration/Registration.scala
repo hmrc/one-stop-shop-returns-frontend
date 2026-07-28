@@ -32,7 +32,8 @@ case class Registration(
                          isOnlineMarketplace: Boolean,
                          excludedTrader: Option[ExcludedTrader],
                          transferringMsidEffectiveFromDate: Option[LocalDate],
-                         unusableStatus: Option[Boolean] = None
+                         unusableStatus: Option[Boolean] = None,
+                         adminUse: AdminUse
                        )
 
 object Registration {

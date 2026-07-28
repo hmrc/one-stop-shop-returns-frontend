@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package config
+package utils
 
-object Constants {
+import config.Constants.registrationLastUpdatedCheck
 
-  val maxCurrencyAmount: BigDecimal = 1000000000
-  val minCurrencyAmount: BigDecimal = -1000000000
-  val exclusionCodeSixFollowingMonth: Int = 1
-  val exclusionCodeSixTenthOfMonth: Int = 10
-  val submittedReturnsPeriodsLimit: Int = 6
-  val registrationLastUpdatedCheck: Int = 2
+import java.time.{Clock, LocalDateTime}
 
+object BiennialRegistrationCheck {
+  
+  def changeDateMoreThanTwoYears(changeDate: LocalDateTime, clock: Clock): Boolean = {
+    val twoYearsAgo = LocalDateTime.now(clock).minusYears(registrationLastUpdatedCheck)
+    changeDate.isBefore(twoYearsAgo)
+  }
 }

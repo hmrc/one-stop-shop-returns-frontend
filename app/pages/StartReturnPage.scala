@@ -21,7 +21,7 @@ import models.{NormalMode, Period}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object StartReturnPage extends QuestionPage[Boolean] {
+case class StartReturnPage(registrationReviewDue: Boolean) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -29,7 +29,11 @@ case object StartReturnPage extends QuestionPage[Boolean] {
 
   def navigate(period: Period, startReturn: Boolean): Call =
     if (startReturn) {
-      controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period)
+      if (registrationReviewDue) {
+        routes.CheckRegistrationUptoDateController.onPageLoad(period)
+      } else {
+        controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period)
+      }
     } else {
       routes.NoOtherPeriodsAvailableController.onPageLoad()
     }

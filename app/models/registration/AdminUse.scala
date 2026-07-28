@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package config
+package models.registration
 
-object Constants {
+import play.api.libs.json.{Json, OFormat}
 
-  val maxCurrencyAmount: BigDecimal = 1000000000
-  val minCurrencyAmount: BigDecimal = -1000000000
-  val exclusionCodeSixFollowingMonth: Int = 1
-  val exclusionCodeSixTenthOfMonth: Int = 10
-  val submittedReturnsPeriodsLimit: Int = 6
-  val registrationLastUpdatedCheck: Int = 2
+import java.time.LocalDateTime
 
+case class AdminUse(changeDate: Option[LocalDateTime])
+
+object AdminUse {
+
+  implicit val format: OFormat[AdminUse] = Json.format[AdminUse]
 }

@@ -108,4 +108,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   def errorEndPointTarget(period: String): String = {
     configuration.get[String]("upscan.error-endpoint").format(period)
   }
+
+  val registrationReviewEnabled: Boolean = configuration.get[Boolean]("features.registration-review-enabled")
 }

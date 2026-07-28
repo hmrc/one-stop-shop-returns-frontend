@@ -6,6 +6,7 @@ site.change = Change
 site.no = No
 site.yes = Yes
 site.continue = Continue
+site.skip = Skip for now
 site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
@@ -751,3 +752,8 @@ dataError.errorMessage.genericErrors.bullet2 = uses correct number formats for V
 dataError.errorMessage.genericErrors.bullet3 = only includes numbers, letters and the symbols £ , . %
 dataError.errorMessage.genericErrors.bullet4 = does not have any blank cells, rows or columns between entries
 dataError.errorMessage.genericErrors.p3 = You can check the notes page on the template for more information.
+
+checkRegistrationUptoDate.title = Check your registration is up to date
+checkRegistrationUptoDate.heading = Check your registration is up to date
+checkRegistrationUptoDate.p1 = You have not reviewed your OSS registration details for over 2 years. It is important that you keep them up to date.
+checkRegistrationUptoDate.reviewAndUpdate = <a class="govuk-link" href="{0}">Review your registration details</a>
