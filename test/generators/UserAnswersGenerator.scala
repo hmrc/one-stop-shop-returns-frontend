@@ -46,7 +46,7 @@ trait UserAnswersGenerator extends TryValues {
     arbitrary[(SoldGoodsFromNiPage.type, JsValue)] ::
     arbitrary[(DeleteSalesFromNiPage, JsValue)] ::
     arbitrary[(CountryOfConsumptionFromNiPage, JsValue)] ::
-    arbitrary[(StartReturnPage.type, JsValue)] ::
+    arbitrary[(StartReturnPage, JsValue)] ::
     Nil
 
   implicit lazy val arbitraryUserData: Arbitrary[UserAnswers] = {

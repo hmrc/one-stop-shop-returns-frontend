@@ -76,7 +76,8 @@ trait SpecBase
     isOnlineMarketplace   = false,
     None,
     None,
-    unusableStatus = None
+    unusableStatus = None,
+    adminUse = AdminUse(changeDate = None)
   )
 
   val twentyPercentVatRate = VatRate(20, VatRateType.Reduced, arbitraryDate)

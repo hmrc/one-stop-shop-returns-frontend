@@ -217,6 +217,16 @@ trait ModelGenerators {
     }
 
 
+  implicit val arbitraryAdminUse: Arbitrary[AdminUse] = {
+    Arbitrary {
+      for {
+        changeDate <- arbitrary[LocalDateTime]
+      } yield {
+        AdminUse(changeDate = Some(changeDate))
+      }
+    }
+  }
+
   implicit val arbitraryRegistration: Arbitrary[Registration] =
     Arbitrary {
       for {
@@ -226,7 +236,8 @@ trait ModelGenerators {
         contactDetails <- arbitrary[ContactDetails]
         commencementDate <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.now)
         isOnlineMarketplace <- arbitrary[Boolean]
-      } yield Registration(vrn, name, vatDetails, Nil, contactDetails, commencementDate, isOnlineMarketplace, None, None, None)
+        adminUse <- arbitrary[AdminUse]
+      } yield Registration(vrn, name, vatDetails, Nil, contactDetails, commencementDate, isOnlineMarketplace, None, None, None, adminUse)
     }
 
   implicit val arbitraryDomainVatRate: Arbitrary[DomainVatRate] =

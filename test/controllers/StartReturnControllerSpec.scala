@@ -20,19 +20,20 @@ import base.SpecBase
 import forms.StartReturnFormProvider
 import models.{Country, PartialReturnPeriod}
 import models.Quarter.Q4
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import models.registration.AdminUse
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{CountryOfConsumptionFromNiPage, StartReturnPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.UserAnswersRepository
 import services.PartialReturnPeriodService
 import views.html.StartReturnView
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.Future
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar {
@@ -67,6 +68,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must return OK and the correct view for a GET when partial return" in {
+
       val partialReturn = Some(PartialReturnPeriod(LocalDate.now, LocalDate.now, 2023, Q4))
 
       when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(partialReturn)
@@ -106,7 +108,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = true).url
+        redirectLocation(result).value mustEqual StartReturnPage(registrationReviewDue = false).navigate(period, startReturn = true).url
       }
     }
 
@@ -125,11 +127,44 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = false).url
+        redirectLocation(result).value mustEqual StartReturnPage(registrationReviewDue = false).navigate(period, startReturn = false).url
       }
     }
 
-    "must clear useranswers when answer is no" in {
+    "when registration-review-enabled" - {
+
+      "must redirect to the Check Registration Upto Date page when answer is Yes and registrationReviewDue true" in {
+
+        val changeDate: LocalDateTime = LocalDateTime.now(stubClockAtArbitraryDate).minusYears(2).minusDays(1)
+
+        val application = applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          registration = registration.copy(
+            adminUse = AdminUse(
+              changeDate = Some(changeDate)
+            )
+          )
+        )
+          .configure("features.registration-review-enabled" -> true)
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .build()
+
+        running(application) {
+
+          val request =
+            FakeRequest(POST, startReturnRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual StartReturnPage(registrationReviewDue = true).navigate(period, startReturn = true).url
+        }
+      }
+    }
+
+    "must clear user answers when answer is no" in {
+
       val mockSessionRepository = mock[UserAnswersRepository]
 
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
@@ -152,7 +187,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = false).url
+        redirectLocation(result).value mustEqual StartReturnPage(registrationReviewDue = false).navigate(period, startReturn = false).url
         verify(mockSessionRepository, times(1)).clear(eqTo(answers.userId))
       }
     }

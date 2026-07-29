@@ -1,0 +1,44 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import controllers.routes.*
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukButton: GovukButton
+)
+
+@(period: Period, changeYourRegistrationUrl: String)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = titleNoForm(messages("checkRegistrationUptoDate.title"))) {
+
+    <h1 class="govuk-heading-l">@messages("checkRegistrationUptoDate.heading")</h1>
+
+    <p class="govuk-body">@messages("checkRegistrationUptoDate.p1")</p>
+
+    <p class="govuk-body">@Html(messages("checkRegistrationUptoDate.reviewAndUpdate", changeYourRegistrationUrl))</p>
+
+@formHelper(action = routes.CheckRegistrationUptoDateController.onSubmit(period)) {
+
+        @govukButton(
+            ButtonViewModel(messages("site.skip"))
+                .asSecondaryButton()
+                .withAttribute(("id", "skip-and-back-to-your-account")
+            )
+        )
+    }
+}

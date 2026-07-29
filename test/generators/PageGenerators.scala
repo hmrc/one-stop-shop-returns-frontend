@@ -99,6 +99,6 @@ trait PageGenerators {
   implicit lazy val arbitraryCountryOfConsumptionFromNiPage: Arbitrary[CountryOfConsumptionFromNiPage] =
     Arbitrary(CountryOfConsumptionFromNiPage(Index(0)))
 
-  implicit lazy val arbitraryStartReturnPage: Arbitrary[StartReturnPage.type] =
-    Arbitrary(StartReturnPage)
+  implicit lazy val arbitraryStartReturnPage: Arbitrary[StartReturnPage] =
+    Arbitrary(StartReturnPage(registrationReviewDue = false))
 }

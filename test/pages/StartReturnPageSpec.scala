@@ -30,7 +30,7 @@ class StartReturnPageSpec extends PageBehaviours {
       "must go to Want To Upload A File page when the answer is yes" in {
         forAll(arbitrary[StandardPeriod]) {
           period =>
-            StartReturnPage.navigate(period, startReturn = true)
+            StartReturnPage(registrationReviewDue = false).navigate(period, startReturn = true)
               .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period))
         }
       }
@@ -38,7 +38,7 @@ class StartReturnPageSpec extends PageBehaviours {
       "must go to Index when the answer is no" in {
         forAll(arbitrary[StandardPeriod]) {
           period =>
-            StartReturnPage.navigate(period, startReturn = false)
+            StartReturnPage(registrationReviewDue = false).navigate(period, startReturn = false)
               .mustEqual(routes.NoOtherPeriodsAvailableController.onPageLoad())
         }
       }

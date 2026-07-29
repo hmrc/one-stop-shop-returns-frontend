@@ -26,7 +26,7 @@ import play.api.mvc.{ActionRefiner, Result}
 import repositories.RegistrationRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import utils.FutureSyntax._
+import utils.FutureSyntax.*
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -69,6 +69,5 @@ class GetRegistrationAction @Inject()(
     } else {
       Future.successful(true)
     }
-
   }
 }

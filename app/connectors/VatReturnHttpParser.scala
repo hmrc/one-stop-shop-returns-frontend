@@ -21,7 +21,7 @@ import models.domain.VatReturn
 import models.etmp.EtmpVatReturn
 import models.responses.*
 import play.api.http.Status.*
-import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 import scala.util.{Failure, Success, Try}
