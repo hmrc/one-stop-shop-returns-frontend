@@ -72,6 +72,7 @@ class SavedAnswersRetrievalActionSpec extends SpecBase with MockitoSugar {
         val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, registration)
 
         when(repository.get(any())) thenReturn Future.successful(Seq.empty)
+        when(repository.set(any())) thenReturn Future.successful(true)
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(Some(expectedSavedUserAnswers)))
 
         val action = new Harness(repository, saveForLaterConnector)
