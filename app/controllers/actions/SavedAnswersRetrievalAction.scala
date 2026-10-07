@@ -23,6 +23,7 @@ import play.api.mvc.ActionTransformer
 import repositories.UserAnswersRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,7 +34,7 @@ class SavedAnswersRetrievalAction (repository: UserAnswersRepository, saveForLat
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] = {
     val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
-    val userAnswers = for {
+    val userAnswers = (for {
       answersInSession <- repository.get(request.userId)
       savedForLater <- saveForLaterConnector.get()(hc)
     } yield {
@@ -42,16 +43,17 @@ class SavedAnswersRetrievalAction (repository: UserAnswersRepository, saveForLat
         savedForLater match {
           case Right(Some(answers)) => {
             val newAnswers = UserAnswers(request.userId, answers.period, answers.data, answers.lastUpdated)
-            repository.set(newAnswers)
-            Some(newAnswers)
+            repository.set(newAnswers).map { _ =>
+              Some(newAnswers)
+            }
           }
-          case _ => None
+          case _ => None.toFuture
         }
       } else {
-        latestInSession
+        latestInSession.toFuture
       }
       answers
-    }
+    }).flatten
 
     userAnswers.map {
       OptionalDataRequest(request.request, request.credentials, request.vrn, request.registration, _)
