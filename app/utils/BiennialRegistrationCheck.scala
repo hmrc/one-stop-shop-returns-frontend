@@ -22,8 +22,8 @@ import java.time.{Clock, LocalDateTime}
 
 object BiennialRegistrationCheck {
   
-  def changeDateMoreThanTwoYears(changeDate: LocalDateTime, clock: Clock): Boolean = {
-    val twoYearsAgo = LocalDateTime.now(clock).minusYears(registrationLastUpdatedCheck)
-    changeDate.isBefore(twoYearsAgo)
+  def changeDateMoreThanSixMonths(changeDate: LocalDateTime, clock: Clock): Boolean = {
+    val sixMonthsAgo = LocalDateTime.now(clock).minusMonths(registrationLastUpdatedCheck)
+    changeDate.isBefore(sixMonthsAgo)
   }
 }

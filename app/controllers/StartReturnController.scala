@@ -25,7 +25,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.PartialReturnPeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.BiennialRegistrationCheck.changeDateMoreThanTwoYears
+import utils.BiennialRegistrationCheck.changeDateMoreThanSixMonths
 import views.html.StartReturnView
 
 import java.time.Clock
@@ -56,7 +56,7 @@ class StartReturnController @Inject()(
     implicit request =>
 
       val registrationReviewDue: Boolean = if (frontendAppConfig.registrationReviewEnabled) {
-        request.registration.adminUse.changeDate.exists(changeDate => changeDateMoreThanTwoYears(changeDate, clock))
+        request.registration.adminUse.changeDate.exists(changeDate => changeDateMoreThanSixMonths(changeDate, clock))
       } else {
         false
       }
