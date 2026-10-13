@@ -23,6 +23,6 @@ object Constants {
   val exclusionCodeSixFollowingMonth: Int = 1
   val exclusionCodeSixTenthOfMonth: Int = 10
   val submittedReturnsPeriodsLimit: Int = 6
-  val registrationLastUpdatedCheck: Int = 2
+  val registrationLastUpdatedCheck: Int = 6
 
 }

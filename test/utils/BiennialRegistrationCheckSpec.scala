@@ -1,3 +1,19 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package utils
 
 import base.SpecBase
@@ -8,24 +24,24 @@ class BiennialRegistrationCheckSpec extends SpecBase {
 
   "BiennialRegistrationCheck" - {
 
-    "must return true when a given change date is more than two years old" in {
+    "must return true when a given change date is more than six months old" in {
 
-      val changeDate: LocalDateTime = LocalDateTime.now(stubClockAtArbitraryDate).minusYears(2).minusDays(1)
-      val result = BiennialRegistrationCheck.changeDateMoreThanTwoYears(changeDate, stubClockAtArbitraryDate)
+      val changeDate: LocalDateTime = LocalDateTime.now(stubClockAtArbitraryDate).minusMonths(6).minusDays(1)
+      val result = BiennialRegistrationCheck.changeDateMoreThanSixMonths(changeDate, stubClockAtArbitraryDate)
       result mustBe true
     }
 
-    "must return false when a given change date is exactly two years old" in {
+    "must return false when a given change date is exactly six months old" in {
 
-      val changeDate: LocalDateTime = LocalDateTime.now(stubClockAtArbitraryDate).minusYears(2)
-      val result = BiennialRegistrationCheck.changeDateMoreThanTwoYears(changeDate, stubClockAtArbitraryDate)
+      val changeDate: LocalDateTime = LocalDateTime.now(stubClockAtArbitraryDate).minusMonths(6)
+      val result = BiennialRegistrationCheck.changeDateMoreThanSixMonths(changeDate, stubClockAtArbitraryDate)
       result mustBe false
     }
 
-    "must return false when a given change date is less than two years old" in {
+    "must return false when a given change date is less than six months old" in {
 
-      val changeDate: LocalDateTime = LocalDateTime.now(stubClockAtArbitraryDate).minusYears(2).plusDays(1)
-      val result = BiennialRegistrationCheck.changeDateMoreThanTwoYears(changeDate, stubClockAtArbitraryDate)
+      val changeDate: LocalDateTime = LocalDateTime.now(stubClockAtArbitraryDate).minusMonths(6).plusDays(1)
+      val result = BiennialRegistrationCheck.changeDateMoreThanSixMonths(changeDate, stubClockAtArbitraryDate)
       result mustBe false
     }
   }

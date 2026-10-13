@@ -135,7 +135,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
       "must redirect to the Check Registration Upto Date page when answer is Yes and registrationReviewDue true" in {
 
-        val changeDate: LocalDateTime = LocalDateTime.now(stubClockAtArbitraryDate).minusYears(2).minusDays(1)
+        val changeDate: LocalDateTime = LocalDateTime.now(stubClockAtArbitraryDate).minusMonths(6).minusDays(1)
 
         val application = applicationBuilder(
           userAnswers = Some(emptyUserAnswers),

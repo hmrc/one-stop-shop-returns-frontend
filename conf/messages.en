@@ -755,5 +755,5 @@ dataError.errorMessage.genericErrors.p3 = You can check the notes page on the te
 
 checkRegistrationUptoDate.title = Check your registration is up to date
 checkRegistrationUptoDate.heading = Check your registration is up to date
-checkRegistrationUptoDate.p1 = You have not reviewed your OSS registration details for over 2 years. It is important that you keep them up to date.
+checkRegistrationUptoDate.p1 = You have not reviewed your OSS registration details for over 6 months. You must keep them up to date.
 checkRegistrationUptoDate.reviewAndUpdate = <a class="govuk-link" href="{0}">Review your registration details</a>
