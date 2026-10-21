@@ -700,6 +700,8 @@ fileUploaded.redirectError.EntityTooLarge = The selected file must be smaller th
 fileUpload.redirectError.fileNotFound = No file selected
 fileUpload.redirectError.invalidType = The selected file must be a CSV
 fileUploaded.redirectError.default = The selected file could not be uploaded – try again
+fileUploaded.refreshStatus.link = <a href="{0}" class="govuk-link">Refresh the page to update file upload progress</a>
+fileUploaded.refreshStatus.text = You cannot continue until your file has finished uploading. Refresh the page to check the progress.
 
 fileUploaded.status.error.quarantine = The selected file you have uploaded has been flagged as malicious
 fileUploaded.status.error.rejected = The selected file could not be uploaded – try again
