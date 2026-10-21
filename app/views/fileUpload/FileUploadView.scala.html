@@ -54,6 +54,8 @@
 
         </ol>
 
+        <p class="govuk-body">@Html(messages("fileUpload.checkVatRate.link"))</p>
+
         <form action="@postTarget" method="POST" enctype="multipart/form-data">
 
             @for((name, value) <- formFields) {
