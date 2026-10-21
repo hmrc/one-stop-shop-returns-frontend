@@ -130,11 +130,16 @@ function showTheSpinner() {
 document.addEventListener('DOMContentLoaded', function () {
     const refreshElement = document.getElementById('file-upload-refresh');
     const manualRefreshLink = document.getElementById('manual-refresh-link');
+    const manualRefreshMessage = document.getElementById('manual-refresh-message');
     const autoRefreshMessage = document.getElementById('auto-refresh-message');
 
     if (refreshElement) {
        if (manualRefreshLink) {
            manualRefreshLink.style.display = 'none';
+       }
+
+        if (manualRefreshMessage) {
+           manualRefreshMessage.style.display = 'none';
        }
 
        if (autoRefreshMessage) {
