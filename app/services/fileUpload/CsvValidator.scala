@@ -161,6 +161,8 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
         case Right(n) =>
           if (n < 0) {
             Seq(CsvError.NegativeNumber(row, col, n))
+          } else if (n == 0) {
+            Seq(CsvError.ZeroAmount(row, col, n))
           } else {
             if (n.scale > 2) {
               Seq(CsvError.TooMayDecimals(row, col, n))
