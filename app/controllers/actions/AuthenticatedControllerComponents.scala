@@ -55,6 +55,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def checkVatGroupFixedEstablishment: CheckVatGroupFixedEstablishmentFilterProvider
 
   def checkBouncedEmail: CheckBouncedEmailFilterProvider
+  
+  def checkSavedReturns: CheckSavedReturnsFilterProvider
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -82,6 +84,12 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def authAndGetSavedAnswers: ActionBuilder[OptionalDataRequest, AnyContent] =
     authAndGetRegistration andThen withSavedAnswers()
+    
+  def authAndGetDataAndCheckSavedReturns(period: Period): ActionBuilder[DataRequest, AnyContent] = {
+    authAndGetOptionalData(period) andThen
+      checkSavedReturns() andThen
+      requireData
+  }
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
@@ -104,5 +112,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                withSavedAnswers: SavedAnswersRetrievalActionProvider,
                                                                checkExcludedTrader: CheckExcludedTraderFilterProvider,
                                                                checkVatGroupFixedEstablishment: CheckVatGroupFixedEstablishmentFilterProvider,
-                                                               checkBouncedEmail: CheckBouncedEmailFilterProvider
+                                                               checkBouncedEmail: CheckBouncedEmailFilterProvider,
+                                                               checkSavedReturns: CheckSavedReturnsFilterProvider
                                                              ) extends AuthenticatedControllerComponents

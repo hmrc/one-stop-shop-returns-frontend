@@ -278,7 +278,8 @@ trait SpecBase
         bind[CheckMostOverdueReturnFilterProvider].toInstance(new FakeCheckMostOverdueReturnFilterProvider()),
         bind[SavedAnswersRetrievalAction].toInstance(new FakeSavedAnswersRetrievalAction(userAnswers)),
         bind[CheckExcludedTraderFilterProvider].toInstance(new FakeCheckExcludedTraderFilterProvider()),
-        bind[CheckBouncedEmailFilterProvider].toInstance(new FakeCheckBouncedEmailFilterProvider())
+        bind[CheckBouncedEmailFilterProvider].toInstance(new FakeCheckBouncedEmailFilterProvider()),
+        bind[CheckSavedReturnsFilterProvider].toInstance(new FakeCheckSavedReturnsFilterProvider())
       )
   }
 }

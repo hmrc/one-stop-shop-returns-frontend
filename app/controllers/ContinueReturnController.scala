@@ -37,7 +37,7 @@ class ContinueReturnController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndGetDataAndCheckSavedReturns(period) {
     implicit request =>
       request.userAnswers.get(SavedProgressPage).map(
         _ => Ok(view(form, request.userAnswers.period))
@@ -47,7 +47,7 @@ class ContinueReturnController @Inject()(
 
   }
 
-  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetData(period) {
+  def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetDataAndCheckSavedReturns(period) {
     implicit request =>
       form.bindFromRequest().fold(
         formWithErrors =>

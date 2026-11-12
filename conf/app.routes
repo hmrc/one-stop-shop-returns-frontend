@@ -362,3 +362,5 @@ POST       /:period/change-csv-data-error                                       
 
 GET        /:period/review-registration                                                                             controllers.CheckRegistrationUptoDateController.onPageLoad(period: Period)
 POST       /:period/review-registration                                                                             controllers.CheckRegistrationUptoDateController.onSubmit(period: Period)
+
+GET        /no-saved-returns                                                                                        controllers.NoSavedReturnsController.onPageLoad

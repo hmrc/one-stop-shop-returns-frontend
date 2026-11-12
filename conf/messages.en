@@ -765,3 +765,8 @@ checkRegistrationUptoDate.title = Check your registration is up to date
 checkRegistrationUptoDate.heading = Check your registration is up to date
 checkRegistrationUptoDate.p1 = You have not reviewed your OSS registration details for over 6 months. You must keep them up to date.
 checkRegistrationUptoDate.reviewAndUpdate = <a class="govuk-link" href="{0}">Review your registration details</a>
+
+noSavedReturns.title = You do not have any returns in progress
+noSavedReturns.heading = You do not have any returns in progress
+noSavedReturns.returnToYourAccountLink = <a class="govuk-link govuk-link--no-visited-state" id="return-to-your-account" href={0}>Return to your account</a>
+
