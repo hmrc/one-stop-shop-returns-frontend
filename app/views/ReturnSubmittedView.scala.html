@@ -48,8 +48,6 @@
 
             <p class="govuk-body">@messages("returnSubmitted.payVatOwed.p2")</p>
 
-            <a role="button" data-module="govuk-button" class="govuk-button" href="@routes.PaymentController.makePayment(period, amountInPence)">@messages("returnSubmitted.payNow")</a>
-
             @if(overdueReturn) {
                 <p class="govuk-body">@messages("returnSubmitted.overduePayBy.p1", period.paymentDeadlineDisplay)</p>
 
@@ -58,7 +56,9 @@
                 <p class="govuk-body">@messages("returnSubmitted.payBy.p1", period.paymentDeadlineDisplay)</p>
             }
 
-            <p class="govuk-body">@messages("returnSubmitted.payBy.p2")
+        <p class="govuk-body">@messages("returnSubmitted.payBy.p2")</p>
+
+        <a role="button" data-module="govuk-button" class="govuk-button" href="@routes.PaymentController.makePayment(period, amountInPence)">@messages("returnSubmitted.payNow")</a>
         } else {
             <p class="govuk-body">@messages("returnSubmitted.noVatOwed", period.displayText)</p>
         }
