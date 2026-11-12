@@ -739,6 +739,9 @@ dataError.errorMessage.tooManyColumns.p1.plural = Some rows have more than 5 col
 dataError.errorMessage.sameToAndFromCountry.p1 = You do not need to record sales from a country into the same country.
 dataError.errorMessage.sameToAndFromCountry.p1.plural = You do not need to record sales from a country into the same country.
 dataError.errorMessage.genericTooManyColumns.p1.plural =  We cannot process your file as it has too many columns.
+dataError.errorMessage.zeroAmount.p1.plural = We cannot process your file as {0} cells are zero.
+dataError.errorMessage.zeroAmount.p1 = We cannot process your file as cell {0} is zero.
+dataError.errorMessage.zeroAmount.p2 = You do not need to include countries on your return if you did not make sales there.
 
 dataError.errorMessage.incorrectCountry.p1.plural = There are {0} countries that have the wrong name.
 dataError.errorMessage.incorrectCountry.p2.plural = The countries names must be the same as those in the notes section of the template document.

@@ -92,6 +92,7 @@ class DataErrorController @Inject()(
             case _: CsvError.TooManyColumns => "tooManyColumns"
             case _: CsvError.SameToAndFromCountry => "sameToAndFromCountry"
             case _: CsvError.GenericTooManyColumns => "genericTooManyColumns"
+            case _: CsvError.ZeroAmount => "zeroAmount"
           }
           .toSeq
           .sortBy(_._1)
@@ -212,6 +213,19 @@ class DataErrorController @Inject()(
 
         case Some(_: CsvError.GenericTooManyColumns) =>
           Seq(messages("dataError.errorMessage.genericTooManyColumns.p1.plural"))
+
+        case Some(_: CsvError.ZeroAmount) =>
+          if (count > 1) {
+            Seq(
+              messages("dataError.errorMessage.zeroAmount.p1.plural", count),
+              messages("dataError.errorMessage.zeroAmount.p2")
+            )
+          } else {
+            Seq(
+              messages("dataError.errorMessage.zeroAmount.p1", cells),
+              messages("dataError.errorMessage.zeroAmount.p2")
+            )
+          }
 
         case _ =>
           Seq(messages("dataError.errorMessage.genericError.p1"))

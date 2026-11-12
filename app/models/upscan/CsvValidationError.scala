@@ -42,6 +42,7 @@ object CsvError {
   final case class TooManyColumns(row: Int, column: CsvColumn, actualColumns: Int) extends CsvError
   final case class SameToAndFromCountry(row: Int, column: CsvColumn, countryFrom: String, countryTo: String, value: String) extends CsvError
   final case class GenericTooManyColumns(row: Int, column: CsvColumn) extends CsvError
+  final case class ZeroAmount(row: Int, column: CsvColumn, value: BigDecimal) extends CsvError
 }
 
 final case class CsvValidationException(errors: Seq[CsvError]) extends RuntimeException(s"CSV validation error at ${errors.map(_.cellRef).mkString(", ")}")
@@ -70,6 +71,7 @@ implicit val csvErrorFormat: Format[CsvError] = {
   val tooManyColumns = Json.format[CsvError.TooManyColumns]
   val sameToAndFromCountry = Json.format[CsvError.SameToAndFromCountry]
   val genericTooManyColumns = Json.format[CsvError.GenericTooManyColumns]
+  val zeroAmount = Json.format[CsvError.ZeroAmount]
 
   new Format[CsvError] {
     
@@ -85,6 +87,7 @@ implicit val csvErrorFormat: Format[CsvError] = {
       case e: CsvError.TooManyColumns        => tooManyColumns.writes(e) + ("type" -> JsString("TooManyColumns"))
       case e: CsvError.SameToAndFromCountry  => sameToAndFromCountry.writes(e) + ("type" -> JsString("SameToAndFromCountry"))
       case e: CsvError.GenericTooManyColumns => genericTooManyColumns.writes(e) + ("type" -> JsString("GenericTooManyColumns"))
+      case e: CsvError.ZeroAmount            => zeroAmount.writes(e) + ("type" -> JsString("ZeroAmount"))
     }
     
     def reads(json: JsValue): JsResult[CsvError] = (json \ "type").validate[String].flatMap {
@@ -99,6 +102,7 @@ implicit val csvErrorFormat: Format[CsvError] = {
       case "TooManyColumns"        => tooManyColumns.reads(json)
       case "SameToAndFromCountry"  => sameToAndFromCountry.reads(json)
       case "GenericTooManyColumns" => genericTooManyColumns.reads(json)
+      case "ZeroAmount"            => zeroAmount.reads(json)
       case other                   => JsError(s"Unknown type $other")
     }
   }
