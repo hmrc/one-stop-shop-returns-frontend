@@ -37,7 +37,8 @@ class CheckSavedReturnsFilterImpl(
 
     saveForLaterConnector.get().map {
       case Right(Some(_)) => None
-
+      case _ if request.userAnswers.nonEmpty =>
+        None
       case _ =>
         Some(Redirect(routes.NoSavedReturnsController.onPageLoad))
     }

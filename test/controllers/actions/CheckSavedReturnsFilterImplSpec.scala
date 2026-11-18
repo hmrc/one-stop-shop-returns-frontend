@@ -88,5 +88,24 @@ class CheckSavedReturnsFilterImplSpec extends SpecBase with MockitoSugar with Be
         verify(mockSaveForLaterConnector, times(1)).get()(any())
       }
     }
+
+    "must return None when a return is in progress in user answers" in {
+
+      when(mockSaveForLaterConnector.get()(any())) thenReturn Right(None).toFuture
+
+      val application = applicationBuilder()
+        .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+        .build()
+
+      running(application) {
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, registration, Some(completeUserAnswersWithCorrections))
+        val controller = new Harness()
+
+        val result = controller.callFilter(request).futureValue
+
+        result must not be defined
+        verify(mockSaveForLaterConnector, times(1)).get()(any())
+      }
+    }
   }
 }
