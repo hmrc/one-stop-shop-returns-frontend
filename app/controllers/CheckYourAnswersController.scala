@@ -127,16 +127,16 @@ class CheckYourAnswersController @Inject()(
         )
       )
       Seq(
-        (None, businessSummaryList),
-        (None, salesFromNiSummaryList),
-        (None, salesFromEuSummaryList),
-        (None, correctionsSummaryList)
+        businessSummaryList,
+        salesFromNiSummaryList,
+        salesFromEuSummaryList,
+        correctionsSummaryList
       )
     } else {
       Seq(
-        (None, businessSummaryList),
-        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
+        businessSummaryList,
+        salesFromNiSummaryList,
+        salesFromEuSummaryList
       )
     }
 
