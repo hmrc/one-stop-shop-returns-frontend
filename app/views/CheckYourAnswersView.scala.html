@@ -27,7 +27,7 @@
 )
 
 @(
-        summaryLists: Seq[(Option[String], SummaryList)],
+        summaryLists: Seq[SummaryList],
         period: Period,
         totalVatToCountries: List[TotalVatToCountry],
         totalVatOnSales: BigDecimal,
@@ -50,10 +50,7 @@
         ))
     }
 
-    @summaryLists.map { case (heading, summaryList) =>
-        @if(heading.isDefined) {
-            <h2 class="govuk-heading-l">@messages(heading.get)</h2>
-        }
+    @summaryLists.map { summaryList =>
         @govukSummaryList(summaryList)
     }
     @if(containsCorrections) {
