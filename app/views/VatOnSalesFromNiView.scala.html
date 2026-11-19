@@ -49,7 +49,7 @@
     @formHelper(action = routes.VatOnSalesFromNiController.onSubmit(mode, period, countryIndex, vatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
+            @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("choice" -> "value_0")))
         }
 
         @govukRadios(
