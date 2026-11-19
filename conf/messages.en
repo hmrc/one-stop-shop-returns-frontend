@@ -657,7 +657,7 @@ interceptUnusableEmail.p3 = You must have a valid email address to use this serv
 interceptUnusableEmail.confirm = Confirm email address
 
 userResearch.heading = Help us improve the service
-userResearch.link.text = Sign up to take part in research about the One Stop Shop service.
+userResearch.link.text = Sign up to take part in research about the One Stop Shop service (opens in a new tab).
 
 wantToUploadFile.title = Do you want to upload a file with these return details?
 wantToUploadFile.heading = Do you want to upload a file with these return details?
