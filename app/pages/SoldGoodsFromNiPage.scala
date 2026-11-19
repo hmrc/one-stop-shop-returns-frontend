@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Index, NormalMode, UserAnswers}
+import models.{NormalMode, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.{AllSalesFromNiQuery, DeriveNumberOfSalesFromNi}
@@ -33,7 +33,7 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(SoldGoodsFromNiPage) match {
-      case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, answers.period, Index(0))
+      case Some(true) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period)
       case Some(false) => routes.SoldGoodsFromEuController.onPageLoad(NormalMode, answers.period)
       case _          => routes.YourAccountController.onPageLoad()
     }
@@ -43,7 +43,7 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
       val salesFromNi = answers.get(DeriveNumberOfSalesFromNi).getOrElse(0)
       answers.get(SoldGoodsFromNiPage) match {
         case Some(true) if salesFromNi > 0 => routes.CheckYourAnswersController.onPageLoad(answers.period)
-        case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, Index(0)) // TODO index
+        case Some(true) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period)
         case _ => routes.CheckYourAnswersController.onPageLoad(answers.period)
       }
     }

@@ -18,10 +18,11 @@ package pages
 
 import base.SpecBase
 import controllers.routes
-import models.{CheckMode, Country, Index, NormalMode}
+import models.{CheckMode, Country, NormalMode}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.behaviours.PageBehaviours
 import pages.corrections.CorrectPreviousReturnPage
+import pages.fileUpload.WantToUploadFilePage
 
 class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoSugar {
 
@@ -35,12 +36,22 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoS
 
     "must navigate in Normal mode" - {
 
-      "to Country of Sale from EU when the answer is yes" in {
+      "to want to upload a file when the answer is yes" in {
 
         val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, true).success.value
 
         SoldGoodsFromEuPage.navigate(NormalMode, answers)
-          .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, Index(0)))
+          .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period))
+      }
+
+      "to want to country of sale from EU when the answer is yes and the want to upload a file is false" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(WantToUploadFilePage, false).success.value
+
+        SoldGoodsFromEuPage.navigate(NormalMode, answers)
+          .mustEqual(controllers.routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, period, index))
       }
 
       "to Do you want to correct a previous return page when the answer is no" in {
@@ -56,12 +67,22 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoS
 
     "must navigate in Check mode" - {
 
-      "to Country of Sale from EU when the answer is yes and the question hasn't been answered before" in {
+      "to want to upload a file when the answer is yes and the question hasn't been answered before" in {
 
         val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, true).success.value
 
         SoldGoodsFromEuPage.navigate(CheckMode, answers)
-          .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0)))
+          .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period))
+      }
+
+      "to want to country of sale from EU when the answer is yes and the want to upload a file is false" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsFromEuPage, true).success.value
+          .set(WantToUploadFilePage, false).success.value
+
+        SoldGoodsFromEuPage.navigate(CheckMode, answers)
+          .mustEqual(controllers.routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, period, index))
       }
 
       "to Check your answers when the answer is yes and the question has been answered before" in {

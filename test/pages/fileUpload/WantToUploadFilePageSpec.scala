@@ -18,6 +18,7 @@ package pages.fileUpload
 
 import controllers.routes
 import models.{CheckMode, NormalMode}
+import pages.{SoldGoodsFromEuPage, SoldGoodsFromNiPage}
 import pages.behaviours.PageBehaviours
 
 class WantToUploadFilePageSpec extends PageBehaviours {
@@ -46,12 +47,24 @@ class WantToUploadFilePageSpec extends PageBehaviours {
 
       "when the answer is no" - {
 
-        "to Sold Goods from Northern Ireland page" in {
+        "to Country Of Sale From Eu page" in {
 
-          val answers = emptyUserAnswers.set(WantToUploadFilePage, false).success.value
+          val answers = emptyUserAnswers
+            .set(WantToUploadFilePage, false).success.value
+            .set(SoldGoodsFromEuPage, true).success.value
 
           WantToUploadFilePage.navigate(NormalMode, answers)
-            .mustEqual(routes.SoldGoodsFromNiController.onPageLoad(NormalMode, answers.period))
+            .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(NormalMode, answers.period, index))
+        }
+
+        "to Country Of Consumption From Ni page" in {
+
+          val answers = emptyUserAnswers
+            .set(WantToUploadFilePage, false).success.value
+            .set(SoldGoodsFromNiPage, true).success.value
+
+          WantToUploadFilePage.navigate(NormalMode, answers)
+            .mustEqual(routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, answers.period, index))
         }
       }
     }
@@ -71,12 +84,24 @@ class WantToUploadFilePageSpec extends PageBehaviours {
 
       "when the answer is no" - {
 
-        "to Sold Goods from Northern Ireland page" in {
+        "to Country Of Sale From Eu page" in {
 
-          val answers = emptyUserAnswers.set(WantToUploadFilePage, false).success.value
+          val answers = emptyUserAnswers
+            .set(WantToUploadFilePage, false).success.value
+            .set(SoldGoodsFromEuPage, true).success.value
 
           WantToUploadFilePage.navigate(CheckMode, answers)
-            .mustEqual(routes.SoldGoodsFromNiController.onPageLoad(CheckMode, answers.period))
+            .mustEqual(routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, index))
+        }
+
+        "to Country Of Consumption From Ni page" in {
+
+          val answers = emptyUserAnswers
+            .set(WantToUploadFilePage, false).success.value
+            .set(SoldGoodsFromNiPage, true).success.value
+
+          WantToUploadFilePage.navigate(CheckMode, answers)
+            .mustEqual(routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, index))
         }
       }
     }
