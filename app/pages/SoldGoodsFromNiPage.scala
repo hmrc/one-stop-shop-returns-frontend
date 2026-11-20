@@ -17,7 +17,8 @@
 package pages
 
 import controllers.routes
-import models.{NormalMode, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
+import pages.fileUpload.WantToUploadFilePage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.{AllSalesFromNiQuery, DeriveNumberOfSalesFromNi}
@@ -42,8 +43,10 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
     {
       val salesFromNi = answers.get(DeriveNumberOfSalesFromNi).getOrElse(0)
       answers.get(SoldGoodsFromNiPage) match {
+        case Some(true) if answers.get(WantToUploadFilePage).contains(false) =>
+          controllers.routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, Index(0))
         case Some(true) if salesFromNi > 0 => routes.CheckYourAnswersController.onPageLoad(answers.period)
-        case Some(true) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period)
+        case Some(true) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(CheckMode, answers.period)
         case _ => routes.CheckYourAnswersController.onPageLoad(answers.period)
       }
     }
@@ -51,7 +54,11 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
 
   override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
     value match {
-      case Some(false) => userAnswers.remove(AllSalesFromNiQuery)
+      case Some(false) =>
+        for {
+          answers <- userAnswers.remove(AllSalesFromNiQuery)
+          updatedAnswers <- answers.remove(WantToUploadFilePage)
+        } yield updatedAnswers
       case _ => super.cleanup(value, userAnswers)
     }
   }

@@ -78,7 +78,7 @@ class WantToUploadFilePageSpec extends PageBehaviours {
           val answers = emptyUserAnswers.set(WantToUploadFilePage, true).success.value
 
           WantToUploadFilePage.navigate(CheckMode, answers)
-            .mustEqual(controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period))
+            .mustEqual(controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period))
         }
       }
 

@@ -41,7 +41,7 @@ case object WantToUploadFilePage extends QuestionPage[Boolean] {
 
   override def navigateInCheckMode(answers: UserAnswers): Call = {
     answers.get(WantToUploadFilePage) match {
-      case Some(true) => controllers.fileUpload.routes.FileUploadController.onPageLoad(NormalMode, answers.period)
+      case Some(true) => controllers.fileUpload.routes.FileUploadController.onPageLoad(CheckMode, answers.period)
       case Some(false) if answers.get(SoldGoodsFromEuPage).contains(true) =>
         routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0))
       case Some(false) if answers.get(SoldGoodsFromNiPage).contains(true)=>

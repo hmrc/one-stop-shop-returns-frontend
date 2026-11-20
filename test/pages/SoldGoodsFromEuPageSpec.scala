@@ -72,7 +72,7 @@ class SoldGoodsFromEuPageSpec extends PageBehaviours with SpecBase with MockitoS
         val answers = emptyUserAnswers.set(SoldGoodsFromEuPage, true).success.value
 
         SoldGoodsFromEuPage.navigate(CheckMode, answers)
-          .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period))
+          .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(CheckMode, period))
       }
 
       "to want to country of sale from EU when the answer is yes and the want to upload a file is false" in {

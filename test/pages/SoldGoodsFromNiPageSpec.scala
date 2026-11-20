@@ -59,7 +59,7 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
           val answers = emptyUserAnswers.set(SoldGoodsFromNiPage, true).success.value
 
           SoldGoodsFromNiPage.navigate(CheckMode, answers)
-            .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period))
+            .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(CheckMode, period))
         }
       }
 
