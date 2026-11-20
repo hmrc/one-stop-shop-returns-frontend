@@ -44,7 +44,7 @@ class CheckRegistrationUptoDateControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to Want To Upload File page for a POST" in {
+    "must redirect to Sold Goods From NI page for a POST" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -54,7 +54,7 @@ class CheckRegistrationUptoDateControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period).url
+        redirectLocation(result).value mustBe controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period).url
       }
     }
   }

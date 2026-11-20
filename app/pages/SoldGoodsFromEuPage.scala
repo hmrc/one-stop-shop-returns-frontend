@@ -18,6 +18,7 @@ package pages
 
 import controllers.routes
 import models.{CheckMode, Index, Mode, NormalMode, UserAnswers}
+import pages.fileUpload.WantToUploadFilePage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.{AllSalesFromEuQuery, DeriveNumberOfSalesFromEu}
@@ -35,8 +36,10 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
 
     (mode, answers.get(SoldGoodsFromEuPage)) match {
       case (CheckMode, Some(true)) if salesFromEu > 0 => routes.CheckYourAnswersController.onPageLoad(answers.period)
-      case (CheckMode, Some(true)) => routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0))
-      case (NormalMode, Some(true)) => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
+      case (CheckMode, Some(true)) if answers.get(WantToUploadFilePage).contains(false) => routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0))
+      case (NormalMode, Some(true)) if answers.get(WantToUploadFilePage).contains(false) => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
+      case (CheckMode, Some(true)) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(CheckMode, answers.period)
+      case (NormalMode, Some(true)) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period)
       case (CheckMode, Some(false)) => routes.CheckYourAnswersController.onPageLoad(answers.period)
       case (NormalMode, Some(false)) => controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(mode, answers.period)
       case _ => routes.JourneyRecoveryController.onPageLoad()
@@ -46,7 +49,11 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
 
   override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
     value match {
-      case Some(false) => userAnswers.remove(AllSalesFromEuQuery)
+      case Some(false) =>
+        for {
+          answers <- userAnswers.remove(AllSalesFromEuQuery)
+          updatedAnswers <- answers.remove(WantToUploadFilePage)
+        } yield updatedAnswers
       case _ => super.cleanup(value, userAnswers)
     }
   }

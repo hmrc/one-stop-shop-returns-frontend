@@ -42,6 +42,6 @@ class CheckRegistrationUptoDateController @Inject()(
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndGetRegistrationWithoutCheckBouncedEmail().async {
     implicit request =>
-      Redirect(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period)).toFuture
+      Redirect(controllers.routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period)).toFuture
   }
 }

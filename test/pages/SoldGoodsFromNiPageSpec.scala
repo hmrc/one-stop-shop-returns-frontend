@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{CheckMode, Country, Index, NormalMode, VatOnSales, VatRate}
+import models.{CheckMode, Country, NormalMode, VatOnSales, VatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import pages.behaviours.PageBehaviours
 
@@ -33,12 +33,12 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
 
     "must navigate in Normal mode" - {
 
-      "to Country of Consumption when the answer is yes" in {
+      "to want to upload a file the answer is yes" in {
 
         val answers = emptyUserAnswers.set(SoldGoodsFromNiPage, true).success.value
 
         SoldGoodsFromNiPage.navigate(NormalMode, answers)
-          .mustEqual(routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, answers.period, Index(0)))
+          .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period))
       }
 
       "to SoldGoodsFromEU when the answer is no" in {
@@ -54,12 +54,12 @@ class SoldGoodsFromNiPageSpec extends PageBehaviours {
 
       "when the answer is yes" - {
 
-        "to Country of Consumption" in {
+        "to want to upload a file" in {
 
           val answers = emptyUserAnswers.set(SoldGoodsFromNiPage, true).success.value
 
           SoldGoodsFromNiPage.navigate(CheckMode, answers)
-            .mustEqual(routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, index))
+            .mustEqual(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(CheckMode, period))
         }
       }
 
