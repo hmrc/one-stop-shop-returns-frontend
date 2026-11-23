@@ -23,7 +23,7 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.{AllSalesFromEuQuery, DeriveNumberOfSalesFromEu}
 
-import scala.util.Try
+import scala.util.{Success, Try}
 
 case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
 
@@ -36,8 +36,8 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
 
     (mode, answers.get(SoldGoodsFromEuPage)) match {
       case (CheckMode, Some(true)) if salesFromEu > 0 => routes.CheckYourAnswersController.onPageLoad(answers.period)
-      case (CheckMode, Some(true)) if answers.get(WantToUploadFilePage).contains(false) => routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0))
-      case (NormalMode, Some(true)) if answers.get(WantToUploadFilePage).contains(false) => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
+      case (CheckMode, Some(true)) if answers.get(WantToUploadFilePage).isDefined => routes.CountryOfSaleFromEuController.onPageLoad(CheckMode, answers.period, Index(0))
+      case (NormalMode, Some(true)) if answers.get(WantToUploadFilePage).isDefined => routes.CountryOfSaleFromEuController.onPageLoad(mode, answers.period, Index(0))
       case (CheckMode, Some(true)) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(CheckMode, answers.period)
       case (NormalMode, Some(true)) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period)
       case (CheckMode, Some(false)) => routes.CheckYourAnswersController.onPageLoad(answers.period)
@@ -50,10 +50,12 @@ case object SoldGoodsFromEuPage extends QuestionPage[Boolean] {
   override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
     value match {
       case Some(false) =>
-        for {
-          answers <- userAnswers.remove(AllSalesFromEuQuery)
-          updatedAnswers <- answers.remove(WantToUploadFilePage)
-        } yield updatedAnswers
+        userAnswers.remove(AllSalesFromEuQuery).flatMap { answers =>
+          answers.get(SoldGoodsFromNiPage) match {
+            case Some(true) => Success(answers)
+            case _ => answers.remove(WantToUploadFilePage)
+          }
+        }
       case _ => super.cleanup(value, userAnswers)
     }
   }
