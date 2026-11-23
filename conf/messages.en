@@ -15,6 +15,7 @@ site.to = to
 site.submit = Submit
 site.warning = Warning
 site.processing = We are processing your return.
+site.print = Print this Page
 
 date.day = Day
 date.month = Month
@@ -257,6 +258,7 @@ salesFromEuList.addAnother = Add sales from another EU country?
 
 returnSubmitted.title = Return submitted
 returnSubmitted.heading = Return submitted
+returnSubmitted.viewPrintSummary = Print or download a PDF copy of this page
 returnSubmitted.reference = Your return reference is
 returnSubmitted.noVatOwed = You do not owe any VAT for the {0} period.
 returnSubmitted.payVatOwed = Pay VAT owed
@@ -615,6 +617,7 @@ noLongerAbleToViewReturn.p = You cannot view returns that are over 6 years old.
 
 newPreviousReturn.title = Submitted return for {0}
 newPreviousReturn.heading = Submitted return for {0}
+newPreviousReturn.print = Print or download a PDF copy of this page
 newPreviousReturn.summary = Summary
 newPreviousReturn.summary.payableVatDeclared = Payable VAT declared
 newPreviousReturn.summary.amountRemaining = Amount left to pay
