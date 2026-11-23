@@ -32,7 +32,7 @@ case class StartReturnPage(registrationReviewDue: Boolean) extends QuestionPage[
       if (registrationReviewDue) {
         routes.CheckRegistrationUptoDateController.onPageLoad(period)
       } else {
-        controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, period)
+        routes.SoldGoodsFromNiController.onPageLoad(NormalMode, period)
       }
     } else {
       routes.NoOtherPeriodsAvailableController.onPageLoad()

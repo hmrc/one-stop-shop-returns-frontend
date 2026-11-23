@@ -666,7 +666,7 @@ wantToUploadFile.no = No, enter them myself
 wantToUploadFile.checkYourAnswersLabel = Want to upload a file
 wantToUploadFile.error.required = Select yes if you want to upload a file
 wantToUploadFile.change.hidden = WantToUploadFile
-wantToUploadFile.hint = You can download a template file on the next page.
+wantToUploadFile.hint = Include all your sales from Northern Ireland and EU countries.
 
 fileUpload.title = Upload the {0} return
 fileUpload.heading = Upload the {0} return

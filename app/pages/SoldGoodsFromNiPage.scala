@@ -18,11 +18,12 @@ package pages
 
 import controllers.routes
 import models.{CheckMode, Index, NormalMode, UserAnswers}
+import pages.fileUpload.WantToUploadFilePage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.{AllSalesFromNiQuery, DeriveNumberOfSalesFromNi}
 
-import scala.util.Try
+import scala.util.{Success, Try}
 
 case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
 
@@ -33,7 +34,7 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
 
   override def navigateInNormalMode(answers: UserAnswers): Call =
     answers.get(SoldGoodsFromNiPage) match {
-      case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(NormalMode, answers.period, Index(0))
+      case Some(true) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(NormalMode, answers.period)
       case Some(false) => routes.SoldGoodsFromEuController.onPageLoad(NormalMode, answers.period)
       case _          => routes.YourAccountController.onPageLoad()
     }
@@ -42,8 +43,10 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
     {
       val salesFromNi = answers.get(DeriveNumberOfSalesFromNi).getOrElse(0)
       answers.get(SoldGoodsFromNiPage) match {
+        case Some(true) if answers.get(WantToUploadFilePage).isDefined =>
+          controllers.routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, Index(0))
         case Some(true) if salesFromNi > 0 => routes.CheckYourAnswersController.onPageLoad(answers.period)
-        case Some(true) => routes.CountryOfConsumptionFromNiController.onPageLoad(CheckMode, answers.period, Index(0)) // TODO index
+        case Some(true) => controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(CheckMode, answers.period)
         case _ => routes.CheckYourAnswersController.onPageLoad(answers.period)
       }
     }
@@ -51,7 +54,13 @@ case object SoldGoodsFromNiPage extends QuestionPage[Boolean] {
 
   override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
     value match {
-      case Some(false) => userAnswers.remove(AllSalesFromNiQuery)
+      case Some(false) =>
+        userAnswers.remove(AllSalesFromNiQuery).flatMap { answers =>
+          answers.get(SoldGoodsFromEuPage) match {
+            case Some(true) => Success(answers)
+            case _ => answers.remove(WantToUploadFilePage)
+          }
+        }
       case _ => super.cleanup(value, userAnswers)
     }
   }
