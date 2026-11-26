@@ -16,9 +16,9 @@
 
 @this()
 @(message: Option[String] = None)(implicit messages: Messages)
-<div class="govuk-!-display-none-print js-visible" id="print-link-wrapper">
+<div class="govuk-!-padding-bottom-3 hmrc-!-js-visible" id="print-link-wrapper">
     <p class="govuk-body">
-        <a class="govuk-link" href="#print-dialogue" id='@message.map(_.takeWhile(_ != 46).toLowerCase.concat("-print")).getOrElse("print-page")' role="link">
+        <a class="govuk-link" href="#" id='@message.map(_.takeWhile(_ != 46).toLowerCase.concat("-print")).getOrElse("print-page")' role="link" data-module="hmrc-print-link">
             @if(message.isEmpty) {
                 <img src='@controllers.routes.Assets.versioned("images/icon-print.svg")' class="align-with-text" alt="">
             }
