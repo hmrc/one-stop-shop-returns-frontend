@@ -17,10 +17,12 @@
 @import viewmodels.previousReturn.PreviousReturnCorrectionsSummary.CorrectionRow
 @import viewmodels.previousReturn.PreviousReturnTotalNetValueOfSalesToEuSummary.SalesToEuCountryRow
 @import viewmodels.previousReturn.PreviousReturnTotalNetValueOfSalesFromNiSummary.SalesFromNiCountryRow
+@import components.PrintPage
 
 @this(
         layout: templates.Layout,
-        govukSummaryList: GovukSummaryList
+        govukSummaryList: GovukSummaryList,
+        printPage: PrintPage
 )
 
 @(
@@ -40,6 +42,8 @@
 @layout(pageTitle = titleNoForm(messages("newPreviousReturn.title", period.displayText))) {
 
   <h1 class="govuk-heading-l">@messages("newPreviousReturn.heading", period.displayText)</h1>
+
+  @printPage(Some("newPreviousReturn.print"))
 
   <h2 class="govuk-heading-m">@messages("newPreviousReturn.summary")</h2>
 

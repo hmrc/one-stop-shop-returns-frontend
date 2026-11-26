@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import components.ButtonGroupProcessing
+@import components.{ButtonGroupProcessing, PrintPage}
 @import models.exclusions.ExcludedTrader
 @import utils.CurrencyFormatter.currencyFormat
 
@@ -23,7 +23,8 @@
         formHelper: FormWithCSRF,
         govukSummaryList: GovukSummaryList,
         button: ButtonGroupProcessing,
-        govukWarningText: GovukWarningText
+        govukWarningText: GovukWarningText,
+        printPage: PrintPage
 )
 
 @(
@@ -42,6 +43,8 @@
 
 
     <h1 class="govuk-heading-xl">@messages("checkYourAnswers.heading")</h1>
+
+    @printPage()
 
     @if(missingData.nonEmpty) {
         @govukWarningText(WarningText(

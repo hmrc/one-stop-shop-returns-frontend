@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import controllers.routes
+
 @this(
     layout: templates.Layout
 )
@@ -38,6 +40,12 @@
                 <strong>@returnReference.value</strong>
             </div>
         </div>
+
+        <p class="govuk-body">
+            <a class="govuk-link govuk-link--no-visited-state hmrc-!-js-visible" id="view-printable-summary" href="@routes.PreviousReturnController.onPageLoad(period)">
+                @messages("returnSubmitted.viewPrintSummary")
+            </a>
+        </p>
 
         @if(displayPayNow) {
             <h2 class="govuk-heading-m">@messages("returnSubmitted.payVatOwed")</h2>
